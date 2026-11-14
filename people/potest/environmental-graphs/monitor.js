@@ -5,7 +5,7 @@ const datasets = [...archive.slice(0, 1), makeAlertExercise(), ...archive.slice(
 const ui = Object.fromEntries(
   ["dataset", "metric", "window", "chart", "chart-title", "context", "download", "latest", "min", "max",
     "count", "reading", "notes", "source", "status", "view", "playback", "speed", "play", "restart", "seek",
-    "mode-label", "replay-clock", "progress", "cabin", "cabin-metrics", "thresholds", "standard",
+    "mode-label", "replay-clock", "replay-step", "progress", "cabin", "cabin-metrics", "thresholds", "standard",
     "event-panel", "events", "events-empty", "chart-help", "snapshot"].map(id => [id, document.getElementById(id)])
 );
 const paint = ui.chart.getContext("2d");
@@ -26,6 +26,11 @@ let bounds;
 let timeline = [];
 let cursor = 0;
 let loop = 1;
+let completedLoops = 0;
+let loopDuration = 0;
+let chartStart;
+let chartEnd;
+let currentReading;
 let timer;
 let eventHistory = [];
 let visibleEvents = [];
@@ -33,6 +38,14 @@ let alerts = new Map();
 
 const isReplay = () => ui.view.value === "replay";
 const isExercise = () => currentDataset.id === "alert-exercise";
+
+const bridge = createEnvironmentBridge(() => ({
+  dataset: currentDataset,
+  replayStart: timeline[0],
+  time: isReplay() ? timeline[cursor] : currentMetric.points.at(-1)[0],
+  cycle: isReplay() ? loop : null,
+  readingsAt,
+}));
 
 function upperBound(items, time, timestamp = row => row[0]) {
   let left = 0;
@@ -67,6 +80,23 @@ function formatReading(value) {
   return `${formatNumber(value)} ${currentMetric.unit}`;
 }
 
+function describeNextStep() {
+  const nextTime = timeline[cursor + 1];
+  if (nextTime === undefined) return "Next step wraps to the first source timestamp.";
+  const difference = nextTime - timeline[cursor];
+  if (currentDataset.timeMode === "sol") {
+    return `Next step advances ${difference} ${difference === 1 ? "sol" : "sols"} in source time.`;
+  }
+  const duration = [];
+  let remaining = difference;
+  for (const [seconds, unit] of [[86400, "d"], [3600, "h"], [60, "min"], [1, "sec"]]) {
+    const count = Math.floor(remaining / seconds);
+    if (count) duration.push(`${count} ${unit}`);
+    remaining %= seconds;
+  }
+  return `Next step advances ${duration.join(" ")} in source time.`;
+}
+
 function selectDataset() {
   pausePlayback();
   currentDataset = datasets.find(dataset => dataset.id === ui.dataset.value);
@@ -82,6 +112,10 @@ function selectDataset() {
     .filter(metric => supportsCabin && cabinLimits[metric.id])
     .map(metric => [metric.id, {metric, limit: cabinLimits[metric.id], ...buildAlertHistory(metric, cabinLimits[metric.id])}]));
   eventHistory = [...alerts.values()].flatMap(alert => alert.events).sort((a, b) => a.time - b.time);
+  const lastSample = timeline.at(-1);
+  timeline = [...new Set([...timeline, ...eventHistory.filter(event => event.kind === "gap" && event.time < lastSample)
+    .map(event => event.time)])].sort((a, b) => a - b);
+  loopDuration = lastSample - timeline[0] + (timeline.length > 1 ? timeline[1] - timeline[0] : 1);
   visibleEvents = [];
   ui.events.replaceChildren();
   ui["events-empty"].hidden = false;
@@ -97,7 +131,9 @@ function selectDataset() {
   ui.speed.value = isExercise() || timeline.length < 60 ? "1" : "4";
   cursor = 0;
   loop = 1;
+  completedLoops = 0;
   selectMetric();
+  bridge.beginCycle("dataset-changed");
   if (isReplay() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) startPlayback();
 }
 
@@ -122,8 +158,8 @@ function readingsAt(time) {
   return [...alerts.values()].map(({metric, states, limit}) => {
     const index = upperBound(metric.points, time) - 1;
     const observation = metric.points[index];
-    const available = observation && time - observation[0] <= metric.gap;
-    return {metric, limit, observation, available, state: available ? states[index] : null};
+    const available = Boolean(observation && time - observation[0] <= metric.gap);
+    return {metric, limit, observation, available, state: states[index] ?? null};
   });
 }
 
@@ -146,12 +182,14 @@ function renderCabin(time) {
       selectMetric();
     };
     button.setAttribute("aria-pressed", String(metric === currentMetric));
-    button.dataset.level = state?.level ?? "missing";
+    button.dataset.level = available ? state.level : "missing";
     button.children[0].textContent = limit.name;
     button.children[1].textContent = available
       ? `${observation[1].toLocaleString("en", {maximumFractionDigits: metric.decimals})} ${metric.unit}`
       : "—";
-    if (!state) button.children[2].textContent = "No recent reading";
+    if (!available) button.children[2].textContent = state?.level
+      ? `No recent reading · ${levels[state.level]} recovery unverified` : "No recent reading";
+    else if (state.recoveryUnverified) button.children[2].textContent = `${levels[state.level]} · recovery unverified`;
     else if (state.pending) button.children[2].textContent = `${levels[state.level]} · checking ${state.pending.direction} reading`;
     else button.children[2].textContent = levels[state.level] + (state.direction ? ` · ${state.direction}` : "");
   });
@@ -169,10 +207,10 @@ function renderEvents(time) {
     const item = document.createElement("li");
     item.dataset.level = event.kind === "gap" ? "missing" : event.level;
     const title = document.createElement("strong");
-    const label = event.kind === "gap" ? "Data gap" : (event.level ? levels[event.level] : "Recovered");
-    title.textContent = label + (event.kind === "state" && event.direction ? ` · ${event.direction}` : "");
+    const label = {gap: "Data gap", restored: "Feed restored", recovered: "Recovered"}[event.kind] ?? levels[event.level];
+    title.textContent = label + (event.kind.startsWith("alert-") && event.direction ? ` · ${event.direction}` : "");
     const details = document.createElement("span");
-    const value = event.kind === "state" ? ` · ${event.value.toLocaleString("en")} ${event.limit.unit}` : "";
+    const value = event.value !== undefined ? ` · ${event.value.toLocaleString("en")} ${event.limit.unit}` : "";
     details.textContent = `${event.limit.name}${value} · ${formatTime(event.time)}`;
     item.append(title, details);
     return item;
@@ -181,11 +219,23 @@ function renderEvents(time) {
 
 function render() {
   const all = currentMetric.points;
-  const time = isReplay() ? timeline[cursor] : all.at(-1)[0];
-  const windowSize = Number(ui.window.value);
-  const cutoff = time - windowSize;
-  const offset = upperBound(all, cutoff - 1);
-  points = all.slice(offset, upperBound(all, time));
+  const replay = isReplay();
+  const time = replay ? timeline[cursor] : all.at(-1)[0];
+  const configuredWindow = Number(ui.window.value);
+  const windowSize = replay ? Math.min(configuredWindow, loopDuration) : configuredWindow;
+  const shift = replay ? completedLoops * loopDuration - timeline[0] : 0;
+  chartEnd = time + shift;
+  chartStart = replay ? Math.max(0, chartEnd - windowSize) : Math.max(all[0][0], chartEnd - windowSize);
+  const start = chartStart - shift;
+  const current = all.slice(upperBound(all, start - 1), upperBound(all, time));
+  currentReading = current.at(-1);
+  points = current.map(([sourceTime, value, count]) => [sourceTime + shift, value, count, sourceTime]);
+  if (replay && completedLoops && start < timeline[0]) {
+    const prior = all.slice(upperBound(all, start + loopDuration - 1));
+    points = [...prior.map(([sourceTime, value, count]) => [
+      sourceTime + shift - loopDuration, value, count, sourceTime,
+    ]), ...points];
+  }
   bounds = points.reduce((stats, [, value, count]) => {
     stats.min = Math.min(stats.min, value);
     stats.max = Math.max(stats.max, value);
@@ -193,8 +243,8 @@ function render() {
     return stats;
   }, {min: Infinity, max: -Infinity, count: 0});
   const latest = points.at(-1);
-  const fresh = latest && time - latest[0] <= currentMetric.gap;
-  ui.latest.textContent = fresh ? formatReading(latest[1]) : "—";
+  const fresh = currentReading && time - currentReading[0] <= currentMetric.gap;
+  ui.latest.textContent = fresh ? formatReading(currentReading[1]) : "—";
   ui.min.textContent = latest ? formatReading(bounds.min) : "—";
   ui.max.textContent = latest ? formatReading(bounds.max) : "—";
   ui.count.textContent = bounds.count.toLocaleString("en");
@@ -203,7 +253,8 @@ function render() {
   ui["mode-label"].textContent = isExercise() ? "Synthetic exercise" : (isReplay() ? "Historical replay" : "Historical archive");
   ui.seek.value = cursor;
   ui.progress.textContent = `${(cursor + 1).toLocaleString("en")} / ${timeline.length.toLocaleString("en")} · Loop ${loop}`;
-  ui["replay-clock"].textContent = formatTime(time);
+  ui["replay-clock"].textContent = `Source time · ${formatTime(time)}`;
+  ui["replay-step"].textContent = describeNextStep();
   ui.reading.setAttribute("aria-live", timer === undefined ? "polite" : "off");
   ui["chart-help"].textContent = isReplay() && timer !== undefined
     ? "Pause to inspect individual readings."
@@ -215,9 +266,9 @@ function render() {
 }
 
 function showReading() {
-  const observation = points[selection] ?? points.at(-1);
+  const observation = selection >= 0 ? points[selection] : currentReading;
   ui.reading.textContent = observation
-    ? `${formatReading(observation[1])} · ${formatTime(observation[0])}`
+    ? `${formatReading(observation[1])} · ${formatTime(selection >= 0 ? observation[3] : observation[0])}`
     : "No readings in this window.";
   draw();
 }
@@ -228,20 +279,27 @@ function pausePlayback() {
   ui.play.textContent = "Play";
 }
 
+function advancePlayback(batch) {
+  const start = timeline[cursor];
+  if (cursor === timeline.length - 1) {
+    cursor = 0;
+    loop++;
+    completedLoops++;
+    bridge.beginCycle("loop");
+  } else {
+    cursor = Math.min(timeline.length - 1, cursor + batch);
+    bridge.publish(eventHistory.slice(upperBound(eventHistory, start, event => event.time),
+      upperBound(eventHistory, timeline[cursor], event => event.time)));
+  }
+  render();
+}
+
 function startPlayback() {
   pausePlayback();
   ui.play.textContent = "Pause";
   const speed = Number(ui.speed.value);
   const batch = Math.max(1, speed / 16);
-  timer = setInterval(() => {
-    if (cursor === timeline.length - 1) {
-      cursor = 0;
-      loop++;
-    } else {
-      cursor = Math.min(timeline.length - 1, cursor + batch);
-    }
-    render();
-  }, 1000 * batch / speed);
+  timer = setInterval(() => advancePlayback(batch), 1000 * batch / speed);
   render();
 }
 
@@ -270,10 +328,9 @@ function draw() {
   const right = width - 17;
   const top = 36;
   const bottom = height - 37;
-  const stop = isReplay() ? timeline[cursor] : points.at(-1)[0];
-  const windowSize = Number(ui.window.value);
-  const start = isReplay() && Number.isFinite(windowSize)
-    ? Math.max(timeline[0], stop - windowSize) : points[0][0];
+  const start = chartStart;
+  const stop = chartEnd;
+  const replay = isReplay();
   const span = Math.max(stop - start, 1);
   const x = time => left + (time - start) / span * (right - left);
   const y = value => bottom - (value - lower) / (upper - lower) * (bottom - top);
@@ -286,7 +343,7 @@ function draw() {
   paint.fillText(currentMetric.unit, 7, 18);
   const clockLabel = {utc: "UTC", lmst: "Mars local mean solar time", sol: "Mars sol", elapsed: "Scenario time"}[currentDataset.timeMode];
   paint.textAlign = "right";
-  paint.fillText(clockLabel, right, 18);
+  paint.fillText(replay ? "Elapsed replay time" : clockLabel, right, 18);
   const limit = alerts.get(currentMetric.id)?.limit;
   if (limit) {
     for (const [from, to, color] of [
@@ -321,17 +378,30 @@ function draw() {
   for (const time of new Set(tickTimes)) {
     const horizontal = x(time);
     paint.textAlign = time === start ? "left" : time === stop ? "right" : "center";
-    paint.fillText(formatTime(time, true), horizontal, bottom + 22);
+    paint.fillText(replay ? formatElapsed(time) : formatTime(time, true), horizontal, bottom + 22);
   }
 
+  const loopStart = completedLoops * loopDuration;
+  if (replay && completedLoops && loopStart > start) {
+    paint.strokeStyle = "#81949d";
+    paint.setLineDash([3, 4]);
+    paint.beginPath();
+    paint.moveTo(x(loopStart), top);
+    paint.lineTo(x(loopStart), bottom);
+    paint.stroke();
+    paint.setLineDash([]);
+  }
   paint.beginPath();
   paint.strokeStyle = "#6edcc1";
   paint.lineWidth = 1.7;
   let lastTime = -Infinity;
-  for (const [time, value] of points) {
-    if (time - lastTime > currentMetric.gap) paint.moveTo(x(time), y(value));
+  let lastOffset;
+  for (const [time, value, , sourceTime] of points) {
+    const offset = time - sourceTime;
+    if (offset !== lastOffset || time - lastTime > currentMetric.gap) paint.moveTo(x(time), y(value));
     else paint.lineTo(x(time), y(value));
     lastTime = time;
+    lastOffset = offset;
   }
   paint.stroke();
 
@@ -343,9 +413,9 @@ function draw() {
       paint.fill();
     }
   }
-  if (isReplay() && selection < 0 && stop - points.at(-1)[0] <= currentMetric.gap) {
-    const [time, value] = points.at(-1);
-    paint.fillStyle = colors[alerts.get(currentMetric.id)?.states[upperBound(currentMetric.points, time) - 1]?.level ?? 0];
+  if (replay && selection < 0 && currentReading && stop - points.at(-1)[0] <= currentMetric.gap) {
+    const [time, value, , sourceTime] = points.at(-1);
+    paint.fillStyle = colors[alerts.get(currentMetric.id)?.states[upperBound(currentMetric.points, sourceTime) - 1]?.level ?? 0];
     paint.beginPath();
     paint.arc(x(time), y(value), 4, 0, Math.PI * 2);
     paint.fill();
@@ -365,6 +435,15 @@ function draw() {
     paint.arc(x(time), y(value), 4, 0, Math.PI * 2);
     paint.fill();
   }
+}
+
+function formatElapsed(value) {
+  if (currentDataset.timeMode === "sol") return `+${value} sol`;
+  const seconds = Math.floor(value);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = String(Math.floor(seconds / 60) % 60).padStart(2, "0");
+  const remainder = String(seconds % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${remainder}`;
 }
 
 function niceStep(target) {
@@ -404,8 +483,8 @@ function inspectKeys(event) {
 }
 
 function exportCsv() {
-  const rows = points.map(([time, value, count]) => [
-    exportTime(time), value, currentMetric.unit, count,
+  const rows = points.map(([, value, count, sourceTime]) => [
+    exportTime(sourceTime), value, currentMetric.unit, count,
   ].join(","));
   const csv = ["\uFEFFtimestamp,value,unit,sample_count", ...rows].join("\r\n");
   downloadFile(csv, "text/csv;charset=utf-8", `${currentDataset.id}-${currentMetric.id}.csv`);
@@ -416,24 +495,7 @@ function exportTime(time) {
 }
 
 function exportSnapshot() {
-  const time = isReplay() ? timeline[cursor] : currentMetric.points.at(-1)[0];
-  const snapshot = {
-    dataset: currentDataset.id,
-    source: currentDataset.source,
-    sourceUrl: currentDataset.url || null,
-    dataType: isExercise() ? "synthetic" : "historical",
-    timestamp: exportTime(time),
-    thresholds: "illustrative",
-    readings: readingsAt(time).map(({metric, observation, available, state}) => ({
-      metric: metric.id,
-      value: available ? observation[1] : null,
-      unit: metric.unit,
-      timestamp: observation ? exportTime(observation[0]) : null,
-      state: state ? levels[state.level].toLowerCase() : "no-recent-reading",
-      direction: state?.direction || null,
-      pendingState: state?.pending ? levels[state.pending.level].toLowerCase() : null,
-    })),
-  };
+  const snapshot = bridge.getSnapshot();
   downloadFile(JSON.stringify(snapshot, null, 2), "application/json;charset=utf-8", `${currentDataset.id}-cabin-snapshot.json`);
 }
 
@@ -467,7 +529,9 @@ if (archive.length && paint) {
   });
   ui.restart.addEventListener("click", () => {
     cursor = 0;
-    loop = 1;
+    loop++;
+    completedLoops = 0;
+    bridge.beginCycle("restart");
     render();
   });
   ui.speed.addEventListener("change", () => {
@@ -485,6 +549,7 @@ if (archive.length && paint) {
   ui.snapshot.addEventListener("click", exportSnapshot);
   new ResizeObserver(draw).observe(ui.chart);
   selectDataset();
+  window.environmentMonitor = Object.freeze({getSnapshot: bridge.getSnapshot, subscribe: bridge.subscribe});
 } else {
   ui.status.textContent = "The offline chart data could not be loaded.";
   ui.download.disabled = true;

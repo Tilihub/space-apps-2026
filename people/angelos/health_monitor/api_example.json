@@ -1,0 +1,79 @@
+{
+  "contract_status": "proposed_pending_zt_agreement",
+  "api_version": "health-v1",
+  "request": {
+    "method": "POST",
+    "path": "/v1/me/check-ins",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <runtime crew-specific demo token>"
+    },
+    "body": {
+      "astronaut_id": "demo-001",
+      "recorded_at": "2026-11-14T08:00:00+00:00",
+      "resting_heart_rate_bpm": 62,
+      "sleep_hours": 7.8,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 3
+    }
+  },
+  "response_status": 201,
+  "response": {
+    "api_version": "health-v1",
+    "data_kind": "synthetic",
+    "astronaut_id": "demo-001",
+    "data": {
+      "saved_check_in": {
+        "astronaut_id": "demo-001",
+        "recorded_at": "2026-11-14T08:00:00+00:00",
+        "resting_heart_rate_bpm": 62,
+        "sleep_hours": 7.8,
+        "mood": 7,
+        "stress": 3,
+        "fatigue": 3
+      },
+      "daily": {
+        "astronaut_id": "demo-001",
+        "recorded_at": "2026-11-14T08:00:00+00:00",
+        "status": "no_demo_deviation",
+        "data_completeness": "complete",
+        "findings": [],
+        "data_gaps": [],
+        "reference": {
+          "resting_heart_rate_bpm": {
+            "median": 61,
+            "demo_threshold": 10,
+            "sample_days": 7
+          },
+          "sleep_hours": {
+            "median": 7.8,
+            "demo_threshold": 1.5,
+            "sample_days": 7
+          },
+          "mood": {
+            "median": 7,
+            "demo_threshold": 2,
+            "sample_days": 7
+          },
+          "stress": {
+            "median": 3,
+            "demo_threshold": 2,
+            "sample_days": 7
+          },
+          "fatigue": {
+            "median": 3,
+            "demo_threshold": 2,
+            "sample_days": 7
+          }
+        },
+        "assistant_message": "No changes crossed the demo thresholds in the available measures. This does not establish that you are healthy. How do you feel today?",
+        "limitations": [
+          "Demonstration with unvalidated comparison rules; not a diagnosis.",
+          "No detected deviation does not rule out a health concern.",
+          "Self-reports do not establish a mental health diagnosis."
+        ]
+      }
+    }
+  }
+}

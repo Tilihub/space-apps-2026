@@ -18,7 +18,7 @@
         {"astronaut_id":"demo-001","recorded_at":"2026-11-12T08:00:00+00:00","resting_heart_rate_bpm":74,"sleep_hours":6.0,"mood":5,"stress":5,"fatigue":5},
         {"astronaut_id":"demo-001","recorded_at":"2026-11-13T08:00:00+00:00","resting_heart_rate_bpm":75,"sleep_hours":5.8,"mood":4,"stress":6,"fatigue":6}
       ],
-      "current": {"astronaut_id":"demo-001","recorded_at":"2026-11-14T08:00:00+00:00","resting_heart_rate_bpm":77,"sleep_hours":5.5,"mood":4,"stress":7,"fatigue":7}
+      "current": {"astronaut_id":"demo-001","recorded_at":"2026-11-14T08:00:00+00:00","resting_heart_rate_bpm":62,"sleep_hours":5.5,"mood":4,"stress":7,"fatigue":7}
     },
     "missing": {
       "recent": [],
