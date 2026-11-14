@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 13:30 (Asia/Nicosia)
-- Working on: Interactive daily check-in and local history, ready to share.
+- Working on: Interactive daily check-in complete; PR #25 is open.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -28,6 +28,8 @@
   and transactional SQLite history in an ignored local_data directory.
 - Passed 16 automated checks, including two-day CLI persistence, cancellation,
   duplicate rejection, and an unchanged frozen baseline. Test storage is temporary.
+- Published branch angelos/interactive-check-in and opened
+  https://github.com/Tilihub/space-apps-2026/pull/25 (only people/angelos/).
 
 ## Blocked / need from others
 
