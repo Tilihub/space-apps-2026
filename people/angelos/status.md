@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:00 (Asia/Nicosia)
-- Working on: Reviewed Tommy's published integration handoff; ANG-1 is the proposed next step.
+- Last updated: 2026-11-14 15:20 (Asia/Nicosia)
+- Working on: ANG-1 adapter and JavaScript client ready; zt contract acceptance and UI wiring pending.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -56,12 +56,25 @@
 - Confirmed PET-1 requires selected, source-labelled fixtures; the historical CSV
   is not automatically one person's baseline. Synthetic longitudinal data are
   explicitly allowed where suitable person-level records are unavailable.
+- User requested ANG-1 implementation. Inspected zt/ui-skeleton: three fake crew
+  tabs, no fetch/data bridge, and a Sleep 0–10 placeholder that needs unit agreement.
+- Added app_api.py (callable service plus local JSON HTTP server), health_client.mjs,
+  API_CONTRACT.md and a versioned api_example.json request/response for zt to review.
+- Added three token-bound synthetic demo identities with separate SQLite stores.
+  Demo-001 reuses the existing CLI session; the other profiles have distinct
+  synthetic references. No app request can select a different crew identity.
+- Verified all 51 checks, including the real JavaScript client against the HTTP
+  API, persisted reloads, missing values, identity isolation and contract examples.
+  Checks use temporary data only; existing CLI/weekly/reset checks still pass.
 
 ## Blocked / need from others
 
 - No local implementation blocker. The input contract still needs agreement with
   the members providing sensor summaries and psychological self-reports.
 - Align the existing 0–10 self-report scales with Tommy's proposed app fields before integration.
+- ANG-1 handoff still needs zt's acceptance: health-v1 packet, crew ID mapping,
+  per-crew store choice, mission clock, browser origin and session integration.
+  In particular, the skeleton's Sleep 0–10 is not sleep duration in hours.
 - GitHub CLI works at C:/Program Files/GitHub CLI/gh.exe with network permission.
 
 ## Next steps
@@ -81,10 +94,14 @@
   require seven measured days in each period; the current history is partial.
 - Walk through the code slowly with angelos when requested. He wants to understand
   each part and may later rebuild a simpler version himself; avoid unsolicited code changes.
-- If angelos requests the next implementation, start with ANG-1: agree crew IDs,
-  mission clock, field names/units/scales and callable/API packets with zt; expose
-  submission/history/daily findings/weekly reports with two isolated demo users.
-  Assignment acceptance and the common-plan decisions remain team coordination.
+- Hand API_CONTRACT.md, api_example.json and health_client.mjs to zt for review.
+  The adapter runs with python people/angelos/health_monitor/app_api.py and an
+  explicit --allow-origin matching the HTTP-served frontend. Tokens are generated
+  at startup for a developer demo, not a production login or role system.
+- ANG-1 UI wiring belongs to zt: save a check-in, reload that person's history,
+  display daily/weekly data and verify a second identity stays isolated. The UI
+  itself has not been edited or connected here. Do not rebuild completed analysis.
+  Shared decisions remain team coordination; proposed IDs/units are not silently adopted.
 - Start ANG-2 after ANG-1 is connected. Keep journal context restricted to the
   author, their psychologist and their authorized assistant; exclude it and private
   derived details from ordinary reports to other roles.

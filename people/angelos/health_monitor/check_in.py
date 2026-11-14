@@ -1,6 +1,7 @@
 """Enter and save a daily synthetic check-in using Python's standard library."""
 
 import argparse
+import copy
 import json
 import sqlite3
 import sys
@@ -26,9 +27,10 @@ PROMPTS = {
 class CheckInStore:
     """One synthetic astronaut per database; a frozen reference and daily records."""
 
-    def __init__(self, path, read_only=False, existing_only=False):
+    def __init__(self, path, read_only=False, existing_only=False, seed_payload=None):
         path = Path(path).resolve()
         self.path = path
+        self.seed_payload = copy.deepcopy(seed_payload)
         if read_only or existing_only:
             mode = "ro" if read_only else "rw"
             self.connection = sqlite3.connect(path.as_uri() + f"?mode={mode}", uri=True)
@@ -47,8 +49,7 @@ class CheckInStore:
                     "(mission_day TEXT PRIMARY KEY, record TEXT NOT NULL)"
                 )
                 if self.connection.execute("SELECT id FROM baseline").fetchone() is None:
-                    seed = json.loads((HERE / "demo_data.json").read_text(encoding="utf-8"))
-                    payload = {"baseline": seed["baseline"], **seed["scenarios"]["changes"]}
+                    payload = self._seed()
                     baseline, recent, _ = validate(payload)
                     self.connection.execute("INSERT INTO baseline VALUES (1, ?)",
                                             (json.dumps(baseline, allow_nan=False),))
@@ -60,6 +61,12 @@ class CheckInStore:
 
     def close(self):
         self.connection.close()
+
+    def _seed(self):
+        if self.seed_payload is not None:
+            return copy.deepcopy(self.seed_payload)
+        seed = json.loads((HERE / "demo_data.json").read_text(encoding="utf-8"))
+        return {"baseline": seed["baseline"], **seed["scenarios"]["changes"]}
 
     def state(self):
         baseline_row = self.connection.execute("SELECT records FROM baseline WHERE id=1").fetchone()
@@ -104,8 +111,7 @@ class CheckInStore:
         with self.connection:
             self.connection.execute("BEGIN IMMEDIATE")
             baseline, history = self.state()
-            seed = json.loads((HERE / "demo_data.json").read_text(encoding="utf-8"))
-            seed_rows = seed["scenarios"]["changes"]["recent"]
+            seed_rows = self._seed()["recent"]
             if not isinstance(seed_rows, list) or not seed_rows:
                 raise ValueError("The initial demo check-ins must be a nonempty array.")
             saved_by_day = {recorded_time(row).date(): row for row in history}

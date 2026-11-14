@@ -3,7 +3,26 @@
 Personal comparison and weekly reporting prototype, owned by angelos.
 Other members provide sensor and self-report inputs; this module compares them
 with a frozen personal reference and returns evidence for a future companion UI.
-All bundled records are synthetic. No accounts, API keys, network, or packages required.
+All bundled records are synthetic. No external accounts, API keys or third-party
+Python packages are required. The application adapter uses local loopback networking.
+
+## ANG-1 application connection
+
+The core can now be used without terminal measurement entry through a local JSON
+API and JavaScript client. See [API_CONTRACT.md](API_CONTRACT.md) for the proposed
+interface, exact request/response example, run commands, crew isolation and the
+remaining agreements with zt. The API requires local loopback networking; the
+original CLI remains available without a server.
+
+```powershell
+python people/angelos/health_monitor/app_api.py --allow-origin http://127.0.0.1:5500
+```
+
+The API reuses the original CLI database for demo-001 and keeps separate references
+and histories for demo-002 and demo-003. Each runtime demo token accesses only its
+own profile. The server prints the temporary developer credentials at startup.
+zt still needs to wire his UI to `health_client.mjs` and accept the proposed packet,
+crew mapping, mission clock and units. This is not a real login implementation.
 
 ## Start in VS Code
 
@@ -167,10 +186,14 @@ they do not establish their cause or whether someone is healthy.
 | `check_in.py` | Entry point, terminal form, SQLite storage, weekly-report command, and backed-up reset |
 | `monitor.py` | Validation, fixed reference statistics, and daily comparisons |
 | `weekly_report.py` | Weekly medians, coverage, comparisons, and report formatting |
+| `app_api.py` | Token-bound app-facing service and local JSON HTTP endpoints |
+| `health_client.mjs` | JavaScript client for zt to connect his app |
+| `API_CONTRACT.md` / `api_example.json` | Proposed versioned connection contract and concrete input/output |
 | `local_data/check_ins.sqlite3` | Ignored local reference and saved daily records |
 | `test_monitor.py` | Daily comparison checks |
 | `test_check_in.py` | Input, persistence, read-only reporting, backup, and reset checks |
 | `test_weekly_report.py` | Weekly windows, medians, missing-data, and baseline-isolation checks |
+| `test_app_api.py` | Crew isolation, persistence, HTTP contract and JavaScript client checks |
 
 Execution: `check_in.py` reads history, collects the new values, calls `monitor.py`,
 saves the valid record, and calls `weekly_report.py` to summarize the saved history.
@@ -254,7 +277,7 @@ The helper text makes no diagnosis, causal claim, or treatment recommendation.
 ## Next pieces
 
 1. Agree the input fields and scales with the sensor/app owners.
-2. Add an API adapter using the analysis function and the local storage prototype.
+2. Agree the proposed API contract and wire the existing adapter into zt's UI.
 3. Add a UI with history, evidence, and the companion conversation.
 4. Add a language model for phrasing and conversation using structured evidence.
 5. Evaluate a learned anomaly detector against a simple comparison approach once suitable data exist.
