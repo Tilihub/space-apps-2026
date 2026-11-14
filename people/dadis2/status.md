@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:29
-- Working on: nothing open. DAD-1 and DAD-2 are done and merged into main: PRs #34, #44 (merged by
-  the project lead) and #53 (merged by me, no conflicts): https://github.com/Tilihub/space-apps-2026/pull/53
-- Branch: dadis2/ground-grants (merged)
+- Last updated: 2026-11-14 17:57
+- Working on: grant safety fixes merged into main (PR #58). DAD-1 and DAD-2 are merged too
+  (#34, #44, #53). Next: the `meds` module.
+- Branch: dadis2/grant-safety
 
 ## Done
 
@@ -37,7 +37,32 @@
   - Contract updated: `inventory/CONTRACT.md` (sections 2a and 2b). Checks: `inventory/tests.html`,
     28 of 28 pass. Tested end to end in a browser.
 
+- **Grant safety fixes** (PR #58, merged), my decisions of 14 Nov, evening:
+  - No double doses: one course per medicine per crew member. A newer grant (doctor or Earth)
+    replaces the running course, ingredients are added up across grants (daily limits), and two
+    NSAIDs at once are refused. A due dose that a safety check holds back shows why on the card.
+  - Earth has the final say on controlled medicines, and on the doctor's own medicines (a doctor
+    never grants to themselves; the backup doctor or Earth does). Controlled requests show
+    "Waiting for Earth".
+  - Nothing is fully locked: every waiting request has "Can't wait? Emergency". Emergency's
+    "Can't wait for approval?" section releases a prescription or controlled medicine without
+    approval. It needs a reason, is logged (`approvalBypassed: true`), has paperwork due in 2 hours
+    and goes to Earth's review. It closes the open request.
+  - Checks: `inventory/tests.html`, 37 of 37 pass. Tested in the browser.
+
 ## Blocked / need from others
+
+- **zt (contract owner):** the grant rules now match `shared/contract/` (controlled → Earth, Leo as
+  the patient → Earth). Two things to agree at the table:
+  - The contract says "Only the emergency items are released" in an emergency. My prototype also
+    lets a prescription or controlled medicine out under "Can't wait for approval?", with a reason,
+    logging and Earth's review.
+  - Add "one course per medicine per crew member" (a newer grant replaces the running course,
+    ingredient totals across grants) to the contract.
+
+  Either change to the contract needs a pull request a teammate approves.
+- **zt:** the contract gives me wave 1 of the `meds` module (`people/dadis2/meds/`, Node.js, no
+  screens, `npm test`), planned before we leave Saturday. Not started yet.
 
 - zt: confirm the grant contract (`inventory/CONTRACT.md`) and the placeholders it uses for now:
   crew ids `c1`–`c4`, device local time as mission time, symptom report format (`spec.md` §8).
@@ -51,7 +76,9 @@
      what to do next, what to watch out for. -->
 
 - Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
-  tool) and `tests.html` (28 checks). The demo script is in `inventory/README.md`.
+  tool) and `tests.html` (37 checks). The demo script is in `inventory/README.md`.
+- Start the `meds` module (`people/dadis2/meds/`, Node.js) from `shared/contract/example/`, wave 1,
+  before we leave Saturday. Reuse the rules in `inventory/logic.js`.
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:
   point a phone camera at the QR in `earth.html`; it should show exactly the code.
 - Optional later: real sender verification (Earth signs, devices check with Earth's public key), see
