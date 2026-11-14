@@ -9,10 +9,13 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Clarifying clinician-only detailed analysis and reviewing a possible metered pill dispenser. Planning only; hardware proposal not adopted.
+- Working on: Comparing Tommy’s supplied cabinet specification with DAD-1 and zt’s published inputs; proposing a lean shared inventory scope. Planning only; no module implementation.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Compared the supplied inventory brief with DAD-1 and zt’s current input screen. Prepared inventory-scope-proposal.md: nine-item demo fixture, reuse/simplification boundaries, input ownership, multi-day QR versus single-use transaction, and one active multi-item batch. No new zt input implementation was found beyond ef10b7f; latest zt update was status/team-jobs.
+- Recorded Tommy’s scope correction: simulate quantity-limited dispensing; physical/microgravity engineering and extreme misuse scenarios are outside application-demo scope. Retain basic authorization, due-dose and stock-update correctness. No teammate code or folder changed.
 
 - Published the analysis-visibility clarification and researched dispenser option through merged PR #47; only Tommy’s planning/status files changed.
 
@@ -52,7 +55,9 @@
 
 ## Next steps
 
-- Discuss whether to adopt the metered pill-dispenser concept; if accepted, agree dose-outlet versus stock access and delivery-event semantics with dadis2/zt. Align the hidden weekly-analysis API with Angelos/zt.
+- Review the lean catalogue and workflow proposal with Tommy, then confirm reusable DAD-1 behavior and concrete mappings with dadis2/zt. Do not treat the pasted specification as permission to build UI or override earlier course/batch decisions.
+
+- Align simulated dose-outlet versus stock access and delivery-event semantics with dadis2/zt; physical dispenser engineering is outside scope. Align the hidden weekly-analysis API with Angelos/zt.
 
 - Review ecosystem-review.md with Tommy one decision at a time. Start with the proposed journey and role/report boundaries, then agree IDs, mission clock, 1–10 transition and integration/transport ownership with zt and module owners.
 - The review is on main via PR #45; use it for Tommy’s next discussion and owner coordination. The frozen visual review is a local artifact, not an adopted UI.
