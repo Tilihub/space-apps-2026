@@ -8,10 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:33
-- Working on: writing `shared/PLAN.md` with Tommy (in its own branch), and keeping the team jobs
-  record in [team-jobs.md](team-jobs.md) up to date at each status check
-- Branch: zt/team-jobs (team jobs record)
+- Last updated: 2026-11-14 14:32
+- Working on: the app overview in my [plan](plan.md), for Tommy to read; integration with Tommy
+- Branch: zt/app-overview-plan
 
 ## Done
 
@@ -24,6 +23,8 @@
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
   from each person's actual work
+- Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
+  clickable body figure), the sections behind it, the demo format and open points
 
 ## Blocked / need from others
 
@@ -34,6 +35,9 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
+- Go through the app overview in [plan.md](plan.md) with Tommy. It's a draft, open to change.
+- Integration (with Tommy): plan how the pieces join, starting with one crew list, the same field
+  names, 0–10 scales and one mission clock.
 - Finish `shared/PLAN.md` with Tommy and open the pull request. Someone other than zt must approve it.
 - Keep [team-jobs.md](team-jobs.md) current at each status check: update the tables and add one
   line to History. It records what people actually do; the agreed split goes in `shared/PLAN.md`.
