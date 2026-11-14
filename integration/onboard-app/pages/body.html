@@ -143,7 +143,7 @@
   [hidden] { display: none !important; }
   @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
 </style>
-<style>html,body{overflow:hidden}body{padding:0;margin:0;background:transparent}body>.topbar,main>aside,.card-head,.hint{display:none}main{display:block;padding:0;margin:0}.body-card{border:0;background:transparent;box-shadow:none;padding:0;height:100vh;min-height:0}.figure-wrap{height:100vh;min-height:0;flex:none}main .card{padding:0}</style><style>:root:not([data-theme="light"]),[data-theme="dark"]{--bg:#101E2D;--surface:#101E2D;--surface-3:#162737;--text:#EDF5F8;--text-2:#A3B8C8;--text-3:#8099AC;--border-strong:#365267;--accent:#78E0E8;--accent-2:#78E0E8;--fig-top:#7195AA;--fig-bottom:#3B596D;--grid-dot:rgba(120,224,232,.07)}.b3d-views button{font-size:10px;min-height:28px;padding:0 11px;border-radius:8px}.b3d-legend{font-size:10px}.b3d-label{font-size:10px;padding:4px 7px}.b3d-label.L{left:2px}.b3d-label.R{right:2px}</style></head>
+<style>html,body{overflow:hidden}body{padding:0;margin:0;background:transparent}body>.topbar,main>aside,.card-head,.hint{display:none}main{display:block;padding:0;margin:0}.body-card{border:0;background:transparent;box-shadow:none;padding:0;height:100vh;min-height:0}.figure-wrap{height:100vh;min-height:0;flex:none}main .card{padding:0}</style><style>:root:not([data-theme="light"]),[data-theme="dark"]{--bg:#101E2D;--surface:#101E2D;--surface-3:#162737;--text:#EDF5F8;--text-2:#A3B8C8;--text-3:#8099AC;--border-strong:#365267;--accent:#78E0E8;--accent-2:#78E0E8;--fig-top:#A6BFC7;--fig-bottom:#7599A7;--grid-dot:rgba(120,224,232,.07)}.b3d-views button{font-size:10px;min-height:28px;padding:0 11px;border-radius:8px}.b3d-legend{font-size:10px}.b3d-label{font-size:10px;padding:4px 7px}.b3d-label.L{left:2px}.b3d-label.R{right:2px}</style></head>
 <body>
   <header class="topbar">
     <div>
@@ -285,31 +285,6 @@
     return src;
   };
 
-  // A quiet mannequin silhouette, keeping the original rig-free mesh and picking areas.
-  // Project the torso onto smooth elliptical sections to remove breast/nipple and glute detail.
-  const simplifyFemaleTorso = (positions, H, eye) => {
-    const originalAreas = classify(positions, H, eye);
-    const torso = new Set(['chest', 'stomach', 'back'].map(key => KEYS.indexOf(key)));
-    const sections = [[0.44, 0.101, 0.060], [0.51, 0.101, 0.064], [0.61, 0.093, 0.059],
-      [0.72, 0.098, 0.060], [0.79, 0.103, 0.055], [0.85, 0.099, 0.050]];
-    const smooth = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
-    for (let i = 0; i < positions.length / 3; i++) {
-      const y = positions[i * 3 + 1] / H;
-      if (y < 0.44 || y > 0.85 || !torso.has(originalAreas[i])) continue;
-      const index = Math.max(0, sections.findIndex(row => row[0] >= y) - 1);
-      const a = sections[index], b = sections[index + 1];
-      const t = (y - a[0]) / (b[0] - a[0]);
-      const width = H * (a[1] + (b[1] - a[1]) * t);
-      const depth = H * (a[2] + (b[2] - a[2]) * t);
-      const x = positions[i * 3], z = positions[i * 3 + 2], center = -0.008 * H;
-      const radius = Math.hypot(x / width, (z - center) / depth);
-      if (radius < 0.0001) continue;
-      const blend = 0.98 * smooth((y - 0.44) / 0.07) * smooth((0.85 - y) / 0.05);
-      positions[i * 3] += (x / radius - x) * blend;
-      positions[i * 3 + 2] += (center + (z - center) / radius - z) * blend;
-    }
-  };
-
   // ---- Body shapes: unpack the data block at the end of the file (base64 → gzip → numbers) ----
   const meshCache = {};
   const loadBodyMesh = async (sex, dataEl) => {
@@ -324,7 +299,6 @@
     for (let i = 0; i < pos.length; i++) pos[i] = m.min[i % 3] + (q[i] / 65535) * (m.max[i % 3] - m.min[i % 3]);
     const H = m.max[1];
     const eye = m.eyes[0][0] > 0 ? m.eyes[0] : m.eyes[1];
-    if (sex === 'female') simplifyFemaleTorso(pos, H, eye);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geometry.setIndex(new THREE.BufferAttribute(index, 1));
@@ -408,7 +382,6 @@
       c += uSpec * pow(max(dot(n, normalize(L + v)), 0.0), 28.0);        // soft sheen
       c += uRim * pow(1.0 - max(dot(n, v), 0.0), 3.0) * uRimAmt;          // hologram edge glow
       c = mix(c, uAlert * 1.15, vPulse * uPulse * (0.5 + 0.5 * sin(uTime * 2.6)) * 0.25); // red areas breathe
-      c += uRim * 0.2 * exp(-pow((vPos.y - uScanY) / 0.025, 2.0));      // slow scan line
       gl_FragColor = vec4(c, 1.0);
     }`;
 
@@ -549,8 +522,8 @@
       const pos = geometry.attributes.position.array;
       const col = geometry.attributes.aColor.array;
       const pulse = geometry.attributes.aPulse.array;
-      const top = mix(theme.figTop, theme.accent, theme.dark ? 0.32 : 0.12);
-      const bottom = mix(theme.figBottom, theme.accent, theme.dark ? 0.18 : 0.06);
+      const top = mix(theme.figTop, theme.accent, 0.12);
+      const bottom = mix(theme.figBottom, theme.accent, theme.dark ? 0.08 : 0.06);
       for (let i = 0; i < n; i++) {
         let c = mix(bottom, top, Math.min(1, pos[i * 3 + 1] / H));
         if (hov) c = mix(c, theme.accent, hov[i] * 0.35);
@@ -581,8 +554,8 @@
       container.style.setProperty('--b3d-sel', `rgb(${theme.sel.map((x) => Math.round(x * 255)).join(' ')})`);
       uniforms.uRim.value.fromArray(theme.dark ? theme.accent2 : theme.accent);
       uniforms.uAlert.value.fromArray(theme.alert);
-      uniforms.uRimAmt.value = theme.dark ? 0.55 : 0.3;
-      uniforms.uSpec.value = theme.dark ? 0.012 : 0.02;
+      uniforms.uRimAmt.value = theme.dark ? 0.3 : 0.22;
+      uniforms.uSpec.value = theme.dark ? 0.085 : 0.07;
       floorMat.color.setRGB(...theme.accent, THREE.LinearSRGBColorSpace);
       ringMat.color.setRGB(...(theme.dark ? theme.accent2 : theme.accent), THREE.LinearSRGBColorSpace);
       recolor();
@@ -804,7 +777,7 @@
 
   const params = new URLSearchParams(location.search);
   const mount = mountBody3D(document.getElementById('body3d'), {
-    mode: params.get('mode') === 'report' ? 'report' : 'view', body: 'female', reported: {},
+    mode: params.get('mode') === 'report' ? 'report' : 'view', body: params.get('body') === 'male' ? 'male' : 'female', reported: {},
     onSelect: area => parent.postMessage({ type: 'pulse-body-selection', area }, location.origin),
   });
   window.addEventListener('message', event => {

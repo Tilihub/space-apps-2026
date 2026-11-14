@@ -8,12 +8,14 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — frontend appearance review
+- Last updated: 2026-11-15 — restored body appearance
 - Working on: Tommy requested a simpler astronaut-facing demo combining his supplied visual brief with zt's 3D UI. This task changes presentation and browser interactions only. All server/adapters, owner modules, stored-data formats, permissions and medical/workout/companion rules remain unchanged from `0cd3911` on `tommy/functional-demo`.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: `node integration/onboard-app/start.js` (Node 24), port 8010 for the existing local demo. Browser writes for this UI review used a separate synthetic store on port 8011; the existing demo was not reset.
 
 ## Done
+
+- Follow-up to #74: Tommy supplied references and requested the natural body appearance again. Removed the female torso projection, restoring zt's original anatomical mesh and proportions; softened the silver/blue material, restored sheen and removed the moving scan stripe. Front/back rotation, picking and localized red symptom markers remain unchanged. Checked female front/back in the app and the original male model via the documented body query. Backend and stored demo data remain untouched; root tests still pass 102/102.
 
 - Published the frontend-only review in [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74), based on #73. The updated port-8010 preview is open for Tommy; isolated UI-review server stopped after verification. No merge or teammate approval was performed.
 
