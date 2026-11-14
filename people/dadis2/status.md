@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:32
-- Working on: approval review merged into main (PR #62), after grant safety (PR #58).
-  Next: the `meds` module.
-- Branch: dadis2/approval-review
+- Last updated: 2026-11-14 18:52
+- Working on: the contract's `meds` module. Wave 1 is merged into main (PR #66). `npm test`:
+  69 of 69 pass (18 are meds). Next: wave 2 (emergencies, stock) by Sunday 11:00.
+- Branch: dadis2/meds-wave1 (merged)
 
 ## Done
 
@@ -61,6 +61,22 @@
     gauze, gloves, splint), for whoever needs help, no reason needed, warnings with "Give anyway".
     Every override now goes to Earth's review.
   - Checks: 43 of 43 pass. Tested in the browser. Demo steps 7 and 8 in `inventory/README.md`.
+- **meds module, wave 1** (`people/dadis2/meds/`, PR #66, merged), built to
+  `shared/contract/` section 8:
+  - All 14 wave 1 routes: symptom reports and suggestions, profile and allergies, lockers,
+    collections, requests and decisions, grants and import, doses and "Did it help?".
+  - Dispensary style, as the team agreed: one batch of everything due now. The cabinet dispenses each
+    item (simulated) and the crew member confirms it once; stock and the dose log change only then.
+  - Tommy's decisions: the same grant code entered again finds the same grant (reusable
+    credential); prescribed amounts are fixed; self-care amounts are the crew member's choice within
+    the limits; allergies always block, even with a valid grant.
+  - Both bugs Tommy found in #58 are fixed here: a replacement no longer offers a dose already
+    collected, and a replacement starting later doesn't stop the current course early.
+  - Contract data: crew `c1`–`c5`, Tomas (`c4`) with the NSAID allergy, Leo the only medical officer
+    (his own requests go to Earth), UTC mission time from `ctx.now()`, severity 1–10.
+  - Codes from the prototype's `earth.html` work in the module.
+  - Tests: 18, starting with the contract's wave 1 walk-through (§12 steps 3–6). `npm test` with
+    main merged in: 69 of 69 pass.
 
 ## Blocked / need from others
 
@@ -73,8 +89,9 @@
     ingredient totals across grants) to the contract.
 
   Either change to the contract needs a pull request a teammate approves.
-- **zt:** the contract gives me wave 1 of the `meds` module (`people/dadis2/meds/`, Node.js, no
-  screens, `npm test`), planned before we leave Saturday. Not started yet.
+- **zt:** `meds` wave 1 is ready to link into the core. Where it differs from the contract's
+  wording (code re-entry returns the grant, a few extra fields, error codes) is listed in
+  `meds/README.md`, "For zt". Nothing can be tried joined until the core server exists.
 
 - zt: confirm the grant contract (`inventory/CONTRACT.md`) and the placeholders it uses for now:
   crew ids `c1`–`c4`, device local time as mission time, symptom report format (`spec.md` §8).
@@ -90,10 +107,14 @@
 - Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
   tool) and `tests.html` (43 checks). The demo script is in `inventory/README.md`. The save key is now `medInventory.v5`,
   so the demo starts fresh once.
-- Which medicines count as "Also used in emergencies" is a sample choice (`emergencyUse` in
-  `inventory/data.js`). The team or a clinician should confirm it.
-- Start the `meds` module (`people/dadis2/meds/`, Node.js) from `shared/contract/example/`, wave 1,
-  before we leave Saturday. Reuse the rules in `inventory/logic.js`.
+- "Also used in emergencies" is a proof-of-concept sample (`emergencyUse` in `inventory/data.js`);
+  medical accuracy isn't the point.
+- `meds` module: wave 1 is on main (PR #66). Wave 2 on a new branch, by Sunday 11:00, built to the
+  contract (emergency items only):
+  - `POST /emergencies`, `GET /emergencies`, `POST /emergencies/:id/paperwork`
+  - the emergency release in `POST /collections` (`emergencyId`, `overrideAllergy`, `skipScan`)
+  - `GET /stock`: epinephrine starts at its reserve (4), so one release puts it below
+  Run `npm test` from the repo root first (Node.js is installed: v26).
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:
   point a phone camera at the QR in `earth.html`; it should show exactly the code.
 - Optional later: real sender verification (Earth signs, devices check with Earth's public key), see
