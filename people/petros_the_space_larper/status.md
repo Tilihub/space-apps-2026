@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:15
-- Working on: Astronaut health research handoff
+- Last updated: 2026-11-14 14:00
+- Working on: Physical and mental health evidence handoff in [PR #31](https://github.com/Tilihub/space-apps-2026/pull/31)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -19,6 +19,13 @@
 - Verified Inspiration4 CBC and CMP downloads, a PhysioNet vital signs sample, and RadLab queries for ISS and Artemis I.
 - Added the [in-flight data inventory and NASA priorities](astronaut-inflight-data.md), including published ISS and historical flight measurements, verified Inspiration4 crew microbiome data, and an Artemis II environment CSV.
 - Added the [prototype vital-sign CSV](astronaut-inflight-vitals.csv) with published in-flight human measurements, source references and blank unavailable values.
+- Added 13 ISS cardiovascular summaries from CSA, JAXA, IBMP and Danish research. Documented additional international data downloads and archive access in the [in-flight inventory](astronaut-inflight-data.md#international-experiments-and-archives).
+- Merged the international inventory and CSV updates into main in [PR #27](https://github.com/Tilihub/space-apps-2026/pull/27) and verified the 47 CSV rows on GitHub.
+- Documented [how to capture the five vital signs](astronaut-health-research.md#five-vital-signs-from-a-smart-vest-and-separate-sensors), including sensor placement, units, estimates and missing readings.
+- Merged the vest and sensor guide into main in [PR #28](https://github.com/Tilihub/space-apps-2026/pull/28) and verified it on GitHub.
+- Documented [current NASA collection practices](astronaut-inflight-data.md#how-nasa-collects-astronaut-data-today) with documented ISS and Artemis II examples, including the Bio-Monitor, Mobil-o-Graph, wrist actigraphy, and personal dosimetry.
+- Merged and verified the NASA data collection notes in [PR #29](https://github.com/Tilihub/space-apps-2026/pull/29).
+- Added [physical and mental health research notes](astronaut-physical-and-mental-health.md), with proposed check-in fields, evidence from flight, and physical indicators beyond the five vital signs.
 
 ## Blocked / need from others
 
@@ -29,4 +36,7 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries and cohort means. PhysioNet and RadLab can provide separate time-series replay inputs with documented provenance.
+- Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries, cohort means and cohort medians. PhysioNet and RadLab can provide time-series replay inputs with documented provenance.
+- For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
+- Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.
+- Review the proposed well-being fields alongside the existing daily check-in. Use synthetic self-reports in the public demo.
