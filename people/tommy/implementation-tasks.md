@@ -2,6 +2,12 @@
 
 Prepared 2026-11-14 from the published work listed below, including zt's new app overview. Tommy requested publication of this handoff so each teammate and their coding tool can read the corresponding task and know what to deliver. These are Tommy's requested next tasks; acceptance by other owners and changes to shared/PLAN.md remain team coordination. No messages were sent to teammates and no other member's files were changed.
 
+## Latest confirmed inventory answers and contract review
+
+**Current outcome:** Tommy explicitly instructed approval now; PR #49 has an APPROVED review at 76b2e09. The earlier request-changes round below is historical. QR/dispenser wording remains a follow-up, and extra Home indicators are deferred.
+
+Read [contract-review.md](contract-review.md) first for the latest inventory requirements, independently checked #50/#51 deliveries, #52 case/fixture differences and per-owner compatibility review of PR #49. That proposed contract introduces new Node/JS module folders and server-side shared state; the old prototype/API connection tasks below are historical and are not direct plug-in instructions for it. Tommy selected correction before approval and a CHANGES_REQUESTED review is posted on #49. At 76b2e09 the analysis-visibility correction is resolved; the repeated-code/dispenser wording is still pending. Read the latest follow-up at the top of the review rather than treating its initial findings as current. PET-1/PET-2 are now available in #51; reuse/reconcile the package instead of assigning it from scratch. DAD-2 #53 (Earth code/QR/revocation tool) is now merged and browser checks pass 28/28; adapt it rather than rebuilding it. #52 stage cases are also merged as a personal draft, with the fixture differences recorded in the review. Preserve allergy blocking, equal QR/code handling without a 15-minute lifetime, reusable course credentials, batch/per-item confirmation and the prescribed versus permitted self-service quantity distinction.
+
 ## Lean inventory scope refresh
 
 Read [inventory-scope-proposal.md](inventory-scope-proposal.md) before expanding DAD-2 or joining Med bay. Tommy/zt want a smaller user flow and configurable demo catalogue while reusing DAD-1. The supplied alternative has single-use/15-minute and single-compartment assumptions that must not override Tommy’s earlier reusable-course/batch decisions. Physical dispenser engineering and extreme misuse cases are outside the app demo. This is a scope proposal awaiting acceptance, not an instruction to rebuild or delete the existing module.

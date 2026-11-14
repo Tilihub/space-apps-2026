@@ -103,6 +103,19 @@ def baseline_statistics(baseline):
     return references, gaps
 
 
+def validate_history(baseline, history):
+    """Validate reference and optional later records without inventing a new day."""
+    if not isinstance(baseline, list) or not baseline or not isinstance(history, list):
+        raise ValueError("A nonempty baseline array and a history array are required.")
+    baseline = sorted(baseline, key=recorded_time)
+    history = sorted(history, key=recorded_time)
+    if history:
+        validate({"baseline": baseline, "recent": history[:-1], "current": history[-1]})
+    else:
+        validate({"baseline": baseline[:-1], "recent": [], "current": baseline[-1]})
+    return baseline, history
+
+
 def analyze(payload):
     """Return structured evidence; never change the supplied frozen reference."""
     baseline, recent, current = validate(payload)

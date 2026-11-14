@@ -17,6 +17,7 @@ plan and integration contract still need team agreement.
 - [x] Add weekly medians, measured-day coverage, and comparisons to the previous week and fixed baseline.
 - [x] Add an explicit session reset with automatic backup and a retained personal baseline.
 - [x] ANG-1: build an app-facing API adapter and JavaScript client with isolated demo crew stores.
+- [x] Read external personal-history JSON and persist its fixed baseline/source/scale with a runnable synthetic example.
 - [ ] ANG-1: agree the proposed health-v1 packet/IDs/clock/units and connect zt's UI.
 - [ ] Connect history and structured findings to a companion UI and conversation.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.

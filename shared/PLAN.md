@@ -35,6 +35,10 @@ joined pieces live in `integration/<connection>/`.
      For example: the format of a message one piece sends to another,
      or where the app reads the health content from. -->
 
+All connections follow the onboard app contract, [contract/README.md](contract/README.md)
+(version 1): how the app runs (one Node.js server, one module per piece, pages that draw
+everything), the shared formats, and exactly what each piece's module provides.
+
 ## Timeline
 
 Starts Saturday 09:00 on site. We plan to leave before 21:00 and not work after leaving.
