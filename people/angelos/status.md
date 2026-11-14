@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:21 (Asia/Nicosia)
-- Working on: Complete health component delivered through PR #57, with workouts, browser adapter and approved companion context ready for zt/Potest; see health/HANDOFF.md.
+- Last updated: 2026-11-14 18:23 (Asia/Nicosia)
+- Working on: Health component merged into main through PR #57; ready for zt/Potest to use via health/HANDOFF.md. Local health feature work is complete.
 - Branch: angelos/health-module
 
 ## Done
@@ -158,6 +158,10 @@
   grant review. It adds no health-interface change. The medication replacement
   findings and Emergency policy difference remain with their owners; health does
   not call or reimplement medicine/grant logic.
+- Published and merged PR #57 as a5d9966 after all 43 checks passed. The complete
+  health module, workouts, browser adapter and consumer handoff are on main.
+  The PR touched only people/angelos/. No teammate review was bypassed for any
+  protected file; none was changed in this delivery.
 
 ## Blocked / need from others
 
@@ -179,7 +183,8 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Continue from angelos/health-module. Read health/README.md and run npm test
+- The component is on main via merged PR #57; angelos/health-module is its completed
+  delivery branch. Read health/HANDOFF.md and run npm test
   (or the identical node --test "**/*.test.js" if npm is absent) from repo root.
 - zt and Potest should start at health/HANDOFF.md. The default export is the
   complete health module; client.js is the optional page-facing adapter. Import
