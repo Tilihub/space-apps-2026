@@ -1,9 +1,9 @@
 # PET-1 data adoption and current team instructions
 
-Reviewed 14 November 2026 against main `75a7377`, Petros's latest fetched branch
-at `12c840ee2ab9ced49b01a12efb5e5063487de594` (PR #51), and the approved
-version-1 shared app contract. Petros's pending package has not changed since
-that commit; it is still newer than his material currently merged on main.
+Reviewed 14 November 2026 against main `11bcc68`, including Petros's package
+at `12c840ee2ab9ced49b01a12efb5e5063487de594` merged through PR #51, and the
+approved version-1 shared app contract. The source values are unchanged from
+that earlier publication; merging it did not align the later stage cases.
 
 ## Selected inputs
 
@@ -18,8 +18,8 @@ that commit; it is still newer than his material currently merged on main.
 | Research notes and countermeasures | Background for their owners; not a trained response model or a set of clinical rules in this module. Companion step 3 is assigned to Potest by Angelos. |
 
 The bundled health/scenario copies match the source Git blobs exactly, including
-their declared synthetic provenance. They let tests run before PR #51 lands;
-the app uses Petros's canonical health.json when it exists in the checkout.
+their declared synthetic provenance. They pin the earlier package for tests;
+the app now loads Petros's canonical health.json from main by default.
 No teammate file, threshold or observation was rewritten to force agreement.
 
 ## Verified results with Petros's published example
@@ -85,11 +85,13 @@ Existing stored baselines stay fixed when the external file is edited.
   routes or resolve the open permission for companion analysis context. The
   Python prototype was preserved. Dadis2's merged #58 grant-safety changes also
   do not change the health input/analysis contract.
-- zt still owns the core/pages; this module is ready for import, with the actual
-  browser save/reload path to verify once the core is available. Workout records
-  remain the contract's later wave-2 health task, outside this data-adoption step.
+- zt still owns the core/pages; this component is ready for import, with the actual
+  page save/reload path to verify once the core is available. The follow-up now
+  implements the contract's wave-2 workout records, plus a browser adapter and
+  approved `{today}` companion context; see [HANDOFF.md](HANDOFF.md).
 
-Validation: `node --test "**/*.test.js"` from the root passes all 30 checks
-(23 health and 7 shared example). This is the exact root package test script;
+Validation: `node --test "**/*.test.js"` from the root passes all 43 checks
+(36 health/client/workout and 7 shared example), including real localhost HTTP.
+This is the exact root package test script;
 `npm test` is unavailable here because npm is not installed/on PATH. These are
 module/request-boundary checks, not a joined-app or real-sensor validation.

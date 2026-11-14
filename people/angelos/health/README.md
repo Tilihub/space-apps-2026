@@ -5,6 +5,10 @@ member, compare them to that person's frozen reference, and return JSON. This is
 a Node.js 24 module for the shared module interface, not another server.
 It needs no packages. The Python prototype and its SQLite sessions remain separate.
 
+The component also stores workouts separately from resting measurements.
+**zt and Potest: start with [HANDOFF.md](HANDOFF.md)** for the core import,
+browser client, companion context, workout flow and verification instructions.
+
 ## Current integration status
 
 The target is the approved version-1 [shared contract](../../../shared/contract/README.md),
@@ -28,11 +32,12 @@ From the repository root, with Node.js 24:
 npm test
 ```
 
-The root script runs every `*.test.js` with Node's built-in runner. The checks
-use the canonical `handleRequest` dispatch, session/role checks, JSON response
-envelopes and temporary in-memory storage. No real user databases are opened,
-and no server or network is needed. This validates the module boundary; it is
-not an end-to-end test of the unfinished app. On this machine npm is unavailable;
+The root script runs every `*.test.js` with Node's built-in runner. All 43 checks
+pass, including the browser client over a disposable localhost HTTP stand-in
+using the canonical dispatcher and session roles. State is temporary; no real
+user database is opened. HTTP checks need localhost networking (elevated
+execution in the agent sandbox). This validates the component boundary, not
+zt's unfinished pages/core. On this machine npm is unavailable;
 the identical root script can be invoked directly:
 
 ```powershell
@@ -62,6 +67,8 @@ Persistence across process restarts depends on the core implementing its store.
 | `GET /api/health/history?crewId=c4&days=14` | Medical officer | Fixed reference plus recent check-ins |
 | `GET /api/health/weekly?crewId=c4` | Medical officer | Two seven-day summaries with measured-day coverage |
 | `GET /api/health/crew` | Medical officer | Five-person daily overview |
+| `POST /api/health/workouts` | Crew | Save a completed own workout |
+| `GET /api/health/workouts?days=7` | Crew; medical officer | Own workouts; officer may select `crewId` |
 
 The medical officer is c2. An astronaut cannot use `crewId` to access another
 person's data or call any analysis route, including their own.
@@ -157,6 +164,9 @@ the live-demo case. Petros owns the updated canonical fixture. The module will
 use it on the next explicit reset or fresh store. This example is not evidence
 that the exact live-demo story has passed acceptance. No teammate's records
 are silently rewritten here.
+
+Petros's canonical file is now on main through PR #51 and is the default reset
+input. The bundled copies keep the earlier scenario tests reproducible.
 
 The [data review](DATA_REVIEW.md) records which of Petros's files this module
 uses, the verified baseline medians and the remaining live-demo differences.

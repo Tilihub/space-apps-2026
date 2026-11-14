@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   BASELINE_DAYS, COMPARED_MEASURES, CONTRACT_VERSION, CREW, DEMO_START, LAUNCH, MEDICAL_OFFICER_ID,
   MEASUREMENTS, SCALES, apiError, checkFields, missionDayOf, resolveCrewId,
 } from '../../../shared/contract/contract.js';
 import { dailyFor, todayFor, weeklyFor } from './analysis.js';
+import { requestedDays, validateWorkout } from './workouts.js';
 
 const MEASURES = [...new Set([...Object.keys(MEASUREMENTS), ...COMPARED_MEASURES])];
 const DEFAULT_FIXTURE = new URL('./fixtures/health.json', import.meta.url);
@@ -87,7 +88,7 @@ export function createHealthModule({ fixtureUrl } = {}) {
       }).sort((a, b) => a.missionDay - b.missionDay);
       const baseline = rows.filter(row => row.missionDay <= BASELINE_DAYS.to);
       if (!baseline.length) throw apiError('invalid_field', `The fixture needs a personal reference for ${member.id}.`);
-      crew[member.id] = { baseline, checkIns: rows.filter(row => row.missionDay > BASELINE_DAYS.to) };
+      crew[member.id] = { baseline, checkIns: rows.filter(row => row.missionDay > BASELINE_DAYS.to), workouts: [] };
     }
     const state = { contractVersion: CONTRACT_VERSION, scaleVersion: 'self-report-1-10-v1',
       source: { kind: 'synthetic', fixture: fixtureSource,
@@ -103,7 +104,15 @@ export function createHealthModule({ fixtureUrl } = {}) {
       || CREW.some(member => !saved.crew?.[member.id])) {
       throw apiError('server_error', 'Health storage has an incompatible version; do not silently migrate it.');
     }
-    return structuredClone(saved);
+    const state = structuredClone(saved);
+    for (const person of Object.values(state.crew)) {
+      // Additive storage field: preserve sessions saved before workouts existed.
+      if (person.workouts === undefined) person.workouts = [];
+      if (!Array.isArray(person.baseline) || !Array.isArray(person.checkIns) || !Array.isArray(person.workouts)) {
+        throw apiError('server_error', 'Health storage has an incompatible history layout.');
+      }
+    }
+    return state;
   }
 
   const read = handler => (req, ctx) => serial(async () => handler(req, ctx, await load(ctx)));
@@ -150,13 +159,10 @@ export function createHealthModule({ fixtureUrl } = {}) {
         handler: read((req, ctx, state) => {
           checkFields(req.query, ['crewId', 'days']);
           const crewId = requestedCrew(req);
-          const daysText = req.query.days ?? '14';
-          if (!/^[1-9]\d?$/.test(daysText) || Number(daysText) > 60) {
-            throw apiError('invalid_field', 'days must be a whole number from 1 to 60.');
-          }
+          const days = requestedDays(req.query.days, 14);
           const day = clock(ctx).day;
           return { crewId, baseline: state.crew[crewId].baseline,
-            checkIns: state.crew[crewId].checkIns.filter(row => row.missionDay >= day - Number(daysText) + 1
+            checkIns: state.crew[crewId].checkIns.filter(row => row.missionDay >= day - days + 1
               && row.missionDay <= day).sort((a, b) => a.missionDay - b.missionDay) };
         }) },
       { method: 'GET', path: '/crew', roles: ['medical_officer'],
@@ -175,6 +181,32 @@ export function createHealthModule({ fixtureUrl } = {}) {
           checkFields(req.query, ['crewId']);
           const crewId = requestedCrew(req);
           return weeklyFor(state.crew[crewId], crewId, clock(ctx).day);
+        }) },
+      { method: 'POST', path: '/workouts', roles: ['crew'], status: 201,
+        handler: read(async (req, ctx, state) => {
+          checkFields(req.query, []);
+          const crewId = requestedCrew(req);
+          const values = validateWorkout(req.body, clock(ctx).at);
+          const workouts = state.crew[crewId].workouts;
+          if (workouts.some(row => row.kind === values.kind && row.startedAt === values.startedAt
+            && row.endedAt === values.endedAt)) {
+            throw apiError('already_done', 'This workout is already saved. Reload your workouts before retrying.');
+          }
+          const workout = { id: `workout_${crewId}_${randomUUID()}`, crewId, ...values };
+          workouts.push(workout);
+          await ctx.store.save(state);
+          ctx.emit('health.workout-saved', crewId);
+          return { workout };
+        }) },
+      { method: 'GET', path: '/workouts', roles: ['crew', 'medical_officer'],
+        handler: read((req, ctx, state) => {
+          checkFields(req.query, ['crewId', 'days']);
+          const crewId = requestedCrew(req);
+          const days = requestedDays(req.query.days, 7);
+          const { at, day } = clock(ctx);
+          return { workouts: state.crew[crewId].workouts.filter(row => row.missionDay >= day - days + 1
+            && row.missionDay <= day && Date.parse(row.endedAt) <= Date.parse(at))
+            .sort((a, b) => a.endedAt.localeCompare(b.endedAt) || a.id.localeCompare(b.id)) };
         }) },
     ],
   };

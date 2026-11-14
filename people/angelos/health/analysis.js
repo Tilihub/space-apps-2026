@@ -52,9 +52,9 @@ export function dailyFor(person, crewId, missionDay) {
   const status = !today ? 'no_check_in_today' : changedCount ? 'changes_found'
     : gaps.length ? 'not_enough_data' : 'no_changes';
   const message = !today ? 'No check-in has been saved for this mission day.'
-    : changedCount ? `${changedCount} measures differ from your personal reference. This is not a diagnosis.`
+    : changedCount ? `${changedCount} ${changedCount === 1 ? 'measure differs' : 'measures differ'} from this crew member's personal reference. This is not a diagnosis.`
       : gaps.length ? 'Some measures cannot be compared because data is missing.'
-        : 'No demo thresholds were crossed. This does not establish that you are healthy.';
+        : 'No demo thresholds were crossed. This does not establish health status.';
   return { crewId, missionDay, checkedInToday: Boolean(today), status, measures, gaps, message,
     limitations: ['Demo comparison rules, not medical limits.', 'The personal baseline stays fixed.',
       'No detected change does not rule out a health concern.'] };

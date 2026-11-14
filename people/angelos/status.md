@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:03 (Asia/Nicosia)
-- Working on: Reviewed Petros's latest PET-1/PET-2 package and current team instructions; verified data adoption in PR #57, with the stage-fixture differences explicit.
+- Last updated: 2026-11-14 18:21 (Asia/Nicosia)
+- Working on: Complete health component delivered through PR #57, with workouts, browser adapter and approved companion context ready for zt/Potest; see health/HANDOFF.md.
 - Branch: angelos/health-module
 
 ## Done
@@ -133,11 +133,37 @@
   at afc71dd. These do not change the shared health interface. Preserved the
   Python prototype used by that demo and kept clinical companion-context access
   as an unresolved shared-contract decision, not an authorization bypass here.
+- Synced main 11bcc68: Petros's PR #51 is now merged. Confirmed default module
+  initialization loads his canonical health.json and records its fingerprint,
+  while bundled snapshots pin the earlier PET-1 tests.
+- Completed the contract's workout POST/GET routes. Workouts have server-owned
+  identity, validated UTC start/end, source labels, optional one-minute recovery,
+  duplicate protection, chronological history and crew/medical access rules.
+  Their data never enters resting check-ins, daily comparisons or weekly medians.
+- Added backward-compatible workout storage, repeatable reset, and checks for
+  concurrent retries, failed saves, clock rewinds and midnight completion days.
+- Added health/client.js, a browser-safe adapter for the one core's API. It uses
+  the current session token, unwraps structured errors and exposes the existing
+  routes plus getCompanionContext(), returning only the authorized {today} data.
+  No clinical history, analysis, journal or external model call is added there.
+- Passed all 43 root JavaScript checks (36 health/client/workout + 7 shared
+  examples), including the real adapter over temporary localhost HTTP with two
+  crew identities, a medical session, reload, duplicates, workout save/list and
+  reset. The sandbox needs elevated localhost test execution; no check is skipped.
+  The standalone browser core/pages remain zt's integration responsibility.
+- Delivered health/HANDOFF.md with the exact core import, client calls, authorized
+  Potest context, workout semantics, verification command and data dependencies.
+  Existing Python/SQLite sessions and all teammate files remain unchanged.
+- Refreshed main 712b8f0 before publishing and read Tommy's newly merged #59
+  grant review. It adds no health-interface change. The medication replacement
+  findings and Emergency policy difference remain with their owners; health does
+  not call or reimplement medicine/grant logic.
 
 ## Blocked / need from others
 
-- zt owns the joined server and pages; neither is on main yet. The module boundary
-  is tested, but an actual browser form save/reload has not been verified.
+- No remaining local health feature blocker. zt owns the joined server and pages;
+  neither is on main yet. The client/module HTTP boundary is tested; the real
+  page save/reload path still needs verification after composition.
 - Petros's bundled example predates the approved demo cases (c4 reference sleep
   7.8 h instead of 6.8 h). Petros must publish the updated canonical health.json.
   Do not call the exact live-demo scenario accepted with the old example.
@@ -155,12 +181,19 @@
 
 - Continue from angelos/health-module. Read health/README.md and run npm test
   (or the identical node --test "**/*.test.js" if npm is absent) from repo root.
+- zt and Potest should start at health/HANDOFF.md. The default export is the
+  complete health module; client.js is the optional page-facing adapter. Import
+  the module once per core/store and serve the client asset to the browser.
 - zt imports health/index.js as the single health module instance, mounts
   /api/health, and supplies session identity, UTC clock and durable module storage.
   The form POSTs measurements to /check-ins, receives {checkIn, today}, and reloads
   /today. Medical analysis is fetched separately by c2's medical session.
 - Verify the joined save/reload path with two users, role refusals and reset after
   the core/pages land. This module does not contain another server or login.
+- Wire the workout screen to POST/GET /workouts; keep recovery null at Stop or
+  submit the completed record after a full mission minute if recovery is measured.
+  Potest's page uses getCompanionContext() with the crew session; do not use a
+  medical token to supply clinical analyses under the still-open mind policy.
 - When Petros's updated data lands, explicitly reset a fresh demo store, then check
   c4's day-42 input against 6.8 h baseline and three consecutive short nights.
   Run the checks against the paired scenarios for that version; the bundled PET-1

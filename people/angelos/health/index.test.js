@@ -34,7 +34,9 @@ test('first app request initializes an empty module store from an external file'
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.data, { crewId: 'c1', missionDay: 42, checkedInToday: false, checkIn: null });
   assert.equal(ctx.saved().source.kind, 'synthetic');
-  assert.ok(['petros-demo-data', 'bundled-pet1-example'].includes(ctx.saved().source.fixture));
+  assert.equal(ctx.saved().source.fixture, 'petros-demo-data');
+  const canonical = await readFile(new URL('../../petros_the_space_larper/demo-data/health.json', import.meta.url), 'utf8');
+  assert.equal(ctx.saved().source.sha256, createHash('sha256').update(canonical).digest('hex'));
 });
 
 test('reset reads all five personal references from the external PET-1 fixture', async () => {
