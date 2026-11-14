@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo controls</title>
+</head>
+<body>
+  <h1>Demo controls</h1>
+  <p>For trying the core and running the demo clock. Not part of the astronaut app.
+    Each browser tab has its own login.</p>
+
+  <section id="login-box">
+    <h2>Log in</h2>
+    <label>Platform
+      <select id="platform">
+        <option value="astronaut">Astronaut app</option>
+        <option value="medical">Medical officer platform</option>
+        <option value="earth">Earth console</option>
+      </select>
+    </label>
+    <label>Crew member <select id="crew"></select></label>
+    <button id="login">Log in</button>
+  </section>
+
+  <section id="session-box" hidden>
+    <p>Logged in as <strong id="who"></strong> <button id="logout">Log out</button></p>
+
+    <h2>Mission clock</h2>
+    <p id="clock">…</p>
+    <button data-minutes="60">+1 hour</button>
+    <button data-minutes="720">+12 hours</button>
+    <button id="reset">Reset demo</button>
+
+    <h2>Events</h2>
+    <p>What changed, newest first. Pages reload that part when they see one.</p>
+    <ol id="events" reversed></ol>
+  </section>
+
+  <p id="message" role="status"></p>
+
+  <script type="module">
+    import { CREW } from '/shared/contract/contract.js';
+
+    const $ = (id) => document.getElementById(id);
+    const token = () => sessionStorage.getItem('token');
+
+    /** Calls the core and returns its data, or throws with its plain message. */
+    const call = async (method, path, body) => {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token()) headers.Authorization = `Bearer ${token()}`;
+      const res = await fetch(`/api${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+      const answer = await res.json();
+      if (!answer.ok) throw Object.assign(new Error(answer.error.message), { code: answer.error.code });
+      return answer.data;
+    };
+
+    const say = (text) => { $('message').textContent = text; };
+    const showClock = (c) => { $('clock').textContent = `Mission day ${c.missionDay}, ${c.time} (${c.now})`; };
+
+    for (const member of CREW) $('crew').add(new Option(`${member.name} (${member.id}), ${member.title}`, member.id));
+    $('platform').addEventListener('change', () => { $('crew').disabled = $('platform').value === 'earth'; });
+
+    let lastId = 0;
+    let timer = null;
+
+    const show = (user) => {
+      $('login-box').hidden = Boolean(user);
+      $('session-box').hidden = !user;
+      if (user) $('who').textContent = `${user.name} (${user.role})`;
+    };
+
+    const poll = async () => {
+      try {
+        showClock(await call('GET', '/clock'));
+        const { events, lastId: newest } = await call('GET', `/events?after=${lastId}`);
+        lastId = newest;
+        for (const e of events) {
+          const item = document.createElement('li');
+          item.textContent = `${e.type}${e.crewId ? ` · ${e.crewId}` : ''} · mission ${e.at.slice(0, 16).replace('T', ' ')}`;
+          $('events').prepend(item);
+        }
+      } catch (err) {
+        if (err.code === 'not_logged_in') { sessionStorage.removeItem('token'); stopPolling(); show(null); }
+        say(err.message);
+      }
+    };
+    const startPolling = () => { if (!timer) { void poll(); timer = setInterval(poll, 2000); } };
+    const stopPolling = () => { clearInterval(timer); timer = null; };
+
+    $('login').addEventListener('click', async () => {
+      try {
+        const platform = $('platform').value;
+        const data = await call('POST', '/session', { platform, crewId: platform === 'earth' ? null : $('crew').value });
+        sessionStorage.setItem('token', data.token);
+        show(data.user);
+        say('');
+        startPolling();
+      } catch (err) { say(err.message); }
+    });
+
+    $('logout').addEventListener('click', async () => {
+      try { await call('DELETE', '/session'); } catch { /* already logged out */ }
+      sessionStorage.removeItem('token');
+      stopPolling();
+      show(null);
+    });
+
+    for (const button of document.querySelectorAll('[data-minutes]')) {
+      button.addEventListener('click', async () => {
+        try { showClock(await call('POST', '/clock/advance', { minutes: Number(button.dataset.minutes) })); say(''); }
+        catch (err) { say(err.message); }
+      });
+    }
+
+    $('reset').addEventListener('click', async () => {
+      if (!confirm('Put every module back to the demo start, and the clock to day 42, 07:30?')) return;
+      try { showClock(await call('POST', '/demo/reset')); say('Demo reset.'); }
+      catch (err) { say(err.message); }
+    });
+
+    if (token()) {
+      call('GET', '/session').then(({ user }) => { show(user); startPolling(); }).catch(() => { sessionStorage.removeItem('token'); show(null); });
+    } else {
+      show(null);
+    }
+  </script>
+</body>
+</html>
