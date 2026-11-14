@@ -5,8 +5,8 @@ const saveButton = document.querySelector('#save-check-in');
 const compareButton = document.querySelector('#compare-button');
 const compareStatus = document.querySelector('#compare-status');
 const results = document.querySelector('#results');
-const todayReplies = document.querySelector('#today-replies');
-const historyReplies = document.querySelector('#history-replies');
+const tabs = [...results.querySelectorAll('[role="tab"]')];
+const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
 const inputNames = {
   sleep_hours: 'sleepHours', resting_heart_rate_bpm: 'restingHeartRateBpm',
   mood: 'mood', stress: 'stress', fatigue: 'fatigue',
@@ -85,26 +85,42 @@ try {
   checkInStatus.textContent = error.message;
 }
 
+function selectTab(index) {
+  tabs.forEach((tab, i) => {
+    const selected = i === index;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    panels[i].hidden = !selected;
+  });
+  tabs[index].focus();
+}
+
+tabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectTab(index));
+  tab.addEventListener('keydown', event => {
+    const next = {
+      ArrowLeft: (index + tabs.length - 1) % tabs.length,
+      ArrowRight: (index + 1) % tabs.length,
+      Home: 0,
+      End: tabs.length - 1,
+    }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    selectTab(next);
+  });
+});
+
 compareButton.addEventListener('click', async () => {
   compareButton.disabled = true;
   results.hidden = true;
-  todayReplies.replaceChildren();
-  historyReplies.replaceChildren();
-  compareStatus.textContent = 'Comparing four replies…';
+  compareStatus.textContent = 'Loading replies…';
   try {
-    const { comparisons } = await request('compare');
-    for (const comparison of comparisons) {
-      const card = document.createElement('article');
-      card.className = 'result';
-      const title = document.createElement('h4');
-      title.textContent = comparison.label;
-      const reply = document.createElement('p');
-      reply.textContent = comparison.reply;
-      card.append(title, reply);
-      (comparison.usesHistory ? historyReplies : todayReplies).append(card);
-    }
+    const { noContext, withContext } = await request('compare');
+    panels[0].textContent = noContext;
+    panels[1].textContent = withContext;
     results.hidden = false;
-    compareStatus.textContent = 'Comparison complete.';
+    compareStatus.textContent = '';
+    selectTab(0);
   } catch (error) {
     compareStatus.textContent = error.message;
   } finally {

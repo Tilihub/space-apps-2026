@@ -18,7 +18,7 @@ async function start(t) {
   });
 }
 
-test('Petros history and interactive saves drive all four scripted replies', async t => {
+test('only the reply with context uses today’s check-in and earlier sleep history', async t => {
   const request = await start(t);
   const before = await (await request('state')).json();
   assert.equal(before.checkIn, null);
@@ -38,20 +38,16 @@ test('Petros history and interactive saves drive all four scripted replies', asy
   assert.equal(latest.shortSleepDays, before.shortSleepDays);
   assert.deepEqual(latest.checkIn, entry);
 
-  const { comparisons } = await (await request('compare')).json();
-  assert.deepEqual(comparisons.map(item => item.usesHistory), [false, false, true, true]);
-  const replies = Object.fromEntries(comparisons.map(({ id, reply }) => [id, reply]));
-  assert.doesNotMatch(replies.none, /5\.5|7\.8|7\/10/);
-  assert.match(replies['check-in'], /5\.5 hours.*7\/10/);
-  assert.doesNotMatch(replies['check-in'], /7\.8|day 41|in a row|medical officer/);
-  assert.equal(replies['check-in'].replace(" Today's check-in shows 5.5 hours of sleep and stress at 7/10.", ''), replies.none);
-  assert.match(replies.health, /7\.8 hours for 2 nights in a row.*5\.9 hours on day 40.*5\.6 hours on day 41/);
-  assert.match(replies.health, /crew medical officer/);
-  assert.doesNotMatch(replies.health, /5\.5|7\/10/);
-  assert.equal(replies.both, "Today's check-in shows 5.5 hours of sleep and stress at 7/10. " + replies.health);
+  const replies = await (await request('compare')).json();
+  assert.deepEqual(Object.keys(replies), ['noContext', 'withContext']);
+  assert.match(replies.noContext, /hardest to get through today/);
+  assert.doesNotMatch(replies.noContext, /5\.5|7\.8|7\/10|in a row|medical officer/);
+  assert.match(replies.withContext, /5\.5 hours.*7\/10/);
+  assert.match(replies.withContext, /7\.8 hours for 2 nights in a row.*5\.9 hours on day 40.*5\.6 hours on day 41/);
+  assert.match(replies.withContext, /crew medical officer/);
 });
 
-test('one short historical night and a current short night do not trigger the history-only conclusion', () => {
+test('one short historical night and a current short night do not trigger the repeated sleep pattern', () => {
   const reply = getComparisonReply({
     checkIn: { sleep_hours: 0, stress: null },
     sleepHistory: { reference: 7.8, recent: [{ mission_day: 41, value: 5.6 }] },

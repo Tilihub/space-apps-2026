@@ -14,13 +14,6 @@ const assets = new Map([
   ['/crew-assistant.css', ['text/css', await readFile(new URL('./page.css', import.meta.url))]],
   ['/crew-assistant.mjs', ['text/javascript', await readFile(new URL('./page.mjs', import.meta.url))]],
 ]);
-const cases = [
-  { id: 'none', label: 'No context', checkIn: false, health: false },
-  { id: 'check-in', label: 'Check-in only', checkIn: true, health: false },
-  { id: 'health', label: 'Health data only', checkIn: false, health: true },
-  { id: 'both', label: 'Full context', checkIn: true, health: true },
-];
-
 function callHealth(python, database, operation, data) {
   return new Promise((resolve, reject) => {
     const child = spawn(python, ['-B', bridge, database, operation], {
@@ -74,17 +67,14 @@ export async function createDemoServer({ python = process.env.CREW_ASSISTANT_PYT
       if (path !== '/api/crew-assistant/compare' || request.method !== 'GET') return false;
       const state = await callHealth(python, database, 'read');
       if (!state.checkIn) throw new ChatError(409, 'Save the mission-day check-in before comparing replies.');
-      const comparisons = cases.map(({ id, label, checkIn, health }) => ({
-        id,
-        label,
-        usesHistory: health,
-        reply: getComparisonReply({
-          checkIn: checkIn ? state.checkIn : undefined,
-          sleepHistory: health ? state.health.sleep_hours : undefined,
-          shortSleepDays: health ? state.shortSleepDays : 0,
+      if (!response.destroyed) send(200, {
+        noContext: getComparisonReply({}),
+        withContext: getComparisonReply({
+          checkIn: state.checkIn,
+          sleepHistory: state.health.sleep_hours,
+          shortSleepDays: state.shortSleepDays,
         }),
-      }));
-      if (!response.destroyed) send(200, { comparisons });
+      });
       return true;
     },
   });

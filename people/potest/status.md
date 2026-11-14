@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:33 (Europe/Athens)
+- Last updated: 2026-11-14 18:39 (Europe/Athens)
 - Working on: Offline Crew Assistant comparison in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
 - Branch: potest/crew-support-chat
 
@@ -24,7 +24,7 @@
 - Clarified the source-time chart window and playback speed labels. Verified in Chrome that a one-second playback step advances five recorded minutes for RR-9, and that hourly and sol-based series display their actual next source-time interval.
 - Kept chart history visible across automatic replay loops. Verified rollover on the ISS and Mars-sol plots, plus original snapshot and CSV timestamps, in Chrome.
 - Added [Crew Support](crew-support/README.md), a local scripted conversation linked from the Mind screen.
-- Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the [Crew Assistant demo](../../integration/crew-assistant/README.md). Removed external model calls. Today-only replies share one approach, and both history-based replies identify the same repeated short sleep and suggest the same next step. Verified both groups in Chrome and passed 47 Node tests.
+- Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the offline [Crew Assistant demo](../../integration/crew-assistant/README.md). The comparison has two tabs. With context uses today's check-in and recognizes repeated short sleep from earlier records. Verified mouse and keyboard tab switching in Chrome and passed 47 Node tests.
 
 ## Blocked / need from others
 

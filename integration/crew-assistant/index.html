@@ -57,15 +57,13 @@
       <blockquote>“I feel worn down and out of sorts today. Can you help me make sense of it?”</blockquote>
       <button id="compare-button" type="button" disabled>Compare replies</button>
       <p id="compare-status" role="status"></p>
-      <div id="results" aria-live="polite" hidden>
-        <div class="reply-group">
-          <h3>Responding to today</h3>
-          <div id="today-replies" class="results"></div>
+      <div id="results" hidden>
+        <div class="tabs" role="tablist" aria-label="Reply context">
+          <button id="no-context-tab" type="button" role="tab" aria-selected="true" aria-controls="no-context-reply">No context</button>
+          <button id="with-context-tab" type="button" role="tab" aria-selected="false" aria-controls="with-context-reply" tabindex="-1">With context</button>
         </div>
-        <div class="reply-group history">
-          <h3>Responding to a pattern</h3>
-          <div id="history-replies" class="results"></div>
-        </div>
+        <div id="no-context-reply" class="reply" role="tabpanel" aria-labelledby="no-context-tab" tabindex="0"></div>
+        <div id="with-context-reply" class="reply" role="tabpanel" aria-labelledby="with-context-tab" tabindex="0" hidden></div>
       </div>
     </section>
   </main>
