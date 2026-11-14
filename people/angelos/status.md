@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:11 (Asia/Nicosia)
-- Working on: External baseline import ready, with a runnable JSON example and saved source/scale metadata.
+- Last updated: 2026-11-14 17:14 (Asia/Nicosia)
+- Working on: External baseline import published in PR #50, with a runnable JSON example and saved source/scale metadata.
 - Branch: angelos/external-baseline
 
 ## Done
@@ -83,6 +83,9 @@
   on zt/app-contract (PR #49). Imported 1–10 scales are explicit and enforced;
   legacy 0–10 data are retained without conversion. Personal-history imports are
   local-only and are not exposed by the old synthetic HTTP prototype.
+- Pushed angelos/external-baseline and opened
+  https://github.com/Tilihub/space-apps-2026/pull/50 after merging the latest main.
+  Only personal files differ from main; existing user databases were not replaced.
 
 ## Blocked / need from others
 
