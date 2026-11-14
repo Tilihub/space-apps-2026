@@ -661,23 +661,49 @@
       if (why) return { error: why };
       items.push({ itemId: it.id, units: units, perDay: perDay, days: days });
     }
-    return { grant: { code: code, issuerId: issuerId, patientId: patientId, start: ymdOf(start), items: items, verification: "simulated" } };
+    // senderVerified: the check characters only prove the code was typed correctly. Who sent it is
+    // NOT verified (team decision 14 Nov: simulated for now). Never treat this as proof of the sender.
+    return { grant: { code: code, issuerId: issuerId, patientId: patientId, start: ymdOf(start), items: items, verification: "simulated", senderVerified: false } };
   }
 
-  // Checks before a grant is added on a crew member's device: right person, not already added
-  function acceptGrant(state, draft, crewId) {
+  // Last day of a grant's course (the longest medicine), as a Date at local midnight
+  function grantLastDay(grant) {
+    var start = parseDate(grant.start), days = Math.max.apply(null, grant.items.map(function (x) { return x.days; }));
+    return new Date(start.getFullYear(), start.getMonth(), start.getDate() + days - 1);
+  }
+
+  // Checks before a grant is added on a crew member's device: right person, still valid, not already added.
+  // A grant can be imported until the last day of its course; after that it has expired.
+  function acceptGrant(state, draft, crewId, now) {
     if (draft.patientId !== crewId) {
       var c = getCrew(state, draft.patientId);
       return "This grant is for " + (c ? c.name : draft.patientId) + ".";
     }
+    if (now && daysBetween(grantLastDay(draft), now) > 0) return "This grant has expired (its course ended " + ymdOf(grantLastDay(draft)) + ").";
     if (state.grants.some(function (g) { return g.code === draft.code; })) return "Already added.";
+    return null;
+  }
+
+  // Cancel a grant: nothing more opens under it. Kept in the list so the log still makes sense.
+  // byId: the onboard doctor's crew id, or EARTH (for a cancellation that arrives with a report).
+  function revokeGrant(state, grantId, byId, now) {
+    var g = getGrant(state, grantId);
+    if (!g) return "Unknown grant.";
+    if (g.status !== "active") return "This grant is already " + g.status + ".";
+    if (byId !== EARTH) {
+      var c = getCrew(state, byId);
+      if (!c || !(c.isCMO || c.isBackupCMO)) return "Only the onboard doctor or Earth can cancel a grant.";
+    }
+    g.status = "revoked";
+    g.revokedBy = byId;
+    g.revokedAt = now.toISOString();
     return null;
   }
 
   function addGrant(state, draft, now) {
     var g = {
       id: "G" + state.seq++, code: draft.code, issuerId: draft.issuerId, patientId: draft.patientId, start: draft.start,
-      items: draft.items, verification: draft.verification || "simulated", addedAt: now.toISOString(),
+      items: draft.items, verification: draft.verification || "simulated", senderVerified: false, addedAt: now.toISOString(),
       status: "active", requestId: draft.requestId || null
     };
     state.grants.unshift(g);
@@ -765,6 +791,6 @@
     gateFor: gateFor, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
     dispense: dispense, alerts: alerts, validateReport: validateReport,
     EARTH: EARTH, canGrant: canGrant, encodeGrant: encodeGrant, decodeGrant: decodeGrant, acceptGrant: acceptGrant, addGrant: addGrant,
-    getGrant: getGrant, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
+    getGrant: getGrant, grantLastDay: grantLastDay, revokeGrant: revokeGrant, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
   };
 })(window);
