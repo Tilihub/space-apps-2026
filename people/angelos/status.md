@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:12 (Asia/Nicosia)
-- Working on: Agreed fixed-baseline and weekly-report version complete; updating PR #25.
+- Last updated: 2026-11-14 14:15 (Asia/Nicosia)
+- Working on: Agreed fixed-baseline and weekly-report version complete; PR #25 updated.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -38,6 +38,8 @@
 - Passed all 31 automated checks. Verified the report against the existing local
   synthetic history and confirmed the database SHA-256 was unchanged afterward.
 - Synced origin/main without rebase and retained the user's demo-data edit and saved history.
+- Pushed the completed weekly-report version and updated PR #25's title and description
+  around the final check-in, storage, fixed-baseline, and reporting behavior.
 
 ## Blocked / need from others
 
