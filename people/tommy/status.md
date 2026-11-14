@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #33 with the reporting, authorization, privacy, and onboard-storage brief.
+- Published and merged the reporting, authorization, privacy, and onboard-storage brief in PR #33; zt can read it on main.
 - Completed onboarding with a repository-local GitHub noreply email.
 - Withdrew UI PR #20 and its remote branch; no UI/application implementation is being produced in this chat.
 - Published the initial concepts in PR #24 and the Mars-demo/home-screen/mascot/scope clarifications in PR #30.
@@ -31,7 +31,7 @@
 
 ## Next steps
 
-- Continue on `tommy/concepts-plan` using `people/tommy/plan.md` and publish this brief for zt.
+- Continue on `tommy/concepts-plan` using `people/tommy/plan.md`; the clarified brief is available to zt on main.
 - Ask Q10–Q12 in simple terms before treating compartment grants or journal/chatbot permissions as settled requirements.
 - Then clarify report behavior, daily-summary content, wellbeing fields/scales, and the basic companion interaction.
 - Update Now, Done, and Next steps after each finished step and include this status in the same push. Before a break, commit and push.
