@@ -2,7 +2,7 @@
 
 Checked 2026-11-14 for the team's health monitoring challenge. This follows up on the [shared sensor and dataset survey](../../shared/research/gemini-sensor-datasets-and-telemetry.md) and [medical care survey](../../shared/research/gemini-health-monitoring-and-medical-care.md). The dataset table records what can be retrieved and how much each source can tell us about astronaut health.
 
-The [in-flight data inventory and NASA priorities](astronaut-inflight-data.md) adds primary mission tables, recent ISS studies, and verified public data files. It records the distinction between periodic clinical vital signs, research observations, and spacecraft telemetry.
+The [in-flight data inventory and NASA priorities](astronaut-inflight-data.md) adds primary mission tables, recent ISS studies, and verified public data files. See [how NASA collects astronaut data today](astronaut-inflight-data.md#how-nasa-collects-astronaut-data-today) for current clinical equipment, documented wearable sessions, and Artemis II measurements.
 
 ## How the measurements are made
 
