@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #39 to publish Tommy's explicit teammate/coding-tool handoff, task index, and reusable prompt.
+- Published and merged the explicit teammate/coding-tool handoff in PR #39; verified the main file matches the prepared task brief.
 - Tommy requested publication for the team and their coding tools. Added a start-here workflow, owner/task index (ZT-1, ANG-1/2, DAD-1/2, POT-1/2, PET-1/2), delivery expectations, and a copy/paste coding-tool prompt to [implementation-tasks.md](implementation-tasks.md).
 - Refreshed the handoff against Angelos's newly published reset/backup status at 80d86db without reassigning work already delivered.
 - Published and merged clarified requirements and proposed contributor tasks in PR #38; the handoff is available on main.
@@ -36,7 +36,7 @@
 ## Next steps
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
-- Publish the teammate/coding-tool instructions on main and give Tommy the canonical brief link to share. Keep requested tasks distinct from owner acceptance and common-plan decisions.
+- The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.
 - After Tommy confirms the direction, refine the remaining product questions and agree the common-plan changes through the required teammate review.
 - Update Now, Done and Next steps after each finished step and include this status in the same push; commit/push before a break.
 - Do not implement UI/application code or edit another member's personal files from this chat unless the authorization and ownership rules allow it.
