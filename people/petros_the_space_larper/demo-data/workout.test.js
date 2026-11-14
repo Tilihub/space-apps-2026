@@ -10,17 +10,38 @@ import { createWorkoutController } from './workout-session.js';
 const replay = JSON.parse(readFileSync(new URL('./workout-heart-rate.json', import.meta.url)));
 const at = seconds => new Date(Date.parse(DEMO_START) + seconds * 1000).toISOString();
 
-test('the repeating mission week alternates strength and aerobic days and ends with rest', () => {
+test('the repeating Mars transit week uses one flywheel for strength and rowing, then rests', () => {
   const days = Array.from({ length: 7 }, (_, index) => getDailyWorkout(42 + index));
+  assert.ok(days.every(day => day.program === 'mars-transit'));
   assert.deepEqual(days.map(day => day.sessions.length), [2, 1, 2, 1, 2, 1, 0]);
-  assert.deepEqual(days.filter(day => day.sessions.length === 2).map(day => day.sessions[0].steps[0].repsPerSet), [12, 8, 6]);
-  const intervals = days.flatMap(day => day.sessions).flatMap(session => session.steps)
-    .filter(step => step.kind === 'intervals');
-  assert.deepEqual(intervals.map(step => [step.count, step.workSeconds]), [[6, 120], [8, 30], [4, 240]]);
+  const strengthDays = days.filter(day => day.sessions.length === 2);
+  assert.deepEqual(strengthDays.map(day => day.sessions[0].steps[0].repsPerSet), [12, 8, 6]);
+  assert.deepEqual(strengthDays.map(day => day.sessions[0].steps[0].restBetweenSetsSeconds), [120, 120, 180]);
+  for (const day of strengthDays) {
+    assert.deepEqual(day.sessions[0].steps.map(step => step.id), ['squat', 'deadlift', 'heel-raise', 'bar-row']);
+    assert.equal(day.sessions[1].steps[1].oxygenUptakePercentOfPeak, 75);
+  }
+  const steps = days.flatMap(day => day.sessions).flatMap(session => session.steps);
+  assert.ok(steps.every(step => step.equipment.startsWith('Compact flywheel')));
+  const intervals = steps.filter(step => step.kind === 'intervals');
+  assert.deepEqual(intervals.map(step => [step.count, step.workSeconds, step.recoverySeconds]),
+    [[6, 120, 120], [8, 30, 15], [4, 240, 180]]);
   assert.equal(getDailyWorkout(49).sessions[0].id, days[0].sessions[0].id);
   const rest = createWorkoutController({ missionDay: 48 });
   assert.equal(rest.snapshot(at(0)).status, 'rest');
   assert.throws(() => rest.start(at(0)), /unfinished session/);
+});
+
+test('only the long intervals expose an individualized bpm range from a rowing test', () => {
+  const personalized = createWorkoutController({ missionDay: 47, rowingHrPeakBpm: 180 });
+  personalized.start(at(0));
+  const { currentStep } = personalized.completeStep('warm-up', at(300));
+  assert.deepEqual(currentStep.targetHeartRateBpm, [153, 171]);
+  currentStep.targetHeartRateBpm[0] = 0;
+  assert.deepEqual(personalized.snapshot(at(300)).currentStep.targetHeartRateBpm, [153, 171]);
+  assert.equal(getDailyWorkout(47).sessions[0].steps[1].targetHeartRateBpm, undefined);
+  assert.equal(getDailyWorkout(45, { rowingHrPeakBpm: 180 }).sessions[0].steps[1].targetHeartRateBpm, undefined);
+  assert.throws(() => getDailyWorkout(47, { rowingHrPeakBpm: 0 }), /measured peak/);
 });
 
 test('step completion advances once and keeps resistance and steady work in separate sessions', async () => {
@@ -31,8 +52,8 @@ test('step completion advances once and keeps resistance and steady work in sepa
   assert.equal(next.currentStep.id, 'deadlift');
   assert.deepEqual(controller.completeStep('squat', at(1)), next);
   assert.equal(controller.completeStep('deadlift', at(2)).currentStep.id, 'heel-raise');
-  assert.equal(controller.completeStep('heel-raise', at(3)).currentStep.id, 'bench-press');
-  const last = controller.completeStep('bench-press', at(4));
+  assert.equal(controller.completeStep('heel-raise', at(3)).currentStep.id, 'bar-row');
+  const last = controller.completeStep('bar-row', at(4));
   assert.equal(last.status, 'completed');
   assert.equal(last.currentStep, null);
   assert.equal(last.completed.length, first.totalSteps);

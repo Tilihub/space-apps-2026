@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:37 (Europe/Athens)
-- Working on: Workout plan, page controller and stage replay handoff to the UI team.
-- Branch: petros_the_space_larper/workout-program
+- Last updated: 2026-11-14 18:54 (Europe/Athens)
+- Working on: Mars transit workout plan and UI handoff.
+- Branch: petros_the_space_larper/mars-transit-workout
 
 ## Done
 
@@ -36,6 +36,7 @@
 - PET-2: Drafted the [exact wellbeing prompts and anchors](demo-data/wellbeing-form.md) and aligned the Mars scope with Tommy's 1–10 scale, journal permissions and doctor-only clinical report access.
 - PET-1 and PET-2 handoff merged in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51).
 - Added the [workout handoff](demo-data/WORKOUT.md), including the published SPRINT week, an ISS-style seven-day plan, a controller for step-by-step workouts and a synthetic stage pulse replay. Verified the controller against Angelos's workout endpoint.
+- Adapted the default week to Mars cruise in microgravity. One Orion-style flywheel provides resistance and rowing. The plan includes inter-set rest, active recovery and an optional target based on measured rowing peak heart rate.
 
 ## Blocked / need from others
 
@@ -57,3 +58,4 @@
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
 - Use `demo-data/health.json` at reset. Replay the [day-42 cases](demo-data/scenarios.json) from fresh resets after the health module is connected, then check the clinical and journal role boundaries.
 - In the workout screen, import `/demo-data/workout-session.js`, pass the mission clock and the logged-in health client, then map the buttons and current step as shown in [WORKOUT.md](demo-data/WORKOUT.md). Run the scene B push-up replay to confirm the saved summary and the synthetic source label.
+- In the weekly screen, show the Mars transit instructions and rest timings. Supply the optional measured rowing peak from the crew member's exercise assessment to display the long-interval bpm range.

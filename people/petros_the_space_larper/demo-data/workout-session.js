@@ -56,7 +56,7 @@ function intervalProgress(step, elapsedSeconds) {
 }
 
 // One browser controller per crew member and scheduled day. Render snapshots in the existing page.
-export function createWorkoutController({ missionDay, stage = false, replay, wearableSource, submitWorkout }) {
+export function createWorkoutController({ missionDay, stage = false, rowingHrPeakBpm, replay, wearableSource, submitWorkout }) {
   if (replay && wearableSource) throw new TypeError('Choose one heart-rate source per workout.');
   if (replay) {
     if (!['synthetic', 'historical'].includes(replay.kind)) throw new TypeError('Invalid replay kind.');
@@ -71,7 +71,7 @@ export function createWorkoutController({ missionDay, stage = false, replay, wea
   }
   const source = replay ? `replayed (${replay.kind}): ${sourceName}`
     : sourceName && `measured: ${sourceName}`;
-  const day = getDailyWorkout(missionDay, { stage });
+  const day = getDailyWorkout(missionDay, { stage, rowingHrPeakBpm });
   const outcomes = new Map();
   let run = null;
   let pendingSave = null;
@@ -113,7 +113,7 @@ export function createWorkoutController({ missionDay, stage = false, replay, wea
       nextSessionId: day.sessions.find(session => !outcomes.has(session.id))?.id ?? null,
       outcomes: [...outcomes.values()].map(value => ({ ...value })),
       sessionId: run?.session.id ?? null,
-      currentStep: currentStep ? { ...currentStep } : null,
+      currentStep: currentStep ? structuredClone(currentStep) : null,
       completed: run?.completed.map(step => ({ ...step })) ?? [],
       totalSteps: run?.session.steps.length ?? 0,
       elapsedSeconds: run ? Math.max(0, Math.floor(((run.endedAt ?? at) - run.startedAt) / 1000)) : 0,
