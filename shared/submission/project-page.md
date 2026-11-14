@@ -3,15 +3,18 @@
 Draft the project page here, then paste it into spaceappschallenge.org at the end.
 On the website only one person should edit at a time: another person's edits can overwrite unsaved changes.
 
+## Local event: 7-minute demo
+
+Our Local Event asks for a 7-minute presentation or a 7-minute live demo. We're planning the live demo. No video is needed.
+
 ## Checklist (from the official 2026 Project Submission Guide)
 
 - [ ] All six of us are confirmed participants at the same Local Event
 - [ ] Project name
 - [ ] High-level project summary
-- [ ] Demo: a video of 30 seconds or less, or at most 7 slides (including title and intro slides). Going over the limit means no Global Judging
-- [ ] Demo in English (a video may be spoken in another language with English subtitles; slides must be in English)
-- [ ] If slides: they show the team name, all member names and the challenge
-- [ ] Demo link is public and needs no login (for example YouTube, or this repo on GitHub)
+- [ ] Demo link on the project page: at most 7 slides (including title and intro slides), or a video of 30 seconds or less. Going over the limit means no Global Judging. We're not making a video, so this means slides
+- [ ] Slides in English, showing the team name, all member names and the challenge
+- [ ] Demo link is public and needs no login (for example a PDF of the slides in this repo)
 - [ ] Final project link is public and needs no login (for example this repo)
 - [ ] Detailed project description
 - [ ] Use of AI: where and how. AI images and videos carry a visible watermark; AI-generated code and data are acknowledged in text and metadata
