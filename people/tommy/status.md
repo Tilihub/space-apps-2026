@@ -8,12 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:12
+- Last updated: 2026-11-14 15:14
 - Working on: Publishing Q13–Q17 and notifying module owners through the handoff PR; reviewing integration progress. Planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
+- Opened PR #41 for Q13–Q17 and the updated owner handoff.
 - Recorded Q13–Q17: doctor-only manual clinical reports with hidden astronaut content, reusable per-dose prescription QR with expiry/quotas, exceptional all-crew emergency access, readiness deferred, and 1–10 self-reports.
 - Refreshed owner handoffs for the new requirements and reviewed the published Potest bridge (PR #40), zt UI skeleton, and Angelos handoff acknowledgement. No module implementation was changed here.
 - Rechecked the latest published plans/statuses and inventory emergency path for conflicts. Prepared Q13–Q17; no new answer or change to the existing requirements is assumed.
