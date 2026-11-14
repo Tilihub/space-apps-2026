@@ -111,6 +111,27 @@ one, propose it as a change to `shared/PLAN.md`.
 - In `shared/sources.md`: keep both sides.
 - Anywhere else: stop and tell your human. They sort it out with that file's owner.
 
+## When something goes wrong
+
+If something goes wrong with git, GitHub or the repo's organisation and you can't fix it within
+these rules, report it to zt (GitHub `Tilihub`) and Tommy (GitHub `tommy2002t`) with a GitHub
+issue. GitHub then notifies them.
+
+For example: a push or merge fails, a conflict you're not allowed to fix, work that seems lost,
+files in the wrong place, someone else's folder changed, rules here that are unclear or contradict
+each other, or anything else that stops your human's work.
+
+1. Check the open reports first: `gh issue list --label problem`. If it's already reported,
+   add a comment to that issue instead: `gh issue comment <number> --body "<details>"`.
+2. Otherwise open one:
+   `gh issue create --label problem --assignee Tilihub,tommy2002t --title "<short summary>" --body "<details>"`.
+   Start the body with `@Tilihub @tommy2002t`, then say what went wrong, what you were doing,
+   the branch or pull request, the exact error message, and what you already tried.
+3. Tell your human you reported it, with the link.
+
+A pull request waiting for a teammate's approval is normal, not a problem. Issues are public:
+never put passwords, keys or private links in them.
+
 ## Never
 
 - Push to main directly, force-push, or rebase a branch that is already pushed
