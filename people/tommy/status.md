@@ -8,24 +8,24 @@
 
 ## Now
 
-- Last updated: 2026-11-14 12:34
-- Working on: Ready to agree responsibilities with the team.
-- Branch: tommy/onboarding
+- Last updated: 2026-11-14 13:25
+- Working on: Product concepts and personal planning for zt to use; no UI implementation from this chat.
+- Branch: tommy/concepts-plan
 
 ## Done
 
-- Setup: Git, GitHub CLI signed in, Codex, and repository cloned outside iCloud.
-- Configured a repository-local GitHub noreply email for commits.
-- Prepared status.md and plan.md from the team templates.
+- Completed onboarding and configured a repository-local GitHub noreply email.
+- Recorded Tommy's working agreement: he supplies concepts; zt owns visual design and UI implementation.
+- Closed UI prototype PR #20 without merging and deleted remote branch `tommy/crew-access-ui`.
+- Organized the requested entry/account flow and the broader supplied concepts in `people/tommy/plan.md`.
 
 ## Blocked / need from others
 
-- None.
+- None for planning. Scope decisions and implementation details remain for Tommy, zt, and the team to agree.
 
 ## Next steps
 
-<!-- Written so someone else could continue: which branch, what's half-done,
-     what to do next, what to watch out for. -->
-
-- Agree responsibilities with the team and fill in the personal plan.
-- After onboarding is merged, update `main` and start the next task on a new `tommy/<task>` branch.
+- Continue planning on `tommy/concepts-plan`; read `people/tommy/plan.md` for the ownership agreement and current briefs.
+- Refine Tommy's next concept, document open questions, and push the updated notes for zt.
+- Do not resume or publish the withdrawn UI prototype, and do not create new UI/application code unless Tommy explicitly changes the agreement.
+- Before a break, update this status, commit, and push the planning changes.
