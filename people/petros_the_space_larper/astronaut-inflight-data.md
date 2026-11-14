@@ -1,6 +1,6 @@
 # In-flight astronaut data and NASA monitoring priorities
 
-Primary-source inventory checked 2026-11-14. It covers the health domains in NASA's Spaceflight Standard Measures (SSM), the core vital signs, and environmental measurements that help interpret exposure. Public tables provide the reported values and cadence. Several studies provide individual records through a formal access request. The [original research notes](astronaut-health-research.md) cover measurement methods, radiation physics, additional datasets, and the RadLab requests.
+Primary-source inventory checked 2026-11-14. It covers the health domains in NASA's Spaceflight Standard Measures (SSM), the core vital signs, and environmental measurements that help interpret exposure. Public tables provide the reported values and cadence. Several studies provide individual records through a formal access request. The [original research notes](astronaut-health-research.md) cover measurement methods, radiation physics, additional datasets, and the RadLab requests. The [physical and mental health notes](astronaut-physical-and-mental-health.md) summarize flight studies and proposed app inputs.
 
 ## What NASA monitors
 
