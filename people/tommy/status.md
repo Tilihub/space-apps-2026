@@ -8,12 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:12
+- Last updated: 2026-11-14 14:13
 - Working on: Documenting Tommy's integration, reporting, authorization, privacy, and onboard-storage requirements; planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
+- Opened PR #33 with the reporting, authorization, privacy, and onboard-storage brief.
 - Completed onboarding with a repository-local GitHub noreply email.
 - Withdrew UI PR #20 and its remote branch; no UI/application implementation is being produced in this chat.
 - Published the initial concepts in PR #24 and the Mars-demo/home-screen/mascot/scope clarifications in PR #30.
