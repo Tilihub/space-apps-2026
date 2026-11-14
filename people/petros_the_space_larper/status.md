@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 14:00
-- Working on: Physical and mental health evidence for the prototype
+- Working on: Physical and mental health evidence handoff in [PR #31](https://github.com/Tilihub/space-apps-2026/pull/31)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
