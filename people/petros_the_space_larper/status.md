@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:10
-- Working on: In-flight health countermeasure handoff in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32)
+- Last updated: 2026-11-14 14:22
+- Working on: Deep-space health countermeasure handoff in [PR #35](https://github.com/Tilihub/space-apps-2026/pull/35)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -28,6 +28,8 @@
 - Added [physical and mental health research notes](astronaut-physical-and-mental-health.md), with proposed check-in fields, evidence from flight, and physical indicators beyond the five vital signs.
 - Merged and verified the physical and mental health notes in [PR #31](https://github.com/Tilihub/space-apps-2026/pull/31).
 - Added [mission countermeasures](astronaut-physical-and-mental-health.md#countermeasures-during-missions), with operational practice, flight and ground-analog studies, and proposed prototype support.
+- Merged and verified the general countermeasure notes in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32).
+- Added [deep-space countermeasure notes](astronaut-deep-space-countermeasures.md) covering lunar flight evidence, Mars analogs, robotic radiation measurements, and proposed Mars-transit app workflows.
 
 ## Blocked / need from others
 
@@ -43,3 +45,4 @@
 - Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.
 - Review the proposed well-being fields alongside the existing daily check-in. Use synthetic self-reports in the public demo.
 - Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
+- Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
