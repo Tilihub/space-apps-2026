@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 14:30
-- Working on: Mars-transit prototype scope and offline behavior
+- Working on: Mars-transit prototype scope and offline behavior in [PR #36](https://github.com/Tilihub/space-apps-2026/pull/36)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
