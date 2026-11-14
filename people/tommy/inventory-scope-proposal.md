@@ -2,6 +2,10 @@
 
 Tommy's planning brief, 2026-11-14. This combines his newly supplied inventory specification with existing DAD-1 and the published zt UI inputs. It is a reviewable proposal for Tommy/zt/dadis2, not an implementation request embedded in the supplied document, an adopted interface, or permission to edit another person's files.
 
+## Latest confirmed clarification
+
+See [contract-review.md](contract-review.md) for Tommy’s subsequent answers and PR #49 alignment. QR and manual code are identical; remove the 15-minute session proposal entirely. Same course credential works at later due times. Parallel batch stays, with per-item app confirmation for simulated dispensers. Permitted self-service quantities are user-selected; prescribed quantities/times are fixed. Keep individual allergy profiles and normal-flow blocks. Catalogue size remains proposed.
+
 ## Latest scope direction
 
 Tommy and zt want a smaller inventory scope than the broad standalone prototype. Preserve useful working logic and reduce the demo catalogue and exposed complexity. Do not rebuild DAD-1 from scratch or discard its source.
@@ -40,7 +44,7 @@ These quantities are demo stock, not treatment instructions. Fix each stock unit
 | Grant patient/issuer/item scope, validity and per-dose course schedule | Small catalogue and three user-facing policy groups; backend policy may remain richer | Large medicine catalogue, drug-class education and unrelated inventory screens |
 | All currently due prescribed items authorized together | One active collection transaction, which may contain multiple due items | Multiple independent simultaneous collection sessions |
 | Location mapping, relevant events and persisted collection records | Compact stock/expiry display and a recent activity view | Potency degradation estimates, mission-end coverage forecasts, reserves/lot analytics unless needed by the chosen case |
-| Existing approval/code handling and follow-up hooks | Approved-plan links from symptoms; no new autonomous treatment-selection engine | XP, streaks, timed retrieval rewards, badges, 3D cabinet and restocking tools |
+| Existing approval/code handling, individual allergy checks and follow-up hooks | Approved-plan links from symptoms; no new autonomous treatment-selection engine | XP, streaks, timed retrieval rewards, badges, 3D cabinet and restocking tools |
 | Correct-patient and no-repeat-dose checks | Simulated controller with understandable requested/open-or-dispensed/confirmed/closed states | Detailed physical controller transport, engineering diagnostics and rare hardware failure scenarios |
 
 Some deferred features can remain in the standalone code. The scope decision concerns what the joined demo exposes and relies on, not deleting another person's work. Existing medical assumptions do not become agreed clinical policy through this brief.
@@ -49,9 +53,9 @@ Some deferred features can remain in the standalone code. The scope decision con
 
 | Difference | Proposed resolution consistent with Tommy's prior decisions |
 |---|---|
-| Supplied brief: 15-minute, single-use code. Earlier answer: reusable multi-day prescription QR | Keep the reusable course authorization. Each due collection has a unique transaction/dose-slot record that can be confirmed once. A short-lived access session can be optional; 15 minutes is not a new global prescription lifetime. |
+| Supplied brief: 15-minute, single-use code. Earlier answer: reusable multi-day prescription QR | Keep the reusable course authorization. Each due collection has a unique transaction/dose-slot record that can be confirmed once. Tommy subsequently removed the 15-minute lifetime/session requirement entirely. |
 | Supplied brief: one open compartment at a time. Earlier answer: all due prescribed bins together | Allow one active collection **batch**, containing all and only the currently eligible items. For pills, simulate metered outputs, not access to the full stock package. |
-| Supplied brief: user enters requested quantity | For general supplies, allow a positive available quantity. For medicines, display/freeze the authorized due quantity; the user cannot increase it by typing. |
+| Supplied brief: user enters requested quantity | For permitted self-service items, allow a positive available quantity under existing policy/safety checks. For prescribed items, display/freeze the authorized due quantity; the user cannot increase it by typing. |
 | Supplied brief: user ticks that a plan exists | Link to a stored approved plan/grant. A clearly labelled demo fixture may simulate approval; the checkbox alone does not create one. |
 | Existing DAD contract: collection is recorded as the dose. Supplied brief: collection differs from administration | Store confirmed dispensing/collection once. Keep an optional later use/effectiveness follow-up separate; do not require proof of swallowing. |
 | Existing red tint means approval needed. Supplied brief: red locked, green open | Treat access requirement and physical/demo state as separate labels. zt chooses the final visual language; selecting highlights a location and does not unlock it. |
