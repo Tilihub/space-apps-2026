@@ -14,6 +14,8 @@
 
 ## Done
 
+- Opened PR #47 for the analysis-visibility clarification and researched dispenser option; only Tommy’s planning/status files changed.
+
 - Recorded Tommy’s follow-up excluding detailed history/weekly analysis from astronaut views; relevant clinical access remains role-limited and private journal rules remain intact. Flagged crew-token report API changes for zt/Angelos.
 - Researched NASA medication packaging and individual-dose access; documented a pill-dispenser option with sources, microgravity/packaging and fault/duplicate-delivery constraints. No operational dispenser was verified, hardware requirement adopted, or teammate code changed.
 
