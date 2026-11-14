@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 17:20 (Europe/Athens)
-- Working on: PET-1 demo data handoff and PET-2 wellbeing form proposal
+- Working on: PET-1 demo data handoff and PET-2 wellbeing form proposal in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
