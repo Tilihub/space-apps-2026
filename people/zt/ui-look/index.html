@@ -143,7 +143,7 @@
   .rail a[data-nav]:hover { color: var(--text-2); background: var(--grey-soft); }
   .rail a[data-nav][aria-current="page"] { color: var(--accent); background: var(--fine-soft); }
   .rail-gap { flex: 1; }
-  .content { width: 100%; max-width: 1400px; min-width: 0; padding: 22px 32px 56px; }
+  .content { width: 100%; max-width: 1400px; min-width: 0; padding: 22px 32px 120px; }
 
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 58px; margin-bottom: 22px; }
   .title-block { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -246,13 +246,17 @@
   .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
   .chart .threshold { stroke: var(--alert); stroke-width: 1.5; stroke-dasharray: 5 6; opacity: .85; }
   .chart .threshold-label { fill: var(--alert); font: 600 12px var(--font-ui); }
+  .chart .threshold.warn { stroke: var(--text-3); }
+  .chart .threshold-label.warn { fill: var(--text-2); }
+  .chart-note { display: flex; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-2); }
+  .chart-note .icon { width: 18px; height: 18px; color: var(--text-3); margin-top: 1px; }
   .chart .dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
   .chart .hl { fill: var(--alert); stroke: var(--surface); stroke-width: 3; }
   .chart .hl-label { fill: var(--text); font: 700 12.5px var(--font-ui); }
 
   /* ---------- Home ---------- */
-  .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto 1fr; gap: 20px; }
-  .body-card { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; }
+  .home-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: auto 1fr; gap: 20px; }
+  .body-card { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
   .readiness-body { display: flex; align-items: center; gap: 26px; }
   .readiness-text { display: grid; gap: 14px; min-width: 0; }
   .task-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
@@ -301,6 +305,13 @@
   .pt.red .pt-status { fill: var(--alert); }
   .pt:hover .core, .pt.focus .core { r: 7.5; }
   .pt.dim { opacity: .3; }
+  .pt.sel .halo { fill: var(--accent); opacity: .35; animation: none; }
+  .pt.sel .core { fill: var(--accent); r: 8; }
+  .pt.sel .pt-name { fill: var(--accent); }
+  .figure.report .pt-name { font-size: 17px; }
+  .figure.view .pt { cursor: default; }
+  .figure.view .pt:hover .core { r: 5.5; }
+  .figure-wrap.sm { min-height: 300px; }
   @keyframes pulse { 0% { transform: scale(.6); opacity: .55; } 100% { transform: scale(1.9); opacity: 0; } }
 
   /* ---------- Readiness, tasks, body point ---------- */
@@ -319,7 +330,21 @@
   .question { border-color: var(--alert-soft); }
 
   /* ---------- Check-in ---------- */
-  .checkin-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+  .checkin-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 18px; align-items: start; }
+  .scale { margin-bottom: 20px; }
+  .scale-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .scale-head span { font-weight: 600; }
+  .boxes { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; margin-bottom: 6px; }
+  .box { height: 42px; padding: 0; border-radius: 10px; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-2); font: 600 15px var(--font-display); }
+  .box:hover { border-color: var(--accent); color: var(--text); }
+  .box[aria-pressed="true"] { background: var(--btn-bg); border-color: transparent; color: var(--on-accent); }
+  .symptom-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .symptom-card.all-good .symptom-layout { opacity: .35; pointer-events: none; }
+  .area-name { font: 600 22px/1.2 var(--font-display); }
+  select.input { appearance: none; -webkit-appearance: none; padding-right: 40px; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A97AD' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; }
+  .all-good-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 16px; margin-top: 4px; border-top: 1px solid var(--border); }
+  .btn.ghost[aria-pressed="true"] { background: var(--fine-soft); border-color: var(--accent); color: var(--accent); }
+  .checkin-foot { display: flex; align-items: center; justify-content: flex-start; gap: 16px; flex-wrap: wrap; margin-top: 18px; }
   .slider { margin-bottom: 20px; }
   .slider-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
   .slider-head span { font-weight: 600; }
@@ -351,7 +376,7 @@
   .metric-val small { font: 500 14px var(--font-ui); color: var(--text-3); margin-left: 5px; letter-spacing: 0; }
   .metric .pill { white-space: normal; }
   .metric.red { border-color: var(--alert-soft); }
-  .habitat-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 18px; }
+  .habitat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
   .insight-card { display: grid; gap: 12px; align-content: start; }
   .insight-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--fine-soft); color: var(--accent); }
   .insight-icon.red { background: var(--alert-soft); color: var(--alert); }
@@ -366,8 +391,31 @@
   .empty-card { display: grid; gap: 10px; justify-items: start; }
 
   /* ---------- Mind, companion ---------- */
-  .mind-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-  .mind-grid .journal { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 4px; }
+  .mind-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; align-items: start; }
+  .mind-grid .psych { grid-column: 2; grid-row: 1 / span 2; }
+  .journal { display: grid; gap: 4px; }
+  .chat-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .mascot-md { width: 56px; height: 56px; flex: none; }
+  .mascot-md svg { width: 100%; height: 100%; overflow: visible; }
+  .thread { display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 85%; margin: 0; padding: 11px 14px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; }
+  .msg.them { align-self: flex-start; border-bottom-left-radius: 6px; }
+  .msg.me { align-self: flex-end; background: var(--fine-soft); border-color: transparent; border-bottom-right-radius: 6px; }
+  .msg small { display: block; margin-top: 4px; font-size: 11.5px; color: var(--text-3); }
+  .msg.pending small { color: var(--accent); }
+  .composer { display: flex; align-items: flex-end; gap: 10px; margin-top: 14px; }
+  .composer .input { flex: 1; }
+
+  /* ---------- Fitness ---------- */
+  .fit-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .session + .session { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .session-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .session-head b, .session-head small { display: block; }
+  .session-head small { color: var(--text-3); font-size: 13px; }
+  .ex { display: flex; align-items: center; gap: 12px; padding: 8px 0 8px 56px; }
+  .week-row { display: flex; gap: 14px; padding: 9px 12px; border-radius: 12px; }
+  .week-row span:first-child { width: 48px; flex: none; color: var(--text-3); font-weight: 600; }
+  .week-row.today { background: var(--fine-soft); color: var(--accent); font-weight: 600; }
   .companion-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 30px; align-items: center; margin-bottom: 18px; }
   .companion-hero p { margin: 8px 0 18px; max-width: 520px; }
   .mascot-lg { width: 150px; height: 150px; }
@@ -467,8 +515,8 @@
     .clock .eyebrow, .chip-demo { display: none; }
   }
   @media (max-width: 880px) {
-    .home-grid, .point-grid, .habitat-grid, .med-grid, .mind-grid, .checkin-grid { grid-template-columns: minmax(0, 1fr); }
-    .body-card, .mind-grid .journal { grid-column: auto; grid-row: auto; }
+    .home-grid, .habitat-grid, .med-grid, .mind-grid, .checkin-grid, .fit-grid { grid-template-columns: minmax(0, 1fr); }
+    .body-card, .mind-grid .psych { grid-column: auto; grid-row: auto; }
     .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 20px; }
     .me > span:last-child { display: none; }
     .me { padding: 0 4px; }
@@ -488,7 +536,8 @@
     .clock { padding: 0 12px; }
     .factor-grid, .crew-grid, .case-grid, .timeline { grid-template-columns: minmax(0, 1fr); }
     .readiness-body { gap: 18px; }
-    .companion-hero { grid-template-columns: minmax(0, 1fr); }
+    .symptom-layout { grid-template-columns: minmax(0, 1fr); }
+    .box { height: 36px; font-size: 13px; }
     .companion { right: 14px; bottom: 84px; }
     .orb { width: 60px; height: 60px; }
     .cp { width: min(330px, calc(100vw - 28px)); }
@@ -518,7 +567,8 @@
   <symbol id="i-logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6" fill="currentColor" stroke="none"/><ellipse cx="16" cy="16" rx="13.5" ry="5.5" transform="rotate(-28 16 16)"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5.5h4V20"/></symbol>
   <symbol id="i-checkin" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="m9 13 2 2 4-4.5"/></symbol>
-  <symbol id="i-habitat" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 3.5-4.5"/><path d="M4 20.5h16"/></symbol>
+  <symbol id="i-habitat" viewBox="0 0 24 24"><path d="M12 2.8c3 2.2 4.4 5.6 4.2 9.6L14.4 16H9.6l-1.8-3.6C7.6 8.4 9 5 12 2.8z"/><circle cx="12" cy="9.3" r="1.7"/><path d="M7.9 12.2 5.2 14.6l1.2 3 2.4-1.6M16.1 12.2l2.7 2.4-1.2 3-2.4-1.6"/><path d="M10.6 18.6 12 21.2l1.4-2.6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 7.8h.01" stroke-width="2.6"/></symbol>
   <symbol id="i-medbay" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M12 8v8M8 12h8"/></symbol>
   <symbol id="i-mind" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="2.8"/></symbol>
   <symbol id="i-companion" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
@@ -548,10 +598,10 @@
     <a class="brand" href="#home" aria-label="Home"><svg class="icon" aria-hidden="true"><use href="#i-logo"/></svg></a>
     <a href="#home" data-nav="home"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a>
     <a href="#checkin" data-nav="checkin"><svg class="icon" aria-hidden="true"><use href="#i-checkin"/></svg><span>Check-in</span></a>
+    <a href="#fitness" data-nav="fitness"><svg class="icon" aria-hidden="true"><use href="#i-workout"/></svg><span>Fitness</span></a>
     <a href="#habitat" data-nav="habitat"><svg class="icon" aria-hidden="true"><use href="#i-habitat"/></svg><span>Habitat</span></a>
     <a href="#medbay" data-nav="medbay"><svg class="icon" aria-hidden="true"><use href="#i-medbay"/></svg><span>Med bay</span></a>
     <a href="#mind" data-nav="mind"><svg class="icon" aria-hidden="true"><use href="#i-mind"/></svg><span>Mind</span></a>
-    <a href="#companion" data-nav="companion"><svg class="icon" aria-hidden="true"><use href="#i-companion"/></svg><span>Companion</span></a>
     <span class="rail-gap"></span>
     <a href="#crew" data-nav="crew" id="nav-crew"><svg class="icon" aria-hidden="true"><use href="#i-crew"/></svg><span>Crew</span></a>
   </nav>
@@ -562,12 +612,11 @@
     <section class="screen" id="home"></section>
     <section class="screen" id="readiness"></section>
     <section class="screen" id="tasks"></section>
-    <section class="screen" id="point"></section>
     <section class="screen" id="checkin"></section>
     <section class="screen" id="habitat"></section>
     <section class="screen" id="medbay"></section>
     <section class="screen" id="mind"></section>
-    <section class="screen" id="companion"></section>
+    <section class="screen" id="fitness"></section>
     <section class="screen" id="crew"></section>
     <section class="screen" id="case"></section>
   </main>
@@ -587,23 +636,46 @@
   // ---- Fake data (demo only): swap this block for the real pieces later ----
   const mission = { day: 42, time: '07:15' }; // one mission clock for everyone (still to agree)
 
-  const bodyPoints = { head: 'Head', eyes: 'Eyes', heart: 'Heart', lungs: 'Lungs', gut: 'Gut', muscles: 'Muscles and bones' };
+  // Body areas you can report a symptom on (the 3D model uses the same keys)
+  const bodyAreas = { head: 'Head', eyes: 'Eyes', neck: 'Neck', chest: 'Chest', arms: 'Arms', back: 'Back', stomach: 'Stomach', legs: 'Legs' };
+  const symptomTypes = ['Pain', 'Numbness', 'Stiffness', 'Irritation', 'Other'];
 
+  // Cabin readings: the same measurements as potest's environment monitor, with its warning and danger limits
   const habitat = {
-    co2: { now: 3100, peak: 5400, peakTime: '03:00' }, // ppm, like potest's monitor
-    temperature: 22.6, // °C
-    humidity: 46, // %
-    radiation: 0.5, // mSv per day
-    // CO₂ every hour, from 08:00 yesterday to 07:00 today (ppm)
-    co2Series: [2900, 3000, 3100, 3050, 3150, 3200, 3100, 3000, 2950, 3050, 3200, 3300, 3450, 3700, 4000, 4300, 4650, 4950, 5250, 5400, 5150, 4600, 3900, 3100],
-    headacheRisk: 4000, // example line on the chart, not an agreed limit
+    co2: { now: 3100, peak: 4400, peakTime: '03:00', warning: 3500, danger: 3900 }, // ppm
+    temperature: 22.6, // °C (warning at 19 or below, 27 or above)
+    humidity: 46, // % (warning at 30 or below, 70 or above)
+    radiation: 16, // dose rate, µGy per hour
+    // Every hour, from 08:00 yesterday to 07:00 today
+    co2Series: [2900, 3000, 3100, 3050, 3150, 3200, 3100, 3000, 2950, 3050, 3200, 3300, 3400, 3550, 3700, 3850, 4000, 4150, 4300, 4400, 4250, 3950, 3500, 3100],
+    radiationSeries: [15, 16, 15, 17, 16, 15, 16, 24, 31, 22, 16, 15, 16, 15, 16, 17, 16, 15, 23, 29, 20, 16, 15, 16],
+  };
+
+  // Today's training from Petros's weekly program (cycle day 1 = mission day 42)
+  const fitness = {
+    cycleDay: 1,
+    sessions: [
+      { title: 'Resistance', device: 'ARED', icon: 'workout', exercises: [['Squat', '4 × 12'], ['Deadlift', '4 × 12'], ['Heel raise', '4 × 12'], ['Bench press', '4 × 12']] },
+      { title: 'Aerobic', device: 'CEVIS cycle', icon: 'activity', when: 'Best 4–6 hours after resistance', exercises: [['Warm-up', '5 min'], ['Steady ride', '30 min'], ['Cool-down', '5 min']] },
+    ],
+    week: ['Resistance + cycle', 'Cycle intervals', 'Resistance + treadmill', 'Cycle sprints', 'Resistance + cycle', 'Treadmill intervals', 'Rest'],
+  };
+
+  // Messages with the psychologist on Earth take a while each way (example delay)
+  const psych = {
+    delayMin: 12,
+    messages: [
+      { from: 'them', text: 'Hi! How are you settling into the new sleep schedule?', sent: 'Day 41 · 19:02', arrived: 'Day 41 · 19:14' },
+      { from: 'me', text: 'Better than last week. Some nights are still short.', sent: 'Day 41 · 21:30', arrived: 'Day 41 · 21:42' },
+      { from: 'them', text: "Thanks for telling me. Let's look at your evening routine in our next call.", sent: 'Day 42 · 06:40', arrived: 'Day 42 · 06:52' },
+    ],
   };
 
   const crew = [
     {
       id: 1, name: 'Astronaut A', initials: 'A', role: 'astronaut',
       readiness: 58, readinessNormal: 78, // 0–100 is a placeholder: the readiness definition is still open
-      checkin: { sleep: 4.5, mood: 5, stress: 6, fatigue: 7 }, // sleep in hours, the rest 1–10
+      checkin: { sleep: 3, mood: 5, stress: 6, fatigue: 7 }, // how they feel, 1–10 (sleep time itself comes from the wearable)
       factors: [
         { label: 'Sleep', today: '4 h 30 min', normal: '7 h 10 min', status: 'red', trend: [7.2, 7.0, 7.3, 6.9, 7.1, 7.2, 4.5] },
         { label: 'Resting heart rate', today: '66 bpm', normal: '61 bpm', status: 'blue', trend: [61, 60, 62, 61, 60, 62, 66] },
@@ -615,12 +687,11 @@
       tasks: [
         { title: 'Daily check-in', time: '07:00', done: true, icon: 'checkin', link: '#checkin' },
         { title: 'Did the ibuprofen help?', time: '07:30', done: false, icon: 'pill', link: '#medbay' },
-        { title: 'Measurements', time: '07:45', done: false, icon: 'activity', link: '#checkin' },
-        { title: 'Workout', time: '09:00', done: false, icon: 'workout', link: null },
+        { title: 'Workout', time: '09:00', done: false, icon: 'workout', link: '#fitness' },
       ],
-      // Body points that are red. Every other point is blue.
+      // Body areas with a reported symptom: highlighted on the home body, red in check-in
       alerts: {
-        head: { short: 'Headache', severity: 6, note: 'Headache since 06:50, severity 6 of 10. You slept 4 h 30 min, and cabin CO₂ was high overnight.', question: 'Is the headache worse than when you woke up?' },
+        head: { type: 'Pain', short: 'Headache', severity: 6, note: 'Headache since 06:50, severity 6 of 10. You slept 4 h 30 min, and cabin CO₂ was high overnight.', question: 'Is the headache worse than when you woke up?', notes: 'Started when I woke up. Worse when I look at screens.' },
       },
       meds: {
         suggestion: { name: 'Paracetamol 500 mg', reason: 'For the headache you reported at 06:50', summary: 'Headache, reported at 06:50', compartment: 'B3', approved: false, declined: false, collected: false },
@@ -637,7 +708,7 @@
     {
       id: 2, name: 'Astronaut B', initials: 'B', role: 'astronaut',
       readiness: 86, readinessNormal: 82,
-      checkin: { sleep: 7.5, mood: 8, stress: 3, fatigue: 2 },
+      checkin: { sleep: 8, mood: 8, stress: 3, fatigue: 2 },
       factors: [
         { label: 'Sleep', today: '7 h 30 min', normal: '7 h 20 min', status: 'blue', trend: [7.3, 7.1, 7.4, 7.2, 7.5, 7.3, 7.5] },
         { label: 'Resting heart rate', today: '54 bpm', normal: '55 bpm', status: 'blue', trend: [55, 56, 54, 55, 55, 54, 54] },
@@ -648,8 +719,7 @@
       ],
       tasks: [
         { title: 'Daily check-in', time: '06:45', done: true, icon: 'checkin', link: '#checkin' },
-        { title: 'Measurements', time: '07:00', done: true, icon: 'activity', link: '#checkin' },
-        { title: 'Workout', time: '07:30', done: false, icon: 'workout', link: null },
+        { title: 'Workout', time: '07:30', done: false, icon: 'workout', link: '#fitness' },
       ],
       alerts: {},
       meds: {
@@ -664,7 +734,7 @@
     {
       id: 3, name: 'Astronaut C', initials: 'C', role: 'medical officer',
       readiness: 74, readinessNormal: 76,
-      checkin: { sleep: 6.5, mood: 7, stress: 5, fatigue: 4 },
+      checkin: { sleep: 6, mood: 7, stress: 5, fatigue: 4 },
       factors: [
         { label: 'Sleep', today: '6 h 30 min', normal: '6 h 50 min', status: 'blue', trend: [6.8, 7.0, 6.7, 6.9, 6.8, 6.9, 6.5] },
         { label: 'Resting heart rate', today: '63 bpm', normal: '62 bpm', status: 'blue', trend: [62, 61, 63, 62, 62, 61, 63] },
@@ -676,8 +746,7 @@
       tasks: [
         { title: 'Daily check-in', time: '06:40', done: true, icon: 'checkin', link: '#checkin' },
         { title: 'Review 1 medicine request', time: '07:20', done: false, icon: 'crew', link: '#crew' },
-        { title: 'Measurements', time: '08:00', done: false, icon: 'activity', link: '#checkin' },
-        { title: 'Workout', time: '14:00', done: false, icon: 'workout', link: null },
+        { title: 'Workout', time: '14:00', done: false, icon: 'workout', link: '#fitness' },
       ],
       alerts: {},
       meds: { suggestion: null, log: [] },
@@ -694,7 +763,7 @@
       created: '06:52',
       status: 'Draft, not sent',
       timeline: [
-        { time: '03:00', title: 'Cabin CO₂ peak', text: '5,400 ppm', kind: 'red' },
+        { time: '03:00', title: 'Cabin CO₂ peak', text: '4,400 ppm, above the limit', kind: 'red' },
         { time: '06:30', title: 'Woke up', text: 'Slept 4 h 30 min', kind: 'red' },
         { time: '06:50', title: 'Headache reported', text: 'Severity 6 of 10', kind: 'red' },
         { time: '07:05', title: 'Medicine suggested', text: 'Paracetamol 500 mg, waiting for approval', kind: 'grey' },
@@ -702,7 +771,7 @@
       blocks: [
         { title: 'Health change', rows: [['Sleep', '4 h 30 min', 'Normal 7 h 10 min'], ['Fatigue', '7 / 10', 'Normal 3 / 10'], ['Resting heart rate', '66 bpm', 'Normal 61 bpm']] },
         { title: 'Symptom', rows: [['Headache', 'Severity 6 / 10', 'Since 06:50'], ['Body area', 'Head', '']] },
-        { title: 'Cabin conditions', rows: [['CO₂ peak', '5,400 ppm', 'At 03:00'], ['CO₂ now', '3,100 ppm', 'At 07:00'], ['Temperature', '22.6 °C', 'Normal']] },
+        { title: 'Cabin conditions', rows: [['CO₂ peak', '4,400 ppm', 'At 03:00, limit 3,900'], ['CO₂ now', '3,100 ppm', 'At 07:00'], ['Temperature', '22.6 °C', 'Normal']] },
         { title: 'Doses', rows: [['Paracetamol 500 mg', 'Suggested 07:05', 'Waiting for approval'], ['Ibuprofen 200 mg', 'Day 41 · 21:10', 'Muscle pain']] },
       ],
     },
@@ -711,10 +780,14 @@
 
   // ---- View code: how the data is shown ----
   let me = crew.find((c) => c.id === Number(new URLSearchParams(location.search).get('crew'))) ?? crew[0];
+  // What the astronaut is filling in on the check-in symptom report
+  const freshDraft = () => ({ area: Object.keys(me.alerts)[0] ?? null, allGood: false });
+  let draft = freshDraft();
 
   const $ = (sel) => document.querySelector(sel);
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const num = (n) => n.toLocaleString('en-US');
+  const esc = (t) => t.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const pill = (status, text) => `<span class="pill ${status}"><span class="dot"></span>${text}</span>`;
   const fmtHours = (h) => { const m = Math.round((h % 1) * 60); return m ? `${Math.floor(h)} h ${m} min` : `${h} h`; };
@@ -753,7 +826,7 @@
     </svg>`;
   };
 
-  const lineChart = ({ values, min, max, ticks, xLabels, threshold = null, thresholdLabel = '', peak = null, peakLabel = '', dots = false, w = 680, h = 230 }) => {
+  const lineChart = ({ values, min, max, ticks, xLabels, thresholds = [], peak = null, peakLabel = '', dots = false, w = 680, h = 230 }) => {
     const pl = 50, pr = 16, pt = 22, pb = 32;
     const f = (n) => n.toFixed(1);
     const X = (i) => pl + (i / (values.length - 1)) * (w - pl - pr);
@@ -762,7 +835,7 @@
     const area = `${line} L${f(X(values.length - 1))} ${h - pb} L${f(X(0))} ${h - pb} Z`;
     return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Line chart">
       ${ticks.map((t) => `<line class="grid" x1="${pl}" x2="${w - pr}" y1="${f(Y(t))}" y2="${f(Y(t))}"/><text class="axis" x="${pl - 12}" y="${f(Y(t) + 4)}" text-anchor="end">${num(t)}</text>`).join('')}
-      ${threshold !== null ? `<line class="threshold" x1="${pl}" x2="${w - pr}" y1="${f(Y(threshold))}" y2="${f(Y(threshold))}"/><text class="threshold-label" x="${pl + 8}" y="${f(Y(threshold) - 8)}">${thresholdLabel}</text>` : ''}
+      ${thresholds.map((t) => `<line class="threshold ${t.cls ?? ''}" x1="${pl}" x2="${w - pr}" y1="${f(Y(t.value))}" y2="${f(Y(t.value))}"/><text class="threshold-label ${t.cls ?? ''}" x="${pl + 8}" y="${f(Y(t.value) - 7)}">${t.label}</text>`).join('')}
       <path class="area" d="${area}"/>
       <path class="line" d="${line}"/>
       ${dots ? values.map((v, i) => `<circle class="dot" cx="${f(X(i))}" cy="${f(Y(v))}" r="4.5"/>`).join('') : ''}
@@ -771,30 +844,37 @@
     </svg>`;
   };
 
-  // Where each measurement point sits on the body figure, and which side its label goes
-  const pointLayout = {
-    head: { x: 200, y: 24, side: 'L' },
+  // Where each body area sits on the 2D figure, and which side its label goes (the 3D model will replace this)
+  const areaLayout = {
+    head: { x: 200, y: 22, side: 'L' },
     eyes: { x: 211, y: 42, side: 'R' },
-    lungs: { x: 180, y: 126, side: 'L' },
-    heart: { x: 214, y: 140, side: 'R' },
-    gut: { x: 200, y: 204, side: 'L' },
-    muscles: { x: 221, y: 318, side: 'R' },
+    neck: { x: 200, y: 78, side: 'L' },
+    chest: { x: 214, y: 128, side: 'R' },
+    back: { x: 186, y: 166, side: 'L' },
+    arms: { x: 266, y: 196, side: 'R' },
+    stomach: { x: 200, y: 214, side: 'L' },
+    legs: { x: 221, y: 330, side: 'R' },
   };
 
-  const bodyFigure = (p, focus = null) => {
-    const points = Object.entries(pointLayout).map(([key, pos]) => {
+  // mode 'view' (home): only the areas with a reported symptom, not clickable.
+  // mode 'report' (check-in): every area can be tapped to pick where the symptom is.
+  const bodyFigure = (p, mode, selected = null) => {
+    const keys = Object.keys(areaLayout).filter((key) => mode === 'report' || p.alerts[key]);
+    const points = keys.map((key) => {
+      const pos = areaLayout[key];
       const a = p.alerts[key];
       const left = pos.side === 'L';
-      const cls = ['pt', a ? 'red' : 'blue', focus === key ? 'focus' : '', focus && focus !== key ? 'dim' : ''].join(' ');
-      return `<a href="#point:${key}" class="${cls}" aria-label="${bodyPoints[key]}: ${a ? a.short : 'fine'}">
+      const cls = ['pt', a ? 'red' : 'blue', selected === key ? 'sel' : ''].join(' ');
+      const attrs = mode === 'report' ? `data-action="area" data-key="${key}" role="button" tabindex="0" aria-label="${bodyAreas[key]}"` : '';
+      return `<g class="${cls}" ${attrs}>
         <line class="lead-line" x1="${pos.x}" y1="${pos.y}" x2="${left ? 112 : 288}" y2="${pos.y}"/>
         <circle class="halo" cx="${pos.x}" cy="${pos.y}" r="13"/>
         <circle class="core" cx="${pos.x}" cy="${pos.y}" r="5.5"/>
-        <text class="pt-name" x="${left ? 104 : 296}" y="${pos.y - 3}" text-anchor="${left ? 'end' : 'start'}">${bodyPoints[key]}</text>
-        <text class="pt-status" x="${left ? 104 : 296}" y="${pos.y + 13}" text-anchor="${left ? 'end' : 'start'}">${a ? a.short : 'Fine'}</text>
-      </a>`;
+        <text class="pt-name" x="${left ? 104 : 296}" y="${pos.y - 3}" text-anchor="${left ? 'end' : 'start'}">${bodyAreas[key]}</text>
+        <text class="pt-status" x="${left ? 104 : 296}" y="${pos.y + 13}" text-anchor="${left ? 'end' : 'start'}">${a ? a.short : ''}</text>
+      </g>`;
     }).join('');
-    return `<svg class="figure" viewBox="-30 0 460 440" role="img" aria-label="Body figure with measurement points">
+    return `<svg class="figure ${mode}" viewBox="-30 0 460 440" role="img" aria-label="Body figure">
       <ellipse class="pedestal" cx="200" cy="430" rx="80" ry="9"/>
       <use href="#fig-arms" class="fig-line" stroke-width="23"/>
       <use href="#fig-legs" class="fig-line" stroke-width="29"/>
@@ -831,12 +911,13 @@
       ${pill(status, note)}
     </div>`;
 
-  const measurements = [
-    { icon: 'activity', name: 'Resting heart rate', how: 'Sit still and breathe normally', time: '1 min' },
-    { icon: 'gauge', name: 'Blood pressure', how: 'Cuff on your upper arm, relax', time: '2 min' },
-    { icon: 'drop', name: 'Blood oxygen', how: 'Clip the sensor on a finger', time: '30 s' },
-    { icon: 'thermo', name: 'Temperature', how: 'Sensor under the tongue', time: '1 min' },
-  ];
+  // A 1–10 question answered by tapping a box
+  const scale = ({ label, q, value, lo, hi }) => `
+    <div class="scale" role="group" aria-label="${label}">
+      <div class="scale-head"><span>${label}</span><small class="faint">${q}</small></div>
+      <div class="boxes">${Array.from({ length: 10 }, (_, i) => i + 1).map((n) => `<button class="box" data-action="pick" aria-pressed="${n === value}">${n}</button>`).join('')}</div>
+      <div class="anchors"><span>1 · ${lo}</span><span>10 · ${hi}</span></div>
+    </div>`;
 
   // ---- One function per screen ----
   const screens = {
@@ -864,6 +945,11 @@
       const reds = redFactors(me);
       const next = nextTask(me);
       return `<div class="home-grid">
+        <div class="card body-card">
+          <div class="card-head"><span class="eyebrow">Body</span><a class="more" href="#checkin">Report a symptom ${icon('chev')}</a></div>
+          <div class="figure-wrap">${bodyFigure(me, 'view')}<span class="scan" aria-hidden="true"></span></div>
+          <p class="hint">${Object.keys(me.alerts).length ? 'Highlighted: what you reported today' : 'No symptoms reported today'}</p>
+        </div>
         <a class="card" href="#readiness">
           <div class="card-head"><span class="eyebrow">Readiness</span><span class="more">Details ${icon('chev')}</span></div>
           <div class="readiness-body">
@@ -886,11 +972,6 @@
             </div>`).join('')}
           </div>
         </a>
-        <div class="card body-card">
-          <div class="card-head"><span class="eyebrow">Body</span><span class="legend"><span><i class="b"></i>Fine</span><span><i class="r"></i>Look at this</span></span></div>
-          <div class="figure-wrap">${bodyFigure(me)}<span class="scan" aria-hidden="true"></span></div>
-          <p class="hint">Tap a point for details</p>
-        </div>
       </div>`;
     },
 
@@ -931,82 +1012,65 @@
       </div>`;
     },
 
-    point: (key) => {
-      if (!bodyPoints[key]) return screens.home();
-      const a = me.alerts[key];
-      return `<div class="point-grid">
-        <div class="card">${bodyFigure(me, key)}</div>
-        <div class="stack">
-          <div class="card">
-            <div class="card-head"><span class="eyebrow">${bodyPoints[key]}</span>${a ? pill('red', a.short) : pill('blue', 'Fine')}</div>
-            <p class="lead">${a ? a.note : 'Everything here is within your normal today.'}</p>
-          </div>
-          ${a ? `<div class="card question">
-            <div class="card-head"><span class="eyebrow">Question for you</span></div>
-            <p class="lead" style="margin-bottom: 16px">${a.question}</p>
-            <div class="btn-row"><button class="btn ghost" data-action="answer">Yes</button><button class="btn ghost" data-action="answer">No</button></div>
-          </div>` : ''}
-          <div class="btn-row"><a class="btn primary" href="#checkin">Report a symptom here</a><a class="btn ghost" href="#home">Back to home</a></div>
-        </div>
-      </div>`;
-    },
-
     checkin: () => {
       const c = me.checkin;
-      const area = Object.keys(me.alerts)[0] ?? null;
+      const a = draft.area ? me.alerts[draft.area] : null;
       const saved = me.tasks.find((t) => t.title === 'Daily check-in');
       return `<div class="checkin-grid">
         <div class="card">
-          <div class="card-head" style="margin-bottom: 0"><h3>Daily check-in</h3>${saved && saved.done ? pill('blue', `Saved at ${saved.time}`) : ''}</div>
-          <p class="sub">How was your night, and how do you feel now?</p>
-          ${slider({ label: 'Sleep', min: 0, max: 12, step: 0.5, value: c.sleep, kind: 'hours', lo: '0 h', hi: '12 h' })}
-          ${slider({ label: 'Mood', min: 1, max: 10, value: c.mood, kind: 'scale', lo: '1 · Very low', hi: '10 · Very good' })}
-          ${slider({ label: 'Stress', min: 1, max: 10, value: c.stress, kind: 'scale', lo: '1 · Calm', hi: '10 · Very stressed' })}
-          ${slider({ label: 'Fatigue', min: 1, max: 10, value: c.fatigue, kind: 'scale', lo: '1 · Rested', hi: '10 · Exhausted' })}
-          <a class="btn primary wide" href="#home">Save check-in</a>
+          <div class="card-head" style="margin-bottom: 0"><h3>How do you feel?</h3>${saved && saved.done ? pill('blue', `Sent at ${saved.time}`) : ''}</div>
+          <p class="sub">Tap a number from 1 to 10.</p>
+          ${scale({ label: 'Sleep', q: 'How well did you sleep?', value: c.sleep, lo: 'Very badly', hi: 'Very well' })}
+          ${scale({ label: 'Mood', q: 'How is your mood?', value: c.mood, lo: 'Very low', hi: 'Very good' })}
+          ${scale({ label: 'Stress', q: 'How stressed are you?', value: c.stress, lo: 'Calm', hi: 'Very stressed' })}
+          ${scale({ label: 'Fatigue', q: 'How tired are you?', value: c.fatigue, lo: 'Rested', hi: 'Exhausted' })}
         </div>
-        <div class="card">
-          <h3>Symptom report</h3>
-          <p class="sub">Something feels wrong? Tell us where and how bad.</p>
-          <div class="field"><span>Body area</span><div class="select-chips">${Object.entries(bodyPoints).map(([k, label]) => `<button class="chip-btn" data-action="chip" aria-pressed="${k === area}">${label}</button>`).join('')}</div></div>
-          <label class="field"><span>Symptom</span><input class="input" type="text" placeholder="For example: headache" value="${area ? me.alerts[area].short : ''}"></label>
-          ${slider({ label: 'Severity', min: 0, max: 10, value: area ? me.alerts[area].severity : 0, kind: 'scale', lo: '0 · None', hi: '10 · Worst' })}
-          <p class="note">${icon('lock')} Shared with your medical officer only</p>
-          <a class="btn primary wide" href="#medbay">Send report</a>
+        <div class="card symptom-card ${draft.allGood ? 'all-good' : ''}">
+          <div class="card-head" style="margin-bottom: 0"><h3>Symptoms</h3></div>
+          <p class="sub">Tap the body where something hurts or feels wrong.</p>
+          <div class="symptom-layout">
+            <div class="figure-wrap sm">${bodyFigure(me, 'report', draft.area)}</div>
+            <div>
+              <div class="field"><span>Area</span><div class="area-name" id="area-name">${draft.area ? bodyAreas[draft.area] : 'Tap the body'}</div></div>
+              <label class="field"><span>Symptom</span><select class="input" id="symptom-type">${symptomTypes.map((t) => `<option ${a && a.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+              <label class="field" id="other-field" hidden><span>Describe it</span><input class="input" type="text" placeholder="What do you feel?"></label>
+              ${slider({ label: 'Severity', min: 0, max: 10, value: a ? a.severity : 0, kind: 'scale', lo: '0 · None', hi: '10 · Worst' })}
+              <label class="field"><span>Notes (optional)</span><textarea class="input" rows="3" placeholder="Anything else you want to add?">${a && a.notes ? a.notes : ''}</textarea></label>
+            </div>
+          </div>
+          <div class="all-good-row">
+            <span class="note" style="margin: 0">${icon('lock')} Shared with your medical officer only</span>
+            <button class="btn ghost" data-action="allgood" aria-pressed="${draft.allGood}">${icon('check')} No symptoms, all good</button>
+          </div>
         </div>
-        <div class="card">
-          <h3>Guided measurements</h3>
-          <p class="sub">Step by step, about 5 minutes in total.</p>
-          ${measurements.map((m) => `
-            <div class="measure">
-              <span class="row-icon">${icon(m.icon)}</span>
-              <span class="grow"><b>${m.name}</b><small>${m.how} · ${m.time}</small></span>
-              <button class="btn ghost sm">Start</button>
-            </div>`).join('')}
-        </div>
+      </div>
+      <div class="checkin-foot">
+        <a class="btn primary" href="#home">Send daily report</a>
+        <p class="faint small">Heart rate, sleep time and other measurements come from your wearable sensors automatically.</p>
       </div>`;
     },
 
     habitat: () => {
       const h = habitat;
-      const high = h.co2.peak > h.headacheRisk;
+      const over = h.co2.peak >= h.co2.danger;
       const headache = Boolean(me.alerts.head);
+      const hours = [[0, '08:00'], [6, '14:00'], [12, '20:00'], [18, '02:00'], [23, '07:00']];
       return `<div class="metric-grid">
-        ${metric('CO₂', 'wind', num(h.co2.now), 'ppm', high ? 'red' : 'blue', high ? `High overnight: ${num(h.co2.peak)} at ${h.co2.peakTime}` : 'Normal')}
+        ${metric('CO₂', 'wind', num(h.co2.now), 'ppm', over ? 'red' : 'blue', over ? `Above the limit overnight: ${num(h.co2.peak)} at ${h.co2.peakTime}` : 'Normal')}
         ${metric('Temperature', 'thermo', h.temperature, '°C', 'blue', 'Normal')}
         ${metric('Humidity', 'drop', h.humidity, '%', 'blue', 'Normal')}
-        ${metric('Radiation', 'shield', h.radiation, 'mSv / day', 'blue', 'Normal')}
+        ${metric('Radiation', 'shield', h.radiation, 'µGy / h', 'blue', 'Normal')}
       </div>
       <div class="habitat-grid">
         <div class="card">
           <div class="card-head"><span class="eyebrow">CO₂ · last 24 hours</span><span class="faint small">ppm</span></div>
-          ${lineChart({ values: h.co2Series, min: 2000, max: 6000, ticks: [2000, 4000, 6000], xLabels: [[0, '08:00'], [6, '14:00'], [12, '20:00'], [18, '02:00'], [23, '07:00']], threshold: h.headacheRisk, thresholdLabel: 'Headache risk (example)', peak: h.co2Series.indexOf(h.co2.peak), peakLabel: `${num(h.co2.peak)} at ${h.co2.peakTime}` })}
+          ${lineChart({ values: h.co2Series, min: 2000, max: 5000, ticks: [2000, 3000, 4000, 5000], xLabels: hours, thresholds: [{ value: h.co2.warning, label: `Warning ${num(h.co2.warning)}`, cls: 'warn' }, { value: h.co2.danger, label: `Danger ${num(h.co2.danger)}` }], peak: h.co2Series.indexOf(h.co2.peak), peakLabel: `${num(h.co2.peak)} at ${h.co2.peakTime}` })}
+          <p class="chart-note">${icon('info')}<span>High CO₂ is a known cause of headaches.${headache ? ` It peaked at ${h.co2.peakTime}, a few hours before your headache started at 06:50.` : ''}</span></p>
         </div>
-        <div class="card insight-card">
-          <span class="insight-icon ${headache ? 'red' : ''}">${icon('spark')}</span>
-          <h3>${headache ? 'Linked to your headache' : 'Nothing linked to you today'}</h3>
-          <p class="muted">${headache ? `High CO₂ is a known headache trigger. CO₂ peaked at ${h.co2.peakTime}, and you reported a headache at 06:50.` : 'High CO₂ is a known headache trigger. None of your symptoms are linked to the cabin today.'}</p>
-          ${headache ? `<div><a class="btn ghost sm" href="#point:head">See your headache</a></div>` : ''}
+        <div class="card">
+          <div class="card-head"><span class="eyebrow">Radiation · last 24 hours</span><span class="faint small">µGy / h</span></div>
+          ${lineChart({ values: h.radiationSeries, min: 0, max: 40, ticks: [0, 20, 40], xLabels: hours })}
+          <p class="chart-note">${icon('info')}<span>How much radiation reaches the cabin each hour. Short spikes come from passing through a radiation belt or from solar activity.</span></p>
         </div>
       </div>`;
     },
@@ -1048,41 +1112,55 @@
       </div>`;
     },
 
-    mind: () => {
-      const mood = me.factors.find((f) => f.label === 'Mood');
-      return `<div class="mind-grid">
+    mind: () => `<div class="mind-grid">
         <div class="card">
-          <div class="card-head"><span class="eyebrow">Mood · last 7 days</span><span class="faint small">1–10</span></div>
-          ${lineChart({ values: mood.trend, min: 1, max: 10, ticks: [1, 5, 10], xLabels: mood.trend.map((_, i) => [i, `Day ${mission.day - 6 + i}`]), dots: true, h: 210 })}
+          <div class="chat-head"><span class="mascot-md">${mascotSvg()}</span><span class="grow"><h3>Talk to your companion</h3><span class="faint small">It listens and helps you find support, any time.</span></span></div>
+          <div class="thread"><p class="msg them">How are you feeling this morning? I'm here if you want to talk.</p></div>
+          <div class="composer"><input class="input" type="text" placeholder="Type a message"><button class="btn primary" aria-label="Send">${icon('send')}</button></div>
+        </div>
+        <div class="card psych">
+          <div class="card-head"><span class="eyebrow">Your psychologist on Earth</span>${pill('grey', `About ${psych.delayMin} min each way`)}</div>
+          <div class="thread">${psych.messages.map((m) => `<p class="msg ${m.from}${m.pending ? ' pending' : ''}">${m.text}<small>${m.pending ? `On its way · arrives about ${m.arrived}` : m.from === 'me' ? `Sent ${m.sent} · arrived ${m.arrived}` : `Arrived ${m.arrived}`}</small></p>`).join('')}</div>
+          <div class="composer"><textarea class="input" id="psych-input" rows="2" placeholder="Write a message. It arrives in about ${psych.delayMin} minutes."></textarea><button class="btn primary" data-action="send-psych" aria-label="Send">${icon('send')}</button></div>
+          <p class="note" style="margin-bottom: 0">${icon('lock')} Private between you and your psychologist</p>
         </div>
         <div class="card journal">
           <div class="card-head"><span class="eyebrow">Journal</span>${pill('grey', 'Private')}</div>
-          <textarea class="input" rows="9" placeholder="Write anything you like."></textarea>
+          <textarea class="input" rows="6" placeholder="Write anything you like."></textarea>
           <p class="note">${icon('lock')} Private. Not shared with the crew or Earth.</p>
-          <button class="btn primary">Save entry</button>
+          <div><button class="btn primary">Save entry</button></div>
         </div>
+      </div>`,
+
+    fitness: () => {
+      const w = me.tasks.find((t) => t.title === 'Workout');
+      const start = w ? w.time : '09:00';
+      return `<div class="fit-grid">
         <div class="card">
-          <div class="card-head"><span class="eyebrow">Support</span></div>
-          <div class="log-row"><span class="row-icon">${icon('video')}</span><span class="grow"><b>Private call with your psychologist</b><small>Next free slot: Day ${mission.day + 1} · 18:00</small></span><button class="btn ghost sm">Book</button></div>
-          <div class="log-row"><span class="row-icon">${icon('wind')}</span><span class="grow"><b>Breathing exercise</b><small>3 minutes, guided</small></span><button class="btn ghost sm">Start</button></div>
+          <div class="card-head"><span class="eyebrow">Today · day ${fitness.cycleDay} of the 7-day program</span>${w && w.done ? pill('blue', 'Done') : pill('grey', `Starts at ${start}`)}</div>
+          ${fitness.sessions.map((s, i) => `
+            <div class="session">
+              <div class="session-head">
+                <span class="row-icon">${icon(s.icon)}</span>
+                <span class="grow"><b>${s.title} · ${s.device}</b><small>${s.when ?? `At ${start}`}</small></span>
+                <button class="btn ${i === 0 ? 'primary' : 'ghost'} sm">Start</button>
+              </div>
+              ${s.exercises.map(([name, amount]) => `<div class="ex"><span class="check"></span><span class="grow">${name}</span><span class="faint">${amount}</span></div>`).join('')}
+            </div>`).join('')}
+        </div>
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><span class="eyebrow">Heart rate</span><span class="faint small">From your wearable</span></div>
+            <div class="metric-val">—<small>bpm</small></div>
+            <p class="muted small">Shows live during your workout.</p>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="eyebrow">This week</span></div>
+            ${fitness.week.map((d, i) => `<div class="week-row ${i + 1 === fitness.cycleDay ? 'today' : ''}"><span>Day ${i + 1}</span><span>${d}</span></div>`).join('')}
+          </div>
         </div>
       </div>`;
     },
-
-    companion: () => `
-      <div class="card companion-hero">
-        <div class="mascot-lg">${mascotSvg()}</div>
-        <div>
-          <h3>Your companion</h3>
-          <p class="muted">It floats in the corner of every screen. Tap it any time to see what it noticed, get help reporting a symptom, or find the right section.</p>
-          <button class="btn primary" data-action="companion">Open companion</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head"><span class="eyebrow">Points</span>${pill('grey', 'Comes later')}</div>
-        <div class="factor-val faint">240</div>
-        <p class="muted small">Points for finished tasks and changing how the companion looks are planned for later.</p>
-      </div>`,
 
     crew: () => {
       const requests = crew.filter((c) => c.meds.suggestion);
@@ -1141,17 +1219,16 @@
   };
 
   // ---- Top bar, companion, routing ----
-  const parents = { readiness: 'home', tasks: 'home', point: 'home', case: 'crew' };
+  const parents = { readiness: 'home', tasks: 'home', case: 'crew' };
   const titles = {
     home: () => [greeting(), me.name],
     readiness: () => ['Home', 'Readiness'],
     tasks: () => ['Home', "Today's tasks"],
-    point: (arg) => ['Body', bodyPoints[arg] ?? 'Body'],
     checkin: () => ['Daily', 'Check-in'],
     habitat: () => ['Cabin', 'Habitat'],
     medbay: () => ['Medicine', 'Med bay'],
     mind: () => ['Wellbeing', 'Mind'],
-    companion: () => ['Points and mascot', 'Companion'],
+    fitness: () => ['Training', 'Fitness'],
     crew: () => ['Medical officer', 'Crew view'],
     case: () => ['Crew view', 'Case summary'],
   };
@@ -1203,6 +1280,7 @@
 
   const setCrew = (id) => {
     me = crew.find((c) => c.id === id) ?? crew[0];
+    draft = freshDraft();
     try { history.replaceState(null, '', `?crew=${me.id}#home`); } catch (e) { /* some previews block this; the in-page switch still works */ }
     renderCompanion();
     if (location.hash === '#home') show(); else location.hash = 'home';
@@ -1222,7 +1300,27 @@
     const action = el.dataset.action;
     if (action === 'theme') { applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); show(false); }
     if (action === 'companion') { $('#cp').hidden = !$('#cp').hidden; $('#orb-badge').hidden = true; }
-    if (action === 'chip') el.parentElement.querySelectorAll('.chip-btn').forEach((b) => b.setAttribute('aria-pressed', String(b === el)));
+    if (action === 'chip' || action === 'pick') el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === el)));
+    if (action === 'area') {
+      draft.area = el.dataset.key;
+      el.closest('svg').querySelectorAll('.pt').forEach((g) => g.classList.toggle('sel', g === el));
+      $('#area-name').textContent = bodyAreas[draft.area];
+    }
+    if (action === 'allgood') {
+      draft.allGood = !draft.allGood;
+      el.closest('.symptom-card').classList.toggle('all-good', draft.allGood);
+      el.setAttribute('aria-pressed', String(draft.allGood));
+    }
+    if (action === 'send-psych') {
+      const text = $('#psych-input').value.trim();
+      if (text) {
+        const [hh, mm] = mission.time.split(':').map(Number);
+        const t = hh * 60 + mm + psych.delayMin;
+        const arrives = `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+        psych.messages.push({ from: 'me', text: esc(text), pending: true, arrived: arrives });
+        show(false);
+      }
+    }
     if (action === 'answer') el.closest('.btn-row').outerHTML = `<div>${pill('blue', 'Thanks, noted')}</div>`;
     if (action === 'approve' || action === 'decline') {
       const s = crew.find((c) => c.id === Number(el.dataset.id)).meds.suggestion;
@@ -1246,6 +1344,16 @@
     const v = Number(el.value);
     el.style.setProperty('--fill', `${((v - Number(el.min)) / (Number(el.max) - Number(el.min))) * 100}%`);
     el.closest('.slider').querySelector('.val').textContent = el.dataset.kind === 'hours' ? fmtHours(v) : `${v} / ${el.max}`;
+  });
+
+  // Keyboard: Enter or Space picks a body area
+  document.addEventListener('keydown', (e) => {
+    const el = e.target.closest && e.target.closest('[data-action="area"]');
+    if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  });
+  // "Other" symptom: show a field to describe it
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'symptom-type') $('#other-field').hidden = e.target.value !== 'Other';
   });
 
   renderCompanion();

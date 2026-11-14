@@ -8,9 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:28
-- Working on: status check of the team ([team-jobs.md](team-jobs.md)). The app contract is merged
-  (PR #49); a first UI look is on branch `zt/ui-look`, no PR yet.
+- Last updated: 2026-11-14
+- Working on: zt's first round of notes on the UI look ([ui-look/index.html](ui-look/index.html)).
+  Side chats running: home page ideas (`zt/home-ideas`), med bay content (`zt/medbay-plan`),
+  3D body view/report modes (`zt/body-3d`).
 - Branch: zt/ui-look
 
 ## Done
@@ -32,6 +33,12 @@
 - Made a first look suggestion ([ui-look/index.html](ui-look/index.html)): night look (default)
   and day look, body figure with blue/red points, floating companion in the corner, 1–10 scales
   and sleep in hours as Tommy's notes ask. The skeleton stays unstyled for comparison
+- Applied round 1 of notes to the look: body on the left of home (shows only reported symptoms,
+  not clickable); check-in with 1–10 boxes (sleep is a feeling) and a symptom report on the body
+  (area, symptom type, severity, notes, "all good"); no guided measurements (wearables do it);
+  Habitat with potest's four readings and CO₂ + radiation graphs with notes, rocket icon; Mind
+  with the companion, a delayed-message chat with the psychologist and the journal (no own mood);
+  new Fitness section from Petros's program; Companion section removed (it floats in the corner)
 - Wrote the onboard app contract in `shared/contract/` (branch `zt/app-contract`): one Node.js
   server on one laptop, one module per piece, pages that draw everything. It fixes 5 crew (`c1`–`c5`,
   Leo `c2` the only medical officer), 1–10 self-reports, sleep in hours, one mission clock, and
