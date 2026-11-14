@@ -15,6 +15,7 @@ plan and integration contract still need team agreement.
 - [ ] Agree input fields, units, self-report scales, and daily aggregation with the other members.
 - [x] Add a terminal form and local storage without changing the frozen baseline.
 - [x] Add weekly medians, measured-day coverage, and comparisons to the previous week and fixed baseline.
+- [x] Add an explicit session reset with automatic backup and a retained personal baseline.
 - [ ] Add an API adapter for the app.
 - [ ] Connect history and structured findings to a companion UI and conversation.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.

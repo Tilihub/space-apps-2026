@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:15 (Asia/Nicosia)
-- Working on: Agreed fixed-baseline and weekly-report version complete; PR #25 updated.
+- Last updated: 2026-11-14 14:41 (Asia/Nicosia)
+- Working on: Explicit session reset complete; publishing through PR #25.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -40,6 +40,11 @@
 - Synced origin/main without rebase and retained the user's demo-data edit and saved history.
 - Pushed the completed weekly-report version and updated PR #25's title and description
   around the final check-in, storage, fixed-baseline, and reporting behavior.
+- Added --reset in check_in.py, with a verified SQLite backup before any history
+  removal, an unchanged stored baseline, and retained initial check-in dates/values.
+- Passed 38 automated checks, including recoverable backups, repeated resets,
+  backup-failure safety, restoration rollback, CLI mode conflicts, and the next date.
+- Reset checks use temporary databases only; the user's active session has not been reset.
 
 ## Blocked / need from others
 
@@ -57,6 +62,9 @@
   python people/angelos/health_monitor/check_in.py and use synthetic values.
 - The first proposed mission date is 2026-11-14; later runs advance from saved
   history. The ignored SQLite database uses a frozen reference copied on first run.
+- Use python people/angelos/health_monitor/check_in.py --reset when a fresh demo
+  session is wanted. It creates a backup under local_data/backups and restores the
+  two initial check-in days without changing the baseline, then exits.
 - Use python people/angelos/health_monitor/check_in.py --report to inspect the
   latest weekly summary without adding data. Complete week-to-week comparisons
   require seven measured days in each period; the current history is partial.

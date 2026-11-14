@@ -73,6 +73,40 @@ python people/angelos/health_monitor/check_in.py --database people/angelos/healt
 The entry form and result message are not a chatbot; open-ended conversation is
 a later step.
 
+## Reset the demo session
+
+Run this command from the repository root whenever you want to start over:
+
+```powershell
+python people/angelos/health_monitor/check_in.py --reset
+```
+
+`--reset` is an action in `check_in.py`. It changes the local SQLite session; it
+does not change the Python code or the initial JSON file. It finishes without
+asking for a new check-in. Run `check_in.py` normally afterward (or press the
+VS Code play button) to enter new values again.
+
+The reset does the following in order:
+
+1. Reads the stored baseline and identifies the initial seed dates from
+   `demo_data.json` (`scenarios.changes.recent`, 12 and 13 November in this demo).
+2. Creates and verifies a complete database backup in `local_data/backups/`.
+   Each completed backup has a timestamp and unique suffix; interrupted copies
+   may remain with a `.partial` suffix.
+3. Restores only the initial check-in days, retaining their saved values when
+   present and using the JSON seed values for any missing initial day. All later
+   user-entered check-ins are removed from the active history.
+4. Leaves the stored personal baseline untouched and prints the backup path and
+   next proposed mission date (14 November for the bundled seed).
+
+A failed backup prevents the reset. A failure while restoring records rolls
+back the history change. Resetting again creates another backup. Both the active
+database and the default backup folder are ignored by Git.
+
+An existing database is required; a missing database is not created by `--reset`.
+Use `--database` to reset a specific existing practice session. `--reset` cannot
+be combined with `--report` or `--json`.
+
 ## Weekly report
 
 The agreed design keeps the original personal baseline fixed and uses medians
@@ -130,12 +164,12 @@ they do not establish their cause or whether someone is healthy.
 | File | Role |
 |---|---|
 | `demo_data.json` | Synthetic initial reference, recent seed records, and standalone scenarios |
-| `check_in.py` | Entry point, terminal form, SQLite storage, and report-only command |
+| `check_in.py` | Entry point, terminal form, SQLite storage, weekly-report command, and backed-up reset |
 | `monitor.py` | Validation, fixed reference statistics, and daily comparisons |
 | `weekly_report.py` | Weekly medians, coverage, comparisons, and report formatting |
 | `local_data/check_ins.sqlite3` | Ignored local reference and saved daily records |
 | `test_monitor.py` | Daily comparison checks |
-| `test_check_in.py` | Input, persistence, and read-only reporting checks |
+| `test_check_in.py` | Input, persistence, read-only reporting, backup, and reset checks |
 | `test_weekly_report.py` | Weekly windows, medians, missing-data, and baseline-isolation checks |
 
 Execution: `check_in.py` reads history, collects the new values, calls `monitor.py`,

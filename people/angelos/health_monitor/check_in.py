@@ -4,8 +4,10 @@ import argparse
 import json
 import sqlite3
 import sys
-from datetime import date, datetime, time, timedelta
+from contextlib import closing
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from monitor import analyze, print_result, recorded_time, validate, validate_measurement
 from weekly_report import build_weekly_report, print_weekly_report
@@ -24,10 +26,12 @@ PROMPTS = {
 class CheckInStore:
     """One synthetic astronaut per database; a frozen reference and daily records."""
 
-    def __init__(self, path, read_only=False):
-        path = Path(path)
-        if read_only:
-            self.connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+    def __init__(self, path, read_only=False, existing_only=False):
+        path = Path(path).resolve()
+        self.path = path
+        if read_only or existing_only:
+            mode = "ro" if read_only else "rw"
+            self.connection = sqlite3.connect(path.as_uri() + f"?mode={mode}", uri=True)
             return
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path)
@@ -75,6 +79,46 @@ class CheckInStore:
     def weekly_report(self):
         baseline, history = self.state()
         return build_weekly_report(baseline, history)
+
+    def _backup(self):
+        backup_dir = self.path.parent / "backups"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        backup_path = backup_dir / f"{self.path.stem}-before-reset-{stamp}-{uuid4().hex[:8]}.sqlite3"
+        partial_path = backup_path.with_suffix(".sqlite3.partial")
+        # Incomplete copies keep a .partial suffix; completed names are unique.
+        with partial_path.open("xb"):
+            pass
+        # A separate reader can copy the committed database while this store holds
+        # the write reservation. Backing up the writing connection itself would wait.
+        with closing(sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True)) as source:
+            with closing(sqlite3.connect(partial_path)) as destination:
+                source.backup(destination)
+                if destination.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+                    raise sqlite3.DatabaseError("Backup verification failed; reset was not applied.")
+        partial_path.rename(backup_path)
+        return backup_path
+
+    def reset(self):
+        """Back up the session, retain the frozen baseline and restore seed days."""
+        with self.connection:
+            self.connection.execute("BEGIN IMMEDIATE")
+            baseline, history = self.state()
+            seed = json.loads((HERE / "demo_data.json").read_text(encoding="utf-8"))
+            seed_rows = seed["scenarios"]["changes"]["recent"]
+            if not isinstance(seed_rows, list) or not seed_rows:
+                raise ValueError("The initial demo check-ins must be a nonempty array.")
+            saved_by_day = {recorded_time(row).date(): row for row in history}
+            # Preserve stored original values when a seed date is already present.
+            initial = [saved_by_day.get(recorded_time(row).date(), row) for row in seed_rows]
+            initial.sort(key=recorded_time)
+            validate({"baseline": baseline, "recent": initial[:-1], "current": initial[-1]})
+            next_day = recorded_time(initial[-1]).date() + timedelta(days=1)
+            backup_path = self._backup()
+            self.connection.execute("DELETE FROM check_ins")
+            for row in initial:
+                self._insert(row)
+        return {"backup_path": backup_path, "initial_days": len(initial), "next_day": next_day}
 
     def submit(self, row):
         # Lock before reading history so concurrent writers cannot lose a check-in.
@@ -124,8 +168,11 @@ def main():
     parser.add_argument("--database", type=Path,
                         default=HERE / "local_data" / "check_ins.sqlite3",
                         help="Local SQLite file (default: ignored local_data directory)")
-    parser.add_argument("--report", action="store_true",
-                        help="Read the weekly report without adding a check-in")
+    actions = parser.add_mutually_exclusive_group()
+    actions.add_argument("--report", action="store_true",
+                         help="Read the weekly report without adding a check-in")
+    actions.add_argument("--reset", action="store_true",
+                         help="Back up the session and restore only the initial demo check-ins")
     parser.add_argument("--json", action="store_true",
                         help="Print structured output (requires --report)")
     args = parser.parse_args()
@@ -134,17 +181,23 @@ def main():
     store = None
     saved = False
     try:
-        if args.report and not args.database.is_file():
-            raise ValueError("No saved database found. Enter a check-in before requesting a report.")
-        store = CheckInStore(args.database, read_only=args.report)
-        if not args.report:
+        if (args.report or args.reset) and not args.database.is_file():
+            raise ValueError("No saved database found. Enter a check-in first.")
+        store = CheckInStore(args.database, read_only=args.report, existing_only=args.reset)
+        if args.reset:
+            reset_result = store.reset()
+        elif args.report:
+            report = store.weekly_report()
+        else:
             baseline, recent = store.state()
             row = collect_check_in(baseline, recent)
             result = store.submit(row)
             saved = True
-        report = store.weekly_report()
+            report = store.weekly_report()
     except (EOFError, KeyboardInterrupt):
-        if saved:
+        if args.reset:
+            print("\nReset interrupted. Inspect the session before retrying.")
+        elif saved:
             print("\nThe check-in was already saved. Run --report to view its weekly summary.")
         else:
             print("\nCancelled. No new check-in was saved.")
@@ -158,6 +211,12 @@ def main():
     finally:
         if store is not None:
             store.close()
+    if args.reset:
+        print("Reset complete. The original personal baseline is unchanged.")
+        print(f"Restored {reset_result['initial_days']} initial demo check-in days.")
+        print(f"Backup saved to {reset_result['backup_path']}")
+        print(f"Next proposed mission date: {reset_result['next_day']}")
+        return 0
     if args.json:
         print(json.dumps(report, indent=2, allow_nan=False))
     else:
