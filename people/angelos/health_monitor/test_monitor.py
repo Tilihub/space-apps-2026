@@ -11,8 +11,12 @@ class MonitorTests(unittest.TestCase):
         self.data = json.loads(Path(__file__).with_name("demo_data.json").read_text())
 
     def payload(self, name="changes"):
-        return copy.deepcopy({"baseline": self.data["baseline"],
-                              **self.data["scenarios"][name]})
+        payload = copy.deepcopy({"baseline": self.data["baseline"],
+                                 **self.data["scenarios"][name]})
+        # Keep this test case stable while the user experiments with the demo file.
+        if name == "changes":
+            payload["current"]["resting_heart_rate_bpm"] = 77
+        return payload
 
     def test_usual_is_not_a_health_clearance(self):
         result = analyze(self.payload("usual"))

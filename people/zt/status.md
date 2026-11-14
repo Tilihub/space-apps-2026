@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14 16:36
+- Last updated: 2026-11-14 17:24
 - Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
   so every teammate can build their piece to it alone and joining them is only the final link.
   Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
@@ -35,6 +35,10 @@
   Leo `c2` the only medical officer), 1–10 self-reports, sleep in hours, one mission clock, and
   every module's paths and data. Shared code, an example module and 7 passing tests (`npm test`).
   `AGENTS.md`, `CODEOWNERS` and `shared/PLAN.md` point to it
+- Wrote the demo cases in [demo-cases.md](demo-cases.md): one narrator and five crew members, the
+  medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
+  real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
+  from potest's ISS RR-9 replay ([PR #52](https://github.com/Tilihub/space-apps-2026/pull/52))
 
 ## Blocked / need from others
 
@@ -57,3 +61,6 @@
   line to History. It records what people actually do; the agreed split goes in `shared/PLAN.md`.
 - Tommy's plan hands zt the UI, starting with the entry screen, log in, sign up and a basic health
   profile (`people/tommy/plan.md`, "First brief"). Not started; its open points need answers first.
+- Demo cases ([demo-cases.md](demo-cases.md)): go through them with the team and pick new names.
+  Then hand petros the records for `demo-data/` and agree who builds the workout screen and the
+  emergency alarm (minimum builds are in the file). The workout isn't in the app contract yet.

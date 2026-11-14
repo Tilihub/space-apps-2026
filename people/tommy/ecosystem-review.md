@@ -64,19 +64,19 @@ This is a proposed data flow, not a claim these arrows are implemented. Reports 
 
 The current `GET /v1/me/report` returns **weekly personal analytics** to the authenticated crew member. It is not the doctor-only clinical case report Tommy described for Earth.
 
-Proposed distinction for owner agreement:
+Updated after Tommy’s follow-up on visibility:
 
-- **Personal history/weekly summary:** the person's own health trends, subject to the agreed wellbeing privacy policy.
+- **Detailed personal history/weekly analysis:** not shown to the astronaut, per Tommy’s follow-up. Relevant assigned healthcare professionals may access it; this is not permission for general crew access. The basic daily Home summary is separate and its exact fields remain to be agreed.
 - **Clinical case report to Earth:** doctor-only manual creation/send; content hidden from the astronaut, per Tommy's Q13 answer.
 - **Private psychology journal/message:** author/assigned psychologist, with authorized own-assistant processing; separate recipient and queue permissions.
 
-Do not wire `/v1/me/report` into a clinical-send button or claim it already enforces doctor-only access. If the team intends the existing weekly output itself to be hidden, the API must change; naming alone cannot enforce this. Whether the astronaut gets a content-free clinical delivery notice is still open.
+Do not wire `/v1/me/report` into a clinical-send button or claim it already enforces doctor-only access. Tommy has now confirmed that the weekly analysis should also be hidden from the astronaut: the current crew-token API must change; naming or hiding buttons alone cannot enforce this. Whether the astronaut gets a content-free clinical delivery notice is still open.
 
 ## Role boundaries to preserve
 
 | Capability | Current intended audience/actor | Still to specify |
 |---|---|---|
-| Own daily health/history/check-in | Its astronaut; relevant clinical access for assigned care | Clinical role enforcement and whether every derived wellbeing field belongs in a medical view |
+| Daily Home/check-in versus detailed history/analysis | Astronaut has the agreed basic Home/input flow; detailed history/weekly analysis belongs to assigned healthcare roles | Exact Home fields and clinician-facing API enforcement; journal privacy still applies |
 | Manual clinical case report | Onboard doctor creates/sends; Earth clinical recipient evaluates | Exact fields, time window, notification and routing/consent rules |
 | Private journal | Author + assigned psychologist; own assistant can process it | Storage/API and leak prevention for summaries/derived details |
 | Routine restricted inventory access | Agreed onboard-doctor categories; Earth for specified categories | Approved category/protocol list and verified grants |
@@ -139,3 +139,7 @@ Points, customization and gamification remain deferred. Biometrics, physical loc
 3. Join one vertical flow and run the acceptance checks above before broad visual polish.
 4. Record adopted cross-owner decisions in new `shared/decisions/` files; propose the populated common plan through a teammate-approved PR.
 5. Update each owner's own status with accepted work and next steps. This review has not edited or assigned work inside anyone else's folder.
+
+## Pill dispenser option raised during review
+
+Tommy asked about metering prescribed pills without exposing the stock package. See the follow-up in [plan.md](plan.md) for sources and engineering caveats. It is under investigation, not adopted or implemented. If accepted, batch authorization would activate dose outlets rather than unlock full pill cartridges; the prescribed count, confirmed delivery, fault/restart handling and collection-versus-consumption distinction need a revised contract with dadis2/zt.
