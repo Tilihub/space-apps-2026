@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:46 (Europe/Athens)
-- Working on: Offline Crew Assistant comparison in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
+- Last updated: 2026-11-14 19:00 (Europe/Athens)
+- Working on: Crew Assistant health context handoff in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
 - Branch: potest/crew-support-chat
 
 ## Done
@@ -26,11 +26,12 @@
 - Added [Crew Support](crew-support/README.md), a local scripted conversation linked from the Mind screen.
 - Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the offline [Crew Assistant demo](../../integration/crew-assistant/README.md). The comparison has two tabs. With context uses today's check-in and recognizes repeated short sleep from earlier records. Verified mouse and keyboard tab switching in Chrome and passed 47 Node tests.
 - Added research-informed suggestions for protecting sleep, reviewing workload, managing stress and following up on Tomas’s next check-in. Verified the context tab in Chrome and passed 52 Node tests.
+- Followed Angelos's handoff at `91dc6da` and added the onboard browser client and crew-only companion route. The client refreshes today's check-in each turn. Tested two identities, no check-in, missing values, stale entries, role refusals and session reset through the shared dispatcher.
 
 ## Blocked / need from others
 
 - zt and the report assembler still need to agree on the shared mission-clock mapping and adopt the proposed snapshot and event IDs. The bridge preserves the source clock and leaves mission time unset unless the parent supplies an offset.
-- Authenticating users and connecting the human support workflow remain integration tasks.
+- zt's onboard core needs to mount the companion route and connect the client to its crew session and reset controls. The human support workflow remains integration work.
 - The joined demo uses a single synthetic profile. The app contract leaves the companion’s use of detailed health analysis open.
 
 ## Next steps
