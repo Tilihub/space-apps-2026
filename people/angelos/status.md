@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:41 (Asia/Nicosia)
-- Working on: Explicit session reset complete; publishing through PR #25.
+- Last updated: 2026-11-14 14:42 (Asia/Nicosia)
+- Working on: Explicit session reset complete and published in PR #25.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -45,6 +45,8 @@
 - Passed 38 automated checks, including recoverable backups, repeated resets,
   backup-failure safety, restoration rollback, CLI mode conflicts, and the next date.
 - Reset checks use temporary databases only; the user's active session has not been reset.
+- Pushed the reset implementation and updated PR #25's title and description with
+  the final behavior and all 38 validation checks.
 
 ## Blocked / need from others
 
