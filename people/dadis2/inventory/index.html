@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedBay</title>
+  <meta name="description" content="Prototype: medicine lockers and dispensing for a long-duration space mission. Sample data, not medical advice.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">MedBay</div>
+    <div id="me" class="me"></div>
+    <button class="btn danger" data-act="emergency">Emergency</button>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="CMO sections" hidden>
+    <button data-act="nav" data-view="home">Medicine</button>
+    <button data-act="nav" data-view="stock">Stock</button>
+    <button data-act="nav" data-view="approvals">Approvals <span class="count" id="apprCount" hidden></span></button>
+    <button data-act="nav" data-view="log">Log</button>
+  </nav>
+  <main id="main"></main>
+  <div id="backdrop" class="backdrop" data-act="close-drawer" hidden></div>
+  <aside id="drawer" class="drawer" hidden aria-label="Item details"></aside>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <footer>
+    <div id="demo" class="demo"></div>
+    <div>Prototype with sample data. Not medical advice. Not affiliated with NASA.</div>
+  </footer>
+  <script src="data.js"></script>
+  <script src="logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
