@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #42 for the post-notification DAD-1 progress refresh.
+- Published the post-notification DAD-1 progress refresh through merged PR #42.
 - After publishing/notifying Q13–Q17, fetched again and reviewed the newly published dadis2/prescription-grants status, contract and dose-slot source. DAD-1 is now available for integration review; owner reports 19 checks passed. Updated the brief to avoid duplicate implementation.
 - Published Q13–Q17 through merged PR #41; notified zt, angelos, dadis2, potest and petros via GitHub mentions in the PR comment (read/acceptance not assumed).
 - Recorded Q13–Q17: doctor-only manual clinical reports with hidden astronaut content, reusable per-dose prescription QR with expiry/quotas, exceptional all-crew emergency access, readiness deferred, and 1–10 self-reports.
