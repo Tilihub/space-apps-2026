@@ -16,12 +16,14 @@ Work moves in one direction: `people/` → `integration/` → `final/`, with `sh
 
 | Folder | What goes there | Who edits it |
 |---|---|---|
-| [`people/`](people/) | One folder per person: experiments, drafts, anything, plus their `status.md` | Only that person |
+| [`people/`](people/) | One folder per person: experiments, drafts, anything, plus their `status.md` and personal `plan.md` | Only that person |
 | [`shared/`](shared/) | Everything for everyone: the [plan](shared/PLAN.md), [decisions](shared/decisions/), [sources](shared/sources.md), research, data, the submission draft | Anyone adds files; ask before changing someone else's |
 | [`integration/`](integration/) | Where pieces get joined, one folder per connection | Whoever is doing that connection |
-| [`final/`](final/) | Only the finished product | Changes only after the team agrees |
+| [`final/`](final/) | Only the finished product | Changes only with a teammate's approval |
 
-The rules every person and every AI tool follows are in [AGENTS.md](AGENTS.md).
+Changes to the common plan, `final/` and the rules files need one teammate's approval on the
+pull request; GitHub enforces this. The rules every person and every AI tool follows are in
+[AGENTS.md](AGENTS.md).
 Large files (videos, raw photos) go in the team's shared drive, not here.
 
 ## Use of AI

@@ -21,10 +21,10 @@ Work moves in one direction: `people/` → `integration/` → `final/`, with `sh
 
 | Folder | What goes there | Who edits it |
 |---|---|---|
-| `people/<name>/` | Each person's own space: experiments, drafts, anything, plus their `status.md` | Only that person |
+| `people/<name>/` | Each person's own space: experiments, drafts, anything, plus their `status.md` and personal `plan.md` | Only that person |
 | `shared/` | Everything for everyone: `PLAN.md`, `decisions/`, `sources.md`, `research/`, data, `submission/` | Anyone adds files; ask before changing someone else's |
 | `integration/` | Where pieces get joined: one folder per connection (for example `integration/app-cabinet/`), each a working test | Whoever is doing that connection |
-| `final/` | Only the finished product, built from what already works in `integration/` | Changes only after the team agrees |
+| `final/` | Only the finished product, built from what already works in `integration/` | Changes only with a teammate's approval |
 
 ## First time here: onboarding
 
@@ -42,8 +42,8 @@ Do this when your human asks for onboarding, or when they don't have a folder in
    and their login with `gh api user --jq .login`, then, only if they agree, run
    `git config user.email "<id>+<login>@users.noreply.github.com"`.
    If `user.name` is missing, set it to the name from step 3.
-5. Create `people/<name>/status.md` from `people/_template/status.md`, filled in with their name
-   and what you found.
+5. Create `people/<name>/` from `people/_template/`: `status.md` filled in with their name and
+   what you found, and `plan.md` with their name.
 6. Publish it on the branch `<name>/onboarding`, following "Saving and sharing work" below,
    and merge the pull request yourself.
 7. Tell your human it's done, with the link to their folder on GitHub.
@@ -58,15 +58,16 @@ Do this when your human asks for onboarding, or when they don't have a folder in
 
 ## What you may edit
 
-- `people/<name>/`, your human's own folder: anything.
+- `people/<name>/`, your human's own folder: anything, including their personal plan, `plan.md`.
 - `shared/`: add new files freely. Change a file someone else made only if they agree.
-  `shared/PLAN.md` changes only after the team has agreed. In `shared/sources.md`, add rows only,
-  at the end of the right table. In `shared/decisions/`, add new files only.
+  In `shared/sources.md`, add rows only, at the end of the right table.
+  In `shared/decisions/`, add new files only.
 - `integration/<connection>/`: only a connection your human is working on. To start one, create
   its folder with a short `README.md`: what it joins, which people's work it uses, how to run it,
   and whether it works yet.
-- `final/`, `AGENTS.md`, `SETUP.md` and `README.md`: only after the team has agreed; ask your
-  human to confirm it has.
+- `shared/PLAN.md`, `final/` and the rules files (`AGENTS.md`, `CLAUDE.md`, `SETUP.md`,
+  `README.md`, `.github/`): only through a pull request that another teammate approves.
+  See "Changes that need approval".
 
 Never edit someone else's `people/` folder. To use their work, copy what you need into your
 human's folder or into `integration/`.
@@ -84,8 +85,25 @@ human's folder or into `integration/`.
   merging anything that touches `final/`.
 - You may merge your own pull request when it has no conflicts with main and it only touches
   your human's folder, new files in `shared/`, rows in `shared/sources.md`, or an `integration/`
-  connection your human is working on: `gh pr merge --merge`. Anything else needs the agreement
-  described in "What you may edit" first.
+  connection your human is working on: `gh pr merge --merge`. Anything else needs agreement first:
+  from the author, for someone else's file in `shared/`, or a teammate's approval for protected
+  files (see "Changes that need approval").
+
+## Changes that need approval
+
+`shared/PLAN.md`, `final/` and the rules files are protected: GitHub merges a change to them only
+after someone other than its author approves it. The owners are listed in `.github/CODEOWNERS`.
+
+1. Make the change on your branch and open a pull request. GitHub asks the rest of the team
+   to review it.
+2. Tell your human to say it out loud at the table, so a teammate looks at it.
+3. Once a teammate has approved it, merge it: `gh pr merge --merge`.
+
+Never approve a pull request unless your human explicitly tells you to. When they do:
+`gh pr review <number> --approve`.
+
+Ideas for the common plan start in your human's own `plan.md`. When they want the team to adopt
+one, propose it as a change to `shared/PLAN.md`.
 
 ## Conflicts
 

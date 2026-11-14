@@ -1,7 +1,7 @@
 # Plan
 
 Filled in together on Saturday morning, once the team has chosen the idea.
-This file changes only after the team agrees (see AGENTS.md).
+Changes to this file need one teammate's approval on the pull request (see AGENTS.md).
 
 ## Challenge
 
