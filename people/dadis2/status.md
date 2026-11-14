@@ -1,4 +1,4 @@
-# dadis2
+﻿# dadis2
 
 ## Profile
 
@@ -8,26 +8,23 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:26
-- Working on: DAD-2 (Tommy's handoff) is done and pushed on `dadis2/ground-grants`, no pull request yet.
-  PRs #34 and #44 are waiting for the project lead to merge them.
-- Branch: dadis2/ground-grants (started from `dadis2/prescription-grants`, PR #44)
+- Last updated: 2026-11-14 17:29
+- Working on: nothing open. DAD-1 and DAD-2 are done and merged into main: PRs #34, #44 (merged by
+  the project lead) and #53 (merged by me, no conflicts): https://github.com/Tilihub/space-apps-2026/pull/53
+- Branch: dadis2/ground-grants (merged)
 
 ## Done
 
 - Setup and onboarding
-- Medicine lockers and dispensing module in `people/dadis2/inventory/`. PR #34 is waiting for the
-  project lead to merge it: https://github.com/Tilihub/space-apps-2026/pull/34
+- Medicine lockers and dispensing module in `people/dadis2/inventory/` (PR #34, merged):
   - One page per crew member's device: medicine panel plus the three lockers from the front.
   - Automatic suggestions from symptoms, red 🔒 tint for medicines that need approval.
   - Emergency flow with allergy warnings and a logged two-tap override.
-- **DAD-1: prescription grants**, PR #44 waiting for the project lead:
-  https://github.com/Tilihub/space-apps-2026/pull/44
+- **DAD-1: prescription grants** (PR #44, merged):
   - One grant format for the onboard doctor and Earth (code `RX2-<issuer>-<crew>-<date>-<items>-<check>`).
   - Self-care and prescription → onboard doctor or Earth; controlled → Earth only; emergency → never.
   - Dose by dose: all of a grant's due compartments open together, each box recorded once, no double doses.
-- **DAD-2: ground side** (branch `dadis2/ground-grants`), with my decision of 14 Nov to keep sender
-  verification simulated for now:
+- **DAD-2: ground side** (PR #53), with my decision of 14 Nov to keep sender verification simulated for now:
   - `earth.html`: the Earth flight surgeon's tool. Pick a crew member and medicines → grant code and QR
     image → copy, or open it on the crew member's device (demo link `index.html?user=c4#grant=<code>`).
   - `ground.js` (`MedGround.makeGrant`) for zt's Earth clinician screen; `qr.js` (`MedQR.svg`) using the
@@ -53,8 +50,8 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Open a pull request for `dadis2/ground-grants`. It contains #34's and #44's commits until those are
-  merged; ideally they're merged in order #34, #44, then this one.
+- Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
+  tool) and `tests.html` (28 checks). The demo script is in `inventory/README.md`.
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:
   point a phone camera at the QR in `earth.html`; it should show exactly the code.
 - Optional later: real sender verification (Earth signs, devices check with Earth's public key), see
