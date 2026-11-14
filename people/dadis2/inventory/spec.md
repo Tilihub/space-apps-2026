@@ -101,8 +101,8 @@ microgravity, and the last instruction is always to close the bin and the locker
 |---|---|---|---|
 | **S: Supply** | Bandages, gloves, alcohol pads | Anyone | No |
 | **1: Self-care** | Over-the-counter: acetaminophen, loratadine, meclizine | The crew member, after automatic safety checks | No |
-| **2: Prescription** | Antibiotics, ondansetron, injectables | CMO signs (backup CMO if the patient is the CMO) | No |
-| **3: Controlled** | Zolpidem, modafinil, opioids, benzodiazepines | CMO signs **and** a second crew member witnesses. The witness also confirms the count left in the slot | Yes, asynchronous |
+| **2: Prescription** | Antibiotics, ondansetron, injectables | A grant from the onboard doctor (CMO, or backup if the patient is the CMO) or from Earth | No |
+| **3: Controlled** | Zolpidem, modafinil, opioids, benzodiazepines | A grant from Earth only. The crew member confirms the count left in the bin | Yes, asynchronous |
 | **4: Emergency** | Epinephrine, atropine, naloxone, AED | Anyone, immediately (break-glass) | Yes, plus documentation within 2 hours |
 
 Rules:
@@ -112,12 +112,17 @@ Rules:
   check and ground review still apply. This keeps the most-used controlled medicine (sleep aids)
   from needing a CMO every night.
 - **CMO as patient.** The approver must never be the patient. If the CMO is the patient, the backup CMO signs.
-- **Witness.** Must be different from the approver and from the patient.
+- **Grants (team decision, 14 Nov).** The onboard doctor and Earth authorise with the same grant
+  format, collected dose by dose. Details are in [CONTRACT.md](CONTRACT.md).
 - **Reserve.** Every item has a reserve kept for the conditions it's carried for. A self-care
   dispense that would dip into the reserve becomes a CMO decision.
 - **Crew-specific items.** Only their owner can self-release them.
-- **Requests.** Tier 2 and 3 requests go to the CMO's Approvals screen, on the CMO's own device.
-  The crew member sees "Waiting for the CMO". Once it's signed, they see "Approved: Get it".
+- **Requests.**
+  - Tier 2 requests go to the CMO's Approvals screen, on the CMO's own device. The doctor picks a
+    course (times a day, days), signs with their PIN and issues a grant.
+  - Tier 3 requests show as "Waiting for Earth" and go with the next report.
+  - The crew member sees "Waiting for the CMO" or "Waiting for Earth", then a grant card with
+    "Collect now".
 - **Break-glass.** It is never blocked. The reason is required, the event goes to the approvals page as
   "documentation due", and the scan can be skipped.
 
@@ -218,37 +223,22 @@ pieces" in `shared/PLAN.md`.
 - Delivery: call `MedInventory.receiveSymptomReport(report)`, or `postMessage(report)` if the
   module runs in an iframe. The home screen then shows the suggestion straight away.
 
-## 8a. Plans from Earth (import code)
+## 8a. Grants (onboard doctor and Earth)
 
-A flight surgeon on Earth can send a short plan: which medicines, how much, how often and for how
-many days. It arrives as a QR code or as a short code the crew member types.
+The full contract is in [CONTRACT.md](CONTRACT.md). In short:
 
-```
-RX1-C4-261114-OND1X2X3.CAL2X3X5-BA
-│   │  │      │                  └ check characters (catches typos)
-│   │  │      └ medicine code, units per dose X times a day X days, joined by "."
-│   │  └ start date (YYMMDD)
-│   └ crew member
-└ format version
-```
-
-- **Medicine codes:** three letters, listed in `data.js` (`rxCodes`), for example OND = ondansetron 4 mg.
-- **Rejected on import:**
-  - a wrong check (typo)
-  - another crew member's plan
-  - an unknown medicine
-  - 1 to 4 times a day or 1 to 30 days not respected
-  - more per day than the medicine's daily limit
-  - someone else's personal medicine
-- **Authorisation:** the plan counts as authorisation from the ground, so no CMO request is needed.
-  Safety checks still run, and a blocked dose sends the crew member to the CMO.
-- **Dose times:** once a day 08:00 · twice 08:00/20:00 · 3 times 08:00/14:00/20:00 · 4 times
-  08:00/12:00/16:00/20:00. A dose is "due" when its time has passed and nothing has been taken since.
-  Missed doses are not added up, so there's never a double dose.
-- **Ground tool:** `MedInventory.makePlanCode(crewId, startDate, items)` (or `MedLogic.encodeRx`)
-  makes a code. The demo button makes a test code for the current user.
-- **QR scanning:** uses the browser's built-in barcode detector where available (for example Chrome on
-  Android or macOS). Elsewhere, the crew member types the code.
+- **Same format for both.** One grant names the medicines, units, times a day and days for one crew
+  member. The same format is used by the onboard doctor (issued on the Approvals screen) and by Earth
+  (typed code or QR, for example `RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW`).
+- **Dose by dose, together.** At each dose time all of the grant's due compartments open together,
+  and nothing else does. Each scanned box is recorded once. Missed dose times are not added up.
+- **Who grants what.** Controlled medicines need Earth. Emergency items are never granted.
+- **Not verified yet.** The check characters only catch typos. Who issued a grant is not verified
+  yet (simulated, DAD-2).
+- **Output for the main app and hardware.** Compartment ids such as `L2-1-07`, plus `medinventory`
+  events (`compartments-open`, `compartment-collected`, `collection-complete`, `compartments-closed`).
+- **QR scanning** uses the browser's built-in barcode detector where available. Elsewhere, type the code.
+- **Checks:** `tests.html`.
 
 ## 9. User flows
 
@@ -256,8 +246,12 @@ RX1-C4-261114-OND1X2X3.CAL2X3X5-BA
 screen: "For your headache · Acetaminophen · 2 tablets · Get it" → find it (locker front view with
 the bin highlighted) → Scan → Done (+XP) → later: "Did it help?" 👍/👎 (+XP).
 
-**Symptoms need the CMO:** card "Ask the CMO" → Ask → "Waiting for the CMO" → CMO signs on their
-device → "Approved · Get it" → find it → Scan → (count check if controlled) → Done.
+**Symptoms need approval:** card "Ask the CMO" → Ask → "Waiting for the CMO" (or "Waiting for
+Earth" if controlled) → a grant is issued → a grant card with "Collect now" → all due bins light up
+together → scan each box → (count check if controlled) → Collected.
+
+**Grant from Earth:** "Import from Earth" → scan the QR code or type the code → Check → Add → grant
+card → "Collect now" at each dose time.
 
 **Red flags:** card "Call the CMO now" with an Emergency button. The report also appears as
 "Urgent symptoms" on the CMO's Approvals screen.

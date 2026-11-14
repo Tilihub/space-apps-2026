@@ -81,7 +81,7 @@ window.INVENTORY_DATA = {
     "sam-splint": ["L3-3", 9], "sutures-4-0": ["L3-3", 10]
   },
 
-  // Three-letter codes used in plan codes sent from Earth (see spec.md, section 8a)
+  // Three-letter medicine codes used in grant codes (see CONTRACT.md)
   rxCodes: {
     APA: "acetaminophen-325", IBU: "ibuprofen-400", ASA: "aspirin-325", LOR: "loratadine-10", DPH: "diphenhydramine-25",
     PSE: "pseudoephedrine-30", OXY: "oxymetazoline", LOP: "loperamide-2", DOC: "docusate-100", MEC: "meclizine-25",
@@ -89,10 +89,11 @@ window.INVENTORY_DATA = {
     FEX: "fexofenadine-180", ZOL: "zolpidem-5", ZAL: "zaleplon-10", MOD: "modafinil-100", LZP: "lorazepam-1",
     OXA: "oxycodone-apap", PMZ: "promethazine-25", OND: "ondansetron-4", AMC: "amox-clav-875", AZI: "azithromycin-250",
     CIP: "ciprofloxacin-500", PRD: "prednisone-20", ACZ: "acetazolamide-250", HCC: "hydrocortisone-cream",
-    CLO: "clotrimazole-cream", MUP: "mupirocin-oint"
+    CLO: "clotrimazole-cream", MUP: "mupirocin-oint", PMI: "promethazine-inj", CEF: "ceftriaxone-1g", KET: "ketorolac-inj",
+    LID: "lidocaine-inj", TET: "tetracaine-eye"
   },
 
-  // Demo only: the plan a flight surgeon on Earth sends in the test code (any crew member).
+  // Demo only: the grant a flight surgeon on Earth sends in the test code (any crew member).
   demoPlan: [
     { itemId: "ondansetron-4", units: 1, perDay: 2, days: 3 },
     { itemId: "calcium-carbonate-500", units: 2, perDay: 3, days: 5 }
@@ -441,11 +442,10 @@ window.INVENTORY_DATA = {
       followUp: { effective: true, sideEffects: "Drowsy" } }
   ],
 
-  // Requests waiting for sign-off (sample)
+  // Requests waiting for a grant (sample). Prescription → the onboard doctor; controlled → Earth.
   requests: [
     { minutesAgo: 40, patientId: "c4", itemId: "ondansetron-4", qty: 1, reason: "Nausea since this morning", status: "pending", signatures: [] },
-    { minutesAgo: 15, patientId: "c1", itemId: "modafinil-100", qty: 1, reason: "Night shift for docking support", status: "pending",
-      signatures: [{ crewId: "c2", role: "CMO", minutesAgo: 10 }] }
+    { minutesAgo: 15, patientId: "c1", itemId: "modafinil-100", qty: 1, reason: "Night shift for docking support", status: "pending", signatures: [] }
   ],
 
   // Demo only: symptom sets standing in for the symptom page (built elsewhere). The demo sends them

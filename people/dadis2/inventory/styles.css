@@ -164,6 +164,16 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .plan-row:last-of-type { border-bottom: 0; }
 .plan-next { font-weight: 700; color: var(--muted); white-space: nowrap; }
 .plan-next.ok { color: var(--ok); }
+.plan-next.due { color: var(--accent); }
+.code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+.collect-list { display: grid; gap: 8px; margin-top: 12px; text-align: left; }
+.collect-row { border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 10px; }
+.collect-row .where { justify-content: flex-start; margin: 6px 0; }
+.collect-row .w-chip { font-size: 15px; padding: 4px 10px; }
+.collect-row.done { opacity: .6; border-color: var(--ok); }
+.collect-row.done .collect-what { color: var(--ok); }
+.bin.got { outline: 3px solid var(--ok); outline-offset: 1px; z-index: 1; }
+.bin.got::after { content: "✓"; position: absolute; right: 4px; top: 2px; font-weight: 900; color: var(--ok); font-size: 14px; }
 .dots { display: flex; gap: 5px; margin-top: 6px; }
 .dots i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--earth); }
 .dots i.on { background: var(--earth); }
