@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-14 15:11
-- Working on: DAD-1 (Tommy's handoff): one grant opens all and only its prescribed compartments
-  together. Done and pushed on `dadis2/prescription-grants`, no pull request yet.
+- Working on: DAD-1 (Tommy's handoff) is done. Pull request #44 is open and waiting for the project
+  lead to merge it: https://github.com/Tilihub/space-apps-2026/pull/44. Next: DAD-2.
 - Branch: dadis2/prescription-grants (started from `dadis2/medical-inventory`, PR #34, plus latest main)
 
 ## Done
@@ -48,8 +48,8 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Open a pull request for `dadis2/prescription-grants` (it also contains PR #34's commits until #34
-  is merged).
+- PR #44 (`dadis2/prescription-grants`) waits for the project lead. It also contains PR #34's commits
+  until #34 is merged.
 - DAD-2: ground-side screen with a QR image generator, a short contract for zt's Earth clinician
   screen, and real (or clearly labelled simulated) verification of who issued a grant. Keep the
   typed-code fallback; test camera scanning on a phone.
