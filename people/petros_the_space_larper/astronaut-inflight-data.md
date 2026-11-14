@@ -12,7 +12,7 @@ Primary-source inventory checked 2026-11-14. It covers the health domains in NAS
 
 ## Public results from real crews during spaceflight
 
-The [prototype CSV](astronaut-inflight-vitals.csv) transcribes the five vital signs from published in-flight results. Units appear in the column names (bpm, breaths/min, percent, mmHg, °C). Blank cells indicate an unavailable value. Rows correspond to source observations or summaries, with the mission phase, observation type, context, source URL and table or section locator. A cohort mean represents the population and condition stated in its source. Mission time is source-relative and can be blank for pooled results.
+The [prototype CSV](astronaut-inflight-vitals.csv) transcribes the five vital signs from published in-flight results. Units appear in the column names (bpm, breaths/min, percent, mmHg, °C). Blank cells indicate an unavailable value. Rows correspond to source observations or summaries, with the mission phase, observation type, context, source URL and table or section locator. A cohort mean represents the population and condition stated in its source. Mission time is source-relative and can be blank for pooled results. The [sensor guide](astronaut-health-research.md#five-vital-signs-from-a-smart-vest-and-separate-sensors) documents how to capture each field from a wearable or separate instrument.
 
 | Indicator | Primary data or public results | Granularity and access |
 |---|---|---|
