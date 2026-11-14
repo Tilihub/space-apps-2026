@@ -59,3 +59,6 @@ even if they are free or open source.
 | Tierney et al. (2024) | [Inspiration4 microbiome study](https://www.nature.com/articles/s41564-024-01635-8) | Crew swab provenance and related open processed datasets | petros_the_space_larper |
 | ISS HSV-1 case study | [In-flight viral and immune measurements](https://pmc.ncbi.nlm.nih.gov/articles/PMC9028032/) | Example of PCR measurements and viral reactivation during a mission | petros_the_space_larper |
 | Scott et al. (2023) | [ISS exercise countermeasures](https://pmc.ncbi.nlm.nih.gov/articles/PMC9898566/) | Exercise measurements in orbit and access requirements | petros_the_space_larper |
+| Elliott et al. (2001) | [Shuttle sleep-disordered breathing study](https://doi.org/10.1164/ajrccm.164.3.2010081) | In-flight finger oximetry, respiratory rate and heart rate from Tables 2 and 3 | petros_the_space_larper |
+| Dijk et al. (2001) | [Shuttle sleep and circadian study](https://doi.org/10.1152/ajpregu.2001.281.5.R1647) | In-flight Neurolab core temperature during sleep and wakefulness | petros_the_space_larper |
+| Conkin et al. (2017) | [Shuttle oxygen saturation study](https://pubmed.ncbi.nlm.nih.gov/28539140/) | Approximate in-flight finger oximetry summary under mild hypoxia | petros_the_space_larper |

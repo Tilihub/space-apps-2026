@@ -12,6 +12,8 @@ Primary-source inventory checked 2026-11-14. It covers the health domains in NAS
 
 ## Public results from real crews during spaceflight
 
+The [prototype CSV](astronaut-inflight-vitals.csv) transcribes the five vital signs from published in-flight results. Units appear in the column names (bpm, breaths/min, percent, mmHg, °C). Blank cells indicate an unavailable value. Rows correspond to source observations or summaries, with the mission phase, observation type, context, source URL and table or section locator. A cohort mean represents the population and condition stated in its source. Mission time is source-relative and can be blank for pooled results.
+
 | Indicator | Primary data or public results | Granularity and access |
 |---|---|---|
 | Heart rate and respiratory rate | NASA's Apollo–Soyuz medical report, Table 3-I, gives average and peak heart rate (beats/min) and respiratory rate (breaths/min) for individual crew roles during exercise on selected flight days, as well as launch and entry. [NASA report](https://ntrs.nasa.gov/api/citations/19770023791/downloads/19770023791.pdf) | Public numeric PDF table. Transcribe by role, phase, measurement, and aggregation. Preserve poor or unavailable measurements as gaps. |
