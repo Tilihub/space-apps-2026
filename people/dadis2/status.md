@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-14 18:32
-- Working on: who approves each medicine, per person, plus "Also used in emergencies", on
-  `dadis2/approval-review` (pushed, no PR yet). Grant safety is merged (PR #58). Next: the `meds` module.
+- Working on: approval review merged into main (PR #62), after grant safety (PR #58).
+  Next: the `meds` module.
 - Branch: dadis2/approval-review
 
 ## Done
@@ -49,7 +49,7 @@
     approval. It needs a reason, is logged (`approvalBypassed: true`), has paperwork due in 2 hours
     and goes to Earth's review. It closes the open request.
   - Checks: `inventory/tests.html`, 37 of 37 pass. Tested in the browser.
-- **Approval review** (branch `dadis2/approval-review`), my decisions of 14 Nov, evening:
+- **Approval review** (PR #62, merged), my decisions of 14 Nov, evening:
   - Pseudoephedrine was locked for everyone: 10 in stock, reserve 12. Added a sample lot (now 50).
   - Per person, for self-care:
     - reserve or a condition → the CMO decides, and the grant isn't held back by it (before, it was
@@ -87,9 +87,8 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Branch `dadis2/approval-review` (pushed, no PR yet): open a PR and merge it (only my folder). Then
-  open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth tool) and `tests.html`
-  (43 checks). The demo script is in `inventory/README.md`. The save key is now `medInventory.v5`,
+- Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
+  tool) and `tests.html` (43 checks). The demo script is in `inventory/README.md`. The save key is now `medInventory.v5`,
   so the demo starts fresh once.
 - Which medicines count as "Also used in emergencies" is a sample choice (`emergencyUse` in
   `inventory/data.js`). The team or a clinician should confirm it.
