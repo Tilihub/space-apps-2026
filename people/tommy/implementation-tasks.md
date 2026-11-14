@@ -2,6 +2,10 @@
 
 Prepared 2026-11-14 from the published work listed below, including zt's new app overview. Tommy requested publication of this handoff so each teammate and their coding tool can read the corresponding task and know what to deliver. These are Tommy's requested next tasks; acceptance by other owners and changes to shared/PLAN.md remain team coordination. No messages were sent to teammates and no other member's files were changed.
 
+## Ecosystem review refresh — read first
+
+See [ecosystem-review.md](ecosystem-review.md) for the latest frozen versions, observed prototypes, actual test results, connection gaps and proposed return-from-break order. ANG-1, DAD-1 and POT-1 are now available for integration review; the historical snapshot below is not a request to rebuild them. The personal weekly-analysis API is distinct from the proposed doctor-only clinical report to Earth.
+
 ## Latest requirements update — read before starting a task
 
 Tommy's answers Q13–Q17 supersede the earlier alternatives below. See [the latest requirements section](plan.md).
