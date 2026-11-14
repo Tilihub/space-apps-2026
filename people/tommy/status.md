@@ -9,12 +9,18 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Reviewed dadis2’s merged grant-safety #58 (75a7377); documented two reproduced replacement problems and the Emergency contract mismatch. No teammate implementation edited.
+- Working on: Opened zt’s UI/3D handoff for Tommy and checked current backend readiness (main 43a4dad). Tommy chose the 3D body first; acceptance discussion precedes frontend changes.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #59 publishing the dadis2 #58 review and current handoff; only Tommy’s review/status files changed.
+- Opened PR #72 for the UI/3D and backend readiness review; only Tommy’s review/status files changed. The selected 3D preview remains available for Tommy’s inspection.
+
+- Opened zt/ui-look at dace837 and zt/body-3d at 0e8fbff from isolated tracked-source copies. Tommy selected 3D first; rendered it and verified a real canvas selection emitted onSelect(stomach). Saved UI/3D screenshots. No application implementation changed.
+- Ran all current root tests: 90/90 passed, none skipped. Additional real-HTTP core+health+meds flow passed: clinical-role restriction, allergy and wrong-patient refusal, two-item batch/per-item confirmation, repeat-dose refusal and same-code next-dose access. Used temporary stores only.
+- Wrote ui-backend-review.md distinguishing delivered pieces from unmounted/missing pieces and listing UI field/identity/privacy mismatches. Earlier replacement bugs are fixed/tested in the new meds module. The shipped core still mounts example only; the styled UI is fake-data only, env shared module and complete journal/report transport remain unjoined.
+
+- Published the dadis2 #58 review and current handoff through merged PR #59; only Tommy’s review/status files changed.
 
 - Reviewed dadis2 #58 at d1f6f52 / main 75a7377. Re-ran 37/37 existing pure-logic checks in isolated tracked-source copies. Additional probes reproduced (1) an already collected dose slot offered again under a replacement, with no ordinary safety block in the synthetic case, and (2) future-start replacement disabling the active course immediately.
 - Wrote dadis-grant-review.md with reproducible inputs/results, source locations, expected transition behavior and the widened Emergency-versus-contract mismatch. Confirmed the common meds module and earlier QR/dispenser adjustments remain pending. No clinical policy, protected file or dadis2 source was changed.
@@ -83,10 +89,8 @@
 
 ## Next steps
 
-- Relay dadis-grant-review.md to dadis2/zt: fix replacement ledger/effective-time behavior before module reuse, agree Emergency scope/course policy, then prioritize the shared meds module.
-
-- PR #49 is merged; follow shared/contract/README.md for new module work. Keep the recorded product follow-ups visible rather than the historical request-changes timing.
-- Follow contract-review.md (updated via #56) and the adopted shared contract for module work. Preserve identical QR/manual-code behavior, reusable due-dose credentials, batch/per-item dispenser confirmation and normal allergy blocking. The remaining wording is an implementation follow-up.
-- Coordinate #55 Crew Support with zt/Angelos/potest before adopting its server/routes or live mode. Align PET-1 fixtures and expected checks with the contract’s target stage cases; confirm potest or another accepted owner for reports/transport. DAD-1, DAD-2, ANG-1 and PET-1/PET-2 deliveries should be reused, not assigned from scratch.
-- Extra Home indicators are deferred at Tommy’s request. Readiness, catalogue size and remaining clinical/psychologist/emergency details stay explicit decisions.
-- Continue planning in tommy/concepts-plan. Do not edit another person’s folder or implement UI from this chat; zt owns assembly/layout. Update status and push before a break.
+- Discuss ui-backend-review.md with Tommy. Do not say the whole backend/UI is finished: 90 passing tests and the additional HTTP flow verify the delivered pieces, while the real module registry/pages remain unconnected.
+- Tommy chose the 3D body first. zt’s UI branch explicitly hands the visual work over; follow AGENTS.md for continuing unmerged work and preserve his personal files. Frontend changes can follow the acceptance discussion, in Tommy’s own space or his integration connection.
+- First connection needs canonical c1–c5 identity/roles, core clock, true sleepHours versus separate quality, symptom/3D mapping and per-item collection. Keep clinical analyses private; Home indicators/readiness remain deferred.
+- Reuse current health/meds and fixed stage data. Coordinate pending companion #55, env module and report/journal workflows with their owners. The new meds module addresses the historical #58 replacement findings; do not reassign those fixes from the old review.
+- Continue on tommy/concepts-plan for review notes. Update status and push before a break.
