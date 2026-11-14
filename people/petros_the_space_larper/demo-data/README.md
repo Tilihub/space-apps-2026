@@ -1,5 +1,7 @@
 # PET-1 synthetic demo fixtures
 
+For the weekly exercise plan, workout controller and scene B pulse replay, see the [workout handoff](WORKOUT.md).
+
 Read `health.json` on reset of the onboard health module. It follows the [proposed ZT contract, sections 4, 6 and 10](https://github.com/Tilihub/space-apps-2026/blob/fb0c20f/shared/contract/README.md). The envelope declares contract version 1 and synthetic data. Each `crew` key is an ID from `c1` to `c5`. Each member has a story and 13 daily records. The module can use `measurement-guides.json` for entry guidance. [stories.md](stories.md) ties the five histories to the demo script.
 
 | Key | Unit or anchors | Input and cadence | Null and provenance |
