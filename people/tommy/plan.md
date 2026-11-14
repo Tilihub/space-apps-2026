@@ -234,3 +234,9 @@ Research checked 2026-11-14:
 - [NASA presentation: Packaging for Improved Pharmaceutical Protection in Space (2024)](https://ntrs.nasa.gov/citations/20240004002): protective blister development includes individual-dose access. It supports packaging relevance, not proof of an operational automatic dispenser.
 - [NASA presentation: Pilot Study of Medications Exposed to Vacuum (2024), p. 5](https://ntrs.nasa.gov/api/citations/20240004440/downloads/AsMA%20Medications%20in%20a%20vacuum%20STRIVES.pdf?attachment=true): describes most ISS oral medications being repackaged into resealable bags at that time; exploration packaging remained undetermined.
 - [NASA Human Research Roadmap: medication risk](https://humanresearchroadmap.nasa.gov/risks/risk.aspx?i=177): identifies optimal packaging/storage balancing stability, mass, volume and power as an open research gap. No operational microgravity pill dispenser was verified in this review. Mechanical options above are engineering proposals/inferences, not NASA recommendations.
+
+## Lean inventory follow-up — latest direction
+
+Tommy clarified that mechanical dispenser design, microgravity engineering and extreme misuse cases are outside the application-demo scope. Keep simulated quantity-limited dispensing and ordinary patient/authorization/due-dose/stock consistency. Earlier hardware research is background, not a prerequisite or a build assignment.
+
+Tommy and zt want to reduce the broad inventory prototype. His supplied alternative specification is comparison material, not an instruction for this chat to implement UI. See [inventory-scope-proposal.md](inventory-scope-proposal.md) for the proposed nine-item configuration, existing DAD-1 reuse, zt input mapping, and conflicts resolved against earlier decisions. The specific lean configuration remains proposed until accepted; multi-day reusable prescription QR and all eligible due items in one batch remain the previous direction.
