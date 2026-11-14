@@ -15,56 +15,61 @@ Assume everyone has some git experience.
 - **No NASA logos or branding** in anything AI-generated.
 - **English** for everything in the repo.
 
-## Where things are
+## How the repo is organised
 
-| Path | What it is |
-|---|---|
-| `docs/PLAN.md` | The idea, scope, who does what, timeline |
-| `docs/status/<name>.md` | One file per person: profile, current work, next steps, AI use |
-| `docs/decisions/` | One file per team decision |
-| `docs/sources.md` | Every source used (NASA data, other references, code libraries, images) |
-| `app/`, `hardware/`, `research/`, `submission/` | The work areas |
+Work moves in one direction: `people/` → `integration/` → `final/`, with `shared/` feeding everyone.
+
+| Folder | What goes there | Who edits it |
+|---|---|---|
+| `people/<name>/` | Each person's own space: experiments, drafts, anything, plus their `status.md` | Only that person |
+| `shared/` | Everything for everyone: `PLAN.md`, `decisions/`, `sources.md`, `research/`, data, `submission/` | Anyone adds files; ask before changing someone else's |
+| `integration/` | Where pieces get joined: one folder per connection (for example `integration/app-cabinet/`), each a working test | Whoever is doing that connection |
+| `final/` | Only the finished product, built from what already works in `integration/` | Changes only after the team agrees |
 
 ## First time here: onboarding
 
-Do this when your human asks for onboarding, or when they don't have a file in `docs/status/` yet.
+Do this when your human asks for onboarding, or when they don't have a folder in `people/` yet.
 
 1. Tell your human: this repo is public, so anyone can read what goes in it. They should use a
    first name or nickname, and share only what they're fine with being public.
 2. Find out yourself, without asking: their GitHub username (`gh api user --jq .login`),
    their operating system, and which AI tool you are.
 3. Ask them one question: what name should we use for you here? (first name or nickname,
-   lowercase, no spaces. It names your status file and your branches)
+   lowercase, no spaces. It names your folder and your branches)
 4. Check git's identity in this repo with `git config user.name` and `git config user.email`.
    If the email is missing or is a personal address, offer to use their private GitHub address
    instead, so it isn't published in this public repo. Get their id with `gh api user --jq .id`
    and their login with `gh api user --jq .login`, then, only if they agree, run
    `git config user.email "<id>+<login>@users.noreply.github.com"`.
    If `user.name` is missing, set it to the name from step 3.
-5. Create `docs/status/<name>.md` from `docs/status/TEMPLATE.md`, filled in with their name
+5. Create `people/<name>/status.md` from `people/_template/status.md`, filled in with their name
    and what you found.
 6. Publish it on the branch `<name>/onboarding`, following "Saving and sharing work" below,
    and merge the pull request yourself.
-7. Tell your human it's done, with the link to their file on GitHub.
+7. Tell your human it's done, with the link to their folder on GitHub.
 
 ## Every time you start
 
 1. Get the latest: `git switch main`, then `git pull --ff-only`. If that fails, stop and tell your human.
-2. Read `docs/PLAN.md` and the files in `docs/status/` to see where things stand.
+2. Read `shared/PLAN.md` and every `people/*/status.md` to see where things stand.
 3. Work on a branch of your own, named `<name>/<task>` (for example `maria/heart-rate-chart`):
    `git switch -c <name>/<task>`, or `git switch <branch>` to continue one you already have.
    Never work directly on main.
 
 ## What you may edit
 
-- Your human's own area, as listed under "Who does what" in `docs/PLAN.md`.
-  Until that table is filled in, only their status file.
-- Your human's status file, `docs/status/<name>.md`.
-- New files in `docs/decisions/` (see "Recording a decision").
-- `docs/sources.md`: add rows only, at the end of the right table.
+- `people/<name>/`, your human's own folder: anything.
+- `shared/`: add new files freely. Change a file someone else made only if they agree.
+  `shared/PLAN.md` changes only after the team has agreed. In `shared/sources.md`, add rows only,
+  at the end of the right table. In `shared/decisions/`, add new files only.
+- `integration/<connection>/`: only a connection your human is working on. To start one, create
+  its folder with a short `README.md`: what it joins, which people's work it uses, how to run it,
+  and whether it works yet.
+- `final/`, `AGENTS.md`, `SETUP.md` and `README.md`: only after the team has agreed; ask your
+  human to confirm it has.
 
-Ask your human before touching anything else. The shared files (`docs/PLAN.md`, `AGENTS.md`,
-`SETUP.md`, `README.md`) change only after the team has agreed; ask your human to confirm it has.
+Never edit someone else's `people/` folder. To use their work, copy what you need into your
+human's folder or into `integration/`.
 
 ## Saving and sharing work
 
@@ -74,16 +79,17 @@ Ask your human before touching anything else. The shared files (`docs/PLAN.md`, 
   `git fetch origin`, then `git merge origin/main`. Don't rebase.
 - When the work is ready to share, open a pull request: `gh pr create --fill`
   (or on the GitHub website).
-- Once `app/README.md` lists a command that checks the app still works, run it before merging
-  anything that touches `app/`.
+- Once `final/README.md` lists a command that checks the product still works, run it before
+  merging anything that touches `final/`.
 - You may merge your own pull request when it has no conflicts with main and it only touches
-  your human's area, their status file, `docs/decisions/` and `docs/sources.md`:
-  `gh pr merge --merge`. Otherwise ask the owner of the other area to look at it first.
+  your human's folder, new files in `shared/`, rows in `shared/sources.md`, or an `integration/`
+  connection your human is working on: `gh pr merge --merge`. Anything else needs the agreement
+  described in "What you may edit" first.
 
 ## Conflicts
 
 - In your human's own files: fix them.
-- In `docs/sources.md`: keep both sides.
+- In `shared/sources.md`: keep both sides.
 - Anywhere else: stop and tell your human. They sort it out with that file's owner.
 
 ## Never
@@ -97,22 +103,24 @@ Ask your human before touching anything else. The shared files (`docs/PLAN.md`, 
 ## Recording a decision
 
 When the team decides something that affects more than one person (the idea, the split,
-a data format, a tool), create `docs/decisions/YYYY-MM-DD-HHMM-short-title.md` from
-`docs/decisions/TEMPLATE.md` and share it like any other work.
+a data format, a tool), create `shared/decisions/YYYY-MM-DD-HHMM-short-title.md` from
+`shared/decisions/TEMPLATE.md` and share it like any other work.
 
 ## Before your human stops, even for a short break
 
-1. Update their status file: Done, Now, Blocked, and Next steps. If they're leaving for a while,
-   write Next steps so someone else could continue: which branch, what's half-done,
+1. Update `people/<name>/status.md`: Done, Now, Blocked, and Next steps. If they're leaving for
+   a while, write Next steps so someone else could continue: which branch, what's half-done,
    what to do next, what to watch out for.
 2. Commit and push. Open a pull request if the work is ready.
 
 ## Taking over someone's work
 
-1. Read their status file, especially Next steps.
-2. Start your own branch from theirs: `git fetch origin`, then
-   `git switch -c <your-name>/<task> origin/<their-branch>`.
-3. Note in your human's status file whose work they continued, and from which branch.
+1. Read their `people/<their-name>/status.md`, especially Next steps.
+2. If their latest work is on a branch that isn't merged yet, start your own branch from it:
+   `git fetch origin`, then `git switch -c <your-name>/<task> origin/<their-branch>`.
+3. Continue in your human's own folder or in `integration/`, copying what you need from theirs.
+   Don't edit their folder.
+4. Note in your human's status file whose work they continued, and from which branch.
 
 ## If you're unsure
 

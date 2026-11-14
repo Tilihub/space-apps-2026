@@ -21,19 +21,18 @@ This file changes only after the team agrees (see AGENTS.md).
 
 ## Who does what
 
-Every area has an owner and a backup who can continue if the owner leaves.
+Every piece of work has an owner and a backup who can continue if the owner leaves.
+Add one row per piece. Personal work lives in the owner's `people/<name>/`;
+joined pieces live in `integration/<connection>/`.
 
-| Area | Folder | Owner | Backup |
+| Piece of work | Owner | Backup | Where |
 |---|---|---|---|
-| App | `app/` | | |
-| Hardware (only if we build it) | `hardware/` | | |
-| Health research | `research/` | | |
-| Submission and demo | `submission/` | | |
+| Submission and demo | | | `shared/submission/` |
 
-## Agreements between areas
+## Agreements between pieces
 
-<!-- Anything two areas must agree on exactly, decided before either side builds it.
-     For example: the format of a reading that hardware sends to the app,
+<!-- Anything two pieces must agree on exactly, decided before either side builds it.
+     For example: the format of a message one piece sends to another,
      or where the app reads the health content from. -->
 
 ## Timeline
@@ -56,4 +55,4 @@ Proposed times; change them on Saturday morning:
 
 If the Local Event has its own judging or presentation slot, add it here.
 
-The submission checklist is in [submission/project-page.md](../submission/project-page.md).
+The submission checklist is in [submission/project-page.md](submission/project-page.md).

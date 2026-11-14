@@ -1,6 +1,6 @@
 # <Short title>
 
-<!-- Save as docs/decisions/YYYY-MM-DD-HHMM-short-title.md -->
+<!-- Save as shared/decisions/YYYY-MM-DD-HHMM-short-title.md -->
 
 - When: <YYYY-MM-DD HH:MM>
 - Decided by: <names>

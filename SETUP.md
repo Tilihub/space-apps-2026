@@ -64,7 +64,7 @@ Start your AI tool inside the `space-apps-2026` folder (`claude` or `codex` in t
 
 > Read AGENTS.md and do the onboarding.
 
-It asks for your name, creates your status file and publishes it. You're done when your file appears at https://github.com/Tilihub/space-apps-2026/tree/main/docs/status
+It asks for your name, creates your own folder with your status file, and publishes it. You're done when your folder appears at https://github.com/Tilihub/space-apps-2026/tree/main/people
 
 Your AI tool asks permission before running commands. That's normal: read what it wants to do, then approve.
 
@@ -72,6 +72,6 @@ Your AI tool asks permission before running commands. That's normal: read what i
 
 You can add your status file on the website:
 
-1. Open https://github.com/Tilihub/space-apps-2026/blob/main/docs/status/TEMPLATE.md and copy its text.
-2. Go to the `docs/status` folder, click **Add file → Create new file**, name it `<your-name>.md`, paste the text and fill it in.
+1. Open https://github.com/Tilihub/space-apps-2026/blob/main/people/_template/status.md and copy its text.
+2. Go to the `people` folder, click **Add file → Create new file**, type `<your-name>/status.md` as the name, paste the text and fill it in.
 3. Click **Commit changes**, choose to create a new branch and start a pull request, then click **Create pull request** and **Merge pull request**.
