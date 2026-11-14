@@ -30,3 +30,12 @@ Add new entries at the end. On a conflict in this file, keep both sides.
 - Branch or pull request: `zt/app-contract`
 - Error message, if any: none
 - What was tried: nothing needed; this entry is for Tommy's awareness.
+
+## 2026-11-14 17:57 · potest · Crew Assistant integration demo
+
+- Type: structure change
+- Status: open
+- What happened: added `integration/crew-assistant/` for a single-profile synthetic demo joining the PET-1 fixture, Angelos's check-in engine, and the Crew Support adapter.
+- Branch or pull request: `potest/crew-support-chat`, PR #55
+- Error message, if any: none
+- What was tried: verified the four context cases in Chrome and checked the mocked OpenAI requests. The demo README records the remaining app permission and live verification work.

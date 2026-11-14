@@ -42,7 +42,7 @@ async function readBody(request) {
 }
 
 export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = false,
-  fetchOpenAI = globalThis.fetch, timeoutMs = 25_000 } = {}) {
+  fetchOpenAI = globalThis.fetch, timeoutMs = 25_000, handleRequest } = {}) {
   const mode = demo ? 'demo' : apiKey ? 'live' : 'unconfigured';
   let activeRequests = 0;
   return createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, async (request, response) => {
@@ -55,6 +55,18 @@ export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = 
       return send(response, 403, { error: 'Use the local Crew Support address.' });
     }
     const path = request.url.split('?')[0];
+    if (handleRequest) {
+      try {
+        if (await handleRequest({
+          request, response, path, readBody: () => readBody(request),
+          send: (status, body, type) => send(response, status, body, type),
+        })) return;
+      } catch (error) {
+        if (response.destroyed) return;
+        if (error instanceof ChatError) return send(response, error.status, { error: error.message });
+        return send(response, 502, { error: 'The demo could not complete this request. Try again.' });
+      }
+    }
     if (request.method === 'GET') {
       if (path === '/') {
         const crew = new URLSearchParams(request.url.split('?')[1]).get('crew');

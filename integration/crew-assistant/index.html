@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crew Assistant comparison</title>
+  <link rel="stylesheet" href="/support.css">
+  <link rel="stylesheet" href="/crew-assistant.css">
+  <script type="module" src="/crew-assistant.mjs"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Crew Assistant comparison</h1>
+      <p class="intro">Tomas · Mission day 42 · Synthetic Mars-transit case</p>
+      <p id="mode" role="status">Loading demo…</p>
+    </header>
+
+    <div class="inputs">
+      <section class="chat" aria-labelledby="check-in-title">
+        <h2 id="check-in-title">Interactive check-in</h2>
+        <form id="check-in">
+          <label>Sleep in the last 24 hours (hours)
+            <input type="number" name="sleep_hours" min="0" max="24" step="any">
+          </label>
+          <label>Resting heart rate (bpm)
+            <input type="number" name="resting_heart_rate_bpm" min="1" step="any">
+          </label>
+          <label>Mood (1 very low, 10 very good)
+            <input type="number" name="mood" min="1" max="10">
+          </label>
+          <label>Stress (1 none, 10 extreme)
+            <input type="number" name="stress" min="1" max="10">
+          </label>
+          <label>Fatigue (1 none, 10 extreme)
+            <input type="number" name="fatigue" min="1" max="10">
+          </label>
+          <p id="check-in-status" role="status">Leave skipped fields blank.</p>
+          <div class="actions">
+            <button id="load-example" type="button" disabled>Fill Tomas’s example</button>
+            <button id="save-check-in" disabled>Save check-in</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="chat" aria-labelledby="health-title">
+        <h2 id="health-title">Health data</h2>
+        <p id="health-source">Loading the personal reference and earlier observations…</p>
+        <table>
+          <thead><tr><th scope="col">Measure</th><th scope="col">Reference</th><th scope="col" id="past-1">Earlier day</th><th scope="col" id="past-2">Earlier day</th></tr></thead>
+          <tbody id="health-rows"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="chat assistant" aria-labelledby="assistant-title">
+      <h2 id="assistant-title">Crew Assistant</h2>
+      <form id="compare">
+        <label for="question">Ask the same question in four fresh conversations</label>
+        <textarea id="question" rows="2" maxlength="2000" required>I feel worn down and out of sorts today. Can you help me make sense of it?</textarea>
+        <button id="compare-button" disabled>Compare replies</button>
+      </form>
+      <p id="compare-status" role="status"></p>
+      <div id="results" class="results" aria-live="polite"></div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,5 +1,7 @@
 # Crew Support
 
+For the three-section demo with an interactive check-in, health history, and side-by-side replies, see [Crew Assistant integration](../../../integration/crew-assistant/README.md).
+
 Crew Support is a text chat for astronauts who want to talk about isolation, missing home, workload, sleep or crew tension. This prototype links zt’s dashboard skeleton to a Node server that calls the [OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create). OpenAI runs the model. The default is [`gpt-5.4-mini`](https://developers.openai.com/api/docs/models/gpt-5.4-mini).
 
 ## Run the demo

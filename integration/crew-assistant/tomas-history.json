@@ -1,0 +1,126 @@
+{
+  "schema_version": "personal-history-v1",
+  "astronaut_id": "c4",
+  "source": {
+    "kind": "synthetic",
+    "label": "PET-1 simulated Mars-transit individual check-ins",
+    "observation_type": "individual_daily",
+    "heart_rate_context": "rest",
+    "self_report_scale": "1-10"
+  },
+  "units": {
+    "resting_heart_rate_bpm": "bpm",
+    "sleep_hours": "hours",
+    "mood": "points",
+    "stress": "points",
+    "fatigue": "points"
+  },
+  "baseline": [
+    {
+      "recorded_at": "2026-11-01T07:30:00Z",
+      "resting_heart_rate_bpm": 62,
+      "sleep_hours": 7.8,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-02T07:30:00Z",
+      "resting_heart_rate_bpm": 63,
+      "sleep_hours": 7.9,
+      "mood": 8,
+      "stress": 2,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-03T07:30:00Z",
+      "resting_heart_rate_bpm": 61,
+      "sleep_hours": 7.7,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 4
+    },
+    {
+      "recorded_at": "2026-11-04T07:30:00Z",
+      "resting_heart_rate_bpm": 62,
+      "sleep_hours": 7.8,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-05T07:30:00Z",
+      "resting_heart_rate_bpm": 64,
+      "sleep_hours": 8,
+      "mood": 8,
+      "stress": 2,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-06T07:30:00Z",
+      "resting_heart_rate_bpm": 61,
+      "sleep_hours": 7.7,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 4
+    },
+    {
+      "recorded_at": "2026-11-07T07:30:00Z",
+      "resting_heart_rate_bpm": 62,
+      "sleep_hours": 7.8,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 3
+    }
+  ],
+  "recent": [
+    {
+      "recorded_at": "2026-11-08T07:30:00Z",
+      "resting_heart_rate_bpm": 63,
+      "sleep_hours": 7.9,
+      "mood": 8,
+      "stress": 2,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-09T07:30:00Z",
+      "resting_heart_rate_bpm": 62,
+      "sleep_hours": 7.8,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-10T07:30:00Z",
+      "resting_heart_rate_bpm": 61,
+      "sleep_hours": 7.7,
+      "mood": 7,
+      "stress": 3,
+      "fatigue": 4
+    },
+    {
+      "recorded_at": "2026-11-11T07:30:00Z",
+      "resting_heart_rate_bpm": 63,
+      "sleep_hours": 7.9,
+      "mood": 8,
+      "stress": 2,
+      "fatigue": 3
+    },
+    {
+      "recorded_at": "2026-11-12T07:30:00Z",
+      "resting_heart_rate_bpm": 73,
+      "sleep_hours": 5.9,
+      "mood": 5,
+      "stress": 6,
+      "fatigue": 6
+    },
+    {
+      "recorded_at": "2026-11-13T07:30:00Z",
+      "resting_heart_rate_bpm": 75,
+      "sleep_hours": 5.6,
+      "mood": 4,
+      "stress": 7,
+      "fatigue": 7
+    }
+  ]
+}

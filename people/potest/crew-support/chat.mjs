@@ -48,8 +48,34 @@ function demoReply(messages) {
   ][Math.min(turn, 2)];
 }
 
-export async function getReply(messages, { mode, model, apiKey, fetchOpenAI, signal }) {
-  if (mode === 'demo') return { reply: demoReply(messages) };
+function contextualDemoReply({ checkIn, health }) {
+  const today = checkIn?.sleep_hours;
+  const stress = checkIn?.stress;
+  const history = health?.sleep_hours;
+  const references = [];
+  if (today != null) references.push(`You logged ${today} hours of sleep today.`);
+  if (stress != null) references.push(`You rated your stress ${stress}/10.`);
+  if (health && history?.reference != null) {
+    const recent = history.recent.filter(day => day.value != null);
+    if (recent.length) {
+      const observations = recent.map(day => `${day.value} hours on day ${day.mission_day}`).join(' and ');
+      references.push(`Earlier sleep logs show ${observations}, with a personal reference of ${history.reference} hours.`);
+    }
+    if (today != null) {
+      const change = Math.round((history.reference - today) * 10) / 10;
+      if (change) references.push(`Today's entry is ${Math.abs(change)} hours ${change > 0 ? 'below' : 'above'} that reference.`);
+    }
+  }
+  const question = health && checkIn
+    ? 'What feels like the most useful thing to bring up with your crew today?'
+    : health
+      ? 'How was your sleep last night?'
+      : checkIn ? 'How has today felt compared with the last few days?' : 'When did you first notice feeling worn down?';
+  return ['That sounds tiring.', ...references, question].join(' ');
+}
+
+export async function getReply(messages, { mode, model, apiKey, fetchOpenAI, signal, context }) {
+  if (mode === 'demo') return { reply: context === undefined ? demoReply(messages) : contextualDemoReply(context) };
   if (mode === 'unconfigured') throw new ChatError(503, 'AI chat needs an OpenAI API key on the server.');
 
   async function callOpenAI(endpoint, body) {
@@ -83,9 +109,18 @@ export async function getReply(messages, { mode, model, apiKey, fetchOpenAI, sig
   const inputSafety = await moderate(messages.at(-1).content);
   if (inputSafety['self-harm/intent']) return { reply: URGENT_REPLY, urgent: true };
 
+  const contextInstructions = context === undefined ? '' : `
+Use only relevant context supplied below. The sources describe a fictional demo crew member.
+checkIn is the crew member's self-report today. health is earlier sleep and resting heart rate
+from a synthetic fixture, including a personal reference median. Do not confuse earlier days
+with today. A missing field or null is unknown. When both are relevant, relate today's check-in
+to earlier observations. Do not treat the comparison as a cause, diagnosis or safety clearance.
+Scores are 1–10. Higher mood means better mood. Higher stress and fatigue mean more of each.
+For no data, ask a relevant follow-up without inventing measurements.
+Crew support context: ${JSON.stringify(context)}`;
   const result = await callOpenAI('responses', {
     model,
-    instructions: INSTRUCTIONS,
+    instructions: INSTRUCTIONS + contextInstructions,
     input: messages,
     store: false,
     max_output_tokens: 420,
