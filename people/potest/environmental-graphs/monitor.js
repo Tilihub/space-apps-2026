@@ -26,6 +26,11 @@ let bounds;
 let timeline = [];
 let cursor = 0;
 let loop = 1;
+let completedLoops = 0;
+let loopDuration = 0;
+let chartStart;
+let chartEnd;
+let currentReading;
 let timer;
 let eventHistory = [];
 let visibleEvents = [];
@@ -77,7 +82,7 @@ function formatReading(value) {
 
 function describeNextStep() {
   const nextTime = timeline[cursor + 1];
-  if (nextTime === undefined) return "Next step restarts the source timeline.";
+  if (nextTime === undefined) return "Next step wraps to the first source timestamp.";
   const difference = nextTime - timeline[cursor];
   if (currentDataset.timeMode === "sol") {
     return `Next step advances ${difference} ${difference === 1 ? "sol" : "sols"} in source time.`;
@@ -110,6 +115,7 @@ function selectDataset() {
   const lastSample = timeline.at(-1);
   timeline = [...new Set([...timeline, ...eventHistory.filter(event => event.kind === "gap" && event.time < lastSample)
     .map(event => event.time)])].sort((a, b) => a - b);
+  loopDuration = lastSample - timeline[0] + (timeline.length > 1 ? timeline[1] - timeline[0] : 1);
   visibleEvents = [];
   ui.events.replaceChildren();
   ui["events-empty"].hidden = false;
@@ -125,6 +131,7 @@ function selectDataset() {
   ui.speed.value = isExercise() || timeline.length < 60 ? "1" : "4";
   cursor = 0;
   loop = 1;
+  completedLoops = 0;
   selectMetric();
   bridge.beginCycle("dataset-changed");
   if (isReplay() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) startPlayback();
@@ -212,11 +219,23 @@ function renderEvents(time) {
 
 function render() {
   const all = currentMetric.points;
-  const time = isReplay() ? timeline[cursor] : all.at(-1)[0];
-  const windowSize = Number(ui.window.value);
-  const cutoff = time - windowSize;
-  const offset = upperBound(all, cutoff - 1);
-  points = all.slice(offset, upperBound(all, time));
+  const replay = isReplay();
+  const time = replay ? timeline[cursor] : all.at(-1)[0];
+  const configuredWindow = Number(ui.window.value);
+  const windowSize = replay ? Math.min(configuredWindow, loopDuration) : configuredWindow;
+  const shift = replay ? completedLoops * loopDuration - timeline[0] : 0;
+  chartEnd = time + shift;
+  chartStart = replay ? Math.max(0, chartEnd - windowSize) : Math.max(all[0][0], chartEnd - windowSize);
+  const start = chartStart - shift;
+  const current = all.slice(upperBound(all, start - 1), upperBound(all, time));
+  currentReading = current.at(-1);
+  points = current.map(([sourceTime, value, count]) => [sourceTime + shift, value, count, sourceTime]);
+  if (replay && completedLoops && start < timeline[0]) {
+    const prior = all.slice(upperBound(all, start + loopDuration - 1));
+    points = [...prior.map(([sourceTime, value, count]) => [
+      sourceTime + shift - loopDuration, value, count, sourceTime,
+    ]), ...points];
+  }
   bounds = points.reduce((stats, [, value, count]) => {
     stats.min = Math.min(stats.min, value);
     stats.max = Math.max(stats.max, value);
@@ -224,8 +243,8 @@ function render() {
     return stats;
   }, {min: Infinity, max: -Infinity, count: 0});
   const latest = points.at(-1);
-  const fresh = latest && time - latest[0] <= currentMetric.gap;
-  ui.latest.textContent = fresh ? formatReading(latest[1]) : "—";
+  const fresh = currentReading && time - currentReading[0] <= currentMetric.gap;
+  ui.latest.textContent = fresh ? formatReading(currentReading[1]) : "—";
   ui.min.textContent = latest ? formatReading(bounds.min) : "—";
   ui.max.textContent = latest ? formatReading(bounds.max) : "—";
   ui.count.textContent = bounds.count.toLocaleString("en");
@@ -247,9 +266,9 @@ function render() {
 }
 
 function showReading() {
-  const observation = points[selection] ?? points.at(-1);
+  const observation = selection >= 0 ? points[selection] : currentReading;
   ui.reading.textContent = observation
-    ? `${formatReading(observation[1])} · ${formatTime(observation[0])}`
+    ? `${formatReading(observation[1])} · ${formatTime(selection >= 0 ? observation[3] : observation[0])}`
     : "No readings in this window.";
   draw();
 }
@@ -265,6 +284,7 @@ function advancePlayback(batch) {
   if (cursor === timeline.length - 1) {
     cursor = 0;
     loop++;
+    completedLoops++;
     bridge.beginCycle("loop");
   } else {
     cursor = Math.min(timeline.length - 1, cursor + batch);
@@ -308,10 +328,9 @@ function draw() {
   const right = width - 17;
   const top = 36;
   const bottom = height - 37;
-  const stop = isReplay() ? timeline[cursor] : points.at(-1)[0];
-  const windowSize = Number(ui.window.value);
-  const start = isReplay() && Number.isFinite(windowSize)
-    ? Math.max(timeline[0], stop - windowSize) : points[0][0];
+  const start = chartStart;
+  const stop = chartEnd;
+  const replay = isReplay();
   const span = Math.max(stop - start, 1);
   const x = time => left + (time - start) / span * (right - left);
   const y = value => bottom - (value - lower) / (upper - lower) * (bottom - top);
@@ -324,7 +343,7 @@ function draw() {
   paint.fillText(currentMetric.unit, 7, 18);
   const clockLabel = {utc: "UTC", lmst: "Mars local mean solar time", sol: "Mars sol", elapsed: "Scenario time"}[currentDataset.timeMode];
   paint.textAlign = "right";
-  paint.fillText(clockLabel, right, 18);
+  paint.fillText(replay ? "Elapsed replay time" : clockLabel, right, 18);
   const limit = alerts.get(currentMetric.id)?.limit;
   if (limit) {
     for (const [from, to, color] of [
@@ -359,17 +378,30 @@ function draw() {
   for (const time of new Set(tickTimes)) {
     const horizontal = x(time);
     paint.textAlign = time === start ? "left" : time === stop ? "right" : "center";
-    paint.fillText(formatTime(time, true), horizontal, bottom + 22);
+    paint.fillText(replay ? formatElapsed(time) : formatTime(time, true), horizontal, bottom + 22);
   }
 
+  const loopStart = completedLoops * loopDuration;
+  if (replay && completedLoops && loopStart > start) {
+    paint.strokeStyle = "#81949d";
+    paint.setLineDash([3, 4]);
+    paint.beginPath();
+    paint.moveTo(x(loopStart), top);
+    paint.lineTo(x(loopStart), bottom);
+    paint.stroke();
+    paint.setLineDash([]);
+  }
   paint.beginPath();
   paint.strokeStyle = "#6edcc1";
   paint.lineWidth = 1.7;
   let lastTime = -Infinity;
-  for (const [time, value] of points) {
-    if (time - lastTime > currentMetric.gap) paint.moveTo(x(time), y(value));
+  let lastOffset;
+  for (const [time, value, , sourceTime] of points) {
+    const offset = time - sourceTime;
+    if (offset !== lastOffset || time - lastTime > currentMetric.gap) paint.moveTo(x(time), y(value));
     else paint.lineTo(x(time), y(value));
     lastTime = time;
+    lastOffset = offset;
   }
   paint.stroke();
 
@@ -381,9 +413,9 @@ function draw() {
       paint.fill();
     }
   }
-  if (isReplay() && selection < 0 && stop - points.at(-1)[0] <= currentMetric.gap) {
-    const [time, value] = points.at(-1);
-    paint.fillStyle = colors[alerts.get(currentMetric.id)?.states[upperBound(currentMetric.points, time) - 1]?.level ?? 0];
+  if (replay && selection < 0 && currentReading && stop - points.at(-1)[0] <= currentMetric.gap) {
+    const [time, value, , sourceTime] = points.at(-1);
+    paint.fillStyle = colors[alerts.get(currentMetric.id)?.states[upperBound(currentMetric.points, sourceTime) - 1]?.level ?? 0];
     paint.beginPath();
     paint.arc(x(time), y(value), 4, 0, Math.PI * 2);
     paint.fill();
@@ -403,6 +435,15 @@ function draw() {
     paint.arc(x(time), y(value), 4, 0, Math.PI * 2);
     paint.fill();
   }
+}
+
+function formatElapsed(value) {
+  if (currentDataset.timeMode === "sol") return `+${value} sol`;
+  const seconds = Math.floor(value);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = String(Math.floor(seconds / 60) % 60).padStart(2, "0");
+  const remainder = String(seconds % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${remainder}`;
 }
 
 function niceStep(target) {
@@ -442,8 +483,8 @@ function inspectKeys(event) {
 }
 
 function exportCsv() {
-  const rows = points.map(([time, value, count]) => [
-    exportTime(time), value, currentMetric.unit, count,
+  const rows = points.map(([, value, count, sourceTime]) => [
+    exportTime(sourceTime), value, currentMetric.unit, count,
   ].join(","));
   const csv = ["\uFEFFtimestamp,value,unit,sample_count", ...rows].join("\r\n");
   downloadFile(csv, "text/csv;charset=utf-8", `${currentDataset.id}-${currentMetric.id}.csv`);
@@ -489,6 +530,7 @@ if (archive.length && paint) {
   ui.restart.addEventListener("click", () => {
     cursor = 0;
     loop++;
+    completedLoops = 0;
     bridge.beginCycle("restart");
     render();
   });
