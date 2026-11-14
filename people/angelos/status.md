@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:48 (Asia/Nicosia)
-- Working on: Petros's aligned stage-data PR #64 independently verified; results and regression checks published in PR #65. All 51 root checks pass; no algorithm change required.
+- Last updated: 2026-11-14 18:53 (Asia/Nicosia)
+- Working on: Verified stage data and ready-to-copy owner instructions delivered through PR #65; see health/TEAM_NEXT_STEPS.md. All 51 root checks pass.
 - Branch: angelos/verify-stage-data
 
 ## Done
@@ -191,6 +191,10 @@
 - Verification PR: https://github.com/Tilihub/space-apps-2026/pull/65 (only
   people/angelos/). Candidate source is pinned at 1b736f5; no source PR approval
   or merge on Petros's behalf was performed.
+- Added health/TEAM_NEXT_STEPS.md at the user's request: concrete copy/paste
+  tasks for Petros, zt and Potest, contract coordination for zt/Tommy, dependency
+  order and the actual joined-page acceptance checklist. The instructions preserve
+  published real observations, existing ownership and conservative Today access.
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 

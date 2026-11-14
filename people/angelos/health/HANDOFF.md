@@ -1,5 +1,8 @@
 # Health module handoff: zt and Potest
 
+For ready-to-copy tasks per owner and the joined acceptance checklist, use
+[TEAM_NEXT_STEPS.md](TEAM_NEXT_STEPS.md).
+
 **Stage-data update:** Petros's aligned PR #64 at `1b736f5` is independently
 verified: c1 no changes, c3 mood/stress streaks 6/3 days, c4 sleep reference 6.8 h
 with only sleep changed for 3 days. All 51 current root checks pass, including
