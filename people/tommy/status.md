@@ -8,13 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:38
+- Last updated: 2026-11-14 14:39
 - Working on: Requirements and proposed next tasks for Tommy to assign after reviewing the latest team work, including zt's new overview. Planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #38 with the clarified requirements and proposed contributor task handoff (Tommy documents only).
+- Published and merged clarified requirements and proposed contributor tasks in PR #38; the handoff is available on main.
 - Published the personal concept briefs through PRs #24, #30, and #33. Withdrew UI PR #20 and its remote branch; this chat produces no UI/application code.
 - Recorded Q10: one code/QR grants only the prescribed compartments together; Q11: human private-journal readers are the author and psychologist; Q12: the author's chatbot can process those thoughts for contextual support without leaking them to other roles.
 - Reviewed latest published statuses, module readmes/interfaces/source paths, and PRs #25/#34/#36 plus zt's merged app overview in PR #37.
@@ -33,7 +33,7 @@
 ## Next steps
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
-- Publish the clarified requirements and proposed tasks for Tommy and zt. Keep proposals separate from agreed assignments.
+- The requirements and task proposals are published for Tommy and zt; keep proposals separate from agreed assignments.
 - After Tommy confirms the direction, refine the remaining product questions and agree the common-plan changes through the required teammate review.
 - Update Now, Done and Next steps after each finished step and include this status in the same push; commit/push before a break.
 - Do not implement UI/application code or edit another member's personal files from this chat unless the authorization and ownership rules allow it.
