@@ -1,0 +1,25 @@
+{
+  "contractVersion": 1,
+  "kind": "synthetic",
+  "scope": "PET-1 scenario inputs and expected results",
+  "cases": {
+    "c1": {
+      "checkInBody": {"sleepHours": 6.8, "restingHeartRateBpm": 54, "mood": 8, "stress": 2, "fatigue": 2},
+      "expectedChangedMeasures": [],
+      "expectedMissingComparedMeasures": []
+    },
+    "c3": {
+      "checkInBody": {"sleepHours": 6.8, "restingHeartRateBpm": 65, "mood": 4, "stress": 5, "fatigue": 3},
+      "expectedChangedMeasures": ["mood", "stress"],
+      "expectedMissingComparedMeasures": [],
+      "expectedDaysInARowByMeasure": {"mood": 6, "stress": 3}
+    },
+    "c4": {
+      "checkInBody": {"sleepHours": 4.6, "restingHeartRateBpm": 63, "mood": 6, "stress": 4, "fatigue": 4, "spo2Pct": 98, "systolicMmHg": 119, "diastolicMmHg": 76, "temperatureC": 36.8},
+      "expectedChangedMeasures": ["sleepHours"],
+      "expectedMissingComparedMeasures": [],
+      "expectedDaysInARow": 3,
+      "symptomReportBody": {"symptoms": [{"code": "headache", "severity": 5}], "note": "Headache since waking.", "vitals": {"spo2Pct": 98, "temperatureC": 36.8}}
+    }
+  }
+}

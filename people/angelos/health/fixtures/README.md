@@ -1,5 +1,10 @@
 # PET-1 example input provenance
 
+`stage-health.json` and `stage-scenarios.json` are unchanged copies of Petros's
+aligned source files at `1b736f50332423657fb9b5568bb1c1e5e0459f50` (PR #64).
+They verify the accepted stage cases without changing the earlier snapshots.
+Runtime still reads the canonical file in Petros's folder; these are test inputs.
+
 `health.json` and `scenarios.json` are unchanged copies of the same-named files in
 `people/petros_the_space_larper/demo-data/` from commit
 `12c840ee2ab9ced49b01a12efb5e5063487de594` on
