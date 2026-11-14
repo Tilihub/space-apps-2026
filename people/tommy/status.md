@@ -8,13 +8,19 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:15
-- Working on: Publishing Q13–Q17 and notifying module owners through the handoff PR; reviewing integration progress. Planning only.
+- Last updated: 2026-11-14 — ecosystem review
+- Working on: Reviewing the complete ecosystem with Tommy: existing prototypes, data/role boundaries and proposed return-from-break connections. Planning only; zt owns UI assembly.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #42 for the post-notification DAD-1 progress refresh.
+- Opened PR #45 for the ecosystem review and return-from-break handoff; only Tommy’s planning/status files changed.
+
+- Prepared ecosystem-review.md against zt b760d8f, angelos dc56e60, dadis2 832efca, potest e9c7079 and petros f05971a. Opened the original three browser prototypes from isolated public-source copies; verified synthetic two-bin selection and environmental gap/alert history. No camera/hardware or complete collection was tested.
+- Re-ran 51 latest health checks in temporary stores: 50 passed, optional Node client check skipped (Node unavailable). Exported synthetic health examples for Tommy’s review. No private data or session tokens used/published.
+- Recorded proposed end-to-end flow, permission boundaries, delivered ANG-1/DAD-1/POT-1 reuse, concrete return tasks, and the distinction between personal weekly analytics and doctor-only clinical reports. No teammate source/UI was edited.
+
+- Published the post-notification DAD-1 progress refresh through merged PR #42.
 - After publishing/notifying Q13–Q17, fetched again and reviewed the newly published dadis2/prescription-grants status, contract and dose-slot source. DAD-1 is now available for integration review; owner reports 19 checks passed. Updated the brief to avoid duplicate implementation.
 - Published Q13–Q17 through merged PR #41; notified zt, angelos, dadis2, potest and petros via GitHub mentions in the PR comment (read/acceptance not assumed).
 - Recorded Q13–Q17: doctor-only manual clinical reports with hidden astronaut content, reusable per-dose prescription QR with expiry/quotas, exceptional all-crew emergency access, readiness deferred, and 1–10 self-reports.
@@ -36,10 +42,13 @@
 
 - No blocker to documenting or proposing tasks. Tommy and the owners still need to agree the assignments and connection contracts.
 - Agree shared crew IDs, clock, field names/scales and packet formats; keep historical source time/provenance explicit.
-- Resolve report visibility/preview, score meaning and first-demo identity flow with zt. Confirm approval categories, reporting interval/triggers/window, and the permission implementation.
+- Implement the decided hidden clinical-report content, and resolve personal-analytics naming, score meaning and first-demo identity flow with zt. Confirm approval categories, reporting interval/triggers/window, and the permission implementation.
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- Review ecosystem-review.md with Tommy one decision at a time. Start with the proposed journey and role/report boundaries, then agree IDs, mission clock, 1–10 transition and integration/transport ownership with zt and module owners.
+- PR #45 is open for this own-folder review; verify its allowed files and merge when ready. The frozen visual review is a local artifact, not an adopted UI.
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
 - The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.

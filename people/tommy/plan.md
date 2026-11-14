@@ -215,3 +215,7 @@ Tommy places this work after the core first-demo features.
 ## How to continue
 
 Read this plan and Tommy's status first. Ask Tommy which concept he wants to refine, update these notes in English, and publish only his own planning/status documents. Do not resume the withdrawn UI prototype. Update the status and commit/push before Tommy takes a break.
+
+## Whole-application review
+
+The proposed assembly, module snapshot, visual-review findings and return-from-break tasks are in [ecosystem-review.md](ecosystem-review.md). This remains Tommy’s planning brief until the relevant owners accept the contracts and the team adopts the common plan.
