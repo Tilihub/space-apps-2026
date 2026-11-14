@@ -37,7 +37,8 @@
 - PET-1 and PET-2 handoff merged in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51).
 - Added the [workout handoff](demo-data/WORKOUT.md), including the published SPRINT week, an ISS-style seven-day plan, a controller for step-by-step workouts and a synthetic stage pulse replay. Verified the controller against Angelos's workout endpoint.
 - Read Angelos's [PET-1 data review](../angelos/health/DATA_REVIEW.md) and aligned the canonical source fixture with zt's stage cases: c1 workout ranges, c3 six-day mood trend with pulse-only gaps, and c4's 6.8 h sleep reference with sleep as the only day-42 flag. Removed the duplicate synthetic cabin snapshot so the joined case uses Potest's separate ISS RR-9 replay.
-- Followed Angelos's [team next steps](../angelos/health/TEAM_NEXT_STEPS.md), merged the latest main into the source branch without rebase, and passed all 69 current root checks, including the aligned stage cases, localhost client requests, workouts and medicine-module checks.
+- Followed Angelos's [team next steps](../angelos/health/TEAM_NEXT_STEPS.md), merged the latest main into the source branch without rebase, and passed all 70 current root checks, including the aligned stage cases, localhost client requests, workouts and medicine-module checks.
+- Adapted the default week to Mars cruise in microgravity. One Orion-style flywheel provides resistance and rowing. The plan includes inter-set rest, active recovery and an optional target based on measured rowing peak heart rate.
 
 ## Blocked / need from others
 
@@ -59,3 +60,4 @@
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
 - zt should use `demo-data/health.json` on a fresh reset and replay the [stage-aligned day-42 cases](demo-data/scenarios.json): c1 no-change, c3 mood/stress persistence, and c4 sleep-only persistence. Joined-page and role-boundary checks follow the acceptance list in Angelos's handoff.
 - In the workout screen, import `/demo-data/workout-session.js`, pass the mission clock and the logged-in health client, then map the buttons and current step as shown in [WORKOUT.md](demo-data/WORKOUT.md). Run the scene B push-up replay to confirm the saved summary and the synthetic source label.
+- In the weekly screen, show the Mars transit instructions and rest timings. Supply the optional measured rowing peak from the crew member's exercise assessment to display the long-interval bpm range.
