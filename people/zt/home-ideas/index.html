@@ -1,0 +1,276 @@
+<!doctype html>
+<!--
+  Home page options: rough mockups for discussion (zt).
+  Plain HTML, no build step. Fake data for Astronaut A (bad night, headache).
+  Colours are copied from the look (people/zt/ui-look on branch zt/ui-look).
+  The body is a flat placeholder: the real one is the 3D body (branch zt/body-3d).
+  Open it, pick an option with the buttons at the top. On a phone, turn it sideways.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home page options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --font-ui: 'DM Sans', system-ui, sans-serif; --font-display: 'Space Grotesk', 'DM Sans', sans-serif; --r-lg: 20px; }
+  :root, [data-theme="dark"] {
+    --bg: #070B16; --glow-1: rgba(70,140,255,.12); --surface: #0E1527;
+    --card-bg: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 140px), #0E1527;
+    --surface-2: #141C32; --rail-bg: rgba(9,14,28,.72); --border: rgba(160,185,230,.10); --border-strong: rgba(160,185,230,.22);
+    --text: #EAF0FA; --text-2: #A7B4CB; --text-3: #6F7D98; --accent: #5AB0FF; --btn-bg: linear-gradient(135deg,#5AB0FF,#62E3EE);
+    --on-accent: #04101F; --alert: #FF6B7D; --fine-soft: rgba(90,176,255,.13); --alert-soft: rgba(255,107,125,.13); --track: rgba(160,185,230,.13);
+    --fig-top: #1A3760; --fig-bottom: #0F1C34; --fig-line: #2D5788; --shadow: 0 12px 32px rgba(0,0,0,.28);
+  }
+  [data-theme="light"] {
+    --bg: #EDF1F7; --glow-1: rgba(40,120,230,.09); --surface: #FFFFFF; --card-bg: #FFFFFF; --surface-2: #F4F7FB;
+    --rail-bg: rgba(255,255,255,.75); --border: rgba(20,40,80,.09); --border-strong: rgba(20,40,80,.18);
+    --text: #0D1626; --text-2: #4A5872; --text-3: #7D899F; --accent: #1A6CD1; --btn-bg: linear-gradient(135deg,#1A6CD1,#1659B3);
+    --on-accent: #FFFFFF; --alert: #DC3049; --fine-soft: rgba(26,108,209,.10); --alert-soft: rgba(220,48,73,.09); --track: rgba(20,40,80,.09);
+    --fig-top: #D3E3F6; --fig-bottom: #E8EFF9; --fig-line: #ADC5E3; --shadow: 0 1px 2px rgba(16,24,40,.04), 0 10px 28px rgba(16,24,40,.06);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-ui); color: var(--text); background: var(--bg); }
+  /* Picker bar (not part of the app) */
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .bar button { font: 600 13px var(--font-ui); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--border-strong); background: none; color: var(--text-2); cursor: pointer; }
+  .bar button.on { background: var(--btn-bg); color: var(--on-accent); border-color: transparent; }
+  .bar .theme { margin-left: auto; }
+  .fit { margin: 12px auto 0; overflow: hidden; border-radius: 14px; }
+  .notes { max-width: 760px; margin: 14px auto 48px; padding: 0 16px; line-height: 1.5; color: var(--text-2); }
+  .notes h2 { font: 600 20px var(--font-display); color: var(--text); margin: 0 0 6px; }
+  .notes b { color: var(--text); }
+  /* The app frame: a 1024 × 700 landscape tablet, scaled to fit the screen */
+  .frame { width: 1024px; height: 700px; transform-origin: 0 0; position: relative; display: grid; grid-template-columns: 72px minmax(0,1fr);
+    background: radial-gradient(900px 600px at 90% -10%, var(--glow-1), transparent 60%), var(--bg); border: 1px solid var(--border); border-radius: 14px; }
+  .rail { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; background: var(--rail-bg); border-right: 1px solid var(--border); }
+  .rail span { width: 58px; padding: 9px 0; border-radius: 12px; text-align: center; font-size: 10.5px; font-weight: 600; color: var(--text-3); }
+  .rail span.on { color: var(--accent); background: var(--fine-soft); }
+  .main { padding: 18px 22px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .top h1 { font: 600 24px var(--font-display); margin: 0; }
+  .muted { color: var(--text-2); } .faint { color: var(--text-3); } .small { font-size: 12.5px; }
+  .grid { flex: 1; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr); gap: 16px; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); }
+  .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+  .more { font-size: 12.5px; font-weight: 600; color: var(--accent); }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 99px; font-size: 12.5px; font-weight: 600; }
+  .pill.blue { color: var(--accent); background: var(--fine-soft); } .pill.red { color: var(--alert); background: var(--alert-soft); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; } .dot.red { background: var(--alert); }
+  .btn { display: inline-block; padding: 9px 16px; border-radius: 99px; background: var(--btn-bg); color: var(--on-accent); font-weight: 700; font-size: 13px; }
+  .btn.ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border-strong); }
+  /* Body card (left) */
+  .body-card { display: flex; flex-direction: column; }
+  .fig { flex: 1; position: relative; display: grid; place-items: center; min-height: 0; }
+  .fig svg { height: 100%; max-height: 420px; }
+  .fig .tag { position: absolute; top: 4px; left: 4px; font-size: 11px; color: var(--text-3); border: 1px dashed var(--border-strong); border-radius: 8px; padding: 3px 8px; }
+  .glow { animation: pulse 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pulse { 0% { opacity: .9; transform: scale(.8); } 100% { opacity: .15; transform: scale(1.25); } }
+  /* Rows, tasks, timeline, tiles */
+  .row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .row .v { margin-left: auto; font-weight: 700; } .row .v.red { color: var(--alert); }
+  .row.done .t { color: var(--text-3); text-decoration: line-through; }
+  .time { font: 600 13px var(--font-display); color: var(--text-3); width: 44px; }
+  .segments { display: grid; grid-auto-flow: column; gap: 6px; margin: 6px 0 4px; } .segments i { height: 7px; border-radius: 9px; background: var(--track); } .segments i.on { background: var(--btn-bg); }
+  .big { font: 600 30px/1.15 var(--font-display); margin: 4px 0 8px; }
+  .status { display: flex; align-items: center; gap: 14px; } .status .ring { width: 54px; height: 54px; border-radius: 50%; border: 6px solid var(--alert); box-shadow: 0 0 0 6px var(--alert-soft); flex: none; }
+  .tl { position: relative; margin: 0; padding: 0; list-style: none; }
+  .tl li { display: grid; grid-template-columns: 48px 18px 1fr; align-items: start; gap: 8px; padding: 7px 0; font-size: 14px; }
+  .tl li .d { width: 12px; height: 12px; border-radius: 50%; margin-top: 3px; border: 2px solid var(--text-3); background: var(--surface); }
+  .tl li.ok .d { background: var(--accent); border-color: var(--accent); } .tl li.health .d { border-color: var(--alert); background: var(--alert-soft); }
+  .tl li.next { background: var(--fine-soft); border-radius: 12px; } .tl li.next .t { font-weight: 700; }
+  .tl li.ok .t { color: var(--text-3); }
+  .tl .now { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .08em; margin: 2px 0; }
+  .tl .now::after { content: ''; flex: 1; height: 1px; background: var(--accent); opacity: .5; }
+  .tl::before { content: ''; position: absolute; left: 61px; top: 12px; bottom: 12px; width: 2px; background: var(--border-strong); }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tile { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+  .tile .val { font: 600 26px var(--font-display); margin: 4px 0 0; } .tile.red .val { color: var(--alert); }
+  .spark { display: block; width: 100%; height: 30px; margin-top: 6px; }
+  /* Companion */
+  .orb { position: absolute; right: 18px; bottom: 18px; width: 54px; height: 54px; }
+  .bubble { position: relative; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }
+</style>
+</head>
+<body>
+<div class="bar" id="bar">
+  <button data-o="1">1 · Companion says</button>
+  <button data-o="2">2 · Status in words</button>
+  <button data-o="3">3 · Day plan</button>
+  <button data-o="4">4 · Sensor tiles</button>
+  <button class="theme" id="theme">Day look</button>
+</div>
+<div class="fit" id="fit"><div class="frame" id="frame"></div></div>
+<div class="notes" id="notes"></div>
+
+<script>
+  // ---------- Fake data: Astronaut A, a bad night ----------
+  const me = {
+    name: 'A', time: 'Mission day 42 · 07:20',
+    symptom: { area: 'Head', what: 'Headache', severity: 6, at: '06:50' },
+    sleep: { today: '4 h 30', normal: '7 h 10', trend: [7.2, 7.0, 7.3, 6.9, 7.1, 7.2, 4.5] },
+    hr: { today: '66 bpm', normal: '61 bpm', trend: [61, 60, 62, 61, 60, 62, 66] },
+    co2: { today: '5 400 ppm', note: 'high overnight', trend: [3.0, 3.1, 3.2, 3.4, 4.3, 5.4, 4.6] },
+    activity: { today: '12 min', normal: '45 min', trend: [40, 50, 45, 42, 48, 46, 12] },
+    tasks: [
+      { time: '07:00', title: 'Daily check-in', done: true },
+      { time: '07:30', title: 'Did the ibuprofen help?', done: false },
+      { time: '07:45', title: 'Measurements', done: false },
+      { time: '09:00', title: 'Workout', done: false },
+    ],
+  };
+
+  // ---------- Small building blocks ----------
+  const mascot = (size) => `<svg viewBox="0 0 60 60" width="${size}" height="${size}" aria-hidden="true">
+    <defs><radialGradient id="mg${size}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#E3F4FF"/><stop offset=".45" stop-color="#5AB0FF"/><stop offset="1" stop-color="#1F4FB8"/></radialGradient></defs>
+    <circle cx="30" cy="30" r="26" fill="url(#mg${size})"/><ellipse cx="22" cy="28" rx="3.2" ry="4.4" fill="#04101F"/><ellipse cx="38" cy="28" rx="3.2" ry="4.4" fill="#04101F"/>
+    <path d="M24 38 q6 5 12 0" stroke="#04101F" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>`;
+
+  const spark = (arr, red) => {
+    const min = Math.min(...arr), max = Math.max(...arr), w = 120, h = 30;
+    const pts = arr.map((v, i) => `${(i / (arr.length - 1)) * w},${h - 3 - ((v - min) / (max - min || 1)) * (h - 6)}`).join(' ');
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(${red ? '--alert' : '--accent'})" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+  };
+
+  // Flat stand-in for the 3D body. Not clickable: it only lights up what the astronaut reported.
+  const body = () => `<div class="card body-card">
+      <div class="head"><span class="eyebrow">Your body</span><span class="faint small">What you reported</span></div>
+      <div class="fig"><span class="tag">3D body goes here (zt/body-3d)</span>
+        <svg viewBox="0 0 200 430" aria-hidden="true">
+          <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fig-top)"/><stop offset="1" stop-color="var(--fig-bottom)"/></linearGradient>
+          <radialGradient id="rg"><stop offset="0" stop-color="var(--alert)" stop-opacity=".9"/><stop offset="1" stop-color="var(--alert)" stop-opacity="0"/></radialGradient></defs>
+          <g fill="url(#fg)" stroke="var(--fig-line)" stroke-width="2">
+            <path d="M58 200 L38 205 L30 110 Q34 92 62 88 Z M142 200 L162 205 L170 110 Q166 92 138 88 Z"/>
+            <path d="M80 205 L74 400 L96 402 L100 240 L104 402 L126 400 L120 205 Z"/>
+            <path d="M62 88 Q100 78 138 88 L144 205 Q100 218 56 205 Z"/>
+            <rect x="90" y="66" width="20" height="22" rx="6"/><circle cx="100" cy="42" r="28"/>
+          </g>
+          <circle class="glow" cx="100" cy="40" r="34" fill="url(#rg)"/>
+        </svg>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill red"><span class="dot red"></span>${me.symptom.area} · ${me.symptom.what} ${me.symptom.severity}/10 · ${me.symptom.at}</span></div>
+      <p class="faint small" style="margin:8px 0 0">To report or change something, open <b style="color:var(--accent)">Check-in</b>.</p>
+    </div>`;
+
+  const nav = ['Home', 'Check-in', 'Habitat', 'Med bay', 'Mind', 'Companion'];
+  const frame = (right, { orb = true } = {}) => `
+    <div class="rail">${nav.map((n, i) => `<span class="${i ? '' : 'on'}">${n}</span>`).join('')}</div>
+    <div class="main">
+      <div class="top"><h1>Good morning, ${me.name}</h1><span class="faint small">${me.time}</span></div>
+      <div class="grid">${body()}<div class="col">${right}</div></div>
+    </div>
+    ${orb ? `<div class="orb">${mascot(54)}</div>` : ''}`;
+
+  const taskRows = (list) => list.map((t) => `<div class="row ${t.done ? 'done' : ''}"><span class="time">${t.time}</span><span class="t">${t.title}</span>${t.done ? '<span class="v faint small">Done</span>' : ''}</div>`).join('');
+  const next = me.tasks.find((t) => !t.done);
+  const doneN = me.tasks.filter((t) => t.done).length;
+
+  // ---------- The four options ----------
+  const options = {
+    1: {
+      html: frame(`
+        <div class="card">
+          <div class="head"><span class="eyebrow">This morning</span></div>
+          <div style="display:flex;gap:14px;align-items:flex-start">${mascot(76)}
+            <div class="bubble">You slept <b>${me.sleep.today}</b>, less than usual, and you reported a <b>headache</b>.<br>
+              Cabin CO₂ was high overnight, which can cause headaches.</div></div>
+          <div style="display:flex;gap:8px;margin-top:14px;padding-left:90px"><span class="btn">Tell me more</span><span class="btn ghost">See Habitat</span></div>
+        </div>
+        <div class="card">
+          <div class="head"><span class="eyebrow">Next</span><span class="more">All tasks ›</span></div>
+          <div class="big" style="font-size:22px">${next.title}</div>
+          <div class="faint small">${next.time} · ${doneN} of ${me.tasks.length} done today</div>
+          <div class="segments">${me.tasks.map((t) => `<i class="${t.done ? 'on' : ''}"></i>`).join('')}</div>
+          <div style="margin-top:10px">${taskRows(me.tasks.filter((t) => t !== next && !t.done))}</div>
+        </div>`, { orb: false }),
+      notes: `<h2>1 · Companion says</h2>
+        <p><b>Idea:</b> no score at all. The mascot moves from the corner into the page and says, in one or two plain sentences, what's going on today. Below it, only the next task.</p>
+        <p><b>Why:</b> the calmest option, and it gives the companion a real job instead of being decoration. Nothing to define (no readiness formula). In the demo, the narrator can just read the bubble out loud.</p>
+        <p><b>Watch out:</b> the sentences have to come from simple rules (if sleep is low, say X), which someone has to write. A cartoon voice can feel childish to professionals, so the tone matters. Health values are hidden behind "Tell me more".</p>`,
+    },
+    2: {
+      html: frame(`
+        <div class="card" style="flex:1">
+          <div class="head"><span class="eyebrow">Today</span><span class="more">Details ›</span></div>
+          <div class="status"><span class="ring"></span><div><div class="big">Take it easy today</div><div class="muted small">2 things are off your normal</div></div></div>
+          <div style="margin-top:12px">
+            <div class="row"><span class="dot red"></span>Sleep<span class="v red">${me.sleep.today}</span><span class="faint small">normal ${me.sleep.normal}</span></div>
+            <div class="row"><span class="dot red"></span>Headache, reported ${me.symptom.at}<span class="v red">${me.symptom.severity}/10</span></div>
+            <div class="row"><span class="dot"></span>Resting heart rate<span class="v">${me.hr.today}</span><span class="faint small">normal ${me.hr.normal}</span></div>
+          </div>
+          <p class="faint small" style="margin:10px 0 0">Based on your sensors and what you reported. Shared with your medical officer.</p>
+        </div>
+        <div class="card">
+          <div class="head"><span class="eyebrow">Tasks · ${doneN} of ${me.tasks.length}</span><span class="more">All ›</span></div>
+          <div class="row" style="border:0"><span class="time" style="color:var(--accent)">${next.time}</span><b>${next.title}</b><span class="v"><span class="btn" style="padding:6px 12px">Answer</span></span></div>
+        </div>`),
+      notes: `<h2>2 · Status in words</h2>
+        <p><b>Idea:</b> keep the at-a-glance readiness, but as a word instead of a 0–100 number: <b>Ready</b> (blue, nothing off) or <b>Take it easy</b> (red, something off), with the reasons listed underneath.</p>
+        <p><b>Why:</b> keeps the main idea from your plan, but the rule is simple enough to explain to judges in one sentence: "red if anything is off your own normal". A number invites "how is 58 calculated?" and astronauts trying to keep it high, which feeds the hiding-symptoms problem in your plan.</p>
+        <p><b>Watch out:</b> only physical values and symptoms are listed, so mood and stress stay hidden. But if mood still counts towards the status, the astronaut sees "Take it easy" with no visible reason. Decide: either mood counts and is listed, or it doesn't count here and only goes to the medical officer.</p>`,
+    },
+    3: {
+      html: frame(`
+        <div class="card" style="flex:1">
+          <div class="head"><span class="eyebrow">Your day</span><span class="faint small">${doneN} of ${me.tasks.length} done</span></div>
+          <ul class="tl">
+            <li class="health"><span class="time">Night</span><span class="d"></span><span class="t">You slept <b>${me.sleep.today}</b> (normal ${me.sleep.normal}). Cabin CO₂ was high.</span></li>
+            <li class="health"><span class="time">06:50</span><span class="d"></span><span class="t">You reported a headache, ${me.symptom.severity}/10</span></li>
+            <li class="ok"><span class="time">07:00</span><span class="d"></span><span class="t">Daily check-in</span></li>
+            <div class="now">NOW · 07:20</div>
+            <li class="next"><span class="time" style="color:var(--accent)">07:30</span><span class="d"></span><span class="t">Did the ibuprofen help? <span class="btn" style="padding:4px 10px;margin-left:6px">Answer</span></span></li>
+            <li><span class="time">07:45</span><span class="d"></span><span class="t">Measurements</span></li>
+            <li><span class="time">09:00</span><span class="d"></span><span class="t">Workout <span class="faint small">· lighter today?</span></span></li>
+            <li><span class="time">13:00</span><span class="d"></span><span class="t faint">Lunch</span></li>
+            <li><span class="time">22:00</span><span class="d"></span><span class="t faint">Sleep</span></li>
+          </ul>
+        </div>`),
+      notes: `<h2>3 · Day plan</h2>
+        <p><b>Idea:</b> the right side is one timeline of the day. Health events (the bad night, the headache) sit in the same line as the tasks, with a "Now" marker.</p>
+        <p><b>Why:</b> astronauts live by a tight schedule, so "what's next" is what they'd really open the app for. No score to define. It also tells the story in order, which fits a narrated demo.</p>
+        <p><b>Watch out:</b> it needs a day schedule in the data (we only have 4 tasks now). It's less "health app" at first glance: the health part is just the red dots. "Lighter workout today?" is a nice touch, but someone has to decide that rule.</p>`,
+    },
+    4: {
+      html: frame(`
+        <div class="card" style="flex:1">
+          <div class="head"><span class="eyebrow">Measured overnight</span><span class="faint small">Compared with your normal</span></div>
+          <div class="tiles">
+            <div class="tile red"><div class="eyebrow">Sleep</div><div class="val">${me.sleep.today}</div><div class="faint small">normal ${me.sleep.normal}</div>${spark(me.sleep.trend, true)}</div>
+            <div class="tile"><div class="eyebrow">Resting heart rate</div><div class="val">${me.hr.today}</div><div class="faint small">normal ${me.hr.normal}</div>${spark(me.hr.trend)}</div>
+            <div class="tile"><div class="eyebrow">Activity yesterday</div><div class="val">${me.activity.today}</div><div class="faint small">normal ${me.activity.normal}</div>${spark(me.activity.trend)}</div>
+            <div class="tile red"><div class="eyebrow">Cabin CO₂</div><div class="val">${me.co2.today}</div><div class="faint small">${me.co2.note}</div>${spark(me.co2.trend, true)}</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><span class="eyebrow">Next task</span><span class="more">${doneN} of ${me.tasks.length} done ›</span></div>
+          <b>${next.time} · ${next.title}</b>
+        </div>`),
+      notes: `<h2>4 · Sensor tiles</h2>
+        <p><b>Idea:</b> show the measured numbers directly: sleep, resting heart rate, activity and cabin CO₂, each against the astronaut's own normal, with a 7-day line. Only things the sensors measure, so no mood or stress.</p>
+        <p><b>Why:</b> it's what a smartwatch app does, so it feels familiar and "real". It shows off the sensor and Habitat work in one look. Again no score to define.</p>
+        <p><b>Watch out:</b> the busiest option, not the "quiet overview" from your plan. Numbers can worry people more than words. Some tiles repeat Habitat and Check-in. Note that I made up "Activity yesterday": check what the wearables can really give.</p>`,
+    },
+  };
+
+  // ---------- Picker, scaling, theme ----------
+  const fit = document.getElementById('fit'), frameEl = document.getElementById('frame');
+  const scale = () => { const s = Math.min(1, (window.innerWidth - 16) / 1024); frameEl.style.transform = `scale(${s})`; fit.style.width = `${1024 * s}px`; fit.style.height = `${700 * s}px`; };
+  const show = (o) => {
+    if (!options[o]) o = '1';
+    frameEl.innerHTML = options[o].html; document.getElementById('notes').innerHTML = options[o].notes;
+    document.querySelectorAll('[data-o]').forEach((b) => b.classList.toggle('on', b.dataset.o === o));
+    try { history.replaceState(null, '', `#${o}`); } catch { /* some previews block this */ }
+  };
+  document.getElementById('bar').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'theme') { const light = document.documentElement.dataset.theme !== 'light'; document.documentElement.dataset.theme = light ? 'light' : 'dark'; b.textContent = light ? 'Night look' : 'Day look'; return; }
+    show(b.dataset.o);
+  });
+  window.addEventListener('resize', scale);
+  scale(); show(location.hash.slice(1));
+</script>
+</body>
+</html>

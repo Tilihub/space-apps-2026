@@ -8,10 +8,11 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:00
-- Working on: status check of the team ([team-jobs.md](team-jobs.md)). The app contract is merged
-  (PR #49); a first UI look is on branch `zt/ui-look`, no PR yet.
-- Branch: zt/status-check-1900
+- Last updated: 2026-11-14 (home page options)
+- Working on: home page options to discuss: four rough mockups in [home-ideas/](home-ideas/index.html)
+  (companion says, status in words, day plan, sensor tiles), all with the 3D body on the left and
+  no 0–100 readiness score. Waiting for my pick.
+- Branch: zt/home-ideas
 
 ## Done
 
