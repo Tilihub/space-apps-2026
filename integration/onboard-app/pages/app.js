@@ -1,3 +1,4 @@
+import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
 import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
@@ -88,9 +89,9 @@ function bodyOptions(mode) {
   const map={head:'head',eyes:'eyes','nose-throat':'neck',heart:'chest',lungs:'chest',gut:'stomach',skin:'arms',muscles:'back','whole-body':'legs'};
   const reported={};
   for(const r of data.symptoms?.reports??[]) if(r.missionDay===clock?.missionDay) for(const s of r.symptoms) {
-    const sym=SYMPTOMS.find(x=>x.code===s.code); if(sym) reported[r.note?.match(/Body area: (head|eyes|neck|chest|arms|back|stomach|legs)\./)?.[1]??map[sym.area]]={short:sym.label};
+    const sym=SYMPTOMS.find(x=>x.code===s.code); if(sym) reported[r.note?.match(/Body area: (head|eyes|neck|chest|arms|back|stomach|legs)\./)?.[1]??map[sym.area]]={short:sym.label,severity:s.severity};
   }
-  return {mode,body:'female',reported,selected:selectedArea};
+  return {mode,body:'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
 }
 function syncBody() { const frame=$('iframe.body-frame'); frame?.contentWindow?.postMessage({type:'pulse-body-update',options:bodyOptions(page==='checkin'?'report':'view'),theme:document.documentElement.dataset.theme},location.origin); }
 const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}" title="Interactive 3D body"></iframe>`;
@@ -105,9 +106,9 @@ function renderChrome() {
   if(a.dataset.nav===page||a.id==='nav-crew'&&['crew','earth'].includes(page))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
  }
  $('#nav-crew').hidden=role()==='crew';
- $('.rail-companion').hidden=role()!=='crew';$('#rail-pet').innerHTML=mascotSvg();
+ $('.rail-companion').hidden=true;
  const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
- $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><span>${icon('logo')}</span><div><b>PULSE <i>/</i> CREW HEALTH</b><small>May the Pulse Be With You</small></div></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
+ $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
  const titles={home:['YOUR DAY IN ORBIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Clinical review'],earth:['GROUND SUPPORT','Earth console']};
  const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
  $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;

@@ -335,7 +335,7 @@
     .b3d-ui { position: absolute; inset: 0; pointer-events: none; }
     .b3d-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .b3d-lines line { stroke: var(--alert, #FF6B7D); stroke-width: 1; opacity: .7; transition: opacity .2s; }
-    .b3d-lines circle { fill: var(--alert, #FF6B7D); stroke: color-mix(in srgb, var(--alert, #FF6B7D) 22%, transparent); stroke-width: 7; paint-order: stroke; transition: opacity .2s; }
+    .b3d-lines circle { fill: var(--symptom-color, #F5BD69); stroke: color-mix(in srgb, var(--symptom-color, #F5BD69) 28%, transparent); stroke-width: 10; paint-order: stroke; transition: opacity .2s; }
     .b3d-lines .sel { stroke: var(--b3d-sel, #5AB0FF); opacity: 1; }
     .b3d-lines circle.sel { fill: var(--b3d-sel, #5AB0FF); stroke: none; }
     .b3d-lines .behind { opacity: .2; }
@@ -344,7 +344,7 @@
       background: color-mix(in srgb, var(--surface, #0E1527) 80%, transparent); border: 1px solid var(--border-strong, rgba(160, 185, 230, .22)); }
     .b3d-label.L { left: 6px; }
     .b3d-label.R { right: 6px; }
-    .b3d-label span { color: var(--alert, #FF6B7D); }
+    .b3d-label span { color: var(--symptom-color, #F5BD69); }
     .b3d-label.sel { border-color: var(--b3d-sel, #5AB0FF); box-shadow: 0 0 0 1px var(--b3d-sel, #5AB0FF) inset; }
     .b3d-label.behind { opacity: .55; }
     .b3d-views { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
@@ -358,6 +358,9 @@
     .b3d-msg[hidden] { display: none; }
   `;
 
+  const pulseStyle = document.createElement('style');
+  pulseStyle.textContent = '@keyframes symptom-beacon{0%,100%{stroke-width:8;stroke-opacity:.35}50%{stroke-width:17;stroke-opacity:.13}}.b3d-lines circle{animation:symptom-beacon 2.8s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.b3d-lines circle{animation:none}}';
+  document.head.append(pulseStyle);
   const VERTEX = /* glsl */ `
     attribute vec3 aColor;
     attribute float aPulse;
@@ -494,12 +497,15 @@
         const sel = report && opts.selected === key;
         t.on = Boolean(r || sel);
         t.label.innerHTML = r ? `${BODY_AREAS[key]}<span> · ${r.short}</span>` : BODY_AREAS[key];
+        const markerColor = r?.severity >= 7 ? '#FF9A78' : r?.severity >= 4 ? '#F5BD69' : '#E8D66E';
         for (const el of [t.label, t.line, t.dot]) {
+          el.style.setProperty('--symptom-color', markerColor);
           el.style.display = t.on ? '' : 'none';
           el.classList.toggle('sel', sel);
         }
       }
       measureLabels();
+      legend.hidden = true;
       legend.innerHTML = report
         ? `<span><i style="background: var(--b3d-sel, #5AB0FF)"></i>Selected</span><span><i style="background: var(--alert, #FF6B7D)"></i>Already reported</span>`
         : `<span><i style="background: var(--alert, #FF6B7D)"></i>Reported symptom</span>`;
@@ -522,10 +528,22 @@
       const pos = geometry.attributes.position.array;
       const col = geometry.attributes.aColor.array;
       const pulse = geometry.attributes.aPulse.array;
+      const sensors = opts.thermal?.kind === 'synthetic' ? opts.thermal.sensors : null;
+      const ramp = [[31,[.24,.49,.93]],[32,[.28,.70,.83]],[33,[.35,.80,.63]],[34,[.91,.81,.39]],[35,[1,.55,.31]]];
+      const thermalColor = value => {
+        const t=Math.max(31,Math.min(35,value)), j=Math.min(3,Math.floor(t-31));
+        return mix(ramp[j][1],ramp[j+1][1],t-ramp[j][0]);
+      };
       const top = mix(theme.figTop, theme.accent, 0.12);
       const bottom = mix(theme.figBottom, theme.accent, theme.dark ? 0.08 : 0.06);
       for (let i = 0; i < n; i++) {
         let c = mix(bottom, top, Math.min(1, pos[i * 3 + 1] / H));
+        if (sensors?.length) {
+          const x=pos[i*3]/H,y=pos[i*3+1]/H,z=pos[i*3+2]/H;
+          let sum=0,weights=0;
+          for(const sensor of sensors){const d=(x-sensor.x)**2+(y-sensor.y)**2+((z-sensor.z)*1.5)**2;const w=1/(d*d+0.00002);sum+=sensor.temperatureC*w;weights+=w;}
+          c=mix(c,thermalColor(sum/weights),0.8);
+        }
         if (hov) c = mix(c, theme.accent, hov[i] * 0.35);
         if (sel) c = mix(c, theme.sel, sel[i] * 0.9);
         col.set(c, i * 3);

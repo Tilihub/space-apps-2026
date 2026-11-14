@@ -8,12 +8,16 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — restored body appearance
-- Working on: Tommy requested a simpler astronaut-facing demo combining his supplied visual brief with zt's 3D UI. This task changes presentation and browser interactions only. All server/adapters, owner modules, stored-data formats, permissions and medical/workout/companion rules remain unchanged from `0cd3911` on `tommy/functional-demo`.
+- Last updated: 2026-11-15 — clean overview and filled presentation demo
+- Working on: Tommy requested the exact original team logo, a larger thermal body, four clean overview instruments, subtle orange task cues and a bare unnamed planet companion. Current-day presentation inputs are now populated for all five synthetic crew through existing APIs. Regional skin sensors are separately simulated with Tommy’s explicit approval; server/modules/rules remain unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
-- Preview: `node integration/onboard-app/start.js` (Node 24), port 8010 for the existing local demo. Browser writes for this UI review used a separate synthetic store on port 8011; the existing demo was not reset.
+- Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Updated #74 with Tommy's clean-overview review. Header/login use the supplied original PNG (byte-for-byte verified); removed the improvised logo. Enlarged the anatomical viewer and added the labelled synthetic regional skin map, separate from core `temperatureC`. Kept pulse, body temperature, sleep and actual saved training count. Removed the three lower shortcuts, Report a symptom shortcut and duplicate symptom legends. Severity-colored points now pulse softly; no whole-area symptom recoloring.
+- The unnamed planet floats without a box on every crew screen and still opens the same chat. Incomplete tasks use subtle orange cues with reduced-motion support. Verified the thermal front/back, expanded body, actual source values, pet/chat, original logo and mobile layout without horizontal overflow or browser errors.
+- Filled all five profiles in a fresh port-8012 store using Petros's original histories/scenarios, with explicit synthetic last-day extensions where scenarios omit values. c4 has the stage headache; c3 has a fictional private journal example; c5 remains before the live reaction. Verified today's pulse/temperature/sleep for every crew through the API. Training remains zero until an actual demo workout is saved. Re-running the seed refuses to overwrite current check-ins. Backend implementation and the original local demo store were not changed. Root suite: 102/102 pass.
 
 - Follow-up to #74: Tommy supplied references and requested the natural body appearance again. Removed the female torso projection, restoring zt's original anatomical mesh and proportions; softened the silver/blue material, restored sheen and removed the moving scan stripe. Front/back rotation, picking and localized red symptom markers remain unchanged. Checked female front/back in the app and the original male model via the documented body query. Backend and stored demo data remain untouched; root tests still pass 102/102.
 
@@ -116,7 +120,7 @@
 
 ## Next steps
 
-- Continue from `tommy/frontend-polish`. Review the running port-8010 demo with Tommy and zt, then refine the visuals here. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Continue from `tommy/frontend-polish`. Review the filled port-8012 demo with Tommy and zt, then refine the visuals here. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.
 - The single onboard server and role walkthrough remain in `integration/onboard-app/README.md`. Keep the distinction between actual module behavior and simulated cabinet hardware, credentials, Earth transport and offline scripted conversation clear.
