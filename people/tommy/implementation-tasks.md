@@ -16,7 +16,7 @@ Tommy's answers Q13–Q17 supersede the earlier alternatives below. See [the lat
 
 The pending readiness definition, emergency eligibility details, reporting triggers/cadence and historical-scale transition remain open decisions. Current modules are not assumed to implement these new requirements yet.
 
-Publication progress: `potest/environment-bridge` supplies a snapshot/subscription bridge; `zt/ui-skeleton` supplies a clickable fake-data layout; Angelos's latest status acknowledges ANG-1. These supersede the corresponding older snapshot gaps, not their outstanding integration acceptance checks.
+Publication progress: `potest/environment-bridge` supplies a snapshot/subscription bridge; `zt/ui-skeleton` supplies a clickable fake-data layout; Angelos's latest status acknowledges ANG-1. A subsequent fetch also found `dadis2/prescription-grants`: DAD-1 is now published for review, with RX2 grants, due-dose batch compartments, collection-slot counters, expiry and an event contract. Review that implementation instead of rebuilding DAD-1; its owner reports 19 checks passed (not independently rerun here). Issuer verification remains explicitly simulated, shared clock/crew mapping remains pending, and QR-rescan routing/concurrent-device quotas still need integration checks. These supersede the corresponding older snapshot gaps, not their outstanding integration acceptance checks.
 
 ## Start here: teammates and coding tools
 
