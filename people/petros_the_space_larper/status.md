@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:43
-- Working on: Vital-sign sensor and data capture handoff
+- Last updated: 2026-11-14 13:44
+- Working on: Vital-sign sensor and data capture handoff in [PR #28](https://github.com/Tilihub/space-apps-2026/pull/28)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
