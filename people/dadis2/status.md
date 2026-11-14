@@ -9,7 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-14 14:19
-- Working on: medicine lockers and dispensing module (one-page version, pushed)
+- Working on: medicine lockers and dispensing module. Pull request #34 is open and waiting for the
+  project lead to merge it: https://github.com/Tilihub/space-apps-2026/pull/34
 - Branch: dadis2/medical-inventory
 
 ## Done
@@ -44,7 +45,7 @@
      what to do next, what to watch out for. -->
 
 - Branch `dadis2/medical-inventory` has the working prototype. Open `inventory/index.html`; the
-  demo script is in `inventory/README.md`. Not merged into main yet.
+  demo script is in `inventory/README.md`. Pull request #34 is waiting for the project lead to merge it.
 - Connect the symptom page: it calls `MedInventory.receiveSymptomReport(report)` with the
   device user's `crewId`.
 - Not built yet: QR camera scanning was only tested in its fallback (this Windows browser has no
