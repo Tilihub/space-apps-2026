@@ -9,10 +9,13 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Reviewing the complete ecosystem with Tommy: existing prototypes, data/role boundaries and proposed return-from-break connections. Planning only; zt owns UI assembly.
+- Working on: Clarifying clinician-only detailed analysis and reviewing a possible metered pill dispenser. Planning only; hardware proposal not adopted.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Recorded Tommy’s follow-up excluding detailed history/weekly analysis from astronaut views; relevant clinical access remains role-limited and private journal rules remain intact. Flagged crew-token report API changes for zt/Angelos.
+- Researched NASA medication packaging and individual-dose access; documented a pill-dispenser option with sources, microgravity/packaging and fault/duplicate-delivery constraints. No operational dispenser was verified, hardware requirement adopted, or teammate code changed.
 
 - Published the ecosystem review and return-from-break handoff through merged PR #45; only Tommy’s planning/status files changed.
 
@@ -46,6 +49,8 @@
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- Discuss whether to adopt the metered pill-dispenser concept; if accepted, agree dose-outlet versus stock access and delivery-event semantics with dadis2/zt. Align the hidden weekly-analysis API with Angelos/zt.
 
 - Review ecosystem-review.md with Tommy one decision at a time. Start with the proposed journey and role/report boundaries, then agree IDs, mission clock, 1–10 transition and integration/transport ownership with zt and module owners.
 - The review is on main via PR #45; use it for Tommy’s next discussion and owner coordination. The frozen visual review is a local artifact, not an adopted UI.

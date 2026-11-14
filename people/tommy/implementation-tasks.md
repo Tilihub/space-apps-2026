@@ -4,6 +4,9 @@ Prepared 2026-11-14 from the published work listed below, including zt's new app
 
 ## Ecosystem review refresh — read first
 
+Visibility follow-up: Tommy also excludes detailed personal-history/weekly-analysis views from the astronaut. zt/Angelos must replace the current crew-token report access with an agreed clinical-role contract; hiding UI alone is insufficient. Basic daily Home fields remain a separate decision. A metered pill dispenser is an investigated option in plan.md, not an assigned hardware build or adopted replacement for DAD-1.
+
+
 See [ecosystem-review.md](ecosystem-review.md) for the latest frozen versions, observed prototypes, actual test results, connection gaps and proposed return-from-break order. ANG-1, DAD-1 and POT-1 are now available for integration review; the historical snapshot below is not a request to rebuild them. The personal weekly-analysis API is distinct from the proposed doctor-only clinical report to Earth.
 
 ## Latest requirements update — read before starting a task
