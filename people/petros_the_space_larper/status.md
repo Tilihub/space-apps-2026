@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:44
-- Working on: Vital-sign sensor and data capture handoff in [PR #28](https://github.com/Tilihub/space-apps-2026/pull/28)
+- Last updated: 2026-11-14 13:51
+- Working on: Current NASA astronaut data collection handoff in [PR #29](https://github.com/Tilihub/space-apps-2026/pull/29)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -22,6 +22,8 @@
 - Added 13 ISS cardiovascular summaries from CSA, JAXA, IBMP and Danish research. Documented additional international data downloads and archive access in the [in-flight inventory](astronaut-inflight-data.md#international-experiments-and-archives).
 - Merged the international inventory and CSV updates into main in [PR #27](https://github.com/Tilihub/space-apps-2026/pull/27) and verified the 47 CSV rows on GitHub.
 - Documented [how to capture the five vital signs](astronaut-health-research.md#five-vital-signs-from-a-smart-vest-and-separate-sensors), including sensor placement, units, estimates and missing readings.
+- Merged the vest and sensor guide into main in [PR #28](https://github.com/Tilihub/space-apps-2026/pull/28) and verified it on GitHub.
+- Documented [current NASA collection practices](astronaut-inflight-data.md#how-nasa-collects-astronaut-data-today) with documented ISS and Artemis II examples, including the Bio-Monitor, Mobil-o-Graph, wrist actigraphy, and personal dosimetry.
 
 ## Blocked / need from others
 
@@ -34,3 +36,4 @@
 
 - Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries, cohort means and cohort medians. PhysioNet and RadLab can provide time-series replay inputs with documented provenance.
 - For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
+- Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.
