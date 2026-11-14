@@ -31,7 +31,7 @@
 - Wrote the demo cases in [demo-cases.md](demo-cases.md): one narrator and five crew members, the
   medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
   real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
-  from potest's ISS RR-9 replay
+  from potest's ISS RR-9 replay ([PR #52](https://github.com/Tilihub/space-apps-2026/pull/52))
 
 ## Blocked / need from others
 
