@@ -17,6 +17,7 @@ My personal concept notes and requirements for May the Pulse Be With You. Only T
 - The earlier UI prototype PR #20 was closed without merging, and its remote branch `tommy/crew-access-ui` was deleted.
 - This handoff contains planning documents only. There is no active UI implementation from Tommy for zt to integrate.
 - First brief for zt: branded entry screen, login, registration, and a basic health profile.
+- Proposed next work for each contributor, based on the latest published modules and zt's new overview, is in [implementation-tasks.md](implementation-tasks.md). These are suggestions for Tommy to assign, not team-approved assignments.
 
 ## Tommy's clarified requirements — 2026-11-14, questions 1–4
 
@@ -61,7 +62,7 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 
 - The onboard doctor can authorize some categories of compartments. Other, specific categories require approval from Earth. The exact category list has not been specified in this brief.
 - Access is authorized using a code or a QR code. A single code/QR is intended to open multiple compartments in parallel.
-- Tommy described this as opening "all the compartments in parallel". Whether that means all compartments named in the prescription/authorization or the entire cabinet is unresolved. Do not implement either interpretation as a settled access rule.
+- Q10 clarified: one code/QR opens only the compartments named in that prescription/authorization, all together, like collecting a Box Now delivery. It does not grant cabinet-wide access. Show those same compartments in the application so the crew member can collect the prescribed items.
 - Ground clinicians return their clinical assessment and prescription together with the necessary authorization code/QR.
 
 ### Reporting to Earth
@@ -75,29 +76,31 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 
 ### Private thoughts and specialist access
 
-- Free-text daily thoughts/journal entries are accessible only to their author and the designated specialist, not to other crew members or the onboard doctor by virtue of their general role.
-- Which specialist is meant, how that access is assigned, and whether the chatbot may process the journal entries remain unanswered. Do not silently treat the journal as part of a general doctor's or assistant's data access.
+- Q11 clarified: the designated human specialist is the psychologist who follows the astronaut and may communicate with them through chat. Human readers of the private thoughts are limited to the author and that psychologist; other crew members, the onboard doctor, and a general Earth clinician do not gain journal access through their ordinary roles.
+- Q12 clarified: the user's chatbot may also process their private thoughts to provide contextual psychological support and guidance within its agreed non-clinician role. This does not authorize forwarding the thoughts or journal-derived details to other people or ordinary medical reports.
+- How the psychologist relationship is assigned and enforced, conversation retention, and any external model-processing arrangement still need implementation details. The answers above are product requirements, not a claim that such services have been connected or that real data have been transmitted.
 - Permissions for the numerical wellbeing answers are a separate question from this explicit restriction on free-text thoughts.
 
 ### Onboard storage, assistant context, and interrupted communication
 
 - Store relevant data onboard during normal operation as well as during loss of Earth communication.
 - The onboard application should continue to collect information when the Earth link is unavailable. Retain information that needs transmission and send it later when appropriate connectivity is available.
-- Tommy expects the chatbot to receive the onboard health context and know the user's current situation. Exactly which data it can access must respect the separate journal restriction above.
+- Tommy expects the user's chatbot to receive onboard health context, including that user's private thoughts, and know their situation. Its outputs and downstream reporting must preserve the separate human journal-access restriction above.
 - This is an intended product capability, not a claim that an offline conversational model or synchronization service already exists. Angelos and zt still need to agree those technical connections.
 
-### Check against dadis2's published work
+### Updated check against dadis2's published work
 
-- Reviewed the published `dadis2/medical-inventory` branch at commit `683a302`, including `inventory/app.js`, `logic.js`, `spec.md`, and the owner's status.
-- The published first version uses per-item PIN/signature gates for the crew medical officer and, where configured, a witness. Its ground-review path is a later review, not the specified Earth-issued multi-compartment code/QR grant.
-- dadis2's status dated 2026-11-14 13:46 says a simpler version was tested locally but has not been pushed yet. The requested new code/QR behavior cannot yet be verified from that unpublished version.
-- Keep Tommy's intended behavior in this brief and coordinate against the newer version when it is published. No inventory files were changed by this chat.
+- The newer `dadis2/medical-inventory` version at `5a7febb` is now published in PR #34. It replaces the earlier unpublished-version limitation recorded in this brief.
+- Its `Import from Earth` accepts a typed prescription code or QR payload containing multiple medicines, checks the patient and basic validity, and adds the plan. `planTake(planId, idx)` still starts retrieval for one plan item at a time; importing the plan is not yet the requested simultaneous release/highlight of the authorized compartments.
+- The code's check characters catch typing errors; they do not establish a clinician's identity or a cryptographically verified prescription. The next-task brief separates demo simulation from verified authorization.
+- No inventory files were changed by this chat. Coordinate the batch-collection contract with dadis2 and zt.
 
-### Immediate clarification questions
+### Answers 10–12 and remaining questions
 
-- Q10: Does one code/QR open all prescribed/authorized compartments together, or the entire cabinet?
-- Q11: Who is the designated specialist allowed to see private thoughts: a psychologist, the general Earth clinician, or another explicitly selected specialist?
-- Q12: May the chatbot read those private thoughts, or only the other permitted health/context data?
+- Q10 resolved: all prescribed/authorized compartments together, not the whole cabinet.
+- Q11 resolved: the astronaut's psychologist is the permitted human specialist for private thoughts.
+- Q12 resolved: the user's chatbot can use those private thoughts for supportive conversation; other human roles do not inherit that access.
+- Remaining product details include the daily summary fields, check-in scale/recall period, report preview/visibility and time window, category-specific approval rules, and the definition of any proposed readiness/task score. See the review and proposed task ownership in [implementation-tasks.md](implementation-tasks.md).
 
 ## First brief: entry and account flow
 
@@ -141,14 +144,14 @@ The application is intended for long-duration, long-distance crewed missions. To
 - Pair the digital highlight with a physical indicator, such as a green LED; show locked or unavailable compartments distinctly.
 - Tommy proposes separate access paths for everyday supplies and prescription-controlled medicines. The precise access policy is not decided by these notes.
 - The onboard doctor authorizes some categories; specified other categories require Earth approval through a code/QR. The category list is still open.
-- One code/QR should open the intended compartments together. Its scope (only the authorized set or the entire cabinet) awaits Tommy's Q10 answer; the older prescription-only wording is not treated as a resolved decision.
+- One code/QR opens only the prescribed/authorized compartments together, with the same compartments indicated in the app for collection.
 - A symptom flow could point to an authorized compartment, subject to the team's agreed clinical and hardware access rules.
 
 ### Mental wellbeing and professional support
 
 - Offer a short daily wellbeing check-in, with roughly ten yes/no or 1–5 questions; the actual questionnaire has not been selected or validated.
 - Encourage optional daily notes about the crew member's thoughts and experiences.
-- Those free-text thoughts are accessible only to the author and the designated specialist. The specialist's identity and possible chatbot access are pending clarification, separately from numerical check-in visibility.
+- Human journal readers are limited to the author and their psychologist. The user's chatbot may process the thoughts for contextual support; this must not leak private text or derived details into reports for other roles. Numerical check-in visibility remains a separate policy question.
 - Preserve a longitudinal wellbeing history alongside physical health observations.
 - Offer a way to request a private session with a specialist psychologist on Earth, potentially booked one or two weeks ahead with a defined time slot.
 - Tommy's proposed session is not recorded. He also proposes giving the psychologist useful prior check-in context and building the relationship before departure from Earth.
@@ -187,6 +190,7 @@ Tommy places this work after the core first-demo features.
 - [x] Preserve the supplied entry-flow requirements and broader concepts in this plan.
 - [x] Record Tommy's answers on the Mars-transit setting, onboard/ground roles, daily-summary home screen, persistent mascot, first-demo scope, and deferred gamification.
 - [x] Record Tommy's handoff, authorization, report-generation, journal-access, and onboard-storage answers; check the published inventory source and identify the unpublished-version limit.
+- [x] Resolve Q10–Q12 and review the newer published inventory, Angelos's weekly reports, Petros's scope proposal, and zt's app overview to draft concrete next tasks for Tommy to assign.
 - [ ] Review and refine the next concept with Tommy, keeping questions separate from decisions.
 - [ ] Let zt use the published plan to determine the visual implementation and raise any missing requirements.
 - [ ] Propose changes to `shared/PLAN.md` only when Tommy asks the team to adopt a concept, using the required teammate-approved PR.
