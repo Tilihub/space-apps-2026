@@ -359,6 +359,12 @@
   // of its due compartments together.
   function grantCards(t) {
     return myGrants().map(function (p) {
+      if (p.status === "revoked") {
+        if (p.doneSeen) return "";
+        return '<div class="hcard"><div class="hc-kicker">' + issuerLabel(p) + '</div><div class="hc-title">Cancelled</div><div class="hc-sub">' +
+          esc(p.items.map(function (x) { return L.getItem(state, x.itemId).name; }).join(", ")) + " · by " + esc(firstName(p.revokedBy)) + "</div>" +
+          '<div class="hc-actions"><button class="link" data-act="grant-seen" data-id="' + p.id + '">OK</button></div></div>';
+      }
       var sts = p.items.map(function (x, i) { return L.grantItemStatus(state, p, i, t); });
       if (sts.every(function (s) { return s.state === "finished"; })) {
         if (p.doneSeen) return "";
@@ -800,7 +806,7 @@
         html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="muted small">' + esc(doseText(it, x.units)) +
           " · " + esc(timesADay(x.perDay)) + " · " + x.days + (x.days === 1 ? " day" : " days") + "</div></div></div>";
       });
-      html += '<div class="hc-sub small">Sender not verified yet (demo)</div>';
+      html += '<div class="hc-sub small">Valid until ' + esc(fmtShort(L.grantLastDay(p))) + " · Sender not verified yet (demo)</div>";
       html += '<div class="hc-actions"><button class="btn primary big" data-act="rx-add">Add</button></div></div>';
     }
     return html + "</div>";
@@ -810,13 +816,13 @@
     ui.rxError = ""; ui.rxPreview = null;
     var res = L.decodeGrant(state, ui.rxCode);
     if (res.error) { ui.rxError = res.error; return; }
-    var why = L.acceptGrant(state, res.grant, me);
+    var why = L.acceptGrant(state, res.grant, me, now());
     if (why) { ui.rxError = why; return; }
     ui.rxPreview = res.grant;
   }
 
   function addRx() {
-    var why = L.acceptGrant(state, ui.rxPreview, me);
+    var why = L.acceptGrant(state, ui.rxPreview, me, now());
     if (why) { ui.rxError = why; return; }
     L.addGrant(state, ui.rxPreview, now());
     ui.rxPreview = null; ui.rxCode = ""; ui.screen = "main";
@@ -1081,11 +1087,18 @@
       '<div class="actions"><button class="btn" data-act="earth-reply" data-id="' + r.id + '">Demo: Earth grants it</button></div></div>';
   }
 
+  // One active grant on the CMO's screen: its code, QR on request, and a two-tap Cancel
   function grantRow(g) {
-    return '<div class="report"><div><b>' + esc(crewName(g.patientId)) + "</b> · " + esc(issuerLabel(g)) + " · " + g.items.map(function (x) {
+    var confirming = ui.cancelConfirm === g.id, showing = ui.showQr === g.id, qrHtml = "";
+    if (showing) {
+      try { qrHtml = '<div class="qr-box">' + window.MedQR.svg(g.code).svg + "</div>"; } catch (e) { qrHtml = '<p class="error">' + esc(e.message) + "</p>"; }
+    }
+    return '<div class="card grant-row"><div class="row-between"><div><b>' + esc(crewName(g.patientId)) + "</b> · " + esc(issuerLabel(g)) + " · " + g.items.map(function (x) {
       var it = L.getItem(state, x.itemId);
       return esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
-    }).join("; ") + '</div><span class="muted small code">' + esc(g.code) + "</span></div>";
+    }).join("; ") + '</div><span class="muted small">until ' + esc(fmtShort(L.grantLastDay(g))) + '</span></div><div class="muted small code">' + esc(g.code) + "</div>" + qrHtml +
+      '<div class="actions"><button class="btn small" data-act="grant-qr" data-id="' + g.id + '">' + (showing ? "Hide QR" : "Show QR") + "</button>" +
+      '<button class="btn small' + (confirming ? " danger" : "") + '" data-act="grant-cancel" data-id="' + g.id + '">' + (confirming ? "Tap again to cancel" : "Cancel grant") + "</button></div></div>";
   }
 
   function entrySummary(e) {
@@ -1150,7 +1163,7 @@
     } catch (e) { return { error: e.message }; }
     var res = L.decodeGrant(state, code);
     if (res.error) return res;
-    var why = L.acceptGrant(state, res.grant, r.patientId);
+    var why = L.acceptGrant(state, res.grant, r.patientId, t);
     if (why) return { error: why };
     res.grant.requestId = r.id;
     res.grant.verification = verification;
@@ -1297,6 +1310,17 @@
     },
     seen: function (d) { findRequest(d.id).seen = true; save(); },
     "grant-seen": function (d) { var g = L.getGrant(state, d.id); if (g) { g.doneSeen = true; save(); } },
+    "grant-qr": function (d) { ui.showQr = ui.showQr === d.id ? null : d.id; },
+    "grant-cancel": function (d) {
+      if (ui.cancelConfirm !== d.id) { ui.cancelConfirm = d.id; return; }
+      ui.cancelConfirm = null;
+      var err = L.revokeGrant(state, d.id, me, now());
+      if (err) { toast(err); return; }
+      var g = L.getGrant(state, d.id);
+      emit({ type: "grant-cancelled", grantId: g.id, crewId: g.patientId, by: me });
+      save();
+      toast("Grant cancelled");
+    },
     "rx-check": function () { checkRx(); },
     "rx-add": function () { addRx(); },
     "qr-start": function () { qrStart(); },
@@ -1438,7 +1462,7 @@
     importGrant: function (code) {
       var res = L.decodeGrant(state, code);
       if (res.error) return { ok: false, error: res.error };
-      var why = L.acceptGrant(state, res.grant, me);
+      var why = L.acceptGrant(state, res.grant, me, now());
       if (why) return { ok: false, error: why };
       var g = L.addGrant(state, res.grant, now());
       save(); render();
@@ -1452,5 +1476,17 @@
 
   load();
   resolveUser();
+  // A link from the Earth tool (…index.html#grant=<code>) opens Import with the code filled in.
+  // Nothing is added until the crew member presses Add.
+  function openGrantFromHash() {
+    var m = /^#grant=(.+)$/.exec(window.location.hash || "");
+    if (!m) return;
+    try { ui.rxCode = decodeURIComponent(m[1]); } catch (e) { return; }
+    ui.view = "home"; ui.flow = null; ui.screen = "import";
+    checkRx();
+    try { history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) { /* file:// may refuse */ }
+  }
+  window.addEventListener("hashchange", function () { openGrantFromHash(); render(); });
+  openGrantFromHash();
   render();
 })();
