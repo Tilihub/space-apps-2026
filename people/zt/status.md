@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:28
+- Last updated: 2026-11-14 19:00
 - Working on: status check of the team ([team-jobs.md](team-jobs.md)). The app contract is merged
   (PR #49); a first UI look is on branch `zt/ui-look`, no PR yet.
-- Branch: zt/status-check-1830
+- Branch: zt/status-check-1900
 
 ## Done
 
@@ -23,7 +23,9 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work. Last refreshed 2026-11-14 18:28
+  from each person's actual work. Last refreshed 2026-11-14 19:00
+- Approved petros's demo data fix ([PR #64](https://github.com/Tilihub/space-apps-2026/pull/64))
+  after checking every value against the demo cases; all 69 root tests pass
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
@@ -45,9 +47,10 @@
 
 ## Blocked / need from others
 
-- Nothing blocks zt. Teammates are waiting on zt for: the core server and pages (angelos's health
-  module is ready for it), and four contract questions for the table (dadis2's Emergency scope and
-  one course per medicine, who builds mind, petros's demo data vs the demo cases). See
+- Nothing blocks zt. Teammates are waiting on zt for: the core server and pages (health, meds wave 1
+  and petros's workout controller are ready for it), and contract questions for the table (dadis2's
+  Emergency scope, one course per medicine and his "For zt" list in `meds/README.md`; who builds
+  mind). See
   [team-jobs.md](team-jobs.md), "Connections that need agreeing"
 
 ## Next steps
@@ -58,7 +61,7 @@
 - Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
   the workout give points? Ask potest to take reports and the Earth link. Record the answers in
   the contract's "Still open".
-- Contract (merged, PR #49): settle the four open questions above at the table, then change the
+- Contract (merged, PR #49): settle the open questions above at the table, then change the
   contract in one pull request a teammate approves. Each owner builds their module to it (wave 1
   before leaving Saturday).
 - Build the core and the pages in `integration/onboard-app/` to the contract (section 5): server,
