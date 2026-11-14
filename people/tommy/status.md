@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #72 for the UI/3D and backend readiness review; only Tommy’s review/status files changed. The selected 3D preview remains available for Tommy’s inspection.
+- Published the UI/3D and backend readiness review through merged PR #72; only Tommy’s review/status files changed. The selected 3D preview remains available for Tommy’s inspection.
 
 - Opened zt/ui-look at dace837 and zt/body-3d at 0e8fbff from isolated tracked-source copies. Tommy selected 3D first; rendered it and verified a real canvas selection emitted onSelect(stomach). Saved UI/3D screenshots. No application implementation changed.
 - Ran all current root tests: 90/90 passed, none skipped. Additional real-HTTP core+health+meds flow passed: clinical-role restriction, allergy and wrong-patient refusal, two-item batch/per-item confirmation, repeat-dose refusal and same-code next-dose access. Used temporary stores only.
