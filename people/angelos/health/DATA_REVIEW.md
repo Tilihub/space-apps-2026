@@ -1,5 +1,35 @@
 # PET-1 data adoption and current team instructions
 
+## Stage alignment verified: PR #64
+
+On 14 November, independently verified Petros's updated package at
+`1b736f50332423657fb9b5568bb1c1e5e0459f50` on
+`petros_the_space_larper/align-stage-data` (PR #64). It is not on main at the
+verification snapshot (`0a3204e`). The format/story differences below describe
+the earlier package and are resolved in this candidate:
+
+- c1: all stored sleep/pulse values match the stage ranges; day 42 has no changes.
+- c3: missing pulse on days 39/41, complete mood/fatigue values, six-day mood and
+  three-day stress changes on day 42.
+- c4: computed sleep reference **6.8 h**; day-42 input 4.6 h flags only sleep,
+  for three consecutive days. No synthetic cabin snapshot is included.
+
+All 65 source rows load through the actual health module. New `stage-data.test.js`
+checks the three inputs through the canonical dispatcher, fixed references,
+other-person isolation, clinical-only analysis and reset. Unchanged candidate
+snapshots are pinned as `fixtures/stage-health.json` and `stage-scenarios.json`;
+the earlier fixtures remain separate historical regression inputs. All **51**
+root checks pass (39 health/client/workout, 5 Petros workout, 7 shared example),
+including localhost HTTP. No monitoring algorithm or real NASA data was changed.
+
+Next: Petros merges his source PR #64, then zt initializes a fresh demo store or
+explicitly resets the demo at `DEMO_START`. The default module reads the new
+canonical file automatically. An existing session deliberately retains its old
+baseline until that reset. The actual onboard-page path remains to be verified
+after zt's core/pages are composed; the fixture correction itself is verified.
+
+## Earlier package review (retained for provenance)
+
 Reviewed 14 November 2026 against main `11bcc68`, including Petros's package
 at `12c840ee2ab9ced49b01a12efb5e5063487de594` merged through PR #51, and the
 approved version-1 shared app contract. The source values are unchanged from
