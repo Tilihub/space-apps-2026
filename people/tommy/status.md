@@ -15,6 +15,8 @@
 
 ## Done
 
+- Published the connected demo in [PR #73](https://github.com/Tilihub/space-apps-2026/pull/73), branch `tommy/functional-demo`. Ready for local testing; merging waits for coordination/review of the unchanged Potest #55 dependency and connection handoffs. No teammate PR was approved or merged by this task.
+
 - Replaced the example-only registry with the actual health and meds modules and connection adapters for mind, environment and clinical reports. Existing core/session/storage implementation remains unchanged; no teammate source was edited.
 - Reused zt's `ui-look` shell (`dace837`) and interactive 3D scene (`0e8fbff`), replacing the fake-data controller with actual API forms, role-aware clinical screens, inventory/approval/credential/dispensing/follow-up flows, and persistent records.
 - Merged Potest's pending `crew-support-chat` source into this integration branch solely to import the original companion route/client. PR #55 was not approved by this chat. Journal is connection-owned and author-only; the current companion uses only own-today context and remains explicitly scripted.
@@ -99,6 +101,6 @@
 ## Next steps
 
 - Continue from `tommy/functional-demo`. Run the single onboard server, use the role selector in separate tabs, and follow the end-to-end walkthrough in `integration/onboard-app/README.md`.
-- Finish manual demo checks and publish this functional connection for review. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
+- Review PR #73 with zt/Potest and continue manual demo checks. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
 - Ask Tommy to test the joined behavior and choose backend fixes before visual UI changes. zt remains the visual design owner; use his original UI/3D as the base.
 - Handoff: health/meds are direct owner imports; training uses Petros's controller; companion imports Potest's pending #55 route; journal/environment/report glue is in this connection's `adapters/`. Do not patch someone else's personal folder. Agree shared contract changes through a separately approved PR.
