@@ -17,6 +17,42 @@ My personal concept notes and requirements for May the Pulse Be With You. Only T
 - This handoff contains planning documents only. There is no active UI implementation from Tommy for zt to integrate.
 - First brief for zt: branded entry screen, login, registration, and a basic health profile.
 
+## Tommy's clarified requirements — 2026-11-14, questions 1–4
+
+These are Tommy's answers for the implementation brief. They still need coordination with the relevant owners before becoming team-wide agreements.
+
+### Mission and users
+
+- The demo represents a long-duration journey toward Mars.
+- Astronauts are the primary application users.
+- An onboard doctor/surgeon has elevated access, including the ability to authorize access to inventory compartments. The exact permissions and approval categories are still open.
+- A specialist on Earth receives crew health data, extreme readings, and user-reported symptoms for review when needed, and can return clinical assessments and authorization codes/QR codes.
+- The timing and extent of Earth data transfers, access to private journal entries, and the relationship between onboard and ground authorization still need explicit answers. Do not assume that every record is continuously transmitted or that journals are automatically shared.
+
+### Home screen and persistent companion
+
+- After login, show a daily summary of the crew member's basic health information.
+- Keep the mascot available in a corner across all application tabs, floating like the Codex pet reference supplied by Tommy.
+- Clicking the mascot opens a way to ask questions and receive guidance. The summary remains the main entry screen; the mascot is available alongside it.
+- Tommy assigns preparation/training of the mascot's conversational behavior to Angelos. This is an intended responsibility, not a claim that a trained model already exists. zt continues to own the visual UI implementation.
+- The exact summary fields, access to personal data within the conversation, and the boundary between guidance and other actions remain open.
+
+### First-demo priorities
+
+| Required for the first demo, at a basic level | Notes |
+|---|---|
+| Personal health and history | User-specific health overview and past records |
+| Spacecraft environment and alerts | Environment monitoring and relevant notifications |
+| Medical inventory and access flow | Supplies/medications and the intended authorization journey |
+| Daily wellbeing check-in and notes | A basic daily self-report and note-taking flow |
+| Mascot conversation and guidance | Basic assistance and navigation support |
+
+Points, cosmetic customization, and gamification are deferred until the core experience is in place; they are not prerequisites for the first demo.
+
+### Unanswered from the first set
+
+- Question 5: who joins the modules into one application and owns the login/backend connection? zt's UI role alone does not settle this.
+
 ## First brief: entry and account flow
 
 ### Purpose
@@ -31,18 +67,18 @@ Give each crew member a personal entry point into the application and establish 
 4. Log in asks for the crew member's username and password.
 5. Sign up asks for first name, last name, username, password, and password confirmation.
 6. Registration also collects age, weight, and height to form a basic health profile. Additional health fields are still to be agreed; do not treat previously prototyped fields as requirements.
-7. Successful account access takes the crew member into their personal application space; its next screen is still to be defined.
+7. Successful account access opens the daily personal health summary, with the clickable mascot available in a corner across all tabs.
 
 ### Open points for zt and the team
 
 - Whether account and health details appear in one screen or several steps.
 - Which additional health details, if any, are necessary, and which are optional.
 - Units, required fields, validation, profile updates, and the backend/authentication contract.
-- What the user sees immediately after login or registration.
+- The specific information shown in the daily summary and the integration/authentication owner.
 
 ## Broader concept supplied by Tommy
 
-The application is intended for long-duration, long-distance crewed missions, including the team's proposed Mars-travel scenario. The following sections preserve Tommy's supplied ideas for discussion; they are not implementation assignments or verified capabilities.
+The application is intended for long-duration, long-distance crewed missions. Tommy has selected a journey toward Mars for the demo. The following sections preserve his supplied ideas for discussion; they are not verified capabilities or a replacement for the agreed team plan.
 
 ### Physical health, symptoms, and personal trends
 
@@ -59,6 +95,7 @@ The application is intended for long-duration, long-distance crewed missions, in
 - Pair the digital highlight with a physical indicator, such as a green LED; show locked or unavailable compartments distinctly.
 - Tommy proposes separate access paths for everyday supplies and prescription-controlled medicines. The precise access policy is not decided by these notes.
 - For controlled compartments, a clinician's prescription/authorization would include a code or QR code that grants access only to the prescribed compartment(s).
+- Tommy has clarified that an onboard doctor/surgeon can also authorize inventory access. Which cases require ground approval, onboard approval, or both remains open; the earlier ground-code proposal is not an exclusive rule.
 - A symptom flow could point to an authorized compartment, subject to the team's agreed clinical and hardware access rules.
 
 ### Mental wellbeing and professional support
@@ -70,7 +107,9 @@ The application is intended for long-duration, long-distance crewed missions, in
 - Tommy's proposed session is not recorded. He also proposes giving the psychologist useful prior check-in context and building the relationship before departure from Earth.
 - Feasibility, communication delays, consent, and access to wellbeing records remain points for the team to resolve; this is not a promise of live communication on every mission.
 
-### Motivation and mascot customization
+### Motivation and mascot customization — deferred
+
+Tommy places this work after the core first-demo features.
 
 - Award points for exercise consistency, completing daily check-ins, optionally writing journal notes, and improving a personal exercise record.
 - Emphasize each person's own progress rather than competing against colleagues.
@@ -80,6 +119,7 @@ The application is intended for long-duration, long-distance crewed missions, in
 ### Companion mascot and guided interaction
 
 - Possible mascot directions from Tommy: a small blue alien or a small astronaut robot, with a Star Wars-inspired name and personality. No character design has been chosen.
+- The mascot is persistently available in a screen corner across tabs; clicking it opens interaction. Angelos is the intended owner of the conversational preparation/training, as specified by Tommy.
 - The mascot can introduce the app and offer an optional guided demo.
 - A conversation menu can route a user toward tasks such as reporting a symptom or starting an exercise session.
 - For symptom reporting, guide the user through the same structured choices available in the manual flow: body area, symptom, and severity, then record the entry.
@@ -98,6 +138,7 @@ The application is intended for long-duration, long-distance crewed missions, in
 - [x] Record Tommy's change of role: concepts and planning here, visual UI implementation by zt.
 - [x] Withdraw the earlier UI PR and delete its remote branch.
 - [x] Preserve the supplied entry-flow requirements and broader concepts in this plan.
+- [x] Record Tommy's answers on the Mars-transit setting, onboard/ground roles, daily-summary home screen, persistent mascot, first-demo scope, and deferred gamification.
 - [ ] Review and refine the next concept with Tommy, keeping questions separate from decisions.
 - [ ] Let zt use the published plan to determine the visual implementation and raise any missing requirements.
 - [ ] Propose changes to `shared/PLAN.md` only when Tommy asks the team to adopt a concept, using the required teammate-approved PR.

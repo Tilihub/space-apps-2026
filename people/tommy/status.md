@@ -8,25 +8,30 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:26
-- Working on: Product concepts and personal planning for zt to use; no UI implementation from this chat.
+- Last updated: 2026-11-14 14:01
+- Working on: Clarifying product requirements with Tommy for zt's implementation; planning documents only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Completed onboarding and configured a repository-local GitHub noreply email.
-- Recorded Tommy's working agreement: he supplies concepts; zt owns visual design and UI implementation.
-- Closed UI prototype PR #20 without merging and deleted remote branch `tommy/crew-access-ui`.
-- Organized the requested entry/account flow and the broader supplied concepts in `people/tommy/plan.md`.
-- Published the concepts-only handoff in PR #24; it contains only the personal plan and status.
+- Opened PR #30 with Tommy's clarified Mars-demo brief; only his plan and status are included.
+- Completed onboarding with a repository-local GitHub noreply email.
+- Withdrew the UI prototype: PR #20 closed without merging and its remote branch deleted. No UI code is being produced in this chat.
+- Published the initial concepts plan in PR #24 and reviewed the team's statuses, newer branches, and module handoff proposals.
+- Recorded Tommy's answers to questions 1–4: Mars transit; astronaut, onboard doctor/surgeon, and Earth specialist roles; daily-summary home screen with a persistent clickable mascot; the five first-demo areas; deferred gamification.
+- Recorded Tommy's intended assignment of mascot conversational preparation/training to Angelos, without claiming that training is complete.
+- Read zt's updated status and team-jobs record; zt acknowledges the UI brief and says work has not started pending its open points.
 
 ## Blocked / need from others
 
-- None for planning. Scope decisions and implementation details remain for Tommy, zt, and the team to agree.
+- No blocker to documenting concepts. Integration/authentication ownership remains unanswered (question 5).
+- Onboard versus ground approval rules, Earth transmission timing, journal privacy, and offline behavior need clarification before they become requirements.
+- The exact daily-summary fields and self-report scales still need agreement with their owners. The 1–5 idea and the current 0–10 health-core inputs are not yet aligned.
+- Common-plan adoption and the owners' acceptance of responsibilities remain team decisions; only Tommy's personal documents were changed.
 
 ## Next steps
 
-- Continue planning on `tommy/concepts-plan`; read `people/tommy/plan.md` for the ownership agreement and current briefs.
-- Refine Tommy's next concept, document open questions, and push the updated notes for zt.
-- Do not resume or publish the withdrawn UI prototype, and do not create new UI/application code unless Tommy explicitly changes the agreement.
-- Before a break, update this status, commit, and push the planning changes.
+- Continue from `tommy/concepts-plan` and `people/tommy/plan.md`; publish the clarified brief for zt.
+- Ask small, concrete question sets: first integration ownership, inventory approvals, Earth connectivity/data sharing, and journal access; then summary fields, check-ins, and mascot behavior.
+- Record answers in the personal plan, keeping undecided points explicit. Update Now, Done, and Next steps in this status with every finished step and include it in the same push.
+- Do not create UI/application code unless Tommy explicitly changes the planning-only agreement. Before a break, update this status, commit, and push.
