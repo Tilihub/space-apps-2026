@@ -1,0 +1,41 @@
+# PET-1 synthetic demo fixtures
+
+For the weekly exercise plan, workout controller and scene B pulse replay, see the [workout handoff](WORKOUT.md).
+
+Read `health.json` on reset of the onboard health module. It follows the [approved shared contract, sections 4, 6 and 10](../../../shared/contract/README.md) and the stage records in [zt's demo cases](../../zt/demo-cases.md). The envelope declares contract version 1 and synthetic data. Each `crew` key is an ID from `c1` to `c5`. Each member has a story and 13 daily records. The module can use `measurement-guides.json` for entry guidance. [stories.md](stories.md) ties the five histories to the demo script.
+
+| Key | Unit or anchors | Input and cadence | Null and provenance |
+|---|---|---|---|
+| `crew` key | ZT crew ID | Demo account mapping | Required. Fictional crew. IDs do not authorize access. |
+| `missionDay`, `time` | Day since 2026-10-03 UTC, HH:MM UTC | One record per person per mission day at 07:30 | Required. Synthetic mission time. Days 29–35 are fixed baseline, 36–41 recent history, 42 reserved for live entry. |
+| `sleepHours` | Hours, previous 24 h, 0–24 | Daily estimate or sleep diary | `null` when unavailable. Synthetic sleep duration. A recorded zero is valid. |
+| `mood` | Integer 1–10, higher is better | Daily self-report | `null` if skipped. Synthetic. |
+| `stress`, `fatigue` | Integer 1–10, higher is more | Daily self-report | `null` if skipped. Synthetic. |
+| `restingHeartRateBpm` | bpm at rest | Daily resting pulse spot reading | `null` for missing or unusable readings. Synthetic resting values. |
+| `spo2Pct` | Percent | Daily fingertip pulse oximeter spot reading | `null` for missing or unstable readings. Synthetic. |
+| `systolicMmHg`, `diastolicMmHg` | mmHg | Daily upper-arm cuff spot readings from one cycle | `null` if the measurement is missing. Synthetic. |
+| `temperatureC` | °C, oral | Daily digital oral thermometer spot reading | `null` if unavailable. Synthetic oral readings. |
+| `symptoms[].code`, `symptoms[].severity`, `note`, `vitals` | ZT symptom code, separate integer 1–10 severity, text, named spot values | Entered when reporting the symptom. The meds module assigns event time. | Optional note and unavailable readings may be `null`. Synthetic narrative and spot readings. |
+
+The health module compares only sleep hours, resting heart rate, mood, stress, and fatigue. Keep the other vitals as spot values. Respiratory rate is documented in the [sensor guide](../astronaut-health-research.md#five-vital-signs-from-a-smart-vest-and-separate-sensors) and is outside the proposed ZT wave 1 payload. The [historical CSV](../astronaut-inflight-vitals.csv) contains individual observations, exercise results, and cohort summaries. It is a reference and supplies none of these crew histories. Cabin replay from an archive carries a source timestamp and provenance independent of these synthetic events.
+
+## Load and check the package
+
+On the onboard app path, use the reset input from `health.json` and the shared test clock at `2026-11-14T07:30:00.000Z`. [scenarios.json](scenarios.json) is a test harness input. Send only `checkInBody` to `POST /api/health/check-ins` as that crew member. On separate fresh resets:
+
+- `c1` stays within personal reference and produces no changes.
+- `c3` flags mood for six consecutive days and stress for three; the missing resting-pulse readings on mission days 39 and 41 do not break the mood sequence.
+- `c4` flags only sleep for three consecutive days, comparing 4.6 h with a 6.8 h reference. The other four compared measures stay below their demo thresholds.
+
+For `c4`, send `symptomReportBody` to `POST /api/meds/symptom-reports`. Cabin CO₂ is not duplicated in this package: Potest's environment component supplies the separate historical ISS RR-9 replay, including its source timestamp, warning history and recovery by 07:00 mission time.
+
+For [Angelos's external baseline importer](https://github.com/Tilihub/space-apps-2026/blob/928dc4e/people/angelos/health_monitor/BASELINE_IMPORT.md) on `angelos/external-baseline` or when that importer is available in the checkout, run from the repository root with fresh output paths:
+
+```powershell
+node people/petros_the_space_larper/demo-data/export-personal-history.mjs c4 "$env:TEMP/pet1-c4.json"
+python people/angelos/health_monitor/check_in.py --baseline-file "$env:TEMP/pet1-c4.json" --database "$env:TEMP/pet1-c4.sqlite3" --import-only
+```
+
+Expected output is seven baseline and six recent records for c4, with the next unsaved day being 14 November. Sleep baseline median is 6.8 h. The export maps `crewId` (fixture key) to `astronaut_id`, `missionDay` and `time` to `recorded_at`, `sleepHours` to `sleep_hours`, and `restingHeartRateBpm` to `resting_heart_rate_bpm`. The three self-report values are copied as declared `1-10`. The importer accepts only those five measures and keeps this reference separate from legacy data. The earlier `health-v1` 0–10 fixtures retain that scale, including valid zero answers. The export is for the external file importer, with no implicit mapping to legacy `demo-001` identities or legacy archive conversion.
+
+The original PET-1 package was verified against the shared contract and Angelos's external-baseline reader. This stage-aligned revision keeps the same 65-row shape and field contract, changes only synthetic values and stories, and is intended to be re-read on an explicit fresh reset. Existing stored baselines must not change silently when this source file changes. The joined app still needs to load the fixture and enforce the clinical-role visibility rules.

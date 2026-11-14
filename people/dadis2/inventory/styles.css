@@ -201,6 +201,8 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .tile.sel { border: 2px solid var(--bad); background: var(--bad-bg); }
 .tile.em { border-left: 5px solid var(--bad-solid); }
 .tile.em.wait { border-left-color: var(--warn); }
+.tile.em.aid { border-left-color: var(--info); }
+h3.em-sub { margin: 16px 0 8px; font-size: 14px; color: var(--muted); }
 details.cant-wait { margin-top: 14px; border: 1px dashed var(--warn); border-radius: 12px; padding: 10px 12px; }
 details.cant-wait summary { cursor: pointer; font-weight: 700; color: var(--warn); }
 details.cant-wait .hint { margin: 8px 0; }
@@ -275,6 +277,9 @@ details.cant-wait .hint { margin: 8px 0; }
   background: linear-gradient(180deg, color-mix(in srgb, var(--zone) 35%, #f5f7fa), color-mix(in srgb, var(--zone) 50%, #dfe4ea));
   border: 1px solid rgba(0, 0, 0, .35); border-bottom-width: 4px; overflow: hidden; }
 .bin.rx { background: linear-gradient(180deg, #ffd0d0, #f08a8a); border-color: #9e1c1c; color: #3a0a0a; }
+/* Not for this user right now (allergy, daily limit, none left, someone else's): dimmed, still tappable for why */
+.bin.no { opacity: .45; filter: grayscale(.7); }
+.no-swatch { width: 14px; height: 14px; border-radius: 3px; margin-left: 8px; background: #cfd5dd; opacity: .45; border: 1px solid rgba(0, 0, 0, .35); }
 button.bin { cursor: pointer; }
 button.bin:hover { outline: 2px solid var(--accent); }
 .bin-num { display: block; font-size: 10px; font-weight: 800; opacity: .75; }

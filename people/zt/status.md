@@ -8,11 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:33
-- Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
-  so every teammate can build their piece to it alone and joining them is only the final link.
-  Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
-- Branch: zt/app-contract
+- Last updated: 2026-11-14 19:12
+- Working on: the core server in [integration/onboard-app/](../../integration/onboard-app/README.md).
+  Step 1 of 5 works: login, mission clock, events, saving and files, with the example module.
+- Branch: zt/onboard-core
 
 ## Done
 
@@ -24,7 +23,9 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work. Last refreshed 2026-11-14 15:54
+  from each person's actual work. Last refreshed 2026-11-14 19:00
+- Approved petros's demo data fix ([PR #64](https://github.com/Tilihub/space-apps-2026/pull/64))
+  after checking every value against the demo cases; all 69 root tests pass
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
@@ -43,10 +44,19 @@
   medical officer only, enforced by the server; crew stories, values and CO₂ timing match the demo
   cases; new allergies, blocked items, emergency release, stock, workout records and radiation;
   wave 2 is the rest of the live demo. The demo cases now show every comparison in E's scene
+- Core server, step 1 ([integration/onboard-app/](../../integration/onboard-app/README.md)): one
+  Node.js server with login (Leo only on the medical platform), the mission clock (day 42, 07:30,
+  jumps forward, pauses while off), events, saved data per module, reset demo, and a plain demo
+  controls page at `/demo/`. Runs the example module; 12 tests pass, and they show angelos's health
+  and dadis2's meds already run inside it with petros's day-42 data
 
 ## Blocked / need from others
 
-- A teammate's approval on the contract pull request, after the team has looked at it together
+- Nothing blocks zt. Teammates are waiting on zt for: health and meds in the app and the pages
+  (the core runs; health, meds wave 1 and petros's workout controller are ready), and contract questions for the table (dadis2's
+  Emergency scope, one course per medicine and his "For zt" list in `meds/README.md`; who builds
+  mind). See
+  [team-jobs.md](team-jobs.md), "Connections that need agreeing"
 
 ## Next steps
 
@@ -56,12 +66,15 @@
 - Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
   the workout give points? Ask potest to take reports and the Earth link. Record the answers in
   the contract's "Still open".
-- Contract (branch `zt/app-contract`): go through it with the team, fix what they change, get one
-  approval and merge. Then each owner builds their module to it (wave 1 before leaving Saturday).
-- Build the core and the pages in `integration/onboard-app/` to the contract (section 5): server,
-  login, clock, events, then the astronaut app and the medical officer platform, starting from
-  the UI skeleton's layout. The skeleton's 3 crew, 0–10 sliders and sleep slider must follow the
-  contract (5 crew, 1–10, sleep in hours).
+- Contract (merged, PR #49): settle the open questions above at the table, then change the
+  contract in one pull request a teammate approves. Each owner builds their module to it (wave 1
+  before leaving Saturday).
+- Core (branch `zt/onboard-core`, step 1 done): next add health to `modules.js` and follow zt's
+  part of `people/angelos/health/TEAM_NEXT_STEPS.md`, then meds with dadis2's "For zt" notes in
+  `people/dadis2/meds/README.md`. Then the astronaut app and the medical officer platform, starting
+  from the UI skeleton's layout (5 crew, 1–10, sleep in hours). `npm start` needs a root
+  `package.json` change, which needs a teammate's approval; until then run
+  `node integration/onboard-app/start.js`.
 - Go through the app overview in [plan.md](plan.md) with Tommy. It's a draft, open to change.
 - Finish `shared/PLAN.md` with Tommy and open the pull request. Someone other than zt must approve it.
 - Keep [team-jobs.md](team-jobs.md) current at each status check: update the tables and add one

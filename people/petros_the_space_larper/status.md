@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:30
-- Working on: Mars-transit prototype scope and offline behavior in [PR #36](https://github.com/Tilihub/space-apps-2026/pull/36)
-- Branch: petros_the_space_larper/astronaut-health-research
+- Last updated: 2026-11-14 18:56 (Europe/Athens)
+- Working on: Publishing the verified stage-aligned PET-1 source for the onboard demo reset.
+- Branch: petros_the_space_larper/align-stage-data
 
 ## Done
 
@@ -31,10 +31,20 @@
 - Merged and verified the general countermeasure notes in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32).
 - Added [deep-space countermeasure notes](astronaut-deep-space-countermeasures.md) covering lunar flight evidence, Mars analogs, robotic radiation measurements, and proposed Mars-transit app workflows.
 - Added a [Mars-transit prototype proposal](mars-transit-prototype.md) with mental and physical health fields, offline procedures, report delivery states, and demo checks.
+- PET-1: Published a [data package and field mapping](demo-data/README.md) aligned with the proposed ZT contract (PR #49). It contains 65 synthetic observations for c1–c5, four measurement guides, and day-42 inputs for usual values, missing data, and the Tomas incident.
+- PET-1: Checked the fixture against the ZT contract constants and ran all five exports through Angelos's external baseline reader (PR #50). Verified the three expected scenario results, including five changes for three consecutive days and preservation of missing values. Imported Tomas into a fresh temporary SQLite store.
+- PET-2: Drafted the [exact wellbeing prompts and anchors](demo-data/wellbeing-form.md) and aligned the Mars scope with Tommy's 1–10 scale, journal permissions and doctor-only clinical report access.
+- PET-1 and PET-2 handoff merged in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51).
+- Added the [workout handoff](demo-data/WORKOUT.md), including the published SPRINT week, an ISS-style seven-day plan, a controller for step-by-step workouts and a synthetic stage pulse replay. Verified the controller against Angelos's workout endpoint.
+- Read Angelos's [PET-1 data review](../angelos/health/DATA_REVIEW.md) and aligned the canonical source fixture with zt's stage cases: c1 workout ranges, c3 six-day mood trend with pulse-only gaps, and c4's 6.8 h sleep reference with sleep as the only day-42 flag. Removed the duplicate synthetic cabin snapshot so the joined case uses Potest's separate ISS RR-9 replay.
+- Followed Angelos's [team next steps](../angelos/health/TEAM_NEXT_STEPS.md), merged the latest main into the source branch without rebase, and passed all 70 current root checks, including the aligned stage cases, localhost client requests, workouts and medicine-module checks.
+- Adapted the default week to Mars cruise in microgravity. One Orion-style flywheel provides resistance and rowing. The plan includes inter-set rest, active recovery and an optional target based on measured rowing peak heart rate.
 
 ## Blocked / need from others
 
 - Public direct downloads for continuous astronaut wearable recordings remain unverified. The notes link to published values, test data, and research access routes.
+- zt must start a fresh demo store or explicitly reset at `DEMO_START` after this source reaches main; an existing store intentionally keeps its previous reference. Page integration and role-boundary acceptance remain with zt and the relevant owners.
+- The final workout screen must import the controller. Live workout pulse needs a device adapter for the wearable chosen by the team.
 
 ## Next steps
 
@@ -48,3 +58,6 @@
 - Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
 - Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
+- zt should use `demo-data/health.json` on a fresh reset and replay the [stage-aligned day-42 cases](demo-data/scenarios.json): c1 no-change, c3 mood/stress persistence, and c4 sleep-only persistence. Joined-page and role-boundary checks follow the acceptance list in Angelos's handoff.
+- In the workout screen, import `/demo-data/workout-session.js`, pass the mission clock and the logged-in health client, then map the buttons and current step as shown in [WORKOUT.md](demo-data/WORKOUT.md). Run the scene B push-up replay to confirm the saved summary and the synthetic source label.
+- In the weekly screen, show the Mars transit instructions and rest timings. Supply the optional measured rowing peak from the crew member's exercise assessment to display the long-interval bpm range.

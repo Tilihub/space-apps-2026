@@ -9,7 +9,8 @@ One page per crew member's own device:
   - Request status and "Did it help?".
   - **Request a medicine** and **Import from Earth** buttons.
 - **Right: the three real lockers from the front.**
-  - Red bins with 🔒 need approval.
+  - Red bins with 🔒 need approval (from the CMO, or Earth). Dimmed bins aren't for you right now
+    (allergy ⚠, daily limit, none left, someone else's). Hover a bin to see why.
   - Tap a bin to pick that medicine.
   - "Collect now" lights up all the bins of that dose time together, and a scan confirms each box.
 - **Rewards:** XP, streaks and badges for safe habits (on hold: gamification is deferred by the team).
@@ -28,7 +29,7 @@ No install or build. Open `index.html` in a browser (double-click it).
   `index.html?user=c2` for Leo, the CMO, who also gets the Stock, Approvals and Log tabs.
 - Demo state is saved in your own browser only. "Reset demo" at the bottom puts everything back.
 
-**Checks:** open `tests.html`. All 37 checks should say PASS.
+**Checks:** open `tests.html`. All 43 checks should say PASS.
 
 **Earth side:** open `earth.html`, the flight surgeon's tool. Choose a crew member and medicines to
 get the grant code and its QR image. "Open on …'s device (demo)" opens it in the crew app, ready to add.
@@ -100,6 +101,11 @@ your phone's camera at the QR in `earth.html`. It should show exactly the code u
 5. **Chest pain** → "Call the CMO now". **Emergency** → Epinephrine → Release now → locker 3.
 6. **Emergency for Mara** (sample allergy: ketamine) → the Ketamine tile shows ⚠ Allergy → a red warning →
    "Give anyway" needs a second tap → the override shows on the CMO's Approvals and Log.
+7. **Who decides, per person.** On `?user=c4` (Tomas, bleeding risk), ibuprofen and aspirin are red: "Not safe
+   for you: the CMO decides". On `?user=c3` (Ines, NSAID allergy) they're dimmed with ⚠: nobody grants them.
+   Pseudoephedrine is plain self-care for both.
+8. **Also used in emergencies:** Emergency → choose Ines → **Aspirin** (chest pain) → ⚠ Allergy → **Give anyway**
+   twice, no reason needed → logged and sent to Earth's review. **Gauze** → **Show me** lights its bin.
 
 Demo PINs (CMO screens only): Mara 1111, Leo 2222, Ines 3333, Tomas 4444.
 
