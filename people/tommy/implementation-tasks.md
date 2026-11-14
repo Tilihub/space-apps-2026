@@ -2,6 +2,22 @@
 
 Prepared 2026-11-14 from the published work listed below, including zt's new app overview. Tommy requested publication of this handoff so each teammate and their coding tool can read the corresponding task and know what to deliver. These are Tommy's requested next tasks; acceptance by other owners and changes to shared/PLAN.md remain team coordination. No messages were sent to teammates and no other member's files were changed.
 
+## Latest requirements update — read before starting a task
+
+Tommy's answers Q13–Q17 supersede the earlier alternatives below. See [the latest requirements section](plan.md).
+
+| Owner | Apply this update |
+|---|---|
+| zt | Clinical case report content is hidden from the astronaut; manual creation/sending belongs to the onboard doctor. Wire the UI skeleton to real modules, with role enforcement. Readiness score remains a discussion item. New mood/stress/fatigue inputs use 1–10; sleep remains hours. |
+| angelos | Coordinate the new 1–10 self-report contract with zt/Petros. Preserve old 0–10 data and fixed references; do not silently shift/relabel them. Version the scale and agree safe comparison/migration handling before implementing ANG-1 inputs. |
+| dadis2 | A prescription QR/code is reusable throughout its valid course, but each due dose can be collected only within prescribed quantity/frequency and expiry. Repeated scans cannot multiply allowances. Batch-activate only the eligible prescribed bins. All crew can access the exceptional emergency path under an agreed protocol, not for routine bypass. |
+| potest | POT-1 is now published in PR #40: integrate/review the existing bridge rather than rebuild it. Coordinate clock/event IDs with zt. If taking POT-2, preserve doctor-only manual clinical send, approved automatic routing, and report-content permissions. |
+| petros | Align the wellbeing brief/fixtures to Tommy's 1–10 decision, explicitly labelling old 0–10 data and keeping instrument-specific scales separate. Retain journal privacy and permitted assistant context. |
+
+The pending readiness definition, emergency eligibility details, reporting triggers/cadence and historical-scale transition remain open decisions. Current modules are not assumed to implement these new requirements yet.
+
+Publication progress: `potest/environment-bridge` supplies a snapshot/subscription bridge; `zt/ui-skeleton` supplies a clickable fake-data layout; Angelos's latest status acknowledges ANG-1. These supersede the corresponding older snapshot gaps, not their outstanding integration acceptance checks.
+
 ## Start here: teammates and coding tools
 
 1. Read `AGENTS.md`, the current shared plan, everyone's current status, and [Tommy's product requirements](plan.md). Follow the repository's ownership, branch, approval, and publishing rules.
@@ -49,7 +65,7 @@ Suggested coordinator: zt, with each module owner confirming their own inputs/ou
 
 - One crew list/ID mapping: health currently uses `astronaut_id`; inventory uses `crewId` values such as `c4`.
 - One mission clock and explicit source timestamps. Historical 2018/2017/other mission replay clocks must not silently become simultaneous Mars crew observations.
-- Field names, units, missing-value handling, and self-report anchors/scale. Existing health inputs use 0–10; adopting or changing that is a team decision.
+- Field names, units, missing-value handling, and self-report anchors/scale. Q17 sets new mood/stress/fatigue inputs to 1–10; existing health inputs/history use 0–10 and need an explicit transition strategy without silent remapping.
 - Symptom report shape/codes, health report shape, environment snapshot shape, inventory events, and permitted audiences.
 - Human journal access: author and psychologist only. The author's assistant can process it, but ordinary medical reports and other crew views must not expose it or private derived details.
 
@@ -75,7 +91,7 @@ Add the journal persistence/context interface needed by that behavior, coordinat
 
 Extend the current multi-medicine Earth plan into one authorized collection operation: a single code/QR selects and highlights all and only the prescribed compartments together. Return their locker/shelf/bin IDs for the main app and any future hardware bridge. Track collection per compartment/item without confusing retrieval with logging every dose of a multi-day prescription as already taken.
 
-Acceptance: a sample prescription covering two bins activates both in one operation; an unrelated third bin remains unavailable. The correct user can collect the authorized items and each collection is recorded once. A wrong-user/invalid/reimported grant is handled clearly, preserving existing checks. Clarify what counts as collected versus later consumed with Tommy and zt.
+Acceptance: a sample prescription covering two bins activates both in one operation; an unrelated third bin remains unavailable. The correct user can collect the authorized items and each collection is recorded once. Wrong-user, invalid, expired and already-redeemed-dose attempts are rejected; a legitimate later dose from the same prescription remains eligible. A multi-day prescription is not an allowance to collect the whole course at once. Keep dose counters persistent and coordinate concurrent-tab/device handling. Record collection separately from consumption/follow-up.
 
 ### DAD-2 — After DAD-1 works
 
@@ -119,11 +135,11 @@ Update the PR #36 proposal to reflect Tommy's Q11–Q12 clarification: the autho
 
 Use the overview already written to choose the implementation boundary and agree the small module contracts above. Start a working integration connection with its README, compose existing modules, and build the daily home summary plus persistent clickable companion. This chat supplies concepts only; it is not a second UI implementation.
 
-First acceptance path: select/sign in as a demo crew member -> submit a check-in and symptom -> show that person's health result plus timestamped cabin context -> create a medical report -> queue/send it -> show a clinician reply -> import the prescribed code -> indicate only its authorized bins. Add a private journal example proving that other human roles and the ordinary report cannot see it. The live-demo story and detailed cases remain Tommy/zt decisions.
+First acceptance path: select/sign in as a demo crew member -> submit a check-in and symptom -> show that person's health result plus timestamped cabin context -> the onboard doctor creates/sends the clinical report (content hidden from the astronaut) -> queue/send it -> show a clinician reply -> import the prescribed code -> indicate only its authorized bins. Add a private journal example proving that other human roles and the ordinary report cannot see it. The live-demo story and detailed cases remain Tommy/zt decisions.
 
 ### Decide these differences with Tommy before treating the overview as final
 
-- Tommy wants a Create report action and manual sending; the overview proposes a case summary hidden from the astronaut. Agree the user's visibility/preview and recipient feedback.
+- Q13 resolved: clinical report content is hidden from the astronaut and only the onboard doctor can manually create/send it. Automatic routing remains separate; doctor-side preview and simple recipient/status feedback still need detail.
 - Tommy requires a basic companion in the first demo and defers points/customization. Do not defer the companion together with the game system.
 - The entry brief currently requests username/password and registration; the overview proposes face scanning built last. Agree the first-demo access flow. A staged scan/demo identity picker must not be presented as working biometric authentication.
 - A readiness score and red/blue body figure need a transparent definition. Angelos's existing unvalidated trend comparisons do not already provide a validated readiness score or medical clearance. Decide the display/meaning with Tommy and the relevant owner rather than silently inventing a score.

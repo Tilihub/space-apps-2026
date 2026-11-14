@@ -70,8 +70,8 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 - Routine information can be sent every few days; the exact interval remains to be chosen. This brief does not claim a standard clinical reporting cadence.
 - A change requiring review or a user-entered symptom requiring analysis can trigger an earlier report. The criteria for these triggers are still to be agreed.
 - Provide a Create report action that assembles a detailed account of the situation from reported symptoms and the recent days' health data, allowing the clinician on Earth to understand the context.
-- The user can manually send a report at any time. The system can also send one automatically when the agreed conditions are met.
-- The recent-history window, exact report fields, report preview/editing, transmission feedback, and the implementation owner for report assembly need more detail.
+- Only the onboard doctor/medical officer can manually send the clinical report to Earth. The astronaut does not see its content. The system can also send reports automatically when the agreed conditions are met; see Q13 above for the updated authority.
+- The recent-history window, exact report fields, doctor-side preview/editing and transmission feedback need detail. Astronaut access to report content is explicitly excluded by the latest Q13 answer.
 - Journal permissions apply to report content as well: ordinary medical reports must not expose private thoughts to people outside the explicitly permitted journal audience.
 
 ### Private thoughts and specialist access
@@ -101,6 +101,23 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 - Q11 resolved: the astronaut's psychologist is the permitted human specialist for private thoughts.
 - Q12 resolved: the user's chatbot can use those private thoughts for supportive conversation; other human roles do not inherit that access.
 - Remaining product details include the daily summary fields, check-in scale/recall period, report preview/visibility and time window, category-specific approval rules, and the definition of any proposed readiness/task score. See the review and proposed task ownership in [implementation-tasks.md](implementation-tasks.md).
+
+## Latest answers Q13–Q17 — authoritative update for this brief
+
+These answers supersede older open alternatives in this personal brief and task handoff. Implementation remains with the module owners and zt; no other member's source was changed here.
+
+- **Q13 — clinical reports:** only the onboard doctor/medical officer can manually create/send the clinical case report to Earth when they decide a specialist review is needed. The astronaut does not see its content. Existing periodic/event-triggered transmission remains intended; exact triggers, recipient permissions, and whether a simple sent/status notice is shown still need coordination. This is not permission to include private journal material in ordinary clinical reports.
+- **Q14 — repeat prescription QR/code:** collect only the currently authorized dose(s), not the whole multi-day supply. Reuse the same prescription code/QR on subsequent prescribed days/occasions until the course expires. Enforce the prescribed frequency, quantity, timing and course end; rescanning repeatedly must not release extra doses. Activate together only the currently eligible prescribed compartments. Track individual dose collection separately from actual consumption/follow-up. Reuse of the prescription is allowed; duplicate redemption of an already collected dose is not. Coordination must cover persistent/shared counters and simultaneous requests so another tab/device or restart cannot reset the allowance.
+- **Q15 — emergency access:** all crew members may invoke the exceptional emergency path, including if the onboard doctor is incapacitated. It is not routine access or a general workaround for Earth-required approval. Exact qualifying conditions, confirmation, logging, notifications and review must be agreed with the inventory/medical-workflow owners; this brief does not supply a validated clinical emergency protocol.
+- **Q16 — readiness score:** remains undecided until Tommy discusses it with zt. Current placeholder values are not an agreed calculation or medical clearance.
+- **Q17 — daily self-report scale:** use **1–10** for mood, stress and fatigue. Earlier proposals/examples using 1–5 or 0–10 do not define the new-entry contract. Keep direction/anchors explicit; sleep duration remains hours, not a 1–10 score. Symptom severity and any established questionnaire retain their own separately agreed scales. Existing 0–10 history/baselines must not be silently relabelled or shifted: agree an explicit version/migration/recollection strategy before comparing incompatible scales; zero in older data is not automatically missing.
+
+### New published progress checked with this update
+
+- Potest's `potest/environment-bridge` branch adds `environmentMonitor.getSnapshot()` and event subscription in PR #40; POT-1 is delivered for integration review rather than work to start from scratch. Mission-clock mapping remains to be agreed.
+- zt's `zt/ui-skeleton` branch now contains a clickable HTML layout with labelled fake data. It is not yet joined to the real modules. Its check-in controls use placeholder 0–10 ranges, including sleep; align mood/stress/fatigue with 1–10 and sleep with hours when wiring real inputs. The hidden case-summary content now matches Q13; manual send permissions still need implementation.
+- Angelos's latest published status says he read Tommy's handoff and identifies ANG-1 as the next proposed implementation. His current data contract still uses 0–10, so Q17 needs agreement before integration. Acknowledgement is not completion of the adapter.
+- dadis2's latest published version remains the previously reviewed prescription-import prototype. Confirm its per-dose quota/reuse behavior against Q14 rather than treating a QR as a one-time collection of the entire course.
 
 ## First brief: entry and account flow
 
@@ -144,7 +161,7 @@ The application is intended for long-duration, long-distance crewed missions. To
 - Pair the digital highlight with a physical indicator, such as a green LED; show locked or unavailable compartments distinctly.
 - Tommy proposes separate access paths for everyday supplies and prescription-controlled medicines. The precise access policy is not decided by these notes.
 - The onboard doctor authorizes some categories; specified other categories require Earth approval through a code/QR. The category list is still open.
-- One code/QR opens only the prescribed/authorized compartments together, with the same compartments indicated in the app for collection.
+- One code/QR opens only the currently due prescribed compartments together, with the same compartments indicated in the app. Reuse it for later authorized doses until expiry, enforcing Q14 dose/frequency limits.
 - A symptom flow could point to an authorized compartment, subject to the team's agreed clinical and hardware access rules.
 
 ### Mental wellbeing and professional support

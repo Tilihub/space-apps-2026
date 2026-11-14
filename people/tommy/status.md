@@ -8,12 +8,14 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:57
-- Working on: Eliciting decisions Q13–Q17 on report visibility, collection versus consumption, emergency access, readiness-score meaning, and check-in scales. Planning only.
+- Last updated: 2026-11-14 15:12
+- Working on: Publishing Q13–Q17 and notifying module owners through the handoff PR; reviewing integration progress. Planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
+- Recorded Q13–Q17: doctor-only manual clinical reports with hidden astronaut content, reusable per-dose prescription QR with expiry/quotas, exceptional all-crew emergency access, readiness deferred, and 1–10 self-reports.
+- Refreshed owner handoffs for the new requirements and reviewed the published Potest bridge (PR #40), zt UI skeleton, and Angelos handoff acknowledgement. No module implementation was changed here.
 - Rechecked the latest published plans/statuses and inventory emergency path for conflicts. Prepared Q13–Q17; no new answer or change to the existing requirements is assumed.
 - Published and merged the explicit teammate/coding-tool handoff in PR #39; verified the main file matches the prepared task brief.
 - Tommy requested publication for the team and their coding tools. Added a start-here workflow, owner/task index (ZT-1, ANG-1/2, DAD-1/2, POT-1/2, PET-1/2), delivery expectations, and a copy/paste coding-tool prompt to [implementation-tasks.md](implementation-tasks.md).
@@ -38,7 +40,7 @@
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
 - The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.
-- Ask Q13–Q17: astronaut report visibility; prescription-package collection versus per-dose retrieval; who can use emergency access relative to ground approval; readiness-score meaning; 0–10 versus 1–5 self-report scale. Keep these open until Tommy answers, then align with the affected owners.
+- Q13–Q17 are recorded; readiness remains open. Coordinate 1–10 versus old 0–10 history, due-dose/QR enforcement, emergency protocol, and doctor-only report routing with the owners. Publish the updated brief and notify the team in its PR.
 - Later clarify entry/biometric flow, report contents/triggers/window and the remaining permission/integration details; common-plan changes require the normal teammate review.
 - Update Now, Done and Next steps after each finished step and include this status in the same push; commit/push before a break.
 - Do not implement UI/application code or edit another member's personal files from this chat unless the authorization and ownership rules allow it.
