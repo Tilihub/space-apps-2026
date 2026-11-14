@@ -10,24 +10,18 @@ Until then, it explains how the team works.
 1. Follow [SETUP.md](SETUP.md) to install the tools and get access.
 2. Open your AI coding tool in this folder and say: **"Read AGENTS.md and do the onboarding."**
 
-## How we work
+## How the repo is organised
 
-- [AGENTS.md](AGENTS.md): the rules every person and every AI tool follows
-- [docs/PLAN.md](docs/PLAN.md): the idea, the split and the timeline, filled in together on Saturday morning
-- [docs/status/](docs/status/): one file per person, with what they're doing and where they left off
-- [docs/decisions/](docs/decisions/): one file per team decision
-- [docs/sources.md](docs/sources.md): every source we use
+Work moves in one direction: `people/` → `integration/` → `final/`, with `shared/` feeding everyone.
 
-## Folders
+| Folder | What goes there | Who edits it |
+|---|---|---|
+| [`people/`](people/) | One folder per person: experiments, drafts, anything, plus their `status.md` | Only that person |
+| [`shared/`](shared/) | Everything for everyone: the [plan](shared/PLAN.md), [decisions](shared/decisions/), [sources](shared/sources.md), research, data, the submission draft | Anyone adds files; ask before changing someone else's |
+| [`integration/`](integration/) | Where pieces get joined, one folder per connection | Whoever is doing that connection |
+| [`final/`](final/) | Only the finished product | Changes only after the team agrees |
 
-| Folder | What goes there |
-|---|---|
-| `app/` | The software |
-| `hardware/` | Microcontroller code, wiring and photos, if we build hardware |
-| `research/` | Health research notes |
-| `submission/` | Draft of the Space Apps project page and the demo |
-| `docs/` | Plan, status, decisions and sources |
-
+The rules every person and every AI tool follows are in [AGENTS.md](AGENTS.md).
 Large files (videos, raw photos) go in the team's shared drive, not here.
 
 ## Use of AI

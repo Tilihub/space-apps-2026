@@ -41,12 +41,12 @@ On the website only one person should edit at a time: another person's edits can
 
 ## Use of AI
 
-<!-- Which AI tools, and how we used them. Compile from the "AI use" sections in docs/status/. -->
+<!-- Which AI tools, and how we used them. Compile from the "AI use" sections in people/*/status.md. -->
 
 ## NASA data
 
-<!-- From docs/sources.md -->
+<!-- From shared/sources.md -->
 
 ## Space agency partner data and other references
 
-<!-- From docs/sources.md -->
+<!-- From shared/sources.md -->
