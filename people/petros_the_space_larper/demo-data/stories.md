@@ -4,10 +4,10 @@ All crew members, health observations, medicine actions, and cabin events below 
 
 | Crew | What the joined demo should show |
 |---|---|
-| `c1` Mara Quinn | Usual values. Use the day-42 input in [scenarios.json](scenarios.json) to show a check-in with no demo changes. |
-| `c2` Leo Haddad | Usual personal readings. In the medical officer view, review Tomas's symptoms, measurements and cabin context. |
-| `c3` Ines Sato | A complete baseline and missing values in recent history. On day 42 the resting pulse, fatigue answer and SpO₂ are unavailable. Show the gaps while comparing the available values. |
-| `c4` Tomas Reyes | Sleep, mood, stress and fatigue change on days 40 and 41. On day 42, enter 5.5 h sleep, mood 4, stress 7 and fatigue 7, plus the spot readings in the fixture. The daily result records a third day of changes. Tomas reports a headache at severity 6. Leo sees a synthetic CO₂ warning that began overnight. The two observations provide context for review. |
+| `c1` Mara Quinn | Healthy workout case. Days 29–41 stay within 52–55 bpm resting pulse, 6.6–7.0 h sleep and steady self-reports. The day-42 input produces no demo changes. |
+| `c2` Leo Haddad | Usual personal readings. In the medical officer view, review Tomas's short sleep and headache, Ines's mood trend and the other stage events. |
+| `c3` Ines Sato | Mood moves from a reference of 7 to 6, 5, 5, 5, 4 and 4 on days 36–41. Resting pulse alone is missing on days 39 and 41. Day 42 mood 4 completes six consecutive changed days; stress 5 completes three. Journal and companion content stay private. |
+| `c4` Tomas Reyes | Sleep falls from a 6.8 h reference to 5.0, 4.8 and live 4.6 h on days 40–42. Resting pulse and self-reports remain close enough to reference that only sleep is flagged for three days. Tomas reports a headache at severity 5. The joined case uses Potest's separate historical ISS RR-9 CO₂ replay, recovered by 07:00. |
 | `c5` Kai Lindqvist | Usual readings with a distinct personal baseline. |
 
-The existing proposed meds flow can use Tomas's headache input and the module's demo catalogue. Leo may review a separate prescription request under the meds contract. If the team runs the later outage scenario, Leo creates the clinical report and the authorized queue retains it through reconnection. The demonstration report uses the symptom form, measurements and cabin snapshot. Private journal text and derived details stay within the authorized journal context.
+The existing meds flow can use Tomas's headache input and the module's demo catalogue. Leo may review a separate prescription request under the meds contract. If the team runs the later outage scenario, Leo creates the clinical report and the authorized queue retains it through reconnection. The demonstration report combines health and symptom records with the environment module's independently sourced replay. Private journal text and derived details stay within the authorized journal context.

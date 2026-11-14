@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:37 (Europe/Athens)
-- Working on: Workout plan, page controller and stage replay handoff to the UI team.
-- Branch: petros_the_space_larper/workout-program
+- Last updated: 2026-11-14 18:41 (Europe/Athens)
+- Working on: Aligning PET-1 source fixtures with the accepted stage cases and Angelos's data review.
+- Branch: petros_the_space_larper/align-stage-data
 
 ## Done
 
@@ -36,6 +36,7 @@
 - PET-2: Drafted the [exact wellbeing prompts and anchors](demo-data/wellbeing-form.md) and aligned the Mars scope with Tommy's 1–10 scale, journal permissions and doctor-only clinical report access.
 - PET-1 and PET-2 handoff merged in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51).
 - Added the [workout handoff](demo-data/WORKOUT.md), including the published SPRINT week, an ISS-style seven-day plan, a controller for step-by-step workouts and a synthetic stage pulse replay. Verified the controller against Angelos's workout endpoint.
+- Read Angelos's [PET-1 data review](../angelos/health/DATA_REVIEW.md) and aligned the canonical source fixture with zt's stage cases: c1 workout ranges, c3 six-day mood trend with pulse-only gaps, and c4's 6.8 h sleep reference with sleep as the only day-42 flag. Removed the duplicate synthetic cabin snapshot so the joined case uses Potest's separate ISS RR-9 replay.
 
 ## Blocked / need from others
 
@@ -55,5 +56,5 @@
 - Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
 - Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
-- Use `demo-data/health.json` at reset. Replay the [day-42 cases](demo-data/scenarios.json) from fresh resets after the health module is connected, then check the clinical and journal role boundaries.
+- Use `demo-data/health.json` at reset. Replay the [stage-aligned day-42 cases](demo-data/scenarios.json) from fresh resets after the health module is connected, then check c1 no-change, c3 mood/stress persistence, c4 sleep-only persistence, and the clinical and journal role boundaries.
 - In the workout screen, import `/demo-data/workout-session.js`, pass the mission clock and the logged-in health client, then map the buttons and current step as shown in [WORKOUT.md](demo-data/WORKOUT.md). Run the scene B push-up replay to confirm the saved summary and the synthetic source label.

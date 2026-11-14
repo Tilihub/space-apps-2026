@@ -4,27 +4,22 @@
   "scope": "PET-1 scenario inputs and expected results",
   "cases": {
     "c1": {
-      "checkInBody": {"sleepHours": 7.8, "restingHeartRateBpm": 61, "mood": 8, "stress": 3, "fatigue": 3},
+      "checkInBody": {"sleepHours": 6.8, "restingHeartRateBpm": 54, "mood": 8, "stress": 2, "fatigue": 2},
       "expectedChangedMeasures": [],
       "expectedMissingComparedMeasures": []
     },
     "c3": {
-      "checkInBody": {"sleepHours": 7.5, "restingHeartRateBpm": null, "mood": 7, "stress": 4, "fatigue": null, "spo2Pct": null},
-      "expectedChangedMeasures": [],
-      "expectedMissingComparedMeasures": ["restingHeartRateBpm", "fatigue"]
+      "checkInBody": {"sleepHours": 6.8, "restingHeartRateBpm": 65, "mood": 4, "stress": 5, "fatigue": 3},
+      "expectedChangedMeasures": ["mood", "stress"],
+      "expectedMissingComparedMeasures": [],
+      "expectedDaysInARowByMeasure": {"mood": 6, "stress": 3}
     },
     "c4": {
-      "checkInBody": {"sleepHours": 5.5, "restingHeartRateBpm": 77, "mood": 4, "stress": 7, "fatigue": 7, "spo2Pct": 98, "systolicMmHg": 119, "diastolicMmHg": 76, "temperatureC": 36.8},
-      "expectedChangedMeasures": ["sleepHours", "restingHeartRateBpm", "mood", "stress", "fatigue"],
+      "checkInBody": {"sleepHours": 4.6, "restingHeartRateBpm": 63, "mood": 6, "stress": 4, "fatigue": 4, "spo2Pct": 98, "systolicMmHg": 119, "diastolicMmHg": 76, "temperatureC": 36.8},
+      "expectedChangedMeasures": ["sleepHours"],
       "expectedMissingComparedMeasures": [],
       "expectedDaysInARow": 3,
-      "symptomReportBody": {"symptoms": [{"code": "headache", "severity": 6}], "note": "Headache since waking.", "vitals": {"spo2Pct": 98, "temperatureC": 36.8}},
-      "cabinSnapshot": {
-        "at": "2026-11-14T07:30:00.000Z",
-        "source": {"dataset": "pet-1-demo-cabin", "label": "Synthetic Mars transit cabin", "kind": "synthetic", "sourceTime": null},
-        "readings": [{"metric": "co2", "value": 3620, "unit": "ppm", "state": "warning", "measuredAt": "2026-11-14T07:25:00.000Z"}],
-        "openAlerts": [{"id": "alr_pet1_co2_day42", "metric": "co2", "level": "warning", "openedAt": "2026-11-14T02:00:00.000Z"}]
-      }
+      "symptomReportBody": {"symptoms": [{"code": "headache", "severity": 5}], "note": "Headache since waking.", "vitals": {"spo2Pct": 98, "temperatureC": 36.8}}
     }
   }
 }
