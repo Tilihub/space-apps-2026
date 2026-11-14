@@ -41,7 +41,7 @@ On the website only one person should edit at a time: another person's edits can
 
 ## Use of AI
 
-<!-- Which AI tools, and how we used them. Compile from the "AI use" sections in people/*/status.md. -->
+<!-- Which AI tools, and how we used them. -->
 
 ## NASA data
 
