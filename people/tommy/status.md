@@ -8,13 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:01
+- Last updated: 2026-11-14 14:02
 - Working on: Clarifying product requirements with Tommy for zt's implementation; planning documents only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #30 with Tommy's clarified Mars-demo brief; only his plan and status are included.
+- Published and merged the clarified Mars-demo brief in PR #30; zt can read the updated personal plan on main.
 - Completed onboarding with a repository-local GitHub noreply email.
 - Withdrew the UI prototype: PR #20 closed without merging and its remote branch deleted. No UI code is being produced in this chat.
 - Published the initial concepts plan in PR #24 and reviewed the team's statuses, newer branches, and module handoff proposals.
@@ -31,7 +31,7 @@
 
 ## Next steps
 
-- Continue from `tommy/concepts-plan` and `people/tommy/plan.md`; publish the clarified brief for zt.
+- Continue from `tommy/concepts-plan` and `people/tommy/plan.md`; the clarified brief is published for zt.
 - Ask small, concrete question sets: first integration ownership, inventory approvals, Earth connectivity/data sharing, and journal access; then summary fields, check-ins, and mascot behavior.
 - Record answers in the personal plan, keeping undecided points explicit. Update Now, Done, and Next steps in this status with every finished step and include it in the same push.
 - Do not create UI/application code unless Tommy explicitly changes the planning-only agreement. Before a break, update this status, commit, and push.
