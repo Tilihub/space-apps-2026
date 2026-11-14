@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 13:51
-- Working on: Current NASA astronaut data collection handoff
+- Working on: Current NASA astronaut data collection handoff in [PR #29](https://github.com/Tilihub/space-apps-2026/pull/29)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
