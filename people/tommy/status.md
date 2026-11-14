@@ -8,30 +8,31 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:01
-- Working on: Clarifying product requirements with Tommy for zt's implementation; planning documents only.
+- Last updated: 2026-11-14 14:13
+- Working on: Documenting Tommy's integration, reporting, authorization, privacy, and onboard-storage requirements; planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #30 with Tommy's clarified Mars-demo brief; only his plan and status are included.
+- Opened PR #33 with the reporting, authorization, privacy, and onboard-storage brief.
 - Completed onboarding with a repository-local GitHub noreply email.
-- Withdrew the UI prototype: PR #20 closed without merging and its remote branch deleted. No UI code is being produced in this chat.
-- Published the initial concepts plan in PR #24 and reviewed the team's statuses, newer branches, and module handoff proposals.
-- Recorded Tommy's answers to questions 1–4: Mars transit; astronaut, onboard doctor/surgeon, and Earth specialist roles; daily-summary home screen with a persistent clickable mascot; the five first-demo areas; deferred gamification.
-- Recorded Tommy's intended assignment of mascot conversational preparation/training to Angelos, without claiming that training is complete.
-- Read zt's updated status and team-jobs record; zt acknowledges the UI brief and says work has not started pending its open points.
+- Withdrew UI PR #20 and its remote branch; no UI/application implementation is being produced in this chat.
+- Published the initial concepts in PR #24 and the Mars-demo/home-screen/mascot/scope clarifications in PR #30.
+- Recorded answers 5–9: contributors own their components, Tommy defines conceptual connections, zt handles final application implementation/presentation; some inventory categories need Earth approval by code/QR.
+- Recorded periodic, manually requested, and event-triggered reports; local storage and deferred transmission; journal access limited to the author and a designated specialist.
+- Reviewed dadis2's published inventory source at 683a302. It still has PIN-based per-item approval; the owner's 13:46 status says a newer simpler version is local and not yet pushed. No claim is made that its code/QR flow has been verified.
 
 ## Blocked / need from others
 
-- No blocker to documenting concepts. Integration/authentication ownership remains unanswered (question 5).
-- Onboard versus ground approval rules, Earth transmission timing, journal privacy, and offline behavior need clarification before they become requirements.
-- The exact daily-summary fields and self-report scales still need agreement with their owners. The 1–5 idea and the current 0–10 health-core inputs are not yet aligned.
-- Common-plan adoption and the owners' acceptance of responsibilities remain team decisions; only Tommy's personal documents were changed.
+- No blocker to documenting concepts. Q10: one code/QR's compartment scope (authorized set or whole cabinet) remains ambiguous.
+- Q11: the designated specialist's identity, and Q12: chatbot access to private journal entries, need explicit answers.
+- The next technical agreements include inventory category rules, report interval/triggers/history window/content, synchronization, authentication, summary fields, and self-report scales.
+- Compare against dadis2's newer implementation once he publishes it. Only Tommy's personal documents are changed here.
 
 ## Next steps
 
-- Continue from `tommy/concepts-plan` and `people/tommy/plan.md`; publish the clarified brief for zt.
-- Ask small, concrete question sets: first integration ownership, inventory approvals, Earth connectivity/data sharing, and journal access; then summary fields, check-ins, and mascot behavior.
-- Record answers in the personal plan, keeping undecided points explicit. Update Now, Done, and Next steps in this status with every finished step and include it in the same push.
-- Do not create UI/application code unless Tommy explicitly changes the planning-only agreement. Before a break, update this status, commit, and push.
+- Continue on `tommy/concepts-plan` using `people/tommy/plan.md` and publish this brief for zt.
+- Ask Q10–Q12 in simple terms before treating compartment grants or journal/chatbot permissions as settled requirements.
+- Then clarify report behavior, daily-summary content, wellbeing fields/scales, and the basic companion interaction.
+- Update Now, Done, and Next steps after each finished step and include this status in the same push. Before a break, commit and push.
+- Keep this chat focused on concepts and notes; do not implement UI/application code unless Tommy explicitly changes the agreement.
