@@ -142,7 +142,7 @@
         qty: r.qty,
         reason: r.reason,
         tier: item.tier,
-        gate: r.gate || (item.tier === "3" || item.controlled ? "earth" : "cmo"),
+        gate: "cmo",
         status: r.status,
         signatures: (r.signatures || []).map(function (s) {
           return { crewId: s.crewId, role: s.role, time: new Date(now.getTime() - s.minutesAgo * 60000).toISOString() };
@@ -468,9 +468,10 @@
 
   // ---------- authorisation (spec section 4) ----------
 
-  // Returns which gate applies: none | self | standing-order | cmo | earth | break-glass
-  // (team decision 14 Nov: prescription → onboard doctor; controlled → Earth only; standing orders
-  // are grants from Earth issued before launch)
+  // Returns which gate applies: none | self | standing-order | cmo | break-glass
+  // (dadis2's decision, 14 Nov, evening: the onboard doctor can grant everything, controlled
+  // medicines included. Grants from Earth are supplementary, never required. Standing orders are
+  // grants from Earth issued before launch.)
   function gateFor(state, patientId, item, qty, now, safety) {
     if (item.tier === "4") return { type: "break-glass", why: "Emergency item: release immediately, document within 2 hours" };
     if (item.tier === "3") {
@@ -479,7 +480,7 @@
         var taken = recentDoses(state, patientId, 24, now).filter(function (e) { return e.itemId === item.id; }).reduce(function (s, e) { return s + e.qty; }, 0);
         if (taken + qty <= so.maxPerDay && (!safety || safety.result !== "block")) return { type: "standing-order", why: "Standing order: " + so.maxPerDay + " per 24 h. Your PIN, then count check" };
       }
-      return { type: "earth", why: "Controlled medicine (" + (item.controlled || "controlled") + "): only a grant from Earth" };
+      return { type: "cmo", why: "Controlled medicine (" + (item.controlled || "controlled") + "): the CMO grants it; Earth reviews afterwards" };
     }
     if (item.tier === "2") return { type: "cmo", why: "Prescription item: CMO signs" };
     if (item.ownerCrewId && item.ownerCrewId !== patientId) return { type: "cmo", why: "Crew-specific item of another crew member: CMO signs" };
@@ -498,8 +499,10 @@
     if (c.pin !== pin) return "Wrong PIN for " + c.name;
     if (role === "patient" && crewId !== ctx.patientId) return "The patient signs for a standing order or self-care";
     if (role === "approver") {
-      if (crewId === ctx.patientId) return "The approver can't be the patient" + (c.isCMO ? ": the backup CMO signs" : "");
       if (!c.isCMO && !c.isBackupCMO) return c.name + " isn't the CMO or backup CMO";
+      // The CMO may approve their own medicine (no one else on board may have to). It's flagged
+      // and goes to Earth for review afterwards, which never blocks it.
+      if (crewId === ctx.patientId && !c.isCMO) return "The approver can't be the patient";
       if (c.isBackupCMO && !c.isCMO) {
         var cmo = state.crew.filter(function (x) { return x.isCMO; })[0];
         if (cmo && cmo.id !== ctx.patientId && !ctx.cmoUnavailable) return "The backup CMO signs only when the CMO is the patient or unavailable";
@@ -530,7 +533,7 @@
       qty: opts.qty,
       reason: opts.reason || "",
       auth: { type: opts.authType, signedBy: opts.signedBy || [] },
-      groundReview: needsGroundReview(item) ? "pending" : "n/a",
+      groundReview: needsGroundReview(item) || opts.groundReview ? "pending" : "n/a", // Earth reviews afterwards; never blocks
       docsDue: opts.authType === "break-glass" ? new Date(now.getTime() + 2 * HOUR_MS).toISOString() : null,
       documentation: "",
       countCheck: opts.countCheck || null,
@@ -602,8 +605,10 @@
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
   function ymdOf(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
-  // Who may grant what (team decision, 14 Nov): self-care and prescription medicines can be granted by
-  // the onboard doctor or Earth; controlled medicines only by Earth; emergency items never (break-glass).
+  // Who may grant what (dadis2's decision, 14 Nov, evening): the onboard doctor can grant every
+  // medicine, controlled ones included, also to themselves (flagged for Earth review, never blocked).
+  // Earth can grant the same medicines, as a supplement, never a requirement. Emergency items are
+  // never granted: they open through the Emergency button.
   function canGrant(state, issuerId, patientId, item) {
     if (!item || item.kind !== "medication") return "Only medicines can be granted.";
     if (item.tier === "4") return item.name + " is an emergency medicine: use the Emergency button.";
@@ -611,8 +616,7 @@
     if (issuerId === EARTH) return null;
     var c = getCrew(state, issuerId);
     if (!c || !(c.isCMO || c.isBackupCMO)) return "Only the onboard doctor or Earth can issue a grant.";
-    if (issuerId === patientId) return "The doctor can't grant medicine to themselves.";
-    if (item.tier === "3" || item.controlled) return item.name + " is controlled: only Earth can grant it.";
+    if (issuerId === patientId && !c.isCMO) return "The backup doctor can't grant medicine to themselves: the CMO does.";
     return null;
   }
 
@@ -672,7 +676,8 @@
     return new Date(start.getFullYear(), start.getMonth(), start.getDate() + days - 1);
   }
 
-  // Checks before a grant is added on a crew member's device: right person, still valid, not already added.
+  // Checks before a grant is added on a crew member's device: right person, still valid, not already
+  // added, and safe together with the person's other active grants (see grantConflicts).
   // A grant can be imported until the last day of its course; after that it has expired.
   function acceptGrant(state, draft, crewId, now) {
     if (draft.patientId !== crewId) {
@@ -681,7 +686,75 @@
     }
     if (now && daysBetween(grantLastDay(draft), now) > 0) return "This grant has expired (its course ended " + ymdOf(grantLastDay(draft)) + ").";
     if (state.grants.some(function (g) { return g.code === draft.code; })) return "Already added.";
+    if (now) {
+      var cf = grantConflicts(state, draft, now);
+      if (cf.error) return cf.error;
+    }
     return null;
+  }
+
+  // ---- several grants for one person: never more than one course per medicine ----
+  //
+  // One active course per medicine per crew member. A new grant for a medicine that already has an
+  // active course REPLACES that course (the newest instruction wins, from the doctor or Earth), so
+  // overlapping grants can never add up to a double dose. Different medicines that share an
+  // ingredient (acetaminophen alone and in oxycodone/acetaminophen) are added up per day and refused
+  // if together they go over the ingredient's daily limit. Two different NSAIDs at once are refused.
+
+  function itemLastDay(start, x) {
+    var s = parseDate(start);
+    return new Date(s.getFullYear(), s.getMonth(), s.getDate() + x.days - 1);
+  }
+  function rangesOverlap(aFrom, aTo, bFrom, bTo) { return aFrom <= bTo && bFrom <= aTo; }
+
+  // The person's courses that are still running (not finished, cancelled or replaced)
+  function activeCourses(state, patientId, now) {
+    var out = [];
+    state.grants.forEach(function (g) {
+      if (g.patientId !== patientId || g.status !== "active") return;
+      g.items.forEach(function (x, i) {
+        var st = grantItemStatus(state, g, i, now).state;
+        if (st === "finished" || st === "replaced") return;
+        out.push({ grant: g, idx: i, item: x, from: parseDate(g.start), to: itemLastDay(g.start, x) });
+      });
+    });
+    return out;
+  }
+
+  // Returns { replaces: [{ grantId, grantIdx, itemId, issuerId }], error }
+  function grantConflicts(state, draft, now) {
+    var courses = activeCourses(state, draft.patientId, now), replaces = [];
+    var dFrom = parseDate(draft.start), dTo = grantLastDay(draft);
+    draft.items.forEach(function (x) {
+      courses.forEach(function (c) {
+        if (c.item.itemId === x.itemId && rangesOverlap(dFrom, itemLastDay(draft.start, x), c.from, c.to)) {
+          replaces.push({ grantId: c.grant.id, grantIdx: c.idx, itemId: x.itemId, issuerId: c.grant.issuerId });
+        }
+      });
+    });
+    var others = courses.filter(function (c) {
+      return !replaces.some(function (r) { return r.grantId === c.grant.id && r.grantIdx === c.idx; }) && rangesOverlap(dFrom, dTo, c.from, c.to);
+    });
+    var all = draft.items.concat(others.map(function (c) { return c.item; }));
+    // Ingredients added up per day
+    var totals = {};
+    all.forEach(function (x) {
+      var it = getItem(state, x.itemId);
+      it.ingredients.forEach(function (g) { if (g.mg) totals[g.name] = (totals[g.name] || 0) + g.mg * x.units * x.perDay; });
+    });
+    var names = Object.keys(totals);
+    for (var i = 0; i < names.length; i++) {
+      var lim = state.ingredientLimits[names[i]];
+      if (lim && totals[names[i]] > lim) {
+        return { replaces: replaces, error: "Together with " + (others.length ? "the other active grants" : "this grant's other medicines") + ", " + names[i] + " would be " +
+          totals[names[i]] + " mg a day, over the " + lim + " mg limit." };
+      }
+    }
+    // Two different NSAIDs at the same time
+    var nsaids = all.map(function (x) { return getItem(state, x.itemId); }).filter(function (it) { return it.classes.indexOf("NSAID") >= 0; });
+    var distinct = nsaids.filter(function (it, k) { return nsaids.map(function (n) { return n.id; }).indexOf(it.id) === k; });
+    if (distinct.length > 1) return { replaces: replaces, error: distinct[0].name + " and " + distinct[1].name + " are both NSAIDs: not at the same time." };
+    return { replaces: replaces, error: null };
   }
 
   // Cancel a grant: nothing more opens under it. Kept in the list so the log still makes sense.
@@ -700,12 +773,20 @@
     return null;
   }
 
+  // Adds the grant. Any running course of the same medicine is replaced by this one (see above).
+  // A grant the CMO gives themselves is flagged selfGranted (Earth reviews it afterwards).
   function addGrant(state, draft, now) {
+    var cf = grantConflicts(state, draft, now);
     var g = {
       id: "G" + state.seq++, code: draft.code, issuerId: draft.issuerId, patientId: draft.patientId, start: draft.start,
-      items: draft.items, verification: draft.verification || "simulated", senderVerified: false, addedAt: now.toISOString(),
-      status: "active", requestId: draft.requestId || null
+      items: JSON.parse(JSON.stringify(draft.items)), verification: draft.verification || "simulated", senderVerified: false,
+      addedAt: now.toISOString(), status: "active", requestId: draft.requestId || null,
+      selfGranted: draft.issuerId === draft.patientId, replaced: cf.replaces
     };
+    cf.replaces.forEach(function (r) {
+      var old = getGrant(state, r.grantId);
+      if (old && old.items[r.grantIdx]) { old.items[r.grantIdx].replacedBy = g.id; old.items[r.grantIdx].replacedAt = now.toISOString(); }
+    });
     state.grants.unshift(g);
     return g;
   }
@@ -732,6 +813,7 @@
       day: day, days: x.days, total: x.perDay * x.days, taken: entries.length, slots: slots, nextHour: null, slot: null,
       today: entries.filter(function (e) { return todayKeys.indexOf(e.slot) >= 0; }).length
     };
+    if (x.replacedBy) { s.state = "replaced"; return s; }
     if (day < 1) { s.state = "not-started"; return s; }
     if (day > x.days || s.taken >= s.total) { s.state = "finished"; return s; }
     var h = now.getHours();
@@ -760,8 +842,9 @@
     return out;
   }
 
+  // Finished: every medicine is done or replaced by a newer grant
   function grantFinished(state, grant, now) {
-    return grant.items.every(function (x, i) { return grantItemStatus(state, grant, i, now).state === "finished"; });
+    return grant.items.every(function (x, i) { var st = grantItemStatus(state, grant, i, now).state; return st === "finished" || st === "replaced"; });
   }
 
   // ---------- validation of incoming reports ----------
@@ -791,6 +874,6 @@
     gateFor: gateFor, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
     dispense: dispense, alerts: alerts, validateReport: validateReport,
     EARTH: EARTH, canGrant: canGrant, encodeGrant: encodeGrant, decodeGrant: decodeGrant, acceptGrant: acceptGrant, addGrant: addGrant,
-    getGrant: getGrant, grantLastDay: grantLastDay, revokeGrant: revokeGrant, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
+    getGrant: getGrant, grantLastDay: grantLastDay, revokeGrant: revokeGrant, grantConflicts: grantConflicts, activeCourses: activeCourses, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
   };
 })(window);

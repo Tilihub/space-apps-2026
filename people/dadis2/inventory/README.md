@@ -28,7 +28,7 @@ No install or build. Open `index.html` in a browser (double-click it).
   `index.html?user=c2` for Leo, the CMO, who also gets the Stock, Approvals and Log tabs.
 - Demo state is saved in your own browser only. "Reset demo" at the bottom puts everything back.
 
-**Checks:** open `tests.html`. All 28 checks should say PASS.
+**Checks:** open `tests.html`. All 36 checks should say PASS.
 
 **Earth side:** open `earth.html`, the flight surgeon's tool. Choose a crew member and medicines to
 get the grant code and its QR image. "Open on …'s device (demo)" opens it in the crew app, ready to add.
@@ -81,12 +81,12 @@ your phone's camera at the QR in `earth.html`. It should show exactly the code u
    **Collect now (2 bins)** → locker 2 · top · bin 7 and locker 1 · middle · bin 4 light up together,
    locker 3 stays dim → **Demo: scan a box not in this grant** (refused) → **Scan** twice → Collected.
    The card now shows the next dose time.
-4. Tap Promethazine (red) → **Ask the CMO**. Tap Zolpidem → **Ask Earth** (controlled).
-   Open `?user=c2` → Approvals:
-   - promethazine: choose a course, sign with PIN `2222` → **Grant**
-   - zolpidem: under "Waiting for Earth" → **Demo: Earth grants it**
-
-   Back on `?user=c4`: two grant cards → **Collect now** (zolpidem asks for a count).
+4. Tap Promethazine (red) → **Ask the CMO**. Tap Zolpidem (controlled) → **Ask the CMO** too: nothing
+   waits for Earth. Open `?user=c2` → Approvals → for each, choose a course, sign as Leo with PIN `2222`
+   → **Grant**. Back on `?user=c4`: two grant cards → **Collect now** (zolpidem asks for a count).
+4a. **No double doses:** grant ondansetron to Tomas again (from Leo, or a new code from `earth.html`).
+   The preview says "Replaces Ondansetron …", the older card shows "Replaced", and only one
+   ondansetron dose is ever due.
    On `?user=c2` → Approvals → Active grants: **Show QR** and **Cancel grant** (two taps). Tomas then
    sees "Cancelled".
 4b. **Earth side:** open `earth.html` → pick Tomas and medicines → the code and QR appear →

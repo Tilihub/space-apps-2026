@@ -165,6 +165,7 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .plan-next { font-weight: 700; color: var(--muted); white-space: nowrap; }
 .plan-next.ok { color: var(--ok); }
 .plan-next.due { color: var(--accent); }
+.plan-next.hold { color: var(--warn); }
 .code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
 .qr-box { background: #fff; border-radius: 10px; padding: 8px; width: min(240px, 100%); margin-top: 10px; border: 1px solid var(--line); }
 .qr-box svg { display: block; width: 100%; height: auto; }

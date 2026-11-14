@@ -13,16 +13,37 @@ the **onboard doctor** or from a **flight surgeon on Earth**.
 - **Collection is dose by dose.** At each dose time, every compartment of the grant that has a dose
   due opens **together**. The crew member scans each box, and each one is recorded once. Missed
   dose times are not added up, so there's never a double dose.
-- **Who may grant what** (team decision, 14 Nov):
+- **Who may grant what** (dadis2's decision, 14 Nov, evening: the onboard doctor has unrestricted
+  access, and Earth is supplementary, never a requirement):
 
-| Category | Onboard doctor (CMO, or backup when the CMO is the patient or unavailable) | Earth |
+| Category | Onboard doctor (CMO, or backup when the CMO is unavailable) | Earth |
 |---|---|---|
-| Self-care (white, grey) | Yes | Yes |
-| Prescription (purple, brown) | Yes | Yes |
-| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **No** | Yes |
+| Self-care (white, grey) | Yes | Yes, optional |
+| Prescription (purple, brown) | Yes | Yes, optional |
+| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **Yes.** Earth reviews it afterwards; this never blocks it | Yes, optional |
 | Emergency (red) | Never by grant: Emergency button (break-glass) | Never by grant |
 
-Standing orders are treated as grants from Earth issued before launch.
+- **The CMO for themselves:** the CMO may grant medicine to themselves. It's flagged
+  `selfGranted: true`, and every dose goes to ground review, which never blocks it. The backup doctor
+  can't grant to themselves.
+- **Requests:** every request goes to the onboard doctor. None waits for Earth.
+- **Standing orders** are treated as grants from Earth issued before launch.
+
+## 1a. Several grants for one person: never a double dose
+
+- **One course per medicine per crew member.** A new grant (from the doctor or Earth) for a medicine
+  that already has a running course **replaces** that course: the newest instruction wins. The old
+  item is marked `replacedBy: <new grant id>` and never opens again. The import preview and the CMO
+  both see "Replaces …", and the crew member's card shows "Replaced".
+- **Ingredients are added up across grants.** Different medicines with a shared ingredient (for
+  example acetaminophen alone and in oxycodone/acetaminophen) are added up per day. A grant that
+  would push the total over the ingredient's daily limit is refused. Two different NSAIDs at the
+  same time are refused.
+- **At collection time, the 24-hour limits still count every source:** grants, self-care and
+  standing orders. A due dose that would break a limit or clash with an allergy shows its reason
+  instead of "Due now", and doesn't open. The stock reserve never holds back a granted dose.
+- **Functions:** `grantConflicts(state, draft, now)` returns `{ replaces, error }`. `acceptGrant`
+  refuses on `error`, and `addGrant` applies `replaces`.
 
 ## 2. The code
 
@@ -51,6 +72,8 @@ RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW
   - a grant for another crew member (on this device)
   - a grant already added
   - an expired grant (see section 2a)
+  - a grant that would go over an ingredient's daily limit together with other grants, or add a
+    second NSAID (section 1a)
 
 ## 2a. Identity, validity, reuse, cancelling and verification
 
@@ -176,7 +199,9 @@ when the box is scanned.
 
 ## 7. Checks
 
-Open `tests.html` in a browser: 28 checks, all passing (14 Nov 2026). They cover:
+Open `tests.html` in a browser: 36 checks, all passing (14 Nov 2026). They cover:
+- who may grant what, including controlled medicines by the onboard doctor and the CMO's self-grant
+- one course per medicine (replacing), adding up ingredients across grants, and two NSAIDs
 - the code format
 - who may grant what
 - binding to the right person, once

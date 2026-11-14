@@ -59,7 +59,8 @@
         '<button class="btn small" data-act="remove" data-i="' + i + '" aria-label="Remove this medicine"' + (form.rows.length === 1 ? " disabled" : "") + ">✕</button></div>";
     });
     html += '<div class="actions"><button class="btn" data-act="add">+ Add medicine</button></div>' +
-      '<p class="hint">Earth can grant self-care, prescription and controlled medicines. Emergency items are never granted. ' +
+      '<p class="hint">Earth grants are optional extras: the onboard doctor can grant all of these too. A grant for a medicine that ' +
+      "already has a course replaces it on the crew device (one course per medicine). Emergency items are never granted. " +
       "Dose times: once 08:00 · twice 08/20 · 3 times 08/14/20 · 4 times 08/12/16/20.</p>";
     return html;
   }

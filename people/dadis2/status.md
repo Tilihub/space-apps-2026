@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:29
-- Working on: nothing open. DAD-1 and DAD-2 are done and merged into main: PRs #34, #44 (merged by
-  the project lead) and #53 (merged by me, no conflicts): https://github.com/Tilihub/space-apps-2026/pull/53
-- Branch: dadis2/ground-grants (merged)
+- Last updated: 2026-11-14 17:46
+- Working on: grant safety fixes in the prototype, pushed on `dadis2/grant-safety` (no PR yet).
+  DAD-1 and DAD-2 are merged into main (#34, #44, #53).
+- Branch: dadis2/grant-safety
 
 ## Done
 
@@ -37,7 +37,24 @@
   - Contract updated: `inventory/CONTRACT.md` (sections 2a and 2b). Checks: `inventory/tests.html`,
     28 of 28 pass. Tested end to end in a browser.
 
+- **Grant safety fixes** (branch `dadis2/grant-safety`), my decisions of 14 Nov, evening:
+  - No double doses: one course per medicine per crew member. A newer grant (doctor or Earth)
+    replaces the running course, ingredients are added up across grants (daily limits), and two
+    NSAIDs at once are refused. A due dose that a safety check holds back shows why on the card.
+  - The onboard doctor has unrestricted access: they can grant controlled medicines too, and the CMO
+    can grant to themselves (flagged, Earth reviews afterwards). Earth grants are supplementary,
+    never required; the "Ask Earth" path is gone.
+  - Checks: `inventory/tests.html`, 36 of 36 pass. Tested in the browser.
+
 ## Blocked / need from others
+
+- **zt (contract owner) and Tommy:** `shared/contract/` still says controlled medicines need Earth
+  (`MED_TIERS.controlled.approval = 'earth'`, `needs_earth`, `waiting_earth`, "when Leo is the
+  patient, approvals go to Earth"), and Tommy's `inventory-scope-proposal.md` says not to replace
+  required Earth approval. My decision now: the medical officer can approve everything, Earth is
+  optional. The contract needs a pull request a teammate approves; to agree at the table.
+- **zt:** the contract gives me wave 1 of the `meds` module (`people/dadis2/meds/`, Node.js, no
+  screens, `npm test`), planned before we leave Saturday. Not started yet.
 
 - zt: confirm the grant contract (`inventory/CONTRACT.md`) and the placeholders it uses for now:
   crew ids `c1`–`c4`, device local time as mission time, symptom report format (`spec.md` §8).

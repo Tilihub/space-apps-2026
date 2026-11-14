@@ -366,24 +366,27 @@
           '<div class="hc-actions"><button class="link" data-act="grant-seen" data-id="' + p.id + '">OK</button></div></div>';
       }
       var sts = p.items.map(function (x, i) { return L.grantItemStatus(state, p, i, t); });
-      if (sts.every(function (s) { return s.state === "finished"; })) {
+      if (sts.every(function (s) { return s.state === "replaced"; })) return ""; // fully replaced by a newer grant
+      if (sts.every(function (s) { return s.state === "finished" || s.state === "replaced"; })) {
         if (p.doneSeen) return "";
         return '<div class="hcard plan"><div class="hc-kicker">' + issuerLabel(p) + '</div><div class="hc-title">Course complete</div>' +
           '<div class="hc-actions"><button class="link" data-act="grant-seen" data-id="' + p.id + '">OK</button></div></div>';
       }
-      var total = 0, taken = 0, maxDays = 0, due = L.grantDue(state, p, t);
-      sts.forEach(function (s) { total += s.total; taken += Math.min(s.taken, s.total); maxDays = Math.max(maxDays, s.days); });
+      var total = 0, taken = 0, maxDays = 0, due = collectable(p, t);
+      sts.forEach(function (s) { if (s.state !== "replaced") { total += s.total; taken += Math.min(s.taken, s.total); maxDays = Math.max(maxDays, s.days); } });
       var day = sts[0].day;
       var html = '<div class="hcard plan"><div class="hc-kicker">' + issuerLabel(p) + " · " + (day < 1 ? "starts " + esc(fmtShort(p.start)) : "day " + Math.min(day, maxDays) + " of " + maxDays) +
         "</div>";
       p.items.forEach(function (x, i) {
-        var it = L.getItem(state, x.itemId), s = sts[i], action;
-        if (s.state === "due") action = '<span class="plan-next due">Due now</span>';
+        var it = L.getItem(state, x.itemId), s = sts[i], action, hold = s.state === "due" ? doseHold(it, x.units, t) : "";
+        if (s.state === "replaced") action = '<span class="plan-next">Replaced</span>';
+        else if (hold) action = '<span class="plan-next hold">' + esc(hold) + "</span>";
+        else if (s.state === "due") action = '<span class="plan-next due">Due now</span>';
         else if (s.state === "later") action = '<span class="plan-next">Next ' + pad(s.nextHour) + ":00</span>";
         else if (s.state === "done-today") action = '<span class="plan-next ok">✓ Today</span>';
         else if (s.state === "finished") action = '<span class="plan-next ok">✓ Done</span>';
         else action = '<span class="plan-next">' + esc(fmtShort(p.start)) + "</span>";
-        var dots = s.state === "finished" || s.state === "not-started" ? "" : '<span class="dots">' + s.slots.map(function (h, k) {
+        var dots = s.state === "finished" || s.state === "not-started" || s.state === "replaced" ? "" : '<span class="dots">' + s.slots.map(function (h, k) {
           return '<i class="' + (k < s.today ? "on" : "") + '" title="' + pad(h) + ':00"></i>';
         }).join("") + "</span>";
         html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b><div class="muted small">' + esc(doseText(it, x.units)) + " · " + esc(timesADay(x.perDay)) + " · " +
@@ -396,6 +399,19 @@
       }
       return html + "</div>";
     }).join("");
+  }
+
+  // A due dose that safety checks hold back (allergy, daily limit counting every source, too close to
+  // another dose). Shown on the card instead of "Due now"; the stock reserve never holds a granted dose.
+  function doseHold(it, units, t) {
+    var sf = L.safetyChecks(state, me, it, units, t);
+    var hard = sf.checks.filter(function (c) { return c.result === "block" && c.name !== "Stock and reserve"; });
+    if (hard.length) return blockReason({ checks: hard });
+    if (!sf.lot && !L.pickLot(state, it, units, t).lot) return "None left";
+    return "";
+  }
+  function collectable(g, t) {
+    return L.grantDue(state, g, t).filter(function (d) { return !doseHold(L.getItem(state, d.itemId), d.units, t); });
   }
 
   // Requests that are still waiting. Once granted, the grant card takes over.
@@ -495,7 +511,7 @@
 
   function askCmo(itemId, reportId) {
     var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
-    var gateType = o.needsCmo ? o.gate.type : (it.tier === "3" || it.controlled ? "earth" : "cmo");
+    var gateType = "cmo"; // every request goes to the onboard doctor; Earth is never required
     state.requests.unshift({
       id: "R" + state.seq++, time: t.toISOString(), patientId: me, itemId: it.id, qty: o.qty, reason: reasonFrom(reportId),
       tier: it.tier, gate: gateType, status: "pending", signatures: []
@@ -504,7 +520,7 @@
     ui.screen = "main";
     ui.pick = null;
     save();
-    toast(gateType === "earth" ? "Sent to Earth" : "Sent to the CMO");
+    toast("Sent to the CMO");
   }
 
   // ---------- collecting under a grant: all due bins open together, dose by dose ----------
@@ -566,7 +582,7 @@
     var g = L.getGrant(state, f.grantId);
     x.entry = L.dispense(state, {
       patientId: me, itemId: x.itemId, lotId: lot.id, qty: x.units, reason: g.issuerId === L.EARTH ? "Grant from Earth" : "Grant from the onboard doctor",
-      authType: "grant", signedBy: [g.issuerId], grantId: g.id, grantIdx: x.grantIdx, slot: x.slot
+      authType: "grant", signedBy: [g.issuerId], grantId: g.id, grantIdx: x.grantIdx, slot: x.slot, groundReview: !!g.selfGranted
     }, t);
     x.done = true;
     f.error = "";
@@ -805,6 +821,11 @@
         var it = L.getItem(state, x.itemId);
         html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="muted small">' + esc(doseText(it, x.units)) +
           " · " + esc(timesADay(x.perDay)) + " · " + x.days + (x.days === 1 ? " day" : " days") + "</div></div></div>";
+      });
+      L.grantConflicts(state, p, now()).replaces.forEach(function (r) {
+        var old = L.getGrant(state, r.grantId);
+        html += '<div class="tag warn block">Replaces ' + esc(L.getItem(state, r.itemId).name) + " from " + esc(old ? issuerLabel(old).replace(/^\S+ From /, "") : "an earlier grant") +
+          ": one course per medicine.</div>";
       });
       html += '<div class="hc-sub small">Valid until ' + esc(fmtShort(L.grantLastDay(p))) + " · Sender not verified yet (demo)</div>";
       html += '<div class="hc-actions"><button class="btn primary big" data-act="rx-add">Add</button></div></div>';
@@ -1048,7 +1069,8 @@
   // ---------- approvals (CMO's screen) ----------
 
   function requestGate(r) { return r.gate || (r.tier === "3" ? "earth" : "cmo"); }
-  function approverOptions(patientId) { return state.crew.filter(function (c) { return (c.isCMO || c.isBackupCMO) && c.id !== patientId; }); }
+  // The CMO can approve anyone, themselves included (flagged for Earth review); the backup never themselves
+  function approverOptions(patientId) { return state.crew.filter(function (c) { return c.isCMO || (c.isBackupCMO && c.id !== patientId); }); }
 
   function sigFields(path, label, options, cur, idp) {
     cur = cur || {};
@@ -1082,11 +1104,6 @@
     return html + '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-grant" data-id="' + r.id + '">Grant</button></div></div>';
   }
 
-  function earthRequestCard(r, t) {
-    return '<div class="card">' + requestHead(r, t) + '<div class="muted small">Controlled medicine: only Earth can grant it. It goes with the next report to Earth.</div>' +
-      '<div class="actions"><button class="btn" data-act="earth-reply" data-id="' + r.id + '">Demo: Earth grants it</button></div></div>';
-  }
-
   // One active grant on the CMO's screen: its code, QR on request, and a two-tap Cancel
   function grantRow(g) {
     var confirming = ui.cancelConfirm === g.id, showing = ui.showQr === g.id, qrHtml = "";
@@ -1095,8 +1112,10 @@
     }
     return '<div class="card grant-row"><div class="row-between"><div><b>' + esc(crewName(g.patientId)) + "</b> · " + esc(issuerLabel(g)) + " · " + g.items.map(function (x) {
       var it = L.getItem(state, x.itemId);
-      return esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
-    }).join("; ") + '</div><span class="muted small">until ' + esc(fmtShort(L.grantLastDay(g))) + '</span></div><div class="muted small code">' + esc(g.code) + "</div>" + qrHtml +
+      var line = esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
+      return x.replacedBy ? "<s>" + line + "</s> (replaced)" : line;
+    }).join("; ") + (g.selfGranted ? ' <span class="tag warn">Self-granted · Earth reviews</span>' : "") +
+      '</div><span class="muted small">until ' + esc(fmtShort(L.grantLastDay(g))) + '</span></div><div class="muted small code">' + esc(g.code) + "</div>" + qrHtml +
       '<div class="actions"><button class="btn small" data-act="grant-qr" data-id="' + g.id + '">' + (showing ? "Hide QR" : "Show QR") + "</button>" +
       '<button class="btn small' + (confirming ? " danger" : "") + '" data-act="grant-cancel" data-id="' + g.id + '">' + (confirming ? "Tap again to cancel" : "Cancel grant") + "</button></div></div>";
   }
@@ -1122,10 +1141,6 @@
     if (!a.pending.length) html += '<p class="muted">Nothing waiting.</p>';
     a.pending.forEach(function (r) { html += requestCard(r, t); });
     if (a.pending.length) html += '<p class="hint">Demo PINs: ' + state.crew.map(function (c) { return esc(firstName(c.id)) + " " + c.pin; }).join(", ") + "</p>";
-    if (a.waitingEarth.length) {
-      html += "<h3>Waiting for Earth (" + a.waitingEarth.length + ")</h3>";
-      a.waitingEarth.forEach(function (r) { html += earthRequestCard(r, t); });
-    }
     var active = state.grants.filter(function (g) { return g.status === "active" && !L.grantFinished(state, g, t); });
     if (active.length) {
       html += "<h3>Active grants (" + active.length + ")</h3>";
@@ -1185,15 +1200,8 @@
     r.signatures.push({ crewId: f.crewId, role: L.getCrew(state, f.crewId).isCMO ? "CMO" : "Backup CMO", time: now().toISOString() });
     ui.appr[id] = {};
     save();
-    toast("Granted. " + firstName(r.patientId) + " can collect it now.");
-  }
-
-  // Demo stand-in for Earth answering a controlled-medicine request (DAD-2 builds the real ground side)
-  function earthReply(id) {
-    var r = findRequest(id), res = issueGrant(r, L.EARTH, 1, 1, "simulated");
-    if (res.error) { toast(res.error); return; }
-    save();
-    toast("Earth granted it (demo). " + firstName(r.patientId) + " can collect it.");
+    var rep = res.grant.replaced.length ? " It replaces the earlier " + L.getItem(state, r.itemId).name + " course." : "";
+    toast("Granted. " + firstName(r.patientId) + " can collect it now." + rep + (res.grant.selfGranted ? " Self-granted: Earth reviews it." : ""));
   }
 
   // ---------- dose log (CMO) ----------
@@ -1380,7 +1388,7 @@
     "locker-clear": function () { ui.lockerFocus = null; },
     "filter-flag": function (d) { ui.filters.flag = ui.filters.flag === d.flag ? "" : d.flag; },
     "clear-filters": function () { ui.filters = { q: "", pack: "", tier: "", flag: "" }; },
-    "appr-grant": function (d) { grantRequest(d.id); }, "earth-reply": function (d) { earthReply(d.id); },
+    "appr-grant": function (d) { grantRequest(d.id); },
     "appr-deny": function (d) { findRequest(d.id).status = "denied"; save(); toast("Denied"); },
     "report-seen": function (d) { var r = state.reports.filter(function (x) { return x.id === d.id; })[0]; if (r) r.cmoSeen = true; save(); },
     "doc-save": function (d) {
