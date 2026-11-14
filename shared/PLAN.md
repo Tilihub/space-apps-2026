@@ -50,7 +50,7 @@ Proposed times; change them on Saturday morning:
 | Sat before leaving | Everyone updates their status file and pushes |
 | Sun, start of day | Check-in: read the status files, re-plan the day |
 | Sun 14:00 | Feature freeze: only fixes, polish and the demo from here on |
-| Sun 14:00–19:00 | Record the demo, finish the project page |
+| Sun 14:00–19:00 | Rehearse the 7-minute live demo, make the slides, finish the project page |
 | Sun 19:00 | Submit for judging (it can still be updated until 23:59) |
 
 If the Local Event has its own judging or presentation slot, add it here.
