@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:53 (Asia/Nicosia)
-- Working on: Verified stage data and ready-to-copy owner instructions delivered through PR #65; see health/TEAM_NEXT_STEPS.md. All 51 root checks pass.
-- Branch: angelos/verify-stage-data
+- Last updated: 2026-11-14 19:06 (Asia/Nicosia)
+- Working on: Connection audit at main 050422b: source #64 merged, 70 root checks pass, and Potest's 3 pending companion checks independently pass. Common core/pages remain unbuilt.
+- Branch: angelos/connection-audit
 
 ## Done
 
@@ -165,9 +165,11 @@
 
 ## Blocked / need from others
 
-- Stage-data correction is verified at Petros commit 1b736f5 (PR #64), not yet
-  merged into main 0a3204e at this check. Petros merges his source; zt initializes
-  a fresh demo store or explicitly resets at DEMO_START to adopt the new reference.
+<!-- Latest audit details are in health/CONNECTION_CHECK.md. -->
+
+- Petros PR #64 is now merged into main 050422b. zt initializes a fresh demo store
+  or explicitly resets at DEMO_START to adopt its reference. The source blocker
+  is resolved; existing user sessions were not reset during verification.
 - No remaining local health feature blocker. zt owns the joined server and pages;
   neither is on main yet. The client/module HTTP boundary is tested; the real
   page save/reload path still needs verification after composition.
@@ -181,6 +183,12 @@
 
 ## Next steps
 
+- Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
+  main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
+  an isolated checkout. PR #55 remains open, and integration/onboard-app/ is absent.
+- Potest merges his adapted companion; zt builds/mounts the core and pages, then
+  run the published browser checklist together. Preserve sleep duration in hours:
+  the UI-look prototype's separate 1-10 sleep quality is not sleepHours.
 - No new local health feature is needed for the corrected source. New pinned
   stage-data tests cover actual app submission, expected medians/streaks,
   baseline/person isolation, role refusals and reset. All 51 root checks pass:

@@ -1,5 +1,9 @@
 # Ready-to-use owner instructions: adopt the verified health component
 
+Latest verification: [CONNECTION_CHECK.md](CONNECTION_CHECK.md). Petros #64 is
+now merged; main's 70 checks and Potest's 3 pending companion checks pass. The
+common core/pages and merging companion PR #55 remain the next integration steps.
+
 Prepared 14 November 2026 at main `0a3204e`. This is the handoff for connecting
 the health component, not a replacement for the shared contract or anyone's
 existing work. Before acting, check current branches/PRs and skip completed steps.
