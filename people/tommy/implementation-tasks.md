@@ -2,6 +2,17 @@
 
 Prepared 2026-11-14 from the published work listed below, including zt's new app overview. Tommy requested publication of this handoff so each teammate and their coding tool can read the corresponding task and know what to deliver. These are Tommy's requested next tasks; acceptance by other owners and changes to shared/PLAN.md remain team coordination. No messages were sent to teammates and no other member's files were changed.
 
+## Lean inventory scope refresh
+
+Read [inventory-scope-proposal.md](inventory-scope-proposal.md) before expanding DAD-2 or joining Med bay. Tommy/zt want a smaller user flow and configurable demo catalogue while reusing DAD-1. The supplied alternative has single-use/15-minute and single-compartment assumptions that must not override Tommy’s earlier reusable-course/batch decisions. Physical dispenser engineering and extreme misuse cases are outside the app demo. This is a scope proposal awaiting acceptance, not an instruction to rebuild or delete the existing module.
+
+## Ecosystem review refresh — read first
+
+Visibility follow-up: Tommy also excludes detailed personal-history/weekly-analysis views from the astronaut. zt/Angelos must replace the current crew-token report access with an agreed clinical-role contract; hiding UI alone is insufficient. Basic daily Home fields remain a separate decision. A metered pill dispenser is an investigated option in plan.md, not an assigned hardware build or adopted replacement for DAD-1.
+
+
+See [ecosystem-review.md](ecosystem-review.md) for the latest frozen versions, observed prototypes, actual test results, connection gaps and proposed return-from-break order. ANG-1, DAD-1 and POT-1 are now available for integration review; the historical snapshot below is not a request to rebuild them. The personal weekly-analysis API is distinct from the proposed doctor-only clinical report to Earth.
+
 ## Latest requirements update — read before starting a task
 
 Tommy's answers Q13–Q17 supersede the earlier alternatives below. See [the latest requirements section](plan.md).

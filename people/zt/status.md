@@ -8,10 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14
-- Working on: a clickable UI skeleton ([ui-skeleton/index.html](ui-skeleton/index.html)) so the
-  team can agree what goes where before any styling or real data
-- Branch: zt/ui-skeleton
+- Last updated: 2026-11-14 17:24
+- Working on: the five demo cases for the 7-minute live demo ([demo-cases.md](demo-cases.md))
+- Branch: zt/demo-cases
 
 ## Done
 
@@ -23,12 +22,16 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work
+  from each person's actual work. Last refreshed 2026-11-14 15:54
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
   tablet/laptop ([PR #43](https://github.com/Tilihub/space-apps-2026/pull/43)). Every screen from the overview is there as labelled boxes; one tab per astronaut
   with `?crew=1`, `?crew=2`, `?crew=3`; all fake data in one block at the top of the script
+- Wrote the demo cases in [demo-cases.md](demo-cases.md): one narrator and five crew members, the
+  medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
+  real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
+  from potest's ISS RR-9 replay ([PR #52](https://github.com/Tilihub/space-apps-2026/pull/52))
 
 ## Blocked / need from others
 
@@ -50,3 +53,6 @@
   line to History. It records what people actually do; the agreed split goes in `shared/PLAN.md`.
 - Tommy's plan hands zt the UI, starting with the entry screen, log in, sign up and a basic health
   profile (`people/tommy/plan.md`, "First brief"). Not started; its open points need answers first.
+- Demo cases ([demo-cases.md](demo-cases.md)): go through them with the team and pick new names.
+  Then hand petros the records for `demo-data/` and agree who builds the workout screen and the
+  emergency alarm (minimum builds are in the file). The workout isn't in the app contract yet.

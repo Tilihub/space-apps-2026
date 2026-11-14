@@ -1,0 +1,4 @@
+# Local demo check-ins must never be published with the source.
+local_data/
+*.sqlite3
+*.sqlite3-*
