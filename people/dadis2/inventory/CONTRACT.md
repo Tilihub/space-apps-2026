@@ -13,16 +13,45 @@ the **onboard doctor** or from a **flight surgeon on Earth**.
 - **Collection is dose by dose.** At each dose time, every compartment of the grant that has a dose
   due opens **together**. The crew member scans each box, and each one is recorded once. Missed
   dose times are not added up, so there's never a double dose.
-- **Who may grant what** (team decision, 14 Nov):
+- **Who may grant what** (dadis2's decision, 14 Nov, evening): Earth has the final say on some
+  matters, and **Emergency** is the way out when something truly can't wait, so nothing is ever
+  fully locked. This matches `MED_TIERS` in `shared/contract/`.
 
-| Category | Onboard doctor (CMO, or backup when the CMO is the patient or unavailable) | Earth |
-|---|---|---|
-| Self-care (white, grey) | Yes | Yes |
-| Prescription (purple, brown) | Yes | Yes |
-| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **No** | Yes |
-| Emergency (red) | Never by grant: Emergency button (break-glass) | Never by grant |
+| Category | Onboard doctor (CMO, or backup when the CMO is the patient or unavailable) | Earth | Can't wait? |
+|---|---|---|---|
+| Self-care (white, grey) | Yes | Yes | No approval needed |
+| Prescription (purple, brown) | Yes | Yes | Emergency: "Can't wait for approval", reason required |
+| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **No, Earth decides** | Yes | Emergency: "Can't wait for approval", reason required |
+| Emergency (red) | Never by grant | Never by grant | Emergency button, anyone |
 
-Standing orders are treated as grants from Earth issued before launch.
+- **A doctor never grants to themselves.** When the CMO is the patient, the backup doctor decides
+  (prototype) or Earth (the shared contract has no backup).
+- **Requests:** prescription requests go to the onboard doctor. Controlled requests go to Earth,
+  shown as "Waiting for Earth"; a reply takes about 24 minutes. Both show "Can't wait? Emergency".
+- **Emergency without approval:**
+  - opens the Emergency screen with that medicine ready, under "Can't wait for approval?"
+  - a reason is required
+  - the dose is logged with `approvalBypassed: true` and the reason
+  - the paperwork is due in 2 hours, and Earth reviews it (`groundReview: "pending"`)
+  - controlled medicines still get a count check
+  - any open request for that medicine is closed as `released-emergency`
+- **Standing orders** are treated as grants from Earth issued before launch.
+
+## 1a. Several grants for one person: never a double dose
+
+- **One course per medicine per crew member.** A new grant (from the doctor or Earth) for a medicine
+  that already has a running course **replaces** that course: the newest instruction wins. The old
+  item is marked `replacedBy: <new grant id>` and never opens again. The import preview and the CMO
+  both see "Replaces …", and the crew member's card shows "Replaced".
+- **Ingredients are added up across grants.** Different medicines with a shared ingredient (for
+  example acetaminophen alone and in oxycodone/acetaminophen) are added up per day. A grant that
+  would push the total over the ingredient's daily limit is refused. Two different NSAIDs at the
+  same time are refused.
+- **At collection time, the 24-hour limits still count every source:** grants, self-care and
+  standing orders. A due dose that would break a limit or clash with an allergy shows its reason
+  instead of "Due now", and doesn't open. The stock reserve never holds back a granted dose.
+- **Functions:** `grantConflicts(state, draft, now)` returns `{ replaces, error }`. `acceptGrant`
+  refuses on `error`, and `addGrant` applies `replaces`.
 
 ## 2. The code
 
@@ -51,6 +80,8 @@ RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW
   - a grant for another crew member (on this device)
   - a grant already added
   - an expired grant (see section 2a)
+  - a grant that would go over an ingredient's daily limit together with other grants, or add a
+    second NSAID (section 1a)
 
 ## 2a. Identity, validity, reuse, cancelling and verification
 
@@ -176,9 +207,11 @@ when the box is scanned.
 
 ## 7. Checks
 
-Open `tests.html` in a browser: 28 checks, all passing (14 Nov 2026). They cover:
+Open `tests.html` in a browser: 37 checks, all passing (14 Nov 2026). They cover:
+- who may grant what: controlled medicines by Earth only, no self-grants, and an emergency release
+  without approval being logged for review
+- one course per medicine (replacing), adding up ingredients across grants, and two NSAIDs
 - the code format
-- who may grant what
 - binding to the right person, once
 - two bins opening together while an unrelated bin stays closed
 - one record per collection

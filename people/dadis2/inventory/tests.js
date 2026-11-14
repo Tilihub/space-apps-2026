@@ -70,15 +70,28 @@
     var res = draft(fresh(), "c2", "c4", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]);
     return eq([res.error || null, res.grant && res.grant.issuerId], [null, "c2"]);
   });
-  check("The onboard doctor can't grant a controlled medicine", function () {
-    return errorLike(draft(fresh(), "c2", "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]), "only Earth");
+  check("The onboard doctor can't grant a controlled medicine: Earth decides", function () {
+    return errorLike(draft(fresh(), "c2", "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]), "Earth decides");
+  });
+  check("A controlled request goes to Earth", function () {
+    var s = fresh(), it = L.getItem(s, "zolpidem-5");
+    return eq(L.gateFor(s, "c4", it, 1, at(8, 30), null).type, "earth");
   });
   check("Earth can grant a controlled medicine", function () {
     var res = draft(fresh(), L.EARTH, "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]);
     return eq(res.error || null, null);
   });
-  check("The doctor can't grant medicine to themselves", function () {
+  check("A doctor can't grant medicine to themselves (backup doctor or Earth does)", function () {
     return errorLike(draft(fresh(), "c2", "c2", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "themselves");
+  });
+  check("If it can't wait, an Emergency release without approval is logged for review", function () {
+    var s = fresh(), it = L.getItem(s, "zolpidem-5"), lot = L.pickLot(s, it, 1, at(8, 30)).lot;
+    var e = L.dispense(s, { patientId: "c4", itemId: it.id, lotId: lot.id, qty: 1, reason: "Can't sleep before EVA, no reply from Earth yet",
+      authType: "break-glass", signedBy: ["c4"], approvalBypassed: true }, at(8, 30));
+    return eq([e.approvalBypassed, e.groundReview, !!e.docsDue], [true, "pending", true]);
+  });
+  check("The backup doctor can't grant medicine to themselves", function () {
+    return errorLike(draft(fresh(), "c3", "c3", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "themselves");
   });
   check("A crew member who isn't a doctor can't grant", function () {
     return errorLike(draft(fresh(), "c4", "c1", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "onboard doctor or Earth");
@@ -183,6 +196,59 @@
     var code = "RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW", q = window.MedQR.svg(code);
     var ok = q.modules >= 21 && q.svg.indexOf("<svg") === 0 && q.svg.indexOf("QR code for " + code) > 0;
     return ok ? true : "modules " + q.modules;
+  });
+
+  // --- several grants for one person: never a double dose ---
+
+  function addFor(s, issuer, patient, items, now) {
+    var res = draft(s, issuer, patient, at(0), items);
+    if (res.error) throw new Error(res.error);
+    var why = L.acceptGrant(s, res.grant, patient, now || at(8, 0));
+    if (why) return { error: why };
+    return L.addGrant(s, res.grant, now || at(8, 0));
+  }
+
+  check("A newer grant for the same medicine replaces the older course", function () {
+    var s = fresh(), g1 = addFor(s, L.EARTH, "c4", TWO);                                   // ondansetron 2×/day + calcium
+    var g2 = addFor(s, "c2", "c4", [{ itemId: "ondansetron-4", units: 1, perDay: 3, days: 10 }]); // ondansetron again
+    var due = L.grantDue(s, g1, at(8, 30)).concat(L.grantDue(s, g2, at(8, 30))).map(function (d) { return d.itemId; }).sort();
+    return eq([g1.items[0].replacedBy, due], [g2.id, ["calcium-carbonate-500", "ondansetron-4"]]);
+  });
+  check("Three overlapping grants for one medicine give one dose per dose time (the screenshot case)", function () {
+    var s = fresh();
+    var gs = [
+      addFor(s, L.EARTH, "c4", [{ itemId: "ondansetron-4", units: 1, perDay: 2, days: 3 }, { itemId: "acetaminophen-325", units: 1, perDay: 1, days: 3 }]),
+      addFor(s, "c2", "c4", [{ itemId: "ondansetron-4", units: 1, perDay: 3, days: 10 }]),
+      addFor(s, L.EARTH, "c4", TWO)
+    ];
+    var ond = 0;
+    gs.forEach(function (g) { L.grantDue(s, g, at(8, 30)).forEach(function (d) { if (d.itemId === "ondansetron-4") ond += d.units; }); });
+    return eq(ond, 1);
+  });
+  check("Different medicines that add up past an ingredient limit are refused", function () {
+    var s = fresh();
+    addFor(s, "c2", "c1", [{ itemId: "acetaminophen-325", units: 2, perDay: 4, days: 5 }]);             // 2,600 mg a day (doctor)
+    var r = addFor(s, L.EARTH, "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);       // +1,300 mg a day (Earth)
+    return r.error && r.error.indexOf("acetaminophen") >= 0 ? true : "got " + JSON.stringify(r.error || r.id);
+  });
+  check("Two different NSAIDs at the same time are refused", function () {
+    var s = fresh();
+    addFor(s, L.EARTH, "c1", [{ itemId: "ibuprofen-400", units: 1, perDay: 3, days: 5 }]);
+    var r = addFor(s, "c2", "c1", [{ itemId: "aspirin-325", units: 1, perDay: 2, days: 3 }]);
+    return r.error && r.error.indexOf("NSAID") >= 0 ? true : "got " + JSON.stringify(r.error || r.id);
+  });
+  check("A cancelled course doesn't count against a new one", function () {
+    var s = fresh(), g1 = addFor(s, L.EARTH, "c1", [{ itemId: "acetaminophen-325", units: 2, perDay: 4, days: 5 }]);
+    L.revokeGrant(s, g1.id, "c2", at(9, 0));
+    var r = addFor(s, L.EARTH, "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);
+    return r.error ? r.error : true;
+  });
+  check("Collecting still respects the daily limit across every source", function () {
+    var s = fresh(), g = addFor(s, L.EARTH, "c1", [{ itemId: "melatonin-3", units: 1, perDay: 1, days: 3 }]);
+    var it = L.getItem(s, "melatonin-3"), lot = L.pickLot(s, it, 1, at(8, 10)).lot;
+    L.dispense(s, { patientId: "c1", itemId: it.id, lotId: lot.id, qty: 1, authType: "self", signedBy: ["c1"] }, at(8, 10)); // self-care dose first
+    var sf = L.safetyChecks(s, "c1", it, 1, at(8, 30));
+    return sf.checks.some(function (c) { return c.name === "Daily maximum" && c.result === "block"; }) && L.grantDue(s, g, at(8, 30)).length === 1 ? true : "limit not applied";
   });
 
   // --- report ---
