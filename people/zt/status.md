@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14
+- Last updated: 2026-11-14, end of day
 - Working on: zt's first round of notes on the UI look ([ui-look/index.html](ui-look/index.html)).
   Side chats running: home page ideas (`zt/home-ideas`), med bay content (`zt/medbay-plan`),
   3D body view/report modes (`zt/body-3d`).
@@ -65,8 +65,20 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- UI look (branch `zt/ui-look`): get the team's reaction, then adjust the design tokens at the
-  top of the style. The readiness score and its 0–100 scale are still placeholders.
+- **UI work in progress, for Tommy to continue (zt stopped 14 Nov evening).** None of it is on main
+  yet. Get a branch with `git fetch origin`, then `git switch -c <you>/<task> origin/<branch>`:
+  - `zt/ui-look`: the look ([ui-look/index.html](ui-look/index.html)) with round 1 of zt's notes
+    (body left on home, check-in report on the body, Habitat graphs, Mind, Fitness). Open the file
+    in a browser; `?crew=1|2|3` picks the astronaut. No pull request yet.
+  - `zt/body-3d`: the 3D body (`people/zt/body-3d/index.html`) with a view mode for home and a
+    report mode for check-in (eight areas). Next: copy it into the look's home and check-in. That
+    makes the look file about 700 KB; zt hasn't said yes yet.
+  - `zt/home-ideas`: four rough home page options (`people/zt/home-ideas/index.html`). zt hasn't
+    picked one; none uses the 0–100 readiness score.
+  - `zt/medbay-plan`: draft of what the team built for the med bay, with open questions for zt.
+  - Open from zt's notes: check-in sleep is now a feeling (1–10) while the contract says hours
+    (the wearable gives the hours); is the companion the psychological support chatbot?; body
+    areas have no left/right; the readiness score stays a placeholder until the home page is chosen.
 - Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
   the workout give points? Ask potest to take reports and the Earth link. Record the answers in
   the contract's "Still open".
