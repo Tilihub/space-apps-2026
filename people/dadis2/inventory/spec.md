@@ -151,11 +151,15 @@ Suggestions are advice. The crew member chooses, and can always ask the CMO inst
   months. *Assumption for the demo, not a NASA figure.*
 - **Lot status.** Expired > potency at risk (past planning expiry) > expires before mission end > OK.
 - **Use rate.** Units used in the last 30 days ÷ 30. With no recent use, the planned rate from the
-  formulary is used.
+  formulary is used. Emergency items always use the planned rate, because one recent event says
+  little about future use.
 - **Coverage.** Simulate using lots first-expiry-first-out at the use rate. Each lot is usable until
   its planning expiry. Coverage = days until stock runs out or every remaining lot has expired.
-  *Shortfall* means coverage is shorter than the days left in the mission. *Waste* means units that
-  expire before they can be used.
+  If coverage is shorter than the days left in the mission, the item is either:
+  - *short*: there aren't enough units even if nothing expired, so the crew will run out, or
+  - *expiry-limited*: there are enough units, but they expire first.
+
+  *Waste* means units that expire before they can be used.
 - **Alerts.**
   - expired lots
   - lots at potency risk

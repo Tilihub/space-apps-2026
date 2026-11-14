@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedBay Inventory</title>
+  <meta name="description" content="Prototype: medical inventory and dispensing for a long-duration space mission. Sample data, not medical advice.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">MedBay Inventory <span class="sub">prototype</span></div>
+    <div id="mission" class="mission"></div>
+    <button class="btn danger" data-act="emergency">Emergency</button>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <button data-act="nav" data-view="dashboard">Dashboard</button>
+    <button data-act="nav" data-view="dispense">Dispense</button>
+    <button data-act="nav" data-view="approvals">Approvals <span class="count" id="apprCount" hidden></span></button>
+    <button data-act="nav" data-view="log">Dose log</button>
+    <button data-act="nav" data-view="map">Bay map</button>
+  </nav>
+  <main id="main"></main>
+  <div id="backdrop" class="backdrop" data-act="close-drawer" hidden></div>
+  <aside id="drawer" class="drawer" hidden aria-label="Item details"></aside>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <footer>
+    Prototype with sample data. Not medical advice. Not affiliated with NASA.
+    <button class="btn small" data-act="reset">Reset demo data</button>
+  </footer>
+  <script src="data.js"></script>
+  <script src="logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
