@@ -219,3 +219,18 @@ Read this plan and Tommy's status first. Ask Tommy which concept he wants to ref
 ## Whole-application review
 
 The proposed assembly, module snapshot, visual-review findings and return-from-break tasks are in [ecosystem-review.md](ecosystem-review.md). This remains Tommy’s planning brief until the relevant owners accept the contracts and the team adopts the common plan.
+
+## Follow-up: analysis visibility and proposed pill dispenser
+
+- Tommy rejected astronaut access to the detailed personal-history/weekly-analysis view as well as the hidden clinical report. Assigned healthcare professionals may access relevant analyses within their care role. This does not grant all crew access or override the author/psychologist-only journal boundary. The previously requested basic daily Home summary remains distinct; exact visible Home fields still need agreement.
+- The existing astronaut-token `/v1/me/report` and any detailed history view need role/API changes, not merely removal of a UI button. zt and Angelos must agree the clinician-facing access contract.
+- Tommy asked whether pills could be dispensed in the prescribed quantities instead of exposing a whole package. **This is an option under investigation, not an adopted hardware requirement or a claim of flight-qualified equipment.**
+- Proposed engineering concept: keep bulk stock or sealed unit-dose cartridges inaccessible; authenticate the patient and grant; reserve the current dose; mechanically present exactly the authorized quantity in a retained/closed collection interface; confirm delivery and record it. One dose may contain more than one tablet. A second scan must not produce another allowance.
+- In microgravity, the mechanism must not depend on pills falling under gravity. Positive mechanical transfer and containment, protective packaging, drug/form-factor compatibility, jam/double-feed detection, power-loss recovery and controlled maintenance/emergency access all require engineering verification. Unknown delivery after a fault must remain unresolved for review rather than trigger an automatic extra dose. Delivered/collected does not prove swallowed. This proposal reduces direct access to stock; it cannot guarantee prevention of hoarding or all abuse.
+- If adopted, the earlier batch-bin concept needs a pill-specific refinement: authorize all due items together, but expose only their metered dose outlets/collection compartments; do not unlock the full pill-stock cartridge. Other supplies retain their separately agreed access mechanism. First demo could simulate delivery events; no physical dispenser exists in this repo.
+
+Research checked 2026-11-14:
+
+- [NASA presentation: Packaging for Improved Pharmaceutical Protection in Space (2024)](https://ntrs.nasa.gov/citations/20240004002): protective blister development includes individual-dose access. It supports packaging relevance, not proof of an operational automatic dispenser.
+- [NASA presentation: Pilot Study of Medications Exposed to Vacuum (2024), p. 5](https://ntrs.nasa.gov/api/citations/20240004440/downloads/AsMA%20Medications%20in%20a%20vacuum%20STRIVES.pdf?attachment=true): describes most ISS oral medications being repackaged into resealable bags at that time; exploration packaging remained undetermined.
+- [NASA Human Research Roadmap: medication risk](https://humanresearchroadmap.nasa.gov/risks/risk.aspx?i=177): identifies optimal packaging/storage balancing stability, mass, volume and power as an open research gap. No operational microgravity pill dispenser was verified in this review. Mechanical options above are engineering proposals/inferences, not NASA recommendations.
