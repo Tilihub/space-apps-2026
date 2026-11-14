@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 14:22
-- Working on: Deep-space health countermeasure research handoff
+- Working on: Deep-space health countermeasure handoff in [PR #35](https://github.com/Tilihub/space-apps-2026/pull/35)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
