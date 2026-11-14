@@ -14,6 +14,8 @@
 
 ## Done
 
+- Opened PR #56 for the final #49 approval outcome and deferred Home decision, including the 76b2e09 follow-up review; own planning/status files only.
+
 - Tommy superseded the earlier correction-first timing with “approve Zisis soon”. Submitted and verified an APPROVED review on PR #49 at 76b2e09. Privacy correction is resolved; QR/dispenser wording remains a documented implementation follow-up. This chat did not merge #49. Tommy deferred extra Home indicators.
 
 - Re-reviewed updated PR #49 at 76b2e09: care-only detailed analysis and separate Today output now resolve the privacy blocker; allergy/profile instructions and stage graph were corrected. Re-ran its npm test: 7/7 passed. Posted exact wording for remaining repeated-code and per-item dispenser semantics; approval remains pending those corrections.
