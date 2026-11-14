@@ -28,7 +28,7 @@ No install or build. Open `index.html` in a browser (double-click it).
   `index.html?user=c2` for Leo, the CMO, who also gets the Stock, Approvals and Log tabs.
 - Demo state is saved in your own browser only. "Reset demo" at the bottom puts everything back.
 
-**Checks:** open `tests.html`. All 28 checks should say PASS.
+**Checks:** open `tests.html`. All 37 checks should say PASS.
 
 **Earth side:** open `earth.html`, the flight surgeon's tool. Choose a crew member and medicines to
 get the grant code and its QR image. "Open on …'s device (demo)" opens it in the crew app, ready to add.
@@ -81,16 +81,22 @@ your phone's camera at the QR in `earth.html`. It should show exactly the code u
    **Collect now (2 bins)** → locker 2 · top · bin 7 and locker 1 · middle · bin 4 light up together,
    locker 3 stays dim → **Demo: scan a box not in this grant** (refused) → **Scan** twice → Collected.
    The card now shows the next dose time.
-4. Tap Promethazine (red) → **Ask the CMO**. Tap Zolpidem → **Ask Earth** (controlled).
-   Open `?user=c2` → Approvals:
-   - promethazine: choose a course, sign with PIN `2222` → **Grant**
+4. Tap Promethazine (red) → **Ask the CMO**. Tap Zolpidem (controlled) → **Ask Earth**: Earth has the final
+   say. Open `?user=c2` → Approvals:
+   - promethazine: choose a course, sign as Leo with PIN `2222` → **Grant**
    - zolpidem: under "Waiting for Earth" → **Demo: Earth grants it**
 
    Back on `?user=c4`: two grant cards → **Collect now** (zolpidem asks for a count).
+4a. **No double doses:** grant ondansetron to Tomas again (from Leo, or a new code from `earth.html`).
+   The preview says "Replaces Ondansetron …", the older card shows "Replaced", and only one
+   ondansetron dose is ever due.
    On `?user=c2` → Approvals → Active grants: **Show QR** and **Cancel grant** (two taps). Tomas then
    sees "Cancelled".
 4b. **Earth side:** open `earth.html` → pick Tomas and medicines → the code and QR appear →
    **Open on Tomas's device** → Import with the code filled in → **Add**.
+4c. **Can't wait:** ask for zolpidem again, then press **Can't wait? Emergency** on its "Waiting for Earth"
+   card. Emergency opens with the medicine ready. A reason is required, then **Release now**. It's logged
+   as "released without approval", the paperwork is due in 2 hours, and Earth reviews it.
 5. **Chest pain** → "Call the CMO now". **Emergency** → Epinephrine → Release now → locker 3.
 6. **Emergency for Mara** (sample allergy: ketamine) → the Ketamine tile shows ⚠ Allergy → a red warning →
    "Give anyway" needs a second tap → the override shows on the CMO's Approvals and Log.
