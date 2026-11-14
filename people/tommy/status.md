@@ -8,12 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:53
-- Working on: Publishing Tommy's explicit owner-by-owner work handoff for teammates and their coding tools. Planning only.
+- Last updated: 2026-11-14 14:57
+- Working on: Eliciting decisions Q13–Q17 on report visibility, collection versus consumption, emergency access, readiness-score meaning, and check-in scales. Planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
+- Rechecked the latest published plans/statuses and inventory emergency path for conflicts. Prepared Q13–Q17; no new answer or change to the existing requirements is assumed.
 - Published and merged the explicit teammate/coding-tool handoff in PR #39; verified the main file matches the prepared task brief.
 - Tommy requested publication for the team and their coding tools. Added a start-here workflow, owner/task index (ZT-1, ANG-1/2, DAD-1/2, POT-1/2, PET-1/2), delivery expectations, and a copy/paste coding-tool prompt to [implementation-tasks.md](implementation-tasks.md).
 - Refreshed the handoff against Angelos's newly published reset/backup status at 80d86db without reassigning work already delivered.
@@ -37,6 +38,7 @@
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
 - The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.
-- After Tommy confirms the direction, refine the remaining product questions and agree the common-plan changes through the required teammate review.
+- Ask Q13–Q17: astronaut report visibility; prescription-package collection versus per-dose retrieval; who can use emergency access relative to ground approval; readiness-score meaning; 0–10 versus 1–5 self-report scale. Keep these open until Tommy answers, then align with the affected owners.
+- Later clarify entry/biometric flow, report contents/triggers/window and the remaining permission/integration details; common-plan changes require the normal teammate review.
 - Update Now, Done and Next steps after each finished step and include this status in the same push; commit/push before a break.
 - Do not implement UI/application code or edit another member's personal files from this chat unless the authorization and ownership rules allow it.
