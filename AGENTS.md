@@ -10,12 +10,6 @@ You may talk to your human in any language. Everything you write in this repo is
 
 - **The idea is the team's.** The overall solution idea must come from the team, not from AI.
   Help build and improve what docs/PLAN.md describes; don't propose a different overall idea.
-- **Disclose AI use.**
-  - Every commit you make or help with ends with a line `AI-assisted: <tool name>`,
-    for example `AI-assisted: Codex` or `AI-assisted: Claude Code`.
-  - After each piece of work, add a line under "AI use" in your human's status file:
-    what the AI did and in which files.
-  - Any AI-generated image or video needs a visible watermark saying it is AI-generated.
 - **No NASA logos or branding** in anything AI-generated.
 - **English** for everything in the repo.
 
