@@ -11,4 +11,4 @@ Everything the whole team needs, not tied to one person:
 - Data files the team uses: add a `data/` folder when you need one
 
 Anyone can add files. Ask before changing a file someone else made.
-Large files (videos, big datasets) go in the team's shared drive, not here.
+Keep each file under 50 MB; GitHub refuses anything over 100 MB.

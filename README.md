@@ -24,7 +24,7 @@ Work moves in one direction: `people/` → `integration/` → `final/`, with `sh
 Changes to the common plan, `final/` and the rules files need one teammate's approval on the
 pull request; GitHub enforces this. The rules every person and every AI tool follows are in
 [AGENTS.md](AGENTS.md).
-Large files (videos, raw photos) go in the team's shared drive, not here.
+Keep each file under 50 MB; GitHub refuses anything over 100 MB.
 
 ## Use of AI
 

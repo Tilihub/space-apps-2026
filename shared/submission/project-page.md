@@ -11,7 +11,7 @@ On the website only one person should edit at a time: another person's edits can
 - [ ] Demo: a video of 30 seconds or less, or at most 7 slides (including title and intro slides). Going over the limit means no Global Judging
 - [ ] Demo in English (a video may be spoken in another language with English subtitles; slides must be in English)
 - [ ] If slides: they show the team name, all member names and the challenge
-- [ ] Demo link is public and needs no login (YouTube, Google Drive, etc.)
+- [ ] Demo link is public and needs no login (for example YouTube, or this repo on GitHub)
 - [ ] Final project link is public and needs no login (for example this repo)
 - [ ] Detailed project description
 - [ ] Use of AI: where and how. AI images and videos carry a visible watermark; AI-generated code and data are acknowledged in text and metadata

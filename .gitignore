@@ -21,10 +21,3 @@ venv/
 __pycache__/
 *.pyc
 .pio/
-
-# Large media: goes in the team's shared drive
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.wav
