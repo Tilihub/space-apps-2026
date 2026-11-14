@@ -240,3 +240,11 @@ Research checked 2026-11-14:
 Tommy clarified that mechanical dispenser design, microgravity engineering and extreme misuse cases are outside the application-demo scope. Keep simulated quantity-limited dispensing and ordinary patient/authorization/due-dose/stock consistency. Earlier hardware research is background, not a prerequisite or a build assignment.
 
 Tommy and zt want to reduce the broad inventory prototype. His supplied alternative specification is comparison material, not an instruction for this chat to implement UI. See [inventory-scope-proposal.md](inventory-scope-proposal.md) for the proposed nine-item configuration, existing DAD-1 reuse, zt input mapping, and conflicts resolved against earlier decisions. The specific lean configuration remains proposed until accepted; multi-day reusable prescription QR and all eligible due items in one batch remain the previous direction.
+
+## Latest inventory answers and contract review
+
+Tommy confirmed identical QR/manual-code behavior, no 15-minute expiry, a reusable course credential at each due dose time, parallel due-item collection with per-item app confirmation, prescription-fixed quantities/times and user-chosen quantities for permitted self-service items. Preserve individual allergy profiles and their normal-flow access blocks, including against an otherwise valid code. Keep the dispenser simulated. The detailed wording and owner handoffs are in [contract-review.md](contract-review.md).
+
+PR #49 supplies a new common module architecture. Review found crew-readable detailed history/weekly routes that conflict with Tommy’s visibility decision. Tommy selected correction before approval; re-review the updated contract before approving. The nine-item fixture remains a proposal, not a newly confirmed catalogue decision.
+
+Published-work refresh: the former open health/environment/inventory prototypes are now on main. PR #50 adds external baseline import; #51 supplies PET-1/PET-2; #52 proposes stage stories that differ from those fixtures. See contract-review.md for the exact differences and verification. No replacement case version is silently adopted.

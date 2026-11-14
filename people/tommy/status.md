@@ -9,10 +9,19 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Comparing Tommy’s supplied cabinet specification with DAD-1 and zt’s published inputs; proposing a lean shared inventory scope. Planning only; no module implementation.
+- Working on: Reviewing PR #49 against Tommy’s confirmed requirements. Tommy selected corrections before approval; request-changes review posted; refreshing owner instructions against #50/#51/#52. Planning/review only.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Re-fetched at Tommy’s request. Main b5f98a5 includes health/environment/inventory prototype merges; reviewed new external importer #50 (928dc4e), PET-1/PET-2 #51 (12c840e) and zt’s five demo cases #52 (2ec9cd5).
+- Latest health suite passed 60/60 with temporary stores and Node available. Independently verified 65 PET-1 rows, five fresh SQLite imports and three expected day-42 scenarios. Updated handoff to avoid reassigning completed PET work.
+- Posted CHANGES_REQUESTED on PR #49 as Tommy selected: clinical-only detailed analysis, retained allergy blocks/profile ownership, equal reusable QR/code flow and dispenser/batch quantity semantics. Verified review state; #49 remains unapproved at fb0c20f.
+- Flagged concrete #51/#52 differences (c3 mood versus missing values, c4 sleep-only versus five changes, CO2 source/state) plus crew Mind history, deferred points and unowned workout. No teammate files or protected contract changed.
+
+- Reviewed PR #49 at fb0c20f: common Node/JS module contract, rules/ownership changes, shared helpers/example and all owner sections. Ran npm test in an isolated public-source copy using checksum-verified official Node v24.22.3 in /private/tmp: 7 passed, none failed/skipped. No permanent install or teammate data used.
+- Recorded the new QR/code equivalence, no 15-minute lifetime, reusable course access, parallel/per-item dispenser confirmation, prescribed versus allowed self-service quantities, and retained allergy-profile blocks in contract-review.md.
+- Found crew-readable detailed history/weekly routes conflicting with Tommy’s decision. Tommy explicitly selected correction before approval; PR #49 has not been approved or merged by this chat. Identified profile/credential instructions and unowned report/transport work needing alignment.
 
 - Published the lean inventory scope comparison through merged PR #48; only Tommy’s planning/status files changed. The proposed nine-item scope still needs product/owner acceptance.
 
@@ -56,6 +65,8 @@
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- The PR #49 request-changes review is posted. Re-read the updated head and check the requested corrections before any approval. Use contract-review.md as the latest owner compatibility handoff; do not implement or edit other owners’ modules.
 
 - Review the lean catalogue and workflow proposal with Tommy, then confirm reusable DAD-1 behavior and concrete mappings with dadis2/zt. Do not treat the pasted specification as permission to build UI or override earlier course/batch decisions.
 
