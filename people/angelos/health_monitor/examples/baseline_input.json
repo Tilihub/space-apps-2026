@@ -1,0 +1,28 @@
+{
+  "schema_version": "personal-history-v1",
+  "astronaut_id": "demo-001",
+  "source": {
+    "kind": "synthetic",
+    "label": "Synthetic external-file example; not real astronaut observations",
+    "observation_type": "individual_daily",
+    "heart_rate_context": "rest",
+    "self_report_scale": "1-10"
+  },
+  "units": {
+    "resting_heart_rate_bpm": "bpm",
+    "sleep_hours": "hours",
+    "mood": "points",
+    "stress": "points",
+    "fatigue": "points"
+  },
+  "baseline": [
+    {"recorded_at":"2026-11-01T08:00:00Z","resting_heart_rate_bpm":60,"sleep_hours":7.8,"mood":7,"stress":3,"fatigue":3},
+    {"recorded_at":"2026-11-02T08:00:00Z","resting_heart_rate_bpm":62,"sleep_hours":8.0,"mood":8,"stress":2,"fatigue":2},
+    {"recorded_at":"2026-11-03T08:00:00Z","resting_heart_rate_bpm":61,"sleep_hours":7.6,"mood":7,"stress":3,"fatigue":3},
+    {"recorded_at":"2026-11-04T08:00:00Z","resting_heart_rate_bpm":63,"sleep_hours":7.9,"mood":7,"stress":3,"fatigue":3},
+    {"recorded_at":"2026-11-05T08:00:00Z","resting_heart_rate_bpm":60,"sleep_hours":8.1,"mood":8,"stress":2,"fatigue":2},
+    {"recorded_at":"2026-11-06T08:00:00Z","resting_heart_rate_bpm":62,"sleep_hours":7.7,"mood":7,"stress":3,"fatigue":3},
+    {"recorded_at":"2026-11-07T08:00:00Z","resting_heart_rate_bpm":61,"sleep_hours":7.8,"mood":7,"stress":3,"fatigue":3}
+  ],
+  "recent": []
+}

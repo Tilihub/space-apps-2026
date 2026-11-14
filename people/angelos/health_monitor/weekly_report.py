@@ -3,7 +3,7 @@
 import statistics
 from datetime import date, timedelta
 
-from monitor import DEMO_FLOORS, baseline_statistics, recorded_time, validate
+from monitor import DEMO_FLOORS, baseline_statistics, recorded_time, validate_history
 
 
 LABELS = {
@@ -36,12 +36,10 @@ def build_weekly_report(baseline, history, end_date=None):
     supplied. Week-to-week changes require seven measured days in each window.
     Partial medians and their baseline differences remain descriptive estimates.
     """
-    if not isinstance(history, list) or not history:
-        raise ValueError("A weekly report needs at least one saved check-in.")
-    ordered = sorted(history, key=recorded_time)
-    validate({"baseline": baseline, "recent": ordered[:-1], "current": ordered[-1]})
+    baseline, ordered = validate_history(baseline, history)
     if end_date is None:
-        end = recorded_time(ordered[-1]).date()
+        end = (recorded_time(ordered[-1]).date() if ordered else
+               recorded_time(baseline[-1]).date() + timedelta(days=1))
     elif isinstance(end_date, str):
         end = date.fromisoformat(end_date)
     elif type(end_date) is date:
@@ -76,7 +74,7 @@ def build_weekly_report(baseline, history, end_date=None):
             "weekly_comparison": "complete" if weeks_complete else "insufficient_data",
         }
     return {
-        "astronaut_id": ordered[-1]["astronaut_id"],
+        "astronaut_id": baseline[-1]["astronaut_id"],
         "statistic": "median",
         "current_period": period_summary(current_rows, start, end),
         "previous_period": period_summary(previous_rows, previous_start, previous_end),
