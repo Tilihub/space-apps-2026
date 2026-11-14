@@ -34,6 +34,14 @@ let alerts = new Map();
 const isReplay = () => ui.view.value === "replay";
 const isExercise = () => currentDataset.id === "alert-exercise";
 
+const bridge = createEnvironmentBridge(() => ({
+  dataset: currentDataset,
+  replayStart: timeline[0],
+  time: isReplay() ? timeline[cursor] : currentMetric.points.at(-1)[0],
+  cycle: isReplay() ? loop : null,
+  readingsAt,
+}));
+
 function upperBound(items, time, timestamp = row => row[0]) {
   let left = 0;
   let right = items.length;
@@ -82,6 +90,9 @@ function selectDataset() {
     .filter(metric => supportsCabin && cabinLimits[metric.id])
     .map(metric => [metric.id, {metric, limit: cabinLimits[metric.id], ...buildAlertHistory(metric, cabinLimits[metric.id])}]));
   eventHistory = [...alerts.values()].flatMap(alert => alert.events).sort((a, b) => a.time - b.time);
+  const lastSample = timeline.at(-1);
+  timeline = [...new Set([...timeline, ...eventHistory.filter(event => event.kind === "gap" && event.time < lastSample)
+    .map(event => event.time)])].sort((a, b) => a - b);
   visibleEvents = [];
   ui.events.replaceChildren();
   ui["events-empty"].hidden = false;
@@ -98,6 +109,7 @@ function selectDataset() {
   cursor = 0;
   loop = 1;
   selectMetric();
+  bridge.beginCycle("dataset-changed");
   if (isReplay() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) startPlayback();
 }
 
@@ -122,8 +134,8 @@ function readingsAt(time) {
   return [...alerts.values()].map(({metric, states, limit}) => {
     const index = upperBound(metric.points, time) - 1;
     const observation = metric.points[index];
-    const available = observation && time - observation[0] <= metric.gap;
-    return {metric, limit, observation, available, state: available ? states[index] : null};
+    const available = Boolean(observation && time - observation[0] <= metric.gap);
+    return {metric, limit, observation, available, state: states[index] ?? null};
   });
 }
 
@@ -146,12 +158,14 @@ function renderCabin(time) {
       selectMetric();
     };
     button.setAttribute("aria-pressed", String(metric === currentMetric));
-    button.dataset.level = state?.level ?? "missing";
+    button.dataset.level = available ? state.level : "missing";
     button.children[0].textContent = limit.name;
     button.children[1].textContent = available
       ? `${observation[1].toLocaleString("en", {maximumFractionDigits: metric.decimals})} ${metric.unit}`
       : "—";
-    if (!state) button.children[2].textContent = "No recent reading";
+    if (!available) button.children[2].textContent = state?.level
+      ? `No recent reading · ${levels[state.level]} recovery unverified` : "No recent reading";
+    else if (state.recoveryUnverified) button.children[2].textContent = `${levels[state.level]} · recovery unverified`;
     else if (state.pending) button.children[2].textContent = `${levels[state.level]} · checking ${state.pending.direction} reading`;
     else button.children[2].textContent = levels[state.level] + (state.direction ? ` · ${state.direction}` : "");
   });
@@ -169,10 +183,10 @@ function renderEvents(time) {
     const item = document.createElement("li");
     item.dataset.level = event.kind === "gap" ? "missing" : event.level;
     const title = document.createElement("strong");
-    const label = event.kind === "gap" ? "Data gap" : (event.level ? levels[event.level] : "Recovered");
-    title.textContent = label + (event.kind === "state" && event.direction ? ` · ${event.direction}` : "");
+    const label = {gap: "Data gap", restored: "Feed restored", recovered: "Recovered"}[event.kind] ?? levels[event.level];
+    title.textContent = label + (event.kind.startsWith("alert-") && event.direction ? ` · ${event.direction}` : "");
     const details = document.createElement("span");
-    const value = event.kind === "state" ? ` · ${event.value.toLocaleString("en")} ${event.limit.unit}` : "";
+    const value = event.value !== undefined ? ` · ${event.value.toLocaleString("en")} ${event.limit.unit}` : "";
     details.textContent = `${event.limit.name}${value} · ${formatTime(event.time)}`;
     item.append(title, details);
     return item;
@@ -228,20 +242,26 @@ function pausePlayback() {
   ui.play.textContent = "Play";
 }
 
+function advancePlayback(batch) {
+  const start = timeline[cursor];
+  if (cursor === timeline.length - 1) {
+    cursor = 0;
+    loop++;
+    bridge.beginCycle("loop");
+  } else {
+    cursor = Math.min(timeline.length - 1, cursor + batch);
+    bridge.publish(eventHistory.slice(upperBound(eventHistory, start, event => event.time),
+      upperBound(eventHistory, timeline[cursor], event => event.time)));
+  }
+  render();
+}
+
 function startPlayback() {
   pausePlayback();
   ui.play.textContent = "Pause";
   const speed = Number(ui.speed.value);
   const batch = Math.max(1, speed / 16);
-  timer = setInterval(() => {
-    if (cursor === timeline.length - 1) {
-      cursor = 0;
-      loop++;
-    } else {
-      cursor = Math.min(timeline.length - 1, cursor + batch);
-    }
-    render();
-  }, 1000 * batch / speed);
+  timer = setInterval(() => advancePlayback(batch), 1000 * batch / speed);
   render();
 }
 
@@ -416,24 +436,7 @@ function exportTime(time) {
 }
 
 function exportSnapshot() {
-  const time = isReplay() ? timeline[cursor] : currentMetric.points.at(-1)[0];
-  const snapshot = {
-    dataset: currentDataset.id,
-    source: currentDataset.source,
-    sourceUrl: currentDataset.url || null,
-    dataType: isExercise() ? "synthetic" : "historical",
-    timestamp: exportTime(time),
-    thresholds: "illustrative",
-    readings: readingsAt(time).map(({metric, observation, available, state}) => ({
-      metric: metric.id,
-      value: available ? observation[1] : null,
-      unit: metric.unit,
-      timestamp: observation ? exportTime(observation[0]) : null,
-      state: state ? levels[state.level].toLowerCase() : "no-recent-reading",
-      direction: state?.direction || null,
-      pendingState: state?.pending ? levels[state.pending.level].toLowerCase() : null,
-    })),
-  };
+  const snapshot = bridge.getSnapshot();
   downloadFile(JSON.stringify(snapshot, null, 2), "application/json;charset=utf-8", `${currentDataset.id}-cabin-snapshot.json`);
 }
 
@@ -467,7 +470,8 @@ if (archive.length && paint) {
   });
   ui.restart.addEventListener("click", () => {
     cursor = 0;
-    loop = 1;
+    loop++;
+    bridge.beginCycle("restart");
     render();
   });
   ui.speed.addEventListener("change", () => {
@@ -485,6 +489,7 @@ if (archive.length && paint) {
   ui.snapshot.addEventListener("click", exportSnapshot);
   new ResizeObserver(draw).observe(ui.chart);
   selectDataset();
+  window.environmentMonitor = Object.freeze({getSnapshot: bridge.getSnapshot, subscribe: bridge.subscribe});
 } else {
   ui.status.textContent = "The offline chart data could not be loaded.";
   ui.download.disabled = true;

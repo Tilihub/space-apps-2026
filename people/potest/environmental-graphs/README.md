@@ -4,7 +4,7 @@ Open [index.html](index.html) in Chrome, Edge, or Firefox. The dashboard works d
 
 The dashboard automatically replays NASA’s ISS RR‑9 data from the first timestamp and loops after the last timestamp. The chart window controls how much history is visible. Pause, restart, change the playback speed, or scrub through the replay. The timestamp stays on the source clock. The replay advances by recorded timestamps, so long gaps pass quickly and appear as breaks in the chart. Switch to **Archive** for the static graph and CSV export. Pause the replay to inspect an individual point with the pointer or arrow keys.
 
-The ISS cabin cards show CO₂, temperature, and relative humidity at the same replay position. Warning and Danger are illustrative demo states. Two consecutive readings confirm a threshold crossing or recovery. The cards show when they are checking a potential escalation, and a gap clears the previous alert state. The event list shows the latest six transitions at the current replay position and starts over at each loop. Choose **Alert exercise · Synthetic** for a predictable high and low excursion, including recovery.
+The ISS cabin cards show CO₂, temperature, and relative humidity at the same replay position. Warning and Danger are illustrative demo states. Two consecutive readings confirm a threshold crossing or recovery. A gap resets the confirmation streak and keeps an active alert open until fresh readings confirm its severity or recovery. The event list shows the latest six transitions at the current replay position and starts over at each loop. Choose **Alert exercise · Synthetic** to see high and low excursions, followed by a CO₂ outage and recovery.
 
 | Cabin measurement | Warning | Danger |
 | --- | --- | --- |
@@ -19,6 +19,28 @@ These limits demonstrate the app’s behavior. NASA-STD-3001 Rev. F, V2 6004, sp
 `data/series.js` contains the processed series loaded by the dashboard. The original downloads are in `environmental-graphs/data/raw/` at the workspace root. The team repository copy includes the chart data. To regenerate it with Python 3.9 or later, run `python build_data.py --raw-dir <path-to-raw-downloads>` from this directory. The script uses the standard library.
 
 Each dataset has a stable `id`, source URL, time mode, and metrics. Each metric has an `id`, unit, aggregation interval in seconds, gap threshold, and `points` triples of `[time, value, sampleCount]`. A UTC time is expressed in Unix seconds. Perseverance time represents seconds within Sol 49 on the local mean solar time clock. InSight time is the sol number. **Export snapshot** packages the selected cabin context for an incident. The JSON contains the dataset, source URL, historical or synthetic provenance, replay timestamp, and each channel’s value, unit, measurement timestamp, and alert state. Stale readings carry a null value and the last recorded timestamp.
+
+## POT-1 integration handoff
+
+The dashboard exposes a version 1 bridge as `window.environmentMonitor`. A same-origin parent can access it after the iframe's `load` event. Serve the dashboard and parent from the same app origin for this hookup. The standalone dashboard still opens directly from disk.
+
+```js
+iframe.addEventListener("load", () => {
+  const environment = iframe.contentWindow.environmentMonitor;
+  const snapshot = environment.getSnapshot();
+  const unsubscribe = environment.subscribe(event => {
+    console.log(event.kind, event.id, event.alertId, event.time);
+  });
+  // Save snapshot with the incident. Call unsubscribe() when the parent view is removed.
+});
+```
+
+- `getSnapshot()` reads the current replay position. For an earlier symptom onset in the current cycle, pass `{sourceTimestamp}` in the dataset's native numeric clock. UTC datasets use Unix seconds, the synthetic exercise uses elapsed seconds, Perseverance uses local seconds within the sol, and InSight uses sol numbers. Out-of-range or future requests throw `RangeError`. Save the result with the report if the report must survive later loops.
+- UTC `sourceTime` and reading timestamps are ISO 8601, while other timestamps retain their numeric source units. `time.cycle` is null in Archive view. `time.replayElapsedSeconds` is null for InSight's sol clock. Mission time defaults to null. Given a parent-supplied `missionElapsedSecondsAtReplayStart`, the snapshot maps elapsed replay time to mission time. The app can apply the same offset to event packets. The shared clock and any per-scenario mapping still need zt's agreement.
+- The bridge emits `alert-opened`, `alert-updated`, and `recovered` once per transition during forward playback. These share an `alertId` for the excursion and have individual event IDs. `gap` and `restored` describe feed availability. A stale reading carries null for the current value, its last recorded timestamp, and its last confirmed condition. `recoveryUnverified` stays true through a gap and until two fresh readings agree after the feed resumes.
+- Speed changes and re-renders emit no events. A scrub displays the selected point without backfilling events. Subsequent playback emits forward transitions once per cycle, including transitions between rendered frames. Looping, restarting, or changing datasets emits `replay-reset`. The parent can clear its current replay display while preserving reports and previously received events. IDs are scoped to a page session, dataset selection and cycle. Subscriptions only receive future events.
+
+For a concrete check, choose **Alert exercise · Synthetic**, seek to **T+19 min**, and call `getSnapshot({sourceTimestamp: 1140, missionElapsedSecondsAtReplayStart: 600})`. Its `time.sourceTime` and `time.replayElapsedSeconds` will be `1140`, and `time.missionElapsedSeconds` will be `1740`. CO₂ has `value: null`, `unit: "ppm"`, `timestamp: 1020`, `availability: "stale"`, `lastConfirmedState: "warning"`, and `recoveryUnverified: true`. Resume the replay to see the feed return before the Warning closes on the second normal reading.
 
 The window statistics describe the displayed series, with counts reporting original valid samples. The dashboard omits missing or invalid values and breaks the line across gaps. Each graph discloses aggregation when applied. NASA’s RR‑9 cabin archive timestamps are in 2018 and its radiation timestamps are in 2017. Both retain the published dates. Spacecraft exposures, Mars weather, and a simulated health incident each have their own clock. Use the CO₂ graph as context for a report of symptoms and crew follow-up.
 
