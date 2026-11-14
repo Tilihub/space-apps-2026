@@ -43,6 +43,9 @@
   medical officer only, enforced by the server; crew stories, values and CO₂ timing match the demo
   cases; new allergies, blocked items, emergency release, stock, workout records and radiation;
   wave 2 is the rest of the live demo. The demo cases now show every comparison in E's scene
+- Made a 3D body model ([body-3d/index.html](body-3d/index.html), branch `zt/body-3d`): realistic
+  female and male bodies (Blender Studio, CC0) you can turn and zoom, a heat map or calm status
+  colouring, the same six clickable points, night and day looks. Not in the look page yet
 
 ## Blocked / need from others
 

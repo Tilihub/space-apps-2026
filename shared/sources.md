@@ -83,3 +83,5 @@ even if they are free or open source.
 | Dijk et al. (2001) | [Shuttle sleep and circadian study](https://doi.org/10.1152/ajpregu.2001.281.5.R1647) | In-flight Neurolab core temperature during sleep and wakefulness | petros_the_space_larper |
 | Conkin et al. (2017) | [Shuttle oxygen saturation study](https://pubmed.ncbi.nlm.nih.gov/28539140/) | Approximate in-flight finger oximetry summary under mild hypoxia | petros_the_space_larper |
 | qrcode-generator 1.4.4 (Kazuhiko Arase, MIT licence), code library | https://www.npmjs.com/package/qrcode-generator | Drawing the QR image of medicine grant codes (copied into `people/dadis2/inventory/vendor/`) | dadis2 |
+| Human Base Meshes 1.4.1 (Blender Studio, CC0 licence), 3D models | https://download.blender.org/demo/asset-bundles/human-base-meshes/ | Realistic female and male body shapes in the 3D body model (`people/zt/body-3d/`) | zt |
+| three.js 0.186.1 (MIT licence), code library | https://www.npmjs.com/package/three | Drawing the 3D body model in the browser, loaded from the jsDelivr CDN | zt |
