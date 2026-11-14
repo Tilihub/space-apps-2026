@@ -9,12 +9,19 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: PR #49 approved at 76b2e09 on Tommy’s latest explicit instruction; recording final review/handoff. Home-indicator decision deferred.
+- Working on: Reviewed dadis2’s merged grant-safety #58 (75a7377); documented two reproduced replacement problems and the Emergency contract mismatch. No teammate implementation edited.
 - Branch: tommy/concepts-plan
 
 ## Done
 
-- Opened PR #56 for the final #49 approval outcome and deferred Home decision, including the 76b2e09 follow-up review; own planning/status files only.
+- Opened PR #59 publishing the dadis2 #58 review and current handoff; only Tommy’s review/status files changed.
+
+- Reviewed dadis2 #58 at d1f6f52 / main 75a7377. Re-ran 37/37 existing pure-logic checks in isolated tracked-source copies. Additional probes reproduced (1) an already collected dose slot offered again under a replacement, with no ordinary safety block in the synthetic case, and (2) future-start replacement disabling the active course immediately.
+- Wrote dadis-grant-review.md with reproducible inputs/results, source locations, expected transition behavior and the widened Emergency-versus-contract mismatch. Confirmed the common meds module and earlier QR/dispenser adjustments remain pending. No clinical policy, protected file or dadis2 source was changed.
+
+- Refreshed main and re-read the adopted app contract/rules at Tommy’s request. #49 is merged; contract files are unchanged from tested 76b2e09. Reviewed new Crew Support #55 documentation/status: standalone server/routes overlap with Angelos’s assigned mind module and need an agreed adaptation, not parallel app servers. No live API call or repeated unchanged tests performed.
+
+- Published the final #49 approval outcome and deferred Home decision through merged PR #56, including the 76b2e09 follow-up review; own planning/status files only.
 
 - Tommy superseded the earlier correction-first timing with “approve Zisis soon”. Submitted and verified an APPROVED review on PR #49 at 76b2e09. Privacy correction is resolved; QR/dispenser wording remains a documented implementation follow-up. This chat did not merge #49. Tommy deferred extra Home indicators.
 
@@ -76,22 +83,10 @@
 
 ## Next steps
 
-- PR #49 is approved. Follow its author’s merge, then use the adopted contract for module adaptation. Preserve latest QR/dispenser/allergy requirements; align Petros’s fixtures with the chosen stage cases and confirm the reports/transport owner. Extra Home indicators remain deferred.
+- Relay dadis-grant-review.md to dadis2/zt: fix replacement ledger/effective-time behavior before module reuse, agree Emergency scope/course policy, then prioritize the shared meds module.
 
-- Latest common review is published on main in contract-review.md via #54. PR #49 remains pending corrections; its author has the review, refreshed handoff link and exact remaining wording. If the updated contract is adopted, align #51 data/tests with its #52 target cases.
-
-- The PR #49 request-changes review is posted. Re-read the updated head and check the requested corrections before any approval. Use contract-review.md as the latest owner compatibility handoff; do not implement or edit other owners’ modules.
-
-- Review the lean catalogue and workflow proposal with Tommy, then confirm reusable DAD-1 behavior and concrete mappings with dadis2/zt. Do not treat the pasted specification as permission to build UI or override earlier course/batch decisions.
-
-- Align simulated dose-outlet versus stock access and delivery-event semantics with dadis2/zt; physical dispenser engineering is outside scope. Align the hidden weekly-analysis API with Angelos/zt.
-
-- Review ecosystem-review.md with Tommy one decision at a time. Start with the proposed journey and role/report boundaries, then agree IDs, mission clock, 1–10 transition and integration/transport ownership with zt and module owners.
-- The review is on main via PR #45; use it for Tommy’s next discussion and owner coordination. The frozen visual review is a local artifact, not an adopted UI.
-
-- Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
-- The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.
-- Q13–Q17 are recorded; readiness remains open. Coordinate 1–10 versus old 0–10 history, due-dose/QR enforcement, emergency protocol, and doctor-only report routing with the owners. Publish the updated brief and notify the team in its PR.
-- Later clarify entry/biometric flow, report contents/triggers/window and the remaining permission/integration details; common-plan changes require the normal teammate review.
-- Update Now, Done and Next steps after each finished step and include this status in the same push; commit/push before a break.
-- Do not implement UI/application code or edit another member's personal files from this chat unless the authorization and ownership rules allow it.
+- PR #49 is merged; follow shared/contract/README.md for new module work. Keep the recorded product follow-ups visible rather than the historical request-changes timing.
+- Follow contract-review.md (updated via #56) and the adopted shared contract for module work. Preserve identical QR/manual-code behavior, reusable due-dose credentials, batch/per-item dispenser confirmation and normal allergy blocking. The remaining wording is an implementation follow-up.
+- Coordinate #55 Crew Support with zt/Angelos/potest before adopting its server/routes or live mode. Align PET-1 fixtures and expected checks with the contract’s target stage cases; confirm potest or another accepted owner for reports/transport. DAD-1, DAD-2, ANG-1 and PET-1/PET-2 deliveries should be reused, not assigned from scratch.
+- Extra Home indicators are deferred at Tommy’s request. Readiness, catalogue size and remaining clinical/psychologist/emergency details stay explicit decisions.
+- Continue planning in tommy/concepts-plan. Do not edit another person’s folder or implement UI from this chat; zt owns assembly/layout. Update status and push before a break.
