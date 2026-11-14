@@ -1,0 +1,1256 @@
+<!doctype html>
+<!--
+  UI look suggestion (zt). The same screens and fake data as ../ui-skeleton/index.html,
+  with a first suggestion for the real look. Everything here is open to change.
+
+  Open this file in a browser (made for landscape tablet or laptop). One tab per astronaut:
+    index.html?crew=1   Astronaut A (demo case: slept badly, headache)
+    index.html?crew=2   Astronaut B (demo case: healthy, workout)
+    index.html?crew=3   Astronaut C (medical officer, demo case still open)
+  You can also switch crew member inside the page: tap the name at the top right.
+  The sun/moon button switches between the night look (default) and the day look.
+  All numbers are fake and live in the data block at the top of the script.
+  The look itself (colours, fonts, corners) lives in the design tokens at the top of the style.
+-->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UI look suggestion</title>
+<script>
+  try { document.documentElement.dataset.theme = localStorage.getItem('ui-look-theme') || 'dark'; } catch (e) { /* storage blocked: keep dark */ }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Space+Grotesk:wght@500..700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Design tokens: change the look here ---------- */
+  :root {
+    --font-ui: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+    --r-lg: 22px;
+    --r-md: 14px;
+  }
+  :root, [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #070B16;
+    --glow-1: rgba(70, 140, 255, 0.12);
+    --glow-2: rgba(40, 210, 225, 0.06);
+    --surface: #0E1527;
+    --card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 140px), #0E1527;
+    --surface-2: #141C32;
+    --surface-3: #1B2540;
+    --rail-bg: rgba(9, 14, 28, 0.72);
+    --border: rgba(160, 185, 230, 0.10);
+    --border-strong: rgba(160, 185, 230, 0.22);
+    --text: #EAF0FA;
+    --text-2: #A7B4CB;
+    --text-3: #6F7D98;
+    --accent: #5AB0FF;
+    --accent-2: #62E3EE;
+    --btn-bg: linear-gradient(135deg, #5AB0FF, #62E3EE);
+    --on-accent: #04101F;
+    --alert: #FF6B7D;
+    --fine-soft: rgba(90, 176, 255, 0.13);
+    --alert-soft: rgba(255, 107, 125, 0.13);
+    --grey-soft: rgba(160, 185, 230, 0.09);
+    --track: rgba(160, 185, 230, 0.13);
+    --fig-top: #1A3760;
+    --fig-bottom: #0F1C34;
+    --fig-line: #2D5788;
+    --grid-dot: rgba(160, 185, 230, 0.11);
+    --scan: rgba(98, 227, 238, 0.09);
+    --star: rgba(255, 255, 255, 0.6);
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    --pop-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+  [data-theme="light"] {
+    color-scheme: light;
+    --bg: #EDF1F7;
+    --glow-1: rgba(40, 120, 230, 0.09);
+    --glow-2: rgba(20, 180, 200, 0.07);
+    --surface: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --surface-2: #F4F7FB;
+    --surface-3: #E9EFF7;
+    --rail-bg: rgba(255, 255, 255, 0.75);
+    --border: rgba(20, 40, 80, 0.09);
+    --border-strong: rgba(20, 40, 80, 0.18);
+    --text: #0D1626;
+    --text-2: #4A5872;
+    --text-3: #7D899F;
+    --accent: #1A6CD1;
+    --accent-2: #12A9BE;
+    --btn-bg: linear-gradient(135deg, #1A6CD1, #1659B3);
+    --on-accent: #FFFFFF;
+    --alert: #DC3049;
+    --fine-soft: rgba(26, 108, 209, 0.10);
+    --alert-soft: rgba(220, 48, 73, 0.09);
+    --grey-soft: rgba(20, 40, 80, 0.06);
+    --track: rgba(20, 40, 80, 0.09);
+    --fig-top: #D3E3F6;
+    --fig-bottom: #E8EFF9;
+    --fig-line: #ADC5E3;
+    --grid-dot: rgba(20, 40, 80, 0.09);
+    --scan: rgba(18, 169, 190, 0.10);
+    --star: rgba(30, 60, 120, 0.22);
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px rgba(16, 24, 40, 0.06);
+    --pop-shadow: 0 24px 60px rgba(16, 24, 40, 0.18);
+  }
+
+  /* ---------- Base ---------- */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 700px at 90% -10%, var(--glow-1), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, var(--glow-2), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+  h1, h2, h3, p { margin: 0; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- App frame: side rail, top bar ---------- */
+  .app { display: grid; grid-template-columns: 96px minmax(0, 1fr); min-height: 100vh; }
+  .rail {
+    position: sticky; top: 0; height: 100vh; z-index: 3;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 18px 10px;
+    background: var(--rail-bg);
+    backdrop-filter: blur(14px);
+    border-right: 1px solid var(--border);
+  }
+  .brand { width: 46px; height: 46px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 15px; color: var(--accent); background: var(--fine-soft); }
+  .brand .icon { width: 28px; height: 28px; }
+  .rail a[data-nav] {
+    width: 76px; padding: 10px 4px 8px; border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    color: var(--text-3); font-size: 11.5px; font-weight: 600;
+    transition: background .15s, color .15s;
+  }
+  .rail a[data-nav]:hover { color: var(--text-2); background: var(--grey-soft); }
+  .rail a[data-nav][aria-current="page"] { color: var(--accent); background: var(--fine-soft); }
+  .rail-gap { flex: 1; }
+  .content { width: 100%; max-width: 1400px; min-width: 0; padding: 22px 32px 56px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 58px; margin-bottom: 22px; }
+  .title-block { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .page-title { font: 600 30px/1.15 var(--font-display); letter-spacing: -0.015em; margin-top: 2px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; flex: none; }
+  .back, .icon-btn {
+    width: 44px; height: 44px; padding: 0; border-radius: 14px; flex: none;
+    display: grid; place-items: center; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-2);
+  }
+  .back:hover, .icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+  .icon-btn.sm { width: 34px; height: 34px; border-radius: 11px; font-size: 18px; line-height: 1; }
+  .chip-demo { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); border: 1px dashed var(--border-strong); padding: 5px 9px; border-radius: 8px; }
+  .clock { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+  .clock b { font: 600 16px var(--font-display); font-variant-numeric: tabular-nums; }
+  .clock .sep { width: 1px; height: 18px; background: var(--border-strong); }
+  .me { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); }
+  .me:hover { border-color: var(--border-strong); }
+  .me b { display: block; font-size: 13.5px; line-height: 1.2; }
+  .me small { display: block; font-size: 12px; line-height: 1.2; color: var(--text-3); }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center; font: 700 14px var(--font-display); color: var(--on-accent); background: var(--btn-bg); }
+  .avatar.sm { width: 32px; height: 32px; font-size: 13px; }
+  .avatar.lg { width: 50px; height: 50px; font-size: 19px; }
+
+  /* ---------- Shared pieces ---------- */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow); min-width: 0; }
+  a.card { display: block; transition: border-color .15s, transform .15s; }
+  a.card:hover { border-color: var(--border-strong); }
+  a.card:active { transform: scale(.995); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .card h3, .h3 { font: 600 19px/1.25 var(--font-display); letter-spacing: -0.01em; }
+  .sub { color: var(--text-3); font-size: 13.5px; margin: 4px 0 20px; }
+  .eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+  .more { display: inline-flex; align-items: center; gap: 2px; color: var(--text-2); font-size: 13px; font-weight: 600; }
+  .more .icon { width: 18px; height: 18px; }
+  .muted { color: var(--text-2); }
+  .faint { color: var(--text-3); }
+  .small { font-size: 13px; }
+  .lead { font-size: 16.5px; line-height: 1.5; }
+  .grow { flex: 1; min-width: 0; }
+  .wide { width: 100%; }
+  .num-xl { font: 600 56px/1 var(--font-display); letter-spacing: -0.03em; }
+  .num-md { font: 600 26px/1 var(--font-display); letter-spacing: -0.02em; }
+  .num-sm { font: 600 18px/1 var(--font-display); }
+
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+  .pill .icon { width: 14px; height: 14px; }
+  .pill.blue { color: var(--accent); background: var(--fine-soft); }
+  .pill.red { color: var(--alert); background: var(--alert-soft); }
+  .pill.grey { color: var(--text-2); background: var(--grey-soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 46px; padding: 0 20px; border-radius: 14px; border: 1px solid transparent;
+    font-weight: 700; font-size: 14.5px; white-space: nowrap; cursor: pointer;
+    transition: filter .15s, border-color .15s;
+  }
+  .btn .icon { width: 18px; height: 18px; }
+  .btn.primary { background: var(--btn-bg); color: var(--on-accent); }
+  .btn.primary:hover { filter: brightness(1.07); }
+  .btn.ghost { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+  .btn.ghost:hover { border-color: var(--border-strong); }
+  .btn.sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 11px; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .row-icon { width: 42px; height: 42px; border-radius: 13px; flex: none; display: grid; place-items: center; background: var(--fine-soft); color: var(--accent); }
+  .row-icon.done { background: var(--grey-soft); color: var(--text-3); }
+  .check { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; border: 2px solid var(--border-strong); }
+  .check.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .check .icon { width: 14px; height: 14px; stroke-width: 3; }
+  .note { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin: 6px 0 16px; }
+  .note .icon { width: 16px; height: 16px; }
+  .log-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
+  .log-row:first-of-type { border-top: 0; padding-top: 4px; }
+  .log-row b { display: block; font-size: 15px; }
+  .log-row small { display: block; color: var(--text-3); font-size: 13px; }
+  .ask { display: flex; align-items: center; gap: 8px; }
+
+  /* Rings, sparklines, charts */
+  .ring-wrap { position: relative; display: grid; place-items: center; flex: none; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
+  .ring-center span { font-size: 12.5px; }
+  .ring-track { fill: none; stroke: var(--track); }
+  .ring-arc { fill: none; stroke: url(#accentGrad); stroke-linecap: round; animation: ring-in 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+  @keyframes ring-in { from { stroke-dashoffset: var(--c); } }
+  .spark { display: block; width: 100%; height: auto; margin-top: 16px; overflow: visible; }
+  .spark path { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .spark circle { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
+  .spark .normal { stroke: var(--border-strong); stroke-width: 1.5; stroke-dasharray: 3 5; }
+  .spark.red path { stroke: var(--alert); }
+  .spark.red circle { fill: var(--alert); }
+  .spark-empty { min-height: 60px; display: flex; align-items: flex-end; }
+  .chart { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid { stroke: var(--border); }
+  .chart .axis { fill: var(--text-3); font: 500 12px var(--font-ui); }
+  .chart .area { fill: url(#areaGrad); }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .chart .threshold { stroke: var(--alert); stroke-width: 1.5; stroke-dasharray: 5 6; opacity: .85; }
+  .chart .threshold-label { fill: var(--alert); font: 600 12px var(--font-ui); }
+  .chart .dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
+  .chart .hl { fill: var(--alert); stroke: var(--surface); stroke-width: 3; }
+  .chart .hl-label { fill: var(--text); font: 700 12.5px var(--font-ui); }
+
+  /* ---------- Home ---------- */
+  .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto 1fr; gap: 20px; }
+  .body-card { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; }
+  .readiness-body { display: flex; align-items: center; gap: 26px; }
+  .readiness-text { display: grid; gap: 14px; min-width: 0; }
+  .task-score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .task-score b { font: 600 34px/1 var(--font-display); }
+  .segments { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .segments span { height: 8px; border-radius: 99px; background: var(--track); }
+  .segments span.on { background: var(--btn-bg); }
+  .task-mini { margin-top: 14px; }
+  .task-mini .t { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); }
+  .task-mini .t.done .title { color: var(--text-3); }
+  .task-mini .t.next .title { font-weight: 700; }
+  .task-mini .time { font: 600 13px var(--font-display); color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .task-mini .t.next .time { color: var(--accent); }
+  .legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .legend .b { background: var(--accent); }
+  .legend .r { background: var(--alert); }
+  .hint { text-align: center; font-size: 13px; color: var(--text-3); margin-top: 6px; }
+
+  /* Body figure */
+  .figure-wrap { position: relative; flex: 1; display: grid; place-items: center; min-height: 360px; overflow: hidden; border-radius: 16px; }
+  .figure-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(var(--grid-dot) 1.2px, transparent 1.3px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 35%, transparent 100%);
+  }
+  .scan { position: absolute; left: 16%; right: 16%; top: 0; height: 18%; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--scan), transparent); animation: scan 7s ease-in-out infinite; }
+  @keyframes scan { 0% { transform: translateY(-30%); opacity: 0; } 12%, 88% { opacity: 1; } 100% { transform: translateY(480%); opacity: 0; } }
+  .figure { position: relative; display: block; width: 100%; height: auto; max-height: 62vh; overflow: visible; }
+  .fig-line { fill: none; stroke: var(--fig-line); stroke-linecap: round; stroke-linejoin: round; }
+  .fig-fill { fill: none; stroke: url(#figGrad); stroke-linecap: round; stroke-linejoin: round; }
+  .fig-line-core { fill: var(--fig-line); stroke: var(--fig-line); stroke-width: 3; stroke-linejoin: round; }
+  .fig-fill-core { fill: url(#figGrad); }
+  .pedestal { fill: var(--accent); opacity: .14; }
+  .pt { cursor: pointer; }
+  .pt .lead-line { stroke: var(--text-3); stroke-width: 1; opacity: .45; }
+  .pt .halo { fill: var(--accent); opacity: .2; }
+  .pt .core { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; transition: r .15s; }
+  .pt .pt-name { fill: var(--text); font: 600 13.5px var(--font-ui); }
+  .pt .pt-status { fill: var(--accent); font: 600 12px var(--font-ui); }
+  .pt.red .lead-line { stroke: var(--alert); opacity: .6; }
+  .pt.red .halo { fill: var(--alert); opacity: .5; transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-out infinite; }
+  .pt.red .core { fill: var(--alert); }
+  .pt.red .pt-status { fill: var(--alert); }
+  .pt:hover .core, .pt.focus .core { r: 7.5; }
+  .pt.dim { opacity: .3; }
+  @keyframes pulse { 0% { transform: scale(.6); opacity: .55; } 100% { transform: scale(1.9); opacity: 0; } }
+
+  /* ---------- Readiness, tasks, body point ---------- */
+  .intro { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; }
+  .intro .lead { margin-bottom: 2px; }
+  .factor-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .factor-val { font: 600 30px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 2px 0 4px; }
+  .list { padding: 6px 22px; }
+  .row-item { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+  .row-item:last-child { border-bottom: 0; }
+  .row-item b { display: block; font-size: 15.5px; }
+  .row-item small { display: block; color: var(--text-3); font-size: 13px; }
+  .row-item.done b { color: var(--text-3); font-weight: 600; }
+  .point-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .stack { display: grid; gap: 16px; }
+  .question { border-color: var(--alert-soft); }
+
+  /* ---------- Check-in ---------- */
+  .checkin-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+  .slider { margin-bottom: 20px; }
+  .slider-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .slider-head span { font-weight: 600; }
+  .slider-head b { font: 600 18px var(--font-display); color: var(--accent); font-variant-numeric: tabular-nums; }
+  .anchors { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--text-3); }
+  input[type="range"] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 28px; margin: 0; background: transparent; cursor: pointer; }
+  input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(to right, var(--accent) var(--fill, 50%), var(--track) var(--fill, 50%)); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--surface); border: 4px solid var(--accent); box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+  input[type="range"]::-moz-range-track { height: 6px; border-radius: 99px; background: var(--track); }
+  input[type="range"]::-moz-range-progress { height: 6px; border-radius: 99px; background: var(--accent); }
+  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 4px solid var(--accent); }
+  .field { display: block; margin-bottom: 18px; }
+  .field > span { display: block; font-weight: 600; margin-bottom: 8px; }
+  .select-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-btn { height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text-2); font-weight: 600; font-size: 13px; }
+  .chip-btn[aria-pressed="true"] { background: var(--fine-soft); border-color: var(--accent); color: var(--accent); }
+  .input { width: 100%; height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; }
+  textarea.input { height: auto; padding: 12px 14px; resize: vertical; line-height: 1.5; }
+  .input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+  .measure { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
+  .measure b { display: block; }
+  .measure small { display: block; color: var(--text-3); font-size: 13px; }
+
+  /* ---------- Habitat ---------- */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+  .metric-icon { color: var(--text-3); }
+  .metric-icon.red { color: var(--alert); }
+  .metric-val { font: 600 32px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0 0 12px; font-variant-numeric: tabular-nums; }
+  .metric-val small { font: 500 14px var(--font-ui); color: var(--text-3); margin-left: 5px; letter-spacing: 0; }
+  .metric .pill { white-space: normal; }
+  .metric.red { border-color: var(--alert-soft); }
+  .habitat-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 18px; }
+  .insight-card { display: grid; gap: 12px; align-content: start; }
+  .insight-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--fine-soft); color: var(--accent); }
+  .insight-icon.red { background: var(--alert-soft); color: var(--alert); }
+
+  /* ---------- Med bay ---------- */
+  .med-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 18px; align-items: start; }
+  .med-name { font: 600 28px/1.15 var(--font-display); letter-spacing: -0.02em; margin: 2px 0 6px; }
+  .kv { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .kv span { color: var(--text-3); }
+  .kv:last-of-type { margin-bottom: 18px; }
+  .compartment { font: 700 15px var(--font-display); padding: 3px 10px; border-radius: 8px; background: var(--surface-3); }
+  .empty-card { display: grid; gap: 10px; justify-items: start; }
+
+  /* ---------- Mind, companion ---------- */
+  .mind-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .mind-grid .journal { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 4px; }
+  .companion-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 30px; align-items: center; margin-bottom: 18px; }
+  .companion-hero p { margin: 8px 0 18px; max-width: 520px; }
+  .mascot-lg { width: 150px; height: 150px; }
+  .mascot-lg svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ---------- Crew view, case summary ---------- */
+  .crew-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+  .crew-card { display: grid; gap: 16px; align-content: start; }
+  .who { display: flex; align-items: center; gap: 12px; }
+  .who b { display: block; }
+  .who small { display: block; font-size: 12.5px; }
+  .crew-score { display: flex; align-items: center; gap: 14px; }
+  .case-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .timeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tl-item { position: relative; padding: 28px 18px 0 0; }
+  .tl-item::before { content: ''; position: absolute; top: 6px; left: 14px; right: 0; height: 2px; background: var(--border-strong); }
+  .tl-item:last-child::before { display: none; }
+  .tl-dot { position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 3px solid var(--text-3); }
+  .tl-item.red .tl-dot { border-color: var(--alert); }
+  .tl-time { font: 600 13px var(--font-display); color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .tl-title { font-weight: 700; margin: 2px 0; }
+  .tl-text { color: var(--text-2); font-size: 13.5px; }
+  .case-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+  .crow { padding: 10px 0; border-top: 1px solid var(--border); }
+  .crow:first-of-type { border-top: 0; padding-top: 0; }
+  .crow span, .crow b, .crow small { display: block; }
+
+  /* ---------- Login ---------- */
+  .login {
+    position: fixed; inset: 0; z-index: 5; overflow: auto;
+    display: grid; place-items: center; padding: 24px;
+    background:
+      radial-gradient(circle at 12% 18%, var(--star) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 27% 72%, var(--star) 0 1.2px, transparent 1.8px),
+      radial-gradient(circle at 38% 12%, var(--star) 0 .8px, transparent 1.4px),
+      radial-gradient(circle at 63% 84%, var(--star) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 72% 22%, var(--star) 0 1.3px, transparent 1.9px),
+      radial-gradient(circle at 86% 58%, var(--star) 0 .9px, transparent 1.5px),
+      radial-gradient(circle at 92% 12%, var(--star) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 8% 88%, var(--star) 0 .8px, transparent 1.4px),
+      radial-gradient(circle at 50% 40%, var(--star) 0 .7px, transparent 1.3px),
+      radial-gradient(circle at 18% 48%, var(--star) 0 .9px, transparent 1.5px),
+      radial-gradient(circle at 80% 92%, var(--star) 0 1.1px, transparent 1.7px),
+      radial-gradient(900px 600px at 50% -10%, var(--glow-1), transparent 70%),
+      var(--bg);
+  }
+  .login-card { width: min(520px, 100%); display: grid; justify-items: center; gap: 12px; text-align: center; }
+  .logo-lg { width: 54px; height: 54px; color: var(--accent); }
+  .scanner {
+    position: relative; width: 220px; height: 260px; margin: 8px 0 10px; overflow: hidden;
+    display: grid; place-items: center; border-radius: 44px;
+    background: radial-gradient(ellipse at 50% 40%, var(--fine-soft), transparent 70%), var(--surface);
+    border: 1px solid var(--border);
+  }
+  .scanner .c { position: absolute; width: 36px; height: 36px; border: 3px solid var(--accent); }
+  .c.tl { top: 16px; left: 16px; border-right: 0; border-bottom: 0; border-top-left-radius: 18px; }
+  .c.tr { top: 16px; right: 16px; border-left: 0; border-bottom: 0; border-top-right-radius: 18px; }
+  .c.bl { bottom: 16px; left: 16px; border-right: 0; border-top: 0; border-bottom-left-radius: 18px; }
+  .c.br { bottom: 16px; right: 16px; border-left: 0; border-top: 0; border-bottom-right-radius: 18px; }
+  .scanline { position: absolute; left: 12%; right: 12%; top: 14%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent-2), transparent); box-shadow: 0 0 18px var(--accent-2); animation: scanline 2.6s ease-in-out infinite alternate; }
+  @keyframes scanline { to { top: 86%; } }
+  .face { width: 118px; fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: .6; }
+  .face .fill { fill: var(--accent); stroke: none; }
+  .display { font: 600 30px/1.2 var(--font-display); letter-spacing: -0.015em; }
+  .divider { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 22px; color: var(--text-3); font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .crew-pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; }
+  .crew-btn { display: grid; justify-items: center; gap: 6px; padding: 16px 8px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); }
+  .crew-btn:hover, .crew-btn.current { border-color: var(--accent); }
+  .crew-btn b { font-size: 14px; }
+  .crew-btn small { font-size: 12px; color: var(--text-3); }
+
+  /* ---------- Floating companion ---------- */
+  .companion { position: fixed; right: 26px; bottom: 26px; z-index: 4; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .orb { position: relative; width: 74px; height: 74px; padding: 0; border: 0; background: transparent; cursor: pointer; animation: bob 4s ease-in-out infinite; filter: drop-shadow(0 10px 22px rgba(40, 120, 255, .35)); }
+  .orb > span:first-child, .orb svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .badge { position: absolute; top: 0; right: 0; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--alert); color: #fff; font: 700 12px/18px var(--font-ui); border: 2px solid var(--bg); }
+  @keyframes bob { 50% { transform: translateY(-6px); } }
+  .cp { width: 330px; padding: 16px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--pop-shadow); }
+  .cp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .cp-head b { flex: 1; font: 600 16px var(--font-display); }
+  .cp-mini { width: 34px; height: 34px; }
+  .cp-mini svg { width: 100%; height: 100%; overflow: visible; }
+  .bubble { margin: 0 0 8px; padding: 11px 14px; border-radius: 16px 16px 16px 6px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; }
+  .cp-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .m-ring { fill: none; stroke: var(--accent-2); stroke-width: 2.4; stroke-linecap: round; }
+  .m-ring.back { opacity: .45; }
+  .m-eye { fill: #0A1430; transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+  .m-smile { fill: none; stroke: #0A1430; stroke-width: 2; stroke-linecap: round; }
+  .m-cheek { fill: #FF9BB0; opacity: .55; }
+  @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+
+  /* ---------- Smaller screens ---------- */
+  @media (max-width: 1180px) {
+    .factor-grid, .crew-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .checkin-grid, .metric-grid, .case-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .clock .eyebrow, .chip-demo { display: none; }
+  }
+  @media (max-width: 880px) {
+    .home-grid, .point-grid, .habitat-grid, .med-grid, .mind-grid, .checkin-grid { grid-template-columns: minmax(0, 1fr); }
+    .body-card, .mind-grid .journal { grid-column: auto; grid-row: auto; }
+    .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 20px; }
+    .me > span:last-child { display: none; }
+    .me { padding: 0 4px; }
+  }
+  @media (max-width: 640px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .rail {
+      position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: auto;
+      flex-direction: row; justify-content: space-around; gap: 0;
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+      border-right: 0; border-top: 1px solid var(--border);
+    }
+    .rail .brand, .rail-gap { display: none; }
+    .rail a[data-nav] { width: auto; flex: 1; padding: 8px 2px 6px; font-size: 10px; border-radius: 12px; }
+    .content { padding: 16px 16px 110px; }
+    .page-title { font-size: 23px; }
+    .clock { padding: 0 12px; }
+    .factor-grid, .crew-grid, .case-grid, .timeline { grid-template-columns: minmax(0, 1fr); }
+    .readiness-body { gap: 18px; }
+    .companion-hero { grid-template-columns: minmax(0, 1fr); }
+    .companion { right: 14px; bottom: 84px; }
+    .orb { width: 60px; height: 60px; }
+    .cp { width: min(330px, calc(100vw - 28px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Icons, gradients and the body figure shapes, used throughout the page -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color: var(--accent)"/><stop offset="1" style="stop-color: var(--accent-2)"/></linearGradient>
+    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--accent); stop-opacity: .3"/><stop offset="1" style="stop-color: var(--accent); stop-opacity: 0"/></linearGradient>
+    <linearGradient id="figGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="440"><stop offset="0" style="stop-color: var(--fig-top)"/><stop offset="1" style="stop-color: var(--fig-bottom)"/></linearGradient>
+    <radialGradient id="mascotGrad" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#E3F4FF"/><stop offset=".45" style="stop-color: var(--accent)"/><stop offset="1" stop-color="#1F4FB8"/></radialGradient>
+    <g id="fig-arms"><path d="M158 100 L136 182 L128 254 M242 100 L264 182 L272 254"/></g>
+    <g id="fig-legs"><path d="M184 262 L180 342 L178 416 M216 262 L220 342 L222 416"/></g>
+    <g id="fig-core">
+      <ellipse cx="200" cy="44" rx="25" ry="29"/>
+      <rect x="189" y="66" width="22" height="24" rx="8"/>
+      <path d="M164 92 Q200 84 236 92 Q250 96 248 112 L236 170 Q232 196 234 214 Q238 236 236 258 Q220 272 200 272 Q180 272 164 258 Q162 236 166 214 Q168 196 164 170 L152 112 Q150 96 164 92 Z"/>
+    </g>
+  </defs>
+  <symbol id="i-logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6" fill="currentColor" stroke="none"/><ellipse cx="16" cy="16" rx="13.5" ry="5.5" transform="rotate(-28 16 16)"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5.5h4V20"/></symbol>
+  <symbol id="i-checkin" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="m9 13 2 2 4-4.5"/></symbol>
+  <symbol id="i-habitat" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 3.5-4.5"/><path d="M4 20.5h16"/></symbol>
+  <symbol id="i-medbay" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-mind" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="2.8"/></symbol>
+  <symbol id="i-companion" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
+  <symbol id="i-crew" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.7-3.2 3-5 6-5s5.3 1.8 6 5"/><circle cx="17" cy="9.5" r="2.6"/><path d="M16 14.6c2.6 0 4.4 1.6 5 4.4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A7.5 7.5 0 1 1 9.5 4.5a6 6 0 0 0 10 10z"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6.5 4.5 13 2.5-6.5H21"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="m12 13 3.5-3.5"/><path d="M12 5v1.5"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.4 6 10.8a6 6 0 0 1-12 0c0-4.4 6-10.8 6-10.8z"/></symbol>
+  <symbol id="i-thermo" viewBox="0 0 24 24"><path d="M14 14.2V5.5a2 2 0 0 0-4 0v8.7a4 4 0 1 0 4 0z"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8.5h10.5a2.75 2.75 0 1 0-2.75-2.75"/><path d="M3 12.5h15a3 3 0 1 1-3 3"/><path d="M3 16.5h6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 19.5 6.5v5.5c0 4.4-3.2 7.6-7.5 8.6-4.3-1-7.5-4.2-7.5-8.6V6.5z"/></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><rect x="2.8" y="8.6" width="18.4" height="6.8" rx="3.4" transform="rotate(-45 12 12)"/><path d="m9.6 9.6 4.8 4.8"/></symbol>
+  <symbol id="i-workout" viewBox="0 0 24 24"><path d="M6.5 7.5v9M3.5 10v4M17.5 7.5v9M20.5 10v4M6.5 12h11"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6.5" width="12.5" height="11" rx="3"/><path d="m15.5 10.5 5-3v9l-5-3"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6.5 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M13.5 3.5V8H18"/><path d="M9.5 13h5M9.5 16.5h5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4.5l-5.5 15.5-3-6.5z"/><path d="m11.5 13.5 8.5-9"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5c.6 4.3 2.2 6 6.5 6.5-4.3.6-5.9 2.2-6.5 6.5-.6-4.3-2.2-5.9-6.5-6.5 4.3-.5 5.9-2.2 6.5-6.5z"/><path d="M18.5 16v4M16.5 18h4"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="rail" id="nav">
+    <a class="brand" href="#home" aria-label="Home"><svg class="icon" aria-hidden="true"><use href="#i-logo"/></svg></a>
+    <a href="#home" data-nav="home"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a>
+    <a href="#checkin" data-nav="checkin"><svg class="icon" aria-hidden="true"><use href="#i-checkin"/></svg><span>Check-in</span></a>
+    <a href="#habitat" data-nav="habitat"><svg class="icon" aria-hidden="true"><use href="#i-habitat"/></svg><span>Habitat</span></a>
+    <a href="#medbay" data-nav="medbay"><svg class="icon" aria-hidden="true"><use href="#i-medbay"/></svg><span>Med bay</span></a>
+    <a href="#mind" data-nav="mind"><svg class="icon" aria-hidden="true"><use href="#i-mind"/></svg><span>Mind</span></a>
+    <a href="#companion" data-nav="companion"><svg class="icon" aria-hidden="true"><use href="#i-companion"/></svg><span>Companion</span></a>
+    <span class="rail-gap"></span>
+    <a href="#crew" data-nav="crew" id="nav-crew"><svg class="icon" aria-hidden="true"><use href="#i-crew"/></svg><span>Crew</span></a>
+  </nav>
+
+  <main class="content">
+    <header class="topbar" id="topbar"></header>
+    <section class="screen" id="login"></section>
+    <section class="screen" id="home"></section>
+    <section class="screen" id="readiness"></section>
+    <section class="screen" id="tasks"></section>
+    <section class="screen" id="point"></section>
+    <section class="screen" id="checkin"></section>
+    <section class="screen" id="habitat"></section>
+    <section class="screen" id="medbay"></section>
+    <section class="screen" id="mind"></section>
+    <section class="screen" id="companion"></section>
+    <section class="screen" id="crew"></section>
+    <section class="screen" id="case"></section>
+  </main>
+</div>
+
+<!-- The companion floats in the corner of every screen -->
+<div class="companion" id="floating-companion">
+  <div class="cp" id="cp" hidden>
+    <div class="cp-head"><span class="cp-mini" id="cp-mini"></span><b>Companion</b><button class="icon-btn sm" data-action="companion" aria-label="Close">×</button></div>
+    <div id="cp-body"></div>
+    <div class="cp-actions" id="cp-actions"></div>
+  </div>
+  <button class="orb" data-action="companion" aria-label="Open companion"><span id="orb-art"></span><span class="badge" id="orb-badge"></span></button>
+</div>
+
+<script>
+  // ---- Fake data (demo only): swap this block for the real pieces later ----
+  const mission = { day: 42, time: '07:15' }; // one mission clock for everyone (still to agree)
+
+  const bodyPoints = { head: 'Head', eyes: 'Eyes', heart: 'Heart', lungs: 'Lungs', gut: 'Gut', muscles: 'Muscles and bones' };
+
+  const habitat = {
+    co2: { now: 3100, peak: 5400, peakTime: '03:00' }, // ppm, like potest's monitor
+    temperature: 22.6, // °C
+    humidity: 46, // %
+    radiation: 0.5, // mSv per day
+    // CO₂ every hour, from 08:00 yesterday to 07:00 today (ppm)
+    co2Series: [2900, 3000, 3100, 3050, 3150, 3200, 3100, 3000, 2950, 3050, 3200, 3300, 3450, 3700, 4000, 4300, 4650, 4950, 5250, 5400, 5150, 4600, 3900, 3100],
+    headacheRisk: 4000, // example line on the chart, not an agreed limit
+  };
+
+  const crew = [
+    {
+      id: 1, name: 'Astronaut A', initials: 'A', role: 'astronaut',
+      readiness: 58, readinessNormal: 78, // 0–100 is a placeholder: the readiness definition is still open
+      checkin: { sleep: 4.5, mood: 5, stress: 6, fatigue: 7 }, // sleep in hours, the rest 1–10
+      factors: [
+        { label: 'Sleep', today: '4 h 30 min', normal: '7 h 10 min', status: 'red', trend: [7.2, 7.0, 7.3, 6.9, 7.1, 7.2, 4.5] },
+        { label: 'Resting heart rate', today: '66 bpm', normal: '61 bpm', status: 'blue', trend: [61, 60, 62, 61, 60, 62, 66] },
+        { label: 'Mood', today: '5 / 10', normal: '7 / 10', status: 'blue', trend: [7, 7, 8, 7, 6, 7, 5] },
+        { label: 'Stress', today: '6 / 10', normal: '4 / 10', status: 'blue', trend: [4, 4, 3, 4, 5, 4, 6] },
+        { label: 'Fatigue', today: '7 / 10', normal: '3 / 10', status: 'red', trend: [3, 3, 2, 3, 4, 3, 7] },
+        { label: 'Symptoms', today: 'Headache', normal: 'None', status: 'red', trend: null },
+      ],
+      tasks: [
+        { title: 'Daily check-in', time: '07:00', done: true, icon: 'checkin', link: '#checkin' },
+        { title: 'Did the ibuprofen help?', time: '07:30', done: false, icon: 'pill', link: '#medbay' },
+        { title: 'Measurements', time: '07:45', done: false, icon: 'activity', link: '#checkin' },
+        { title: 'Workout', time: '09:00', done: false, icon: 'workout', link: null },
+      ],
+      // Body points that are red. Every other point is blue.
+      alerts: {
+        head: { short: 'Headache', severity: 6, note: 'Headache since 06:50, severity 6 of 10. You slept 4 h 30 min, and cabin CO₂ was high overnight.', question: 'Is the headache worse than when you woke up?' },
+      },
+      meds: {
+        suggestion: { name: 'Paracetamol 500 mg', reason: 'For the headache you reported at 06:50', summary: 'Headache, reported at 06:50', compartment: 'B3', approved: false, declined: false, collected: false },
+        log: [
+          { when: 'Day 41 · 21:10', name: 'Ibuprofen 200 mg', reason: 'Muscle pain after workout', followUp: null },
+          { when: 'Day 36 · 09:05', name: 'Antihistamine 10 mg', reason: 'Blocked nose', followUp: 'Helped' },
+        ],
+      },
+      companion: {
+        messages: ['Good morning! You slept 4 h 30 min, less than usual.', 'Cabin CO₂ was high overnight, which can cause headaches. Want to tell me more about yours?'],
+        actions: [{ label: 'Report a symptom', href: '#checkin' }, { label: 'See Habitat', href: '#habitat' }],
+      },
+    },
+    {
+      id: 2, name: 'Astronaut B', initials: 'B', role: 'astronaut',
+      readiness: 86, readinessNormal: 82,
+      checkin: { sleep: 7.5, mood: 8, stress: 3, fatigue: 2 },
+      factors: [
+        { label: 'Sleep', today: '7 h 30 min', normal: '7 h 20 min', status: 'blue', trend: [7.3, 7.1, 7.4, 7.2, 7.5, 7.3, 7.5] },
+        { label: 'Resting heart rate', today: '54 bpm', normal: '55 bpm', status: 'blue', trend: [55, 56, 54, 55, 55, 54, 54] },
+        { label: 'Mood', today: '8 / 10', normal: '7 / 10', status: 'blue', trend: [7, 7, 8, 7, 7, 8, 8] },
+        { label: 'Stress', today: '3 / 10', normal: '3 / 10', status: 'blue', trend: [3, 3, 4, 3, 3, 3, 3] },
+        { label: 'Fatigue', today: '2 / 10', normal: '3 / 10', status: 'blue', trend: [3, 3, 3, 2, 3, 3, 2] },
+        { label: 'Symptoms', today: 'None', normal: 'None', status: 'blue', trend: null },
+      ],
+      tasks: [
+        { title: 'Daily check-in', time: '06:45', done: true, icon: 'checkin', link: '#checkin' },
+        { title: 'Measurements', time: '07:00', done: true, icon: 'activity', link: '#checkin' },
+        { title: 'Workout', time: '07:30', done: false, icon: 'workout', link: null },
+      ],
+      alerts: {},
+      meds: {
+        suggestion: null,
+        log: [{ when: 'Day 30 · 18:40', name: 'Ibuprofen 200 mg', reason: 'Knee pain', followUp: 'Helped' }],
+      },
+      companion: {
+        messages: ['Good morning! You slept 7 h 30 min, right on your normal.', 'Your workout starts at 07:30. Have a good session!'],
+        actions: [{ label: "Today's tasks", href: '#tasks' }],
+      },
+    },
+    {
+      id: 3, name: 'Astronaut C', initials: 'C', role: 'medical officer',
+      readiness: 74, readinessNormal: 76,
+      checkin: { sleep: 6.5, mood: 7, stress: 5, fatigue: 4 },
+      factors: [
+        { label: 'Sleep', today: '6 h 30 min', normal: '6 h 50 min', status: 'blue', trend: [6.8, 7.0, 6.7, 6.9, 6.8, 6.9, 6.5] },
+        { label: 'Resting heart rate', today: '63 bpm', normal: '62 bpm', status: 'blue', trend: [62, 61, 63, 62, 62, 61, 63] },
+        { label: 'Mood', today: '7 / 10', normal: '7 / 10', status: 'blue', trend: [7, 7, 6, 7, 7, 7, 7] },
+        { label: 'Stress', today: '5 / 10', normal: '4 / 10', status: 'blue', trend: [4, 4, 4, 5, 4, 4, 5] },
+        { label: 'Fatigue', today: '4 / 10', normal: '4 / 10', status: 'blue', trend: [4, 3, 4, 4, 4, 4, 4] },
+        { label: 'Symptoms', today: 'None', normal: 'None', status: 'blue', trend: null },
+      ],
+      tasks: [
+        { title: 'Daily check-in', time: '06:40', done: true, icon: 'checkin', link: '#checkin' },
+        { title: 'Review 1 medicine request', time: '07:20', done: false, icon: 'crew', link: '#crew' },
+        { title: 'Measurements', time: '08:00', done: false, icon: 'activity', link: '#checkin' },
+        { title: 'Workout', time: '14:00', done: false, icon: 'workout', link: null },
+      ],
+      alerts: {},
+      meds: { suggestion: null, log: [] },
+      companion: {
+        messages: ['Good morning! One medicine request is waiting for your approval.'],
+        actions: [{ label: 'Open crew view', href: '#crew' }],
+      },
+    },
+  ];
+
+  // Case summaries, made automatically when someone reports a problem. Only the medical officer sees them.
+  const cases = {
+    1: {
+      created: '06:52',
+      status: 'Draft, not sent',
+      timeline: [
+        { time: '03:00', title: 'Cabin CO₂ peak', text: '5,400 ppm', kind: 'red' },
+        { time: '06:30', title: 'Woke up', text: 'Slept 4 h 30 min', kind: 'red' },
+        { time: '06:50', title: 'Headache reported', text: 'Severity 6 of 10', kind: 'red' },
+        { time: '07:05', title: 'Medicine suggested', text: 'Paracetamol 500 mg, waiting for approval', kind: 'grey' },
+      ],
+      blocks: [
+        { title: 'Health change', rows: [['Sleep', '4 h 30 min', 'Normal 7 h 10 min'], ['Fatigue', '7 / 10', 'Normal 3 / 10'], ['Resting heart rate', '66 bpm', 'Normal 61 bpm']] },
+        { title: 'Symptom', rows: [['Headache', 'Severity 6 / 10', 'Since 06:50'], ['Body area', 'Head', '']] },
+        { title: 'Cabin conditions', rows: [['CO₂ peak', '5,400 ppm', 'At 03:00'], ['CO₂ now', '3,100 ppm', 'At 07:00'], ['Temperature', '22.6 °C', 'Normal']] },
+        { title: 'Doses', rows: [['Paracetamol 500 mg', 'Suggested 07:05', 'Waiting for approval'], ['Ibuprofen 200 mg', 'Day 41 · 21:10', 'Muscle pain']] },
+      ],
+    },
+  };
+  // ---- End of fake data ----
+
+  // ---- View code: how the data is shown ----
+  let me = crew.find((c) => c.id === Number(new URLSearchParams(location.search).get('crew'))) ?? crew[0];
+
+  const $ = (sel) => document.querySelector(sel);
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const num = (n) => n.toLocaleString('en-US');
+  const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const pill = (status, text) => `<span class="pill ${status}"><span class="dot"></span>${text}</span>`;
+  const fmtHours = (h) => { const m = Math.round((h % 1) * 60); return m ? `${Math.floor(h)} h ${m} min` : `${h} h`; };
+  const greeting = () => { const h = Number(mission.time.slice(0, 2)); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+  const readinessText = (p) => { const d = p.readiness - p.readinessNormal; return d <= -4 ? 'Lower than your normal' : d >= 4 ? 'Higher than your normal' : 'Around your normal'; };
+  const redFactors = (p) => p.factors.filter((f) => f.status === 'red');
+  const nextTask = (p) => p.tasks.find((t) => !t.done);
+  const doneCount = (p) => p.tasks.filter((t) => t.done).length;
+
+  const ring = (value, max, size, stroke) => {
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const off = c * (1 - Math.min(value / max, 1));
+    const m = size / 2;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+      <circle class="ring-track" cx="${m}" cy="${m}" r="${r}" stroke-width="${stroke}"/>
+      <circle class="ring-arc" cx="${m}" cy="${m}" r="${r}" stroke-width="${stroke}" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="--c: ${c.toFixed(2)}" transform="rotate(-90 ${m} ${m})"/>
+    </svg>`;
+  };
+
+  // Last 7 days, with a dashed line at the average of the earlier days ("your normal")
+  const spark = (values, status) => {
+    const w = 300, h = 46, pad = 6;
+    const earlier = values.slice(0, -1);
+    const normal = earlier.reduce((s, v) => s + v, 0) / earlier.length;
+    const lo = Math.min(...values, normal), hi = Math.max(...values, normal);
+    const span = hi - lo || 1;
+    const X = (i) => pad + (i / (values.length - 1)) * (w - pad * 2);
+    const Y = (v) => h - pad - ((v - lo) / span) * (h - pad * 2);
+    const d = values.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+    const last = values.length - 1;
+    return `<svg class="spark ${status}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+      <line class="normal" x1="${pad}" x2="${w - pad}" y1="${Y(normal).toFixed(1)}" y2="${Y(normal).toFixed(1)}"/>
+      <path d="${d}"/>
+      <circle cx="${X(last).toFixed(1)}" cy="${Y(values[last]).toFixed(1)}" r="4.5"/>
+    </svg>`;
+  };
+
+  const lineChart = ({ values, min, max, ticks, xLabels, threshold = null, thresholdLabel = '', peak = null, peakLabel = '', dots = false, w = 680, h = 230 }) => {
+    const pl = 50, pr = 16, pt = 22, pb = 32;
+    const f = (n) => n.toFixed(1);
+    const X = (i) => pl + (i / (values.length - 1)) * (w - pl - pr);
+    const Y = (v) => pt + (1 - (v - min) / (max - min)) * (h - pt - pb);
+    const line = values.map((v, i) => `${i ? 'L' : 'M'}${f(X(i))} ${f(Y(v))}`).join(' ');
+    const area = `${line} L${f(X(values.length - 1))} ${h - pb} L${f(X(0))} ${h - pb} Z`;
+    return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Line chart">
+      ${ticks.map((t) => `<line class="grid" x1="${pl}" x2="${w - pr}" y1="${f(Y(t))}" y2="${f(Y(t))}"/><text class="axis" x="${pl - 12}" y="${f(Y(t) + 4)}" text-anchor="end">${num(t)}</text>`).join('')}
+      ${threshold !== null ? `<line class="threshold" x1="${pl}" x2="${w - pr}" y1="${f(Y(threshold))}" y2="${f(Y(threshold))}"/><text class="threshold-label" x="${pl + 8}" y="${f(Y(threshold) - 8)}">${thresholdLabel}</text>` : ''}
+      <path class="area" d="${area}"/>
+      <path class="line" d="${line}"/>
+      ${dots ? values.map((v, i) => `<circle class="dot" cx="${f(X(i))}" cy="${f(Y(v))}" r="4.5"/>`).join('') : ''}
+      ${xLabels.map(([i, label]) => `<text class="axis" x="${f(X(i))}" y="${h - 8}" text-anchor="middle">${label}</text>`).join('')}
+      ${peak !== null ? `<circle class="hl" cx="${f(X(peak))}" cy="${f(Y(values[peak]))}" r="6"/><text class="hl-label" x="${f(X(peak))}" y="${f(Y(values[peak]) - 14)}" text-anchor="middle">${peakLabel}</text>` : ''}
+    </svg>`;
+  };
+
+  // Where each measurement point sits on the body figure, and which side its label goes
+  const pointLayout = {
+    head: { x: 200, y: 24, side: 'L' },
+    eyes: { x: 211, y: 42, side: 'R' },
+    lungs: { x: 180, y: 126, side: 'L' },
+    heart: { x: 214, y: 140, side: 'R' },
+    gut: { x: 200, y: 204, side: 'L' },
+    muscles: { x: 221, y: 318, side: 'R' },
+  };
+
+  const bodyFigure = (p, focus = null) => {
+    const points = Object.entries(pointLayout).map(([key, pos]) => {
+      const a = p.alerts[key];
+      const left = pos.side === 'L';
+      const cls = ['pt', a ? 'red' : 'blue', focus === key ? 'focus' : '', focus && focus !== key ? 'dim' : ''].join(' ');
+      return `<a href="#point:${key}" class="${cls}" aria-label="${bodyPoints[key]}: ${a ? a.short : 'fine'}">
+        <line class="lead-line" x1="${pos.x}" y1="${pos.y}" x2="${left ? 112 : 288}" y2="${pos.y}"/>
+        <circle class="halo" cx="${pos.x}" cy="${pos.y}" r="13"/>
+        <circle class="core" cx="${pos.x}" cy="${pos.y}" r="5.5"/>
+        <text class="pt-name" x="${left ? 104 : 296}" y="${pos.y - 3}" text-anchor="${left ? 'end' : 'start'}">${bodyPoints[key]}</text>
+        <text class="pt-status" x="${left ? 104 : 296}" y="${pos.y + 13}" text-anchor="${left ? 'end' : 'start'}">${a ? a.short : 'Fine'}</text>
+      </a>`;
+    }).join('');
+    return `<svg class="figure" viewBox="-30 0 460 440" role="img" aria-label="Body figure with measurement points">
+      <ellipse class="pedestal" cx="200" cy="430" rx="80" ry="9"/>
+      <use href="#fig-arms" class="fig-line" stroke-width="23"/>
+      <use href="#fig-legs" class="fig-line" stroke-width="29"/>
+      <use href="#fig-core" class="fig-line-core"/>
+      <use href="#fig-arms" class="fig-fill" stroke-width="20"/>
+      <use href="#fig-legs" class="fig-fill" stroke-width="26"/>
+      <use href="#fig-core" class="fig-fill-core"/>
+      ${points}
+    </svg>`;
+  };
+
+  const mascotSvg = () => `<svg viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse class="m-ring back" cx="32" cy="34" rx="29" ry="9" transform="rotate(-18 32 34)"/>
+    <circle cx="32" cy="32" r="17" fill="url(#mascotGrad)"/>
+    <circle class="m-cheek" cx="22.5" cy="36.5" r="2.2"/><circle class="m-cheek" cx="41.5" cy="36.5" r="2.2"/>
+    <ellipse class="m-eye" cx="26.5" cy="30.5" rx="2.5" ry="3.3"/><ellipse class="m-eye" cx="37.5" cy="30.5" rx="2.5" ry="3.3"/>
+    <path class="m-smile" d="M28 37 Q32 40.5 36 37"/>
+    <path class="m-ring" d="M4.4 43 A29 9 -18 0 0 59.6 25"/>
+  </svg>`;
+
+  const slider = ({ label, min, max, step = 1, value, kind, lo, hi }) => {
+    const pct = ((value - min) / (max - min)) * 100;
+    return `<div class="slider">
+      <div class="slider-head"><span>${label}</span><b class="val">${kind === 'hours' ? fmtHours(value) : `${value} / ${max}`}</b></div>
+      <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-kind="${kind}" style="--fill: ${pct}%" aria-label="${label}">
+      <div class="anchors"><span>${lo}</span><span>${hi}</span></div>
+    </div>`;
+  };
+
+  const metric = (label, ic, value, unit, status, note) => `
+    <div class="card metric ${status}">
+      <div class="card-head"><span class="eyebrow">${label}</span><span class="metric-icon ${status}">${icon(ic)}</span></div>
+      <div class="metric-val">${value}<small>${unit}</small></div>
+      ${pill(status, note)}
+    </div>`;
+
+  const measurements = [
+    { icon: 'activity', name: 'Resting heart rate', how: 'Sit still and breathe normally', time: '1 min' },
+    { icon: 'gauge', name: 'Blood pressure', how: 'Cuff on your upper arm, relax', time: '2 min' },
+    { icon: 'drop', name: 'Blood oxygen', how: 'Clip the sensor on a finger', time: '30 s' },
+    { icon: 'thermo', name: 'Temperature', how: 'Sensor under the tongue', time: '1 min' },
+  ];
+
+  // ---- One function per screen ----
+  const screens = {
+    login: () => `<div class="login">
+      <div class="login-card">
+        <svg class="icon logo-lg" aria-hidden="true"><use href="#i-logo"/></svg>
+        <div class="scanner">
+          <svg class="face" viewBox="0 0 120 150" aria-hidden="true"><path d="M60 14c-24 0-40 18-40 46 0 30 18 62 40 62s40-32 40-62c0-28-16-46-40-46z"/><circle class="fill" cx="45" cy="64" r="3.2"/><circle class="fill" cx="75" cy="64" r="3.2"/><path d="M60 70v14h-6"/><path d="M48 98c7 5 17 5 24 0"/></svg>
+          <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+          <span class="scanline"></span>
+        </div>
+        <h2 class="display">Look at the camera</h2>
+        <p class="muted">Hold still for a moment.</p>
+        <a class="btn primary" href="#home">Start face scan</a>
+        <div class="divider">Demo: choose a crew member</div>
+        <div class="crew-pick">${crew.map((c) => `
+          <a class="crew-btn ${c.id === me.id ? 'current' : ''}" href="?crew=${c.id}#home" data-crew="${c.id}">
+            <span class="avatar lg">${c.initials}</span><b>${c.name}</b><small>${cap(c.role)}</small>
+          </a>`).join('')}
+        </div>
+      </div>
+    </div>`,
+
+    home: () => {
+      const reds = redFactors(me);
+      const next = nextTask(me);
+      return `<div class="home-grid">
+        <a class="card" href="#readiness">
+          <div class="card-head"><span class="eyebrow">Readiness</span><span class="more">Details ${icon('chev')}</span></div>
+          <div class="readiness-body">
+            <div class="ring-wrap">${ring(me.readiness, 100, 168, 14)}<div class="ring-center"><b class="num-xl">${me.readiness}</b><span class="faint">of 100</span></div></div>
+            <div class="readiness-text">
+              <p class="lead">${readinessText(me)} <span class="faint">(${me.readinessNormal})</span></p>
+              <div class="chips">${reds.length ? reds.map((f) => pill('red', f.label === 'Symptoms' ? f.today : `${f.label} · ${f.today}`)).join('') : pill('blue', 'Everything within your normal')}</div>
+            </div>
+          </div>
+        </a>
+        <a class="card" href="#tasks">
+          <div class="card-head"><span class="eyebrow">Today's tasks</span><span class="more">All tasks ${icon('chev')}</span></div>
+          <div class="task-score"><b>${doneCount(me)}</b><span class="muted">of ${me.tasks.length} done</span></div>
+          <div class="segments">${me.tasks.map((t) => `<span class="${t.done ? 'on' : ''}"></span>`).join('')}</div>
+          <div class="task-mini">${me.tasks.map((t) => `
+            <div class="t ${t.done ? 'done' : ''} ${t === next ? 'next' : ''}">
+              <span class="check ${t.done ? 'on' : ''}">${t.done ? icon('check') : ''}</span>
+              <span class="title grow">${t.title}</span>
+              <span class="time">${t === next ? 'Next · ' : ''}${t.time}</span>
+            </div>`).join('')}
+          </div>
+        </a>
+        <div class="card body-card">
+          <div class="card-head"><span class="eyebrow">Body</span><span class="legend"><span><i class="b"></i>Fine</span><span><i class="r"></i>Look at this</span></span></div>
+          <div class="figure-wrap">${bodyFigure(me)}<span class="scan" aria-hidden="true"></span></div>
+          <p class="hint">Tap a point for details</p>
+        </div>
+      </div>`;
+    },
+
+    readiness: () => `
+      <div class="card intro">
+        <div class="ring-wrap">${ring(me.readiness, 100, 92, 9)}<div class="ring-center"><b class="num-md">${me.readiness}</b></div></div>
+        <div>
+          <p class="lead">${readinessText(me)} <span class="faint">(${me.readinessNormal})</span></p>
+          <p class="muted small">Each value is compared with your own normal. The lines show the last 7 days; the dashed line is your normal.</p>
+        </div>
+      </div>
+      <div class="factor-grid">${me.factors.map((f) => `
+        <div class="card factor">
+          <div class="card-head"><span class="eyebrow">${f.label}</span>${pill(f.status, f.status === 'red' ? 'Look at this' : 'Fine')}</div>
+          <div class="factor-val">${f.today}</div>
+          <div class="faint small">Your normal: ${f.normal}</div>
+          ${f.trend ? spark(f.trend, f.status) : `<div class="spark-empty faint small">${f.status === 'red' ? 'Reported today' : 'Nothing reported'}</div>`}
+        </div>`).join('')}
+      </div>`,
+
+    tasks: () => {
+      const done = doneCount(me);
+      const next = nextTask(me);
+      return `
+      <div class="card intro">
+        <div class="ring-wrap">${ring(done, me.tasks.length, 92, 9)}<div class="ring-center"><b class="num-md">${done}/${me.tasks.length}</b></div></div>
+        <div>
+          <p class="lead">${done === me.tasks.length ? 'All done for today' : `${me.tasks.length - done} left today`}</p>
+          <p class="muted small">Tap a task to open it.</p>
+        </div>
+      </div>
+      <div class="card list">${me.tasks.map((t) => `
+        <a class="row-item ${t.done ? 'done' : ''}" href="${t.link ?? '#tasks'}">
+          <span class="row-icon ${t.done ? 'done' : ''}">${icon(t.icon)}</span>
+          <span class="grow"><b>${t.title}</b><small>${t.done ? `Done at ${t.time}` : t === next ? `Next, at ${t.time}` : `At ${t.time}`}</small></span>
+          ${t.done ? `<span class="check on">${icon('check')}</span>` : `<span class="btn ghost sm">${t.link ? 'Open' : 'Start'}</span>`}
+        </a>`).join('')}
+      </div>`;
+    },
+
+    point: (key) => {
+      if (!bodyPoints[key]) return screens.home();
+      const a = me.alerts[key];
+      return `<div class="point-grid">
+        <div class="card">${bodyFigure(me, key)}</div>
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><span class="eyebrow">${bodyPoints[key]}</span>${a ? pill('red', a.short) : pill('blue', 'Fine')}</div>
+            <p class="lead">${a ? a.note : 'Everything here is within your normal today.'}</p>
+          </div>
+          ${a ? `<div class="card question">
+            <div class="card-head"><span class="eyebrow">Question for you</span></div>
+            <p class="lead" style="margin-bottom: 16px">${a.question}</p>
+            <div class="btn-row"><button class="btn ghost" data-action="answer">Yes</button><button class="btn ghost" data-action="answer">No</button></div>
+          </div>` : ''}
+          <div class="btn-row"><a class="btn primary" href="#checkin">Report a symptom here</a><a class="btn ghost" href="#home">Back to home</a></div>
+        </div>
+      </div>`;
+    },
+
+    checkin: () => {
+      const c = me.checkin;
+      const area = Object.keys(me.alerts)[0] ?? null;
+      const saved = me.tasks.find((t) => t.title === 'Daily check-in');
+      return `<div class="checkin-grid">
+        <div class="card">
+          <div class="card-head" style="margin-bottom: 0"><h3>Daily check-in</h3>${saved && saved.done ? pill('blue', `Saved at ${saved.time}`) : ''}</div>
+          <p class="sub">How was your night, and how do you feel now?</p>
+          ${slider({ label: 'Sleep', min: 0, max: 12, step: 0.5, value: c.sleep, kind: 'hours', lo: '0 h', hi: '12 h' })}
+          ${slider({ label: 'Mood', min: 1, max: 10, value: c.mood, kind: 'scale', lo: '1 · Very low', hi: '10 · Very good' })}
+          ${slider({ label: 'Stress', min: 1, max: 10, value: c.stress, kind: 'scale', lo: '1 · Calm', hi: '10 · Very stressed' })}
+          ${slider({ label: 'Fatigue', min: 1, max: 10, value: c.fatigue, kind: 'scale', lo: '1 · Rested', hi: '10 · Exhausted' })}
+          <a class="btn primary wide" href="#home">Save check-in</a>
+        </div>
+        <div class="card">
+          <h3>Symptom report</h3>
+          <p class="sub">Something feels wrong? Tell us where and how bad.</p>
+          <div class="field"><span>Body area</span><div class="select-chips">${Object.entries(bodyPoints).map(([k, label]) => `<button class="chip-btn" data-action="chip" aria-pressed="${k === area}">${label}</button>`).join('')}</div></div>
+          <label class="field"><span>Symptom</span><input class="input" type="text" placeholder="For example: headache" value="${area ? me.alerts[area].short : ''}"></label>
+          ${slider({ label: 'Severity', min: 0, max: 10, value: area ? me.alerts[area].severity : 0, kind: 'scale', lo: '0 · None', hi: '10 · Worst' })}
+          <p class="note">${icon('lock')} Shared with your medical officer only</p>
+          <a class="btn primary wide" href="#medbay">Send report</a>
+        </div>
+        <div class="card">
+          <h3>Guided measurements</h3>
+          <p class="sub">Step by step, about 5 minutes in total.</p>
+          ${measurements.map((m) => `
+            <div class="measure">
+              <span class="row-icon">${icon(m.icon)}</span>
+              <span class="grow"><b>${m.name}</b><small>${m.how} · ${m.time}</small></span>
+              <button class="btn ghost sm">Start</button>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    },
+
+    habitat: () => {
+      const h = habitat;
+      const high = h.co2.peak > h.headacheRisk;
+      const headache = Boolean(me.alerts.head);
+      return `<div class="metric-grid">
+        ${metric('CO₂', 'wind', num(h.co2.now), 'ppm', high ? 'red' : 'blue', high ? `High overnight: ${num(h.co2.peak)} at ${h.co2.peakTime}` : 'Normal')}
+        ${metric('Temperature', 'thermo', h.temperature, '°C', 'blue', 'Normal')}
+        ${metric('Humidity', 'drop', h.humidity, '%', 'blue', 'Normal')}
+        ${metric('Radiation', 'shield', h.radiation, 'mSv / day', 'blue', 'Normal')}
+      </div>
+      <div class="habitat-grid">
+        <div class="card">
+          <div class="card-head"><span class="eyebrow">CO₂ · last 24 hours</span><span class="faint small">ppm</span></div>
+          ${lineChart({ values: h.co2Series, min: 2000, max: 6000, ticks: [2000, 4000, 6000], xLabels: [[0, '08:00'], [6, '14:00'], [12, '20:00'], [18, '02:00'], [23, '07:00']], threshold: h.headacheRisk, thresholdLabel: 'Headache risk (example)', peak: h.co2Series.indexOf(h.co2.peak), peakLabel: `${num(h.co2.peak)} at ${h.co2.peakTime}` })}
+        </div>
+        <div class="card insight-card">
+          <span class="insight-icon ${headache ? 'red' : ''}">${icon('spark')}</span>
+          <h3>${headache ? 'Linked to your headache' : 'Nothing linked to you today'}</h3>
+          <p class="muted">${headache ? `High CO₂ is a known headache trigger. CO₂ peaked at ${h.co2.peakTime}, and you reported a headache at 06:50.` : 'High CO₂ is a known headache trigger. None of your symptoms are linked to the cabin today.'}</p>
+          ${headache ? `<div><a class="btn ghost sm" href="#point:head">See your headache</a></div>` : ''}
+        </div>
+      </div>`;
+    },
+
+    medbay: () => {
+      const s = me.meds.suggestion;
+      let suggestion;
+      if (!s) {
+        suggestion = `<div class="card empty-card">
+          <span class="row-icon">${icon('pill')}</span>
+          <h3>No medicine needed</h3>
+          <p class="muted">When you report a symptom, suggestions from the med kit show up here.</p>
+        </div>`;
+      } else {
+        const state = s.collected ? pill('blue', 'Collected') : s.approved ? pill('blue', 'Approved') : s.declined ? pill('red', 'Declined') : pill('grey', 'Waiting for approval');
+        const action = s.collected ? `<p class="note">${icon('check')} Compartment ${s.compartment} opened at ${s.collectedAt}</p>`
+          : s.approved ? `<button class="btn primary wide" data-action="collect">Collect dose</button>`
+          : s.declined ? `<p class="muted small">Your medical officer will talk to you about other options.</p>`
+          : `<button class="btn primary wide" disabled>Collect after approval</button>`;
+        suggestion = `<div class="card">
+          <div class="card-head"><span class="eyebrow">Suggested for you</span>${state}</div>
+          <div class="med-name">${s.name}</div>
+          <p class="muted" style="margin-bottom: 14px">${s.reason}</p>
+          <div class="kv"><span>Compartment</span><b class="compartment">${s.compartment}</b></div>
+          <div class="kv"><span>Needs approval from</span><b>Medical officer</b></div>
+          ${action}
+        </div>`;
+      }
+      const log = me.meds.log.length ? me.meds.log.map((l, i) => `
+        <div class="log-row">
+          <span class="row-icon">${icon('pill')}</span>
+          <span class="grow"><b>${l.name}</b><small>${l.when} · ${l.reason}</small></span>
+          ${l.followUp ? pill(l.followUp === 'Helped' ? 'blue' : 'red', l.followUp)
+            : `<span class="ask"><span class="small muted">Did it help?</span><button class="btn ghost sm" data-action="helped" data-i="${i}" data-v="Helped">Yes</button><button class="btn ghost sm" data-action="helped" data-i="${i}" data-v="Did not help">No</button></span>`}
+        </div>`).join('') : '<p class="muted">No doses yet.</p>';
+      return `<div class="med-grid">
+        ${suggestion}
+        <div class="card"><div class="card-head"><span class="eyebrow">Dose log</span></div>${log}</div>
+      </div>`;
+    },
+
+    mind: () => {
+      const mood = me.factors.find((f) => f.label === 'Mood');
+      return `<div class="mind-grid">
+        <div class="card">
+          <div class="card-head"><span class="eyebrow">Mood · last 7 days</span><span class="faint small">1–10</span></div>
+          ${lineChart({ values: mood.trend, min: 1, max: 10, ticks: [1, 5, 10], xLabels: mood.trend.map((_, i) => [i, `Day ${mission.day - 6 + i}`]), dots: true, h: 210 })}
+        </div>
+        <div class="card journal">
+          <div class="card-head"><span class="eyebrow">Journal</span>${pill('grey', 'Private')}</div>
+          <textarea class="input" rows="9" placeholder="Write anything you like."></textarea>
+          <p class="note">${icon('lock')} Private. Not shared with the crew or Earth.</p>
+          <button class="btn primary">Save entry</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="eyebrow">Support</span></div>
+          <div class="log-row"><span class="row-icon">${icon('video')}</span><span class="grow"><b>Private call with your psychologist</b><small>Next free slot: Day ${mission.day + 1} · 18:00</small></span><button class="btn ghost sm">Book</button></div>
+          <div class="log-row"><span class="row-icon">${icon('wind')}</span><span class="grow"><b>Breathing exercise</b><small>3 minutes, guided</small></span><button class="btn ghost sm">Start</button></div>
+        </div>
+      </div>`;
+    },
+
+    companion: () => `
+      <div class="card companion-hero">
+        <div class="mascot-lg">${mascotSvg()}</div>
+        <div>
+          <h3>Your companion</h3>
+          <p class="muted">It floats in the corner of every screen. Tap it any time to see what it noticed, get help reporting a symptom, or find the right section.</p>
+          <button class="btn primary" data-action="companion">Open companion</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="eyebrow">Points</span>${pill('grey', 'Comes later')}</div>
+        <div class="factor-val faint">240</div>
+        <p class="muted small">Points for finished tasks and changing how the companion looks are planned for later.</p>
+      </div>`,
+
+    crew: () => {
+      const requests = crew.filter((c) => c.meds.suggestion);
+      const waiting = requests.filter((c) => !c.meds.suggestion.approved && !c.meds.suggestion.declined).length;
+      return `<div class="crew-grid">${crew.map((c) => {
+          const flags = [...redFactors(c).filter((f) => f.label !== 'Symptoms').map((f) => f.label), ...Object.values(c.alerts).map((a) => a.short)];
+          return `<div class="card crew-card">
+            <div class="who"><span class="avatar">${c.initials}</span><span class="grow"><b>${c.name}</b><small class="faint">${cap(c.role)}</small></span>${c.id === me.id ? pill('grey', 'You') : ''}</div>
+            <div class="crew-score">
+              <div class="ring-wrap">${ring(c.readiness, 100, 68, 7)}<div class="ring-center"><b class="num-sm">${c.readiness}</b></div></div>
+              <div class="chips">${flags.length ? flags.map((x) => pill('red', x)).join('') : pill('blue', 'All within normal')}</div>
+            </div>
+            ${cases[c.id] ? `<a class="btn ghost sm" href="#case:${c.id}">${icon('file')} Open case summary</a>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="eyebrow">Medicine approvals</span>${waiting ? pill('red', `${waiting} waiting`) : pill('blue', 'Nothing waiting')}</div>
+        ${requests.length ? requests.map((c) => {
+          const s = c.meds.suggestion;
+          return `<div class="log-row">
+            <span class="avatar sm">${c.initials}</span>
+            <span class="grow"><b>${s.name} for ${c.name}</b><small>${s.summary} · compartment ${s.compartment}</small></span>
+            ${s.approved ? pill('blue', 'Approved') : s.declined ? pill('grey', 'Declined')
+              : `<span class="btn-row"><button class="btn ghost sm" data-action="decline" data-id="${c.id}">Decline</button><button class="btn primary sm" data-action="approve" data-id="${c.id}">Approve</button></span>`}
+          </div>`;
+        }).join('') : '<p class="muted">No medicine requests.</p>'}
+      </div>`;
+    },
+
+    case: (arg) => {
+      const c = crew.find((x) => x.id === Number(arg));
+      const k = c ? cases[c.id] : null;
+      if (!k) return `<div class="card"><p class="muted">No case summary for this crew member.</p></div>`;
+      return `<div class="case-head">
+          <div class="who"><span class="avatar lg">${c.initials}</span><span><b class="h3">${c.name}</b><small class="faint">Made automatically at ${k.created}</small></span></div>
+          <div class="btn-row">
+            <span class="pill grey">${icon('lock')}Hidden from ${c.name}</span>
+            ${pill('grey', k.status)}
+            <button class="btn primary sm">${icon('send')} Send to Earth</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="eyebrow">What happened</span></div>
+          <div class="timeline">${k.timeline.map((e) => `
+            <div class="tl-item ${e.kind}"><span class="tl-dot"></span><div class="tl-time">${e.time}</div><div class="tl-title">${e.title}</div><div class="tl-text">${e.text}</div></div>`).join('')}
+          </div>
+        </div>
+        <div class="case-grid">${k.blocks.map((b) => `
+          <div class="card">
+            <div class="card-head"><span class="eyebrow">${b.title}</span></div>
+            ${b.rows.map(([label, value, extra]) => `<div class="crow"><span class="faint small">${label}</span><b>${value}</b>${extra ? `<small class="muted">${extra}</small>` : ''}</div>`).join('')}
+          </div>`).join('')}
+        </div>`;
+    },
+  };
+
+  // ---- Top bar, companion, routing ----
+  const parents = { readiness: 'home', tasks: 'home', point: 'home', case: 'crew' };
+  const titles = {
+    home: () => [greeting(), me.name],
+    readiness: () => ['Home', 'Readiness'],
+    tasks: () => ['Home', "Today's tasks"],
+    point: (arg) => ['Body', bodyPoints[arg] ?? 'Body'],
+    checkin: () => ['Daily', 'Check-in'],
+    habitat: () => ['Cabin', 'Habitat'],
+    medbay: () => ['Medicine', 'Med bay'],
+    mind: () => ['Wellbeing', 'Mind'],
+    companion: () => ['Points and mascot', 'Companion'],
+    crew: () => ['Medical officer', 'Crew view'],
+    case: () => ['Crew view', 'Case summary'],
+  };
+
+  const renderTopbar = (screen, arg) => {
+    const [eyebrow, title] = titles[screen](arg);
+    const parent = parents[screen];
+    const dark = document.documentElement.dataset.theme !== 'light';
+    $('#topbar').innerHTML = `
+      <div class="title-block">
+        ${parent ? `<a class="back" href="#${parent}" aria-label="Back">${icon('back')}</a>` : ''}
+        <div><div class="eyebrow">${eyebrow}</div><h1 class="page-title">${title}</h1></div>
+      </div>
+      <div class="topbar-right">
+        <span class="chip-demo">Demo data</span>
+        <div class="clock"><span class="eyebrow">Mission day</span><b>${mission.day}</b><span class="sep"></span><span class="eyebrow">Time</span><b>${mission.time}</b></div>
+        <button class="icon-btn" data-action="theme" title="${dark ? 'Switch to the day look' : 'Switch to the night look'}" aria-label="Switch look">${icon(dark ? 'sun' : 'moon')}</button>
+        <a class="me" href="#login" title="Switch crew member"><span class="avatar">${me.initials}</span><span><b>${me.name}</b><small>${cap(me.role)} · Switch</small></span></a>
+      </div>`;
+  };
+
+  const renderCompanion = () => {
+    $('#orb-art').innerHTML = mascotSvg();
+    $('#cp-mini').innerHTML = mascotSvg();
+    $('#cp-body').innerHTML = me.companion.messages.map((m) => `<p class="bubble">${m}</p>`).join('');
+    $('#cp-actions').innerHTML = me.companion.actions.map((a) => `<a class="btn ghost sm" href="${a.href}">${a.label}</a>`).join('');
+    $('#orb-badge').textContent = me.companion.messages.length;
+    $('#orb-badge').hidden = false;
+    $('#cp').hidden = true;
+  };
+
+  const show = (scrollUp = true) => {
+    const [name, arg] = (location.hash.slice(1) || 'home').split(':');
+    const screen = screens[name] ? name : 'home';
+    document.querySelectorAll('.screen').forEach((s) => { s.hidden = s.id !== screen; });
+    document.getElementById(screen).innerHTML = screens[screen](arg);
+    const isLogin = screen === 'login';
+    $('#nav').hidden = isLogin;
+    $('#topbar').hidden = isLogin;
+    $('#floating-companion').hidden = isLogin;
+    if (!isLogin) renderTopbar(screen, arg);
+    const navKey = parents[screen] ?? screen;
+    document.querySelectorAll('[data-nav]').forEach((a) => {
+      if (a.dataset.nav === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    $('#nav-crew').hidden = me.role !== 'medical officer';
+    if (scrollUp) window.scrollTo(0, 0);
+  };
+
+  const setCrew = (id) => {
+    me = crew.find((c) => c.id === id) ?? crew[0];
+    try { history.replaceState(null, '', `?crew=${me.id}#home`); } catch (e) { /* some previews block this; the in-page switch still works */ }
+    renderCompanion();
+    if (location.hash === '#home') show(); else location.hash = 'home';
+  };
+
+  const applyTheme = (theme) => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('ui-look-theme', theme); } catch (e) { /* storage blocked */ }
+  };
+
+  // ---- Clicks and sliders ----
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#cp-actions a')) $('#cp').hidden = true;
+    const el = e.target.closest('[data-action], [data-crew]');
+    if (!el) return;
+    if (el.dataset.crew) { e.preventDefault(); setCrew(Number(el.dataset.crew)); return; }
+    const action = el.dataset.action;
+    if (action === 'theme') { applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); show(false); }
+    if (action === 'companion') { $('#cp').hidden = !$('#cp').hidden; $('#orb-badge').hidden = true; }
+    if (action === 'chip') el.parentElement.querySelectorAll('.chip-btn').forEach((b) => b.setAttribute('aria-pressed', String(b === el)));
+    if (action === 'answer') el.closest('.btn-row').outerHTML = `<div>${pill('blue', 'Thanks, noted')}</div>`;
+    if (action === 'approve' || action === 'decline') {
+      const s = crew.find((c) => c.id === Number(el.dataset.id)).meds.suggestion;
+      s.approved = action === 'approve';
+      s.declined = action === 'decline';
+      show(false);
+    }
+    if (action === 'collect') {
+      const s = me.meds.suggestion;
+      s.collected = true;
+      s.collectedAt = mission.time;
+      me.meds.log.unshift({ when: `Day ${mission.day} · ${mission.time}`, name: s.name, reason: s.summary.split(',')[0], followUp: null });
+      show(false);
+    }
+    if (action === 'helped') { me.meds.log[Number(el.dataset.i)].followUp = el.dataset.v; show(false); }
+  });
+
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if (el.type !== 'range') return;
+    const v = Number(el.value);
+    el.style.setProperty('--fill', `${((v - Number(el.min)) / (Number(el.max) - Number(el.min))) * 100}%`);
+    el.closest('.slider').querySelector('.val').textContent = el.dataset.kind === 'hours' ? fmtHours(v) : `${v} / ${el.max}`;
+  });
+
+  renderCompanion();
+  show();
+  window.addEventListener('hashchange', () => show());
+</script>
+</body>
+</html>

@@ -28,6 +28,9 @@
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
   tablet/laptop ([PR #43](https://github.com/Tilihub/space-apps-2026/pull/43)). Every screen from the overview is there as labelled boxes; one tab per astronaut
   with `?crew=1`, `?crew=2`, `?crew=3`; all fake data in one block at the top of the script
+- Made a first look suggestion ([ui-look/index.html](ui-look/index.html)): night look (default)
+  and day look, body figure with blue/red points, floating companion in the corner, 1–10 scales
+  and sleep in hours as Tommy's notes ask. The skeleton stays unstyled for comparison
 - Wrote the demo cases in [demo-cases.md](demo-cases.md): one narrator and five crew members, the
   medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
   real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
@@ -42,7 +45,9 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- UI skeleton (branch `zt/ui-skeleton`): agree with the team what goes where, then move boxes
+- UI look (branch `zt/ui-look`): get the team's reaction, then adjust the design tokens at the
+  top of the style. The readiness score and its 0–100 scale are still placeholders.
+- UI skeleton (merged): agree with the team what goes where, then move boxes
   around in [ui-skeleton/index.html](ui-skeleton/index.html). Keep it unstyled until the layout
   is agreed. Astronaut C as medical officer and readiness on 0–100 are placeholders, not decisions.
 - Go through the app overview in [plan.md](plan.md) with Tommy. It's a draft, open to change.
