@@ -195,14 +195,15 @@
 
 <script type="module">
   import * as THREE from 'three';
+  import {BODY_POINTS,POINT_BY_ID,DEFAULT_POINT} from '/body-points.js';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
   // =====================================================================================
   // mountBody3D(container, options) – the part the look page needs
-  //   options.mode: 'view' (home: shows reported areas, not tappable) or 'report' (tap an area to select it)
+  //   options.mode: 'view' (tap a symptom pin for a temporary label) or 'report' (select a location)
   //   options.body: 'female' or 'male'
   //   options.reported: { head: { short: 'Headache' } } – areas with a symptom already reported
-  //   options.selected: an area key or null (report mode)
+  //   options.selected: a location id, legacy area key, or null (report mode)
   //   options.onSelect(key): called when the astronaut taps an area in report mode
   //   Returns { update(changes), setSelected(key), dispose() }
   // =====================================================================================
@@ -322,6 +323,15 @@
       }
       const n = new THREE.Vector3().fromArray(normal, best * 3);
       anchors[key] = { pin: new THREE.Vector3().fromArray(pos, best * 3).addScaledVector(n, 0.004), normal: n };
+    }
+    for(const point of BODY_POINTS) {
+      let best=-1,bestD=Infinity;const side=point.view==='front'?1:-1;
+      for(let i=0;i<area.length;i++){
+        if(normal[i*3+2]*side<0.18)continue;
+        const d=(pos[i*3]-point.x*H)**2+(pos[i*3+1]-point.y*H)**2;
+        if(d<bestD){best=i;bestD=d;}
+      }
+      if(best>=0){const n=new THREE.Vector3().fromArray(normal,best*3);anchors[point.id]={pin:new THREE.Vector3().fromArray(pos,best*3).addScaledVector(n,.004),normal:n};}
     }
     const rearAnchors = {};
     for(const key of ['head','arms','legs','neck']) {
@@ -468,27 +478,34 @@
     const material = new THREE.ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT });
 
     // A faint ring on the floor, like a scanner base
-    const floorMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.1, depthWrite: false });
+    const floorMat = new THREE.MeshStandardMaterial({metalness:.25,roughness:.45});
     const ringMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.45, depthWrite: false });
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(0.36, 96), floorMat);
+    const floor = new THREE.Mesh(new THREE.CylinderGeometry(.35,.38,.045,96), floorMat);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.372, 96), ringMat);
-    for (const m of [floor, ring]) { m.rotation.x = -Math.PI / 2; m.position.y = 0.002; scene.add(m); }
+    floor.position.y=-.025;ring.rotation.x=-Math.PI/2;ring.position.y=.001;
+    const plinth=new THREE.Mesh(new THREE.CylinderGeometry(.385,.40,.022,96),new THREE.MeshStandardMaterial({color:0x20374A,metalness:.25,roughness:.45}));
+    const lowerRing=new THREE.Mesh(new THREE.RingGeometry(.382,.389,96),ringMat);lowerRing.rotation.x=-Math.PI/2;lowerRing.position.y=-.046;
+    plinth.position.y=-.057;scene.add(floor,ring,plinth,lowerRing,new THREE.AmbientLight(0xffffff,1.5));
+    const baseLight=new THREE.DirectionalLight(0xbcecf7,2);baseLight.position.set(-2,3,3);scene.add(baseLight);
 
     // ---- Labels: one per area, shown only for reported (red) or selected (blue) areas ----
     const svgNS = 'http://www.w3.org/2000/svg';
     const tags = {};
-    for (const key of KEYS) {
+    const tagKeys=[...KEYS,...BODY_POINTS.map(p=>p.id)];
+    let activeLabel=null,labelTimer;
+    for (const key of tagKeys) {
       const label = document.createElement('div');
-      label.className = `b3d-label ${LABEL_SIDE[key]}`;
+      label.className = `b3d-label ${POINT_BY_ID[key]?(POINT_BY_ID[key].x<0?'L':'R'):LABEL_SIDE[key]}`;
       const line = document.createElementNS(svgNS, 'line');
       const dot = document.createElementNS(svgNS, 'circle');
       dot.setAttribute('r', '5');
       dot.setAttribute('role', 'button');
-      dot.setAttribute('aria-label', 'Select ' + BODY_AREAS[key].toLowerCase());
+      dot.setAttribute('aria-label', 'Select ' + (POINT_BY_ID[key]?`${POINT_BY_ID[key].label} (${POINT_BY_ID[key].view})`:BODY_AREAS[key]).toLowerCase());
       const choose = event => {
-        if(opts.mode!=='report')return;
-        event.preventDefault();event.stopPropagation();
-        opts.selected=key;refresh();opts.onSelect?.(key);
+        if(opts.mode!=='report'&&!opts.reported?.[key])return;
+        event.preventDefault();event.stopPropagation();lastInput=performance.now();
+        if(opts.mode==='report'){opts.selected=key;refresh();opts.onSelect?.(key);}
+        else {clearTimeout(labelTimer);activeLabel=key;updateLabels();labelTimer=setTimeout(()=>{activeLabel=null;updateLabels();},3000);}
       };
       dot.addEventListener('click',choose);
       dot.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')choose(event);});
@@ -511,19 +528,21 @@
 
     const updateLabels = () => {
       const report = opts.mode === 'report';
-      linesSvg.setAttribute('aria-hidden',String(!report));
-      for (const key of KEYS) {
+      linesSvg.setAttribute('aria-hidden','false');
+      for (const key of tagKeys) {
         const t = tags[key];
         const r = opts.reported?.[key];
         const sel = report && opts.selected === key;
-        t.on = Boolean(r || sel || report);
-        t.label.innerHTML = r ? `${BODY_AREAS[key]}<span> · ${r.short}</span>` : BODY_AREAS[key];
+        const point=POINT_BY_ID[key],legacyAtPoint=point&&DEFAULT_POINT[point.area]===key&&opts.reported?.[point.area];
+        t.on = Boolean(r || sel || (report&&point&&!legacyAtPoint));
+        const name=POINT_BY_ID[key]?.label??BODY_AREAS[key];
+        t.label.innerHTML = r ? `${name}<span> · ${r.short}</span>` : name;
         t.dot.classList.toggle('hotspot', report&&!r);
-        t.dot.style.pointerEvents=report?'auto':'none';
+        t.dot.style.pointerEvents=report||r?'auto':'none';
         const markerColor = r?.severity >= 7 ? '#FF9A78' : r?.severity >= 4 ? '#F5BD69' : '#E8D66E';
         for (const el of [t.label, t.line, t.dot]) {
           el.style.setProperty('--symptom-color', markerColor);
-          el.style.display = (el===t.dot?t.on:sel||(!report&&r)) ? '' : 'none';
+          el.style.display = (el===t.dot?t.on:sel||(!report&&activeLabel===key)) ? '' : 'none';
           el.classList.toggle('sel', sel);
         }
       }
@@ -546,7 +565,13 @@
         for (let i = 0; i < n; i++) v[i] = want[area[i]] ? 1 : 0;
         return soften(v, adj);
       };
-      const sel = report ? pick(KEYS.map((k) => k === opts.selected)) : null;
+      const selectedPoint=POINT_BY_ID[opts.selected];
+      let sel = report ? pick(KEYS.map((k) => k === (selectedPoint?.area??opts.selected))) : null;
+      if(sel&&selectedPoint){
+        const positions=geometry.attributes.position.array;
+        for(let i=0;i<n;i++)if((selectedPoint.x!==0&&positions[i*3]*selectedPoint.x<0)||Math.abs(positions[i*3+1]/H-selectedPoint.y)>.13)sel[i]=0;
+        sel=soften(sel,adj,2);
+      }
       const hov = report && hover !== opts.selected ? pick(KEYS.map((k) => k === hover)) : null;
       const pos = geometry.attributes.position.array;
       const col = geometry.attributes.aColor.array;
@@ -577,7 +602,7 @@
     };
 
     const refresh = () => {
-      if (!BODY_AREAS[opts.selected]) opts.selected = null;
+      if (!BODY_AREAS[opts.selected]&&!POINT_BY_ID[opts.selected]) opts.selected = null;
       if (opts.mode !== 'report') { hover = null; canvas.classList.remove('over-body'); }
       updateLabels();
       recolor();
@@ -597,7 +622,7 @@
       uniforms.uAlert.value.fromArray(theme.alert);
       uniforms.uRimAmt.value = theme.dark ? 0.3 : 0.22;
       uniforms.uSpec.value = theme.dark ? 0.085 : 0.07;
-      floorMat.color.setRGB(...theme.accent, THREE.LinearSRGBColorSpace);
+      floorMat.color.setRGB(...mix(theme.accent,[.12,.20,.28],.8), THREE.LinearSRGBColorSpace);
       ringMat.color.setRGB(...(theme.dark ? theme.accent2 : theme.accent), THREE.LinearSRGBColorSpace);
       recolor();
     };
@@ -611,7 +636,7 @@
       camera.updateProjectionMatrix();
       measureLabels();
       if (!body) return;
-      const top = 42, bottom = 22;
+      const top = 42, bottom = 44;
       const labelRoom = Math.min(110, size.w * 0.14);
       const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       const dH = (body.H / 2) / (tanV * (size.h - top - bottom) / size.h);
@@ -677,9 +702,13 @@
       down = null;
       const key = tap ? areaUnder(e.clientX, e.clientY) : null;
       if (!key) return;
-      opts.selected = key;
+      const view=camera.position.z>=0?'front':'back';
+      const hit=raycaster.intersectObject(mesh,false)[0];
+      const choices=BODY_POINTS.filter(p=>p.view===view&&p.area===key);
+      const point=choices.sort((a,b)=>Math.hypot(a.x*body.H-hit.point.x,a.y*body.H-hit.point.y)-Math.hypot(b.x*body.H-hit.point.x,b.y*body.H-hit.point.y))[0];
+      opts.selected = point?.id??key;
       refresh();
-      opts.onSelect?.(key);
+      opts.onSelect?.(opts.selected);
     });
     canvas.addEventListener('pointermove', (e) => { if (opts.mode === 'report' && e.pointerType === 'mouse' && !e.buttons) hoverAt = [e.clientX, e.clientY]; });
     canvas.addEventListener('pointerleave', () => {
@@ -714,7 +743,7 @@
     const GAP = 32;
     const placeLabels = () => {
       const cols = { L: [], R: [] };
-      for (const key of KEYS) {
+      for (const key of tagKeys) {
         const t = tags[key];
         if (!t.on) continue;
         const a = opts.mode==='report'&&camera.position.z<0 ? body.rearAnchors[key]??body.anchors[key] : body.anchors[key];
@@ -722,7 +751,7 @@
         t.x = ((v.x + 1) / 2) * size.w;
         t.y = ((1 - v.y) / 2) * size.h;
         t.behind = a.normal.dot(toCam.copy(camera.position).sub(a.pin).normalize()) < 0.05;
-        cols[LABEL_SIDE[key]].push(t);
+        cols[t.label.classList.contains('L')?'L':'R'].push(t);
       }
       for (const col of Object.values(cols)) {
         col.sort((a, b) => a.y - b.y);
@@ -739,9 +768,9 @@
           t.line.setAttribute('y2', t.y.toFixed(1));
           t.dot.setAttribute('cx', t.x.toFixed(1));
           t.dot.setAttribute('cy', t.y.toFixed(1));
-          t.dot.style.visibility=opts.mode==='report'&&t.behind?'hidden':'visible';
-          t.dot.setAttribute('tabindex',opts.mode==='report'&&!t.behind?'0':'-1');
-          t.dot.setAttribute('aria-hidden',String(opts.mode!=='report'||t.behind));
+          t.dot.style.visibility=t.behind?'hidden':'visible';
+          t.dot.setAttribute('tabindex',(opts.mode==='report'||opts.reported?.[key])&&!t.behind?'0':'-1');
+          t.dot.setAttribute('aria-hidden',String((opts.mode!=='report'&&!opts.reported?.[key])||t.behind));
           for (const el of [t.label, t.line, t.dot]) el.classList.toggle('behind', t.behind);
         }
       }
@@ -805,13 +834,15 @@
       setSelected: (key) => { opts.selected = key; refresh(); },
       dispose: () => {
         disposed = true;
+        clearTimeout(labelTimer);
         renderer.setAnimationLoop(null);
         reduceQuery.removeEventListener('change', onReduce);
         themeWatch.disconnect();
         sizeWatch.disconnect();
         controls.dispose();
         material.dispose();
-        for (const m of [floor, ring]) { m.geometry.dispose(); m.material.dispose(); }
+        for (const m of [floor, ring,plinth,lowerRing]) m.geometry.dispose();
+        for(const m of new Set([floorMat,ringMat,plinth.material]))m.dispose();
         renderer.dispose();
         container.innerHTML = '';
         container.classList.remove('b3d');

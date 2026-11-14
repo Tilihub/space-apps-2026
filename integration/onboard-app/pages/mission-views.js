@@ -1,9 +1,11 @@
+import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
+import {POINT_BY_ID} from '/body-points.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
 import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
@@ -18,7 +20,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   };
   function login() {
     const { CREW }=state();
-    if(!ui.welcome) return `<div class="login mission-welcome"><div class="welcome-stars"></div><div class="welcome-content"><div class="welcome-tag">CREW HEALTH · MARS TRANSIT</div><img class="team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You" width="420" height="420"><p class="welcome-line">A little care. A long way from home.</p>${btn(`Begin mission ${icon('chev')}`,'ui-begin','','primary welcome-button')}<span class="subtle">PULSE · Onboard support</span></div></div>`;
+    if(!ui.welcome) return `<div class="login mission-welcome"><div class="welcome-stars"></div><div class="welcome-content"><img class="team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You" width="420" height="420">${btn('Begin mission','ui-begin','','primary welcome-button')}</div></div>`;
     return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {
@@ -46,7 +48,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   };
   function symptomOptions(area) {
     const {SYMPTOMS}=state();
-    const codes=basicSymptoms[area]??['headache','muscle-pain','nausea','fatigue','cough','fever','itch-rash'];
+    const codes=basicSymptoms[POINT_BY_ID[area]?.area??area]??['headache','muscle-pain','nausea','fatigue','cough','fever','itch-rash'];
     return SYMPTOMS.filter(x=>codes.includes(x.code));
   }
   function selectArea(area) {
@@ -56,11 +58,25 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     if(options.some(s=>s.code===old))input.value=old;
     remember(input.form);
   }
+  const draftKey=()=>`pulse-wellbeing-draft:${state().user?.crewId}:${state().clock?.missionDay}`;
+  const extraDraft=()=>{try{return JSON.parse(sessionStorage.getItem(draftKey())??'{}');}catch{return {};}};
+  const keepExtra=form=>{const values={...extraDraft(),...Object.fromEntries(new FormData(form))};sessionStorage.setItem(draftKey(),JSON.stringify(values));};
+  function wellbeing() {
+    const {data,drafts,user}=state();
+    if(ui.wellbeingCrew!==user?.crewId){ui.wellbeingCrew=user?.crewId;ui.wellbeingStep=0;}
+    const row=data.today?.checkIn,saved=!!row,step=ui.wellbeingStep;
+    const core=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
+    const extras=extraDraft(),extra=k=>drafts['wellbeing-extra-form']?.[k]??extras[k]??'';
+    const tabs=['Today','Focus','Crew','Support'];
+    let content='';
+    if(step===0)content=`<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}</fieldset></form>`;
+    if(step===1||step===2)content=`<form id="wellbeing-extra-form">${EXTRA_QUESTIONS.slice((step-1)*3,step*3).map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,false)).join('')}</form>`;
+    if(step===3)content=`<form id="wellbeing-extra-form"><div class="rating-group" data-rating="supportWanted"><div class="rating-title"><b>Would you like a private conversation with a support professional?</b></div><input type="hidden" name="supportWanted" value="${esc(extra('supportWanted'))}"><div class="support-choice">${['yes','no'].map(v=>btn(v==='yes'?'Yes':'No','ui-support-choice',`data-value="${v}" aria-pressed="${extra('supportWanted')===v}"`,'ghost')).join('')}</div></div></form><p class="draft-explainer">These seven additional answers are a demo draft, kept in this session. They are not saved to your health record or sent to anyone.</p>${saved?pill('Mood, stress & fatigue saved','green'):`<form id="checkin-form">${['mood','stress','fatigue'].map(k=>`<input type="hidden" name="${k}" value="${esc(core(k))}">`).join('')}${submit('Save check-in')}</form>`}`;
+    return `<div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(step===0&&saved?'Saved today':step===0?'Daily check-in':'Session draft',step===0&&saved?'green':'quiet'))}<p class="wellbeing-recall">Think about the last 24 hours.</p><div class="wellbeing-steps" role="group" aria-label="Question sections">${tabs.map((label,i)=>btn(label,'ui-wellbeing-step',`data-id="${i}" aria-pressed="${i===step}"`,'ghost sm')).join('')}</div><span class="subtle question-progress">${step<3?`${step*3+1}–${step*3+3}`:'10'} of 10 questions</span>${content}<div class="wellbeing-navigation">${btn('Previous','ui-wellbeing-step',`data-id="${step-1}" ${step===0?'disabled':''}`,'ghost sm')}${step<3?btn('Next','ui-wellbeing-step',`data-id="${step+1}"`,'primary sm'):''}</div></div>`;
+  }
   function checkin() {
-    const {data,drafts,SYMPTOMS,selectedArea,stagedSymptoms}=state();
-    const row=data.today?.checkIn, saved=!!row;
-    const value=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
-    return `<div class="daily-grid psychometric-layout"><div class="stack"><div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(saved?'Saved today':'Daily check-in',saved?'green':'quiet'))}<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood over the last 24 hours?','mood',value('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel over the last 24 hours?','stress',value('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel over the last 24 hours?','fatigue',value('fatigue'),'Not at all','Extremely',saved)}${!saved?`<div class="form-end">${submit('Save check-in')}</div>`:''}</fieldset></form></div>${adviceCard()}</div><div class="card symptoms-card">${heading('SYMPTOMS','Where does it bother you?')}<div class="symptom-body">${bodyFrame('report')}</div><form id="symptom-form"><label class="field"><span>Symptom</span><select class="input" id="symptom-code" name="code" required>${symptomOptions(selectedArea).map(x=>`<option value="${esc(x.code)}">${esc(x.label)}${x.redFlag?' · urgent':''}</option>`).join('')}</select></label><label class="field severity-control"><span>Severity <b><output id="severity-value" aria-label="Selected severity">${drafts['symptom-form']?.severity??5}</output> / 10</b></span><input type="range" name="severity" aria-label="Severity" min="1" max="10" step="1" value="${drafts['symptom-form']?.severity??5}"><span class="range-ends"><small>1 · Mild</small><small>10 · Severe</small></span></label><div class="symptom-list">${stagedSymptoms.map((s,i)=>`<div class="status-line">${pill(`${SYMPTOMS.find(x=>x.code===s.code)?.label} · ${s.severity}/10`)}${btn('Remove','remove-symptom',`data-id="${i}"`,'ghost sm')}</div>`).join('')}</div>${note('A short note (optional)')}<div class="form-end">${btn('+ Another symptom','add-symptom','','ghost sm')}${submit('Send symptom report')}</div></form></div></div>`;
+    const {drafts,SYMPTOMS,selectedArea,stagedSymptoms}=state();
+    return `<div class="daily-grid psychometric-layout"><div class="stack">${wellbeing()}${adviceCard()}</div><div class="card symptoms-card">${heading('SYMPTOMS','Where does it bother you?')}<div class="symptom-body">${bodyFrame('report')}</div><form id="symptom-form"><label class="field"><span>Symptom</span><select class="input" id="symptom-code" name="code" required>${symptomOptions(selectedArea).map(x=>`<option value="${esc(x.code)}">${esc(x.label)}${x.redFlag?' · urgent':''}</option>`).join('')}</select></label><label class="field severity-control"><span>Severity <b><output id="severity-value" aria-label="Selected severity">${drafts['symptom-form']?.severity??5}</output> / 10</b></span><input type="range" name="severity" aria-label="Severity" min="1" max="10" step="1" value="${drafts['symptom-form']?.severity??5}"><span class="range-ends"><small>1 · Mild</small><small>10 · Severe</small></span></label><div class="symptom-list">${stagedSymptoms.map((s,i)=>`<div class="status-line">${pill(`${SYMPTOMS.find(x=>x.code===s.code)?.label} · ${s.severity}/10`)}${btn('Remove','remove-symptom',`data-id="${i}"`,'ghost sm')}</div>`).join('')}</div>${note('A short note (optional)')}<div class="form-end">${submit('Send symptom report')}</div></form></div></div>`;
   }
   function importCard() {
     return `<div class="card code-card">${heading('PRESCRIPTION ACCESS','Use a code or QR')}<form id="import-form">${field('Prescription code','code',{required:true,attrs:'autocomplete="off" placeholder="RX2-…"'})}${submit('Use credential')}</form><div class="scan-controls">${btn(`${icon('scan')} Scan QR`,'qr-camera','','ghost sm')}${btn('Stop camera','qr-stop','','ghost sm')}<video id="qr-video" hidden playsinline></video><p id="qr-status" class="subtle"></p></div><p class="subtle">Your code works again when the next dose is due.</p></div>`;
@@ -152,14 +168,17 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const {data}=state();
     return `<div class="wellbeing-workspace"><div class="card companion-chat-card"><div class="chat-head"><span class="mascot-md">${mascotSvg()}</span><span class="grow"><span class="eyebrow">YOUR COMPANION</span><h3>A little company, anywhere.</h3></span>${pill('Offline','quiet')}</div><div class="thread mind-thread" data-chat-thread aria-live="polite" aria-relevant="additions text">${chatTranscript()}</div><div class="support-topics" aria-label="Conversation starters">${btn('Sleep & energy','support-prompt','data-topic="sleep"','ghost sm')}${btn('Stress & mood','support-prompt','data-topic="stress"','ghost sm')}${btn('Missing home','support-prompt','data-topic="home"','ghost sm')}</div>${chatComposer('mind-chat-form','Type a message')}<span class="subtle companion-caption">Offline support demo</span></div><div class="stack"><div class="card journal-card">${heading('JUST FOR YOU','Private journal',pill('Only you','quiet'))}<form id="journal-form">${note('What is on your mind?','text',5000)}<div class="form-end"><span class="subtle">A space to pause.</span>${submit('Save entry')}</div></form>${(data.journal?.entries??[]).slice(0,2).map(e=>`<div class="journal-entry"><small>${time(e.recordedAt)}</small><p>${esc(e.text)}</p></div>`).join('')}${(data.journal?.entries?.length??0)>2?disclosure('Earlier entries',data.journal.entries.slice(2).map(e=>`<div class="journal-entry"><small>${time(e.recordedAt)}</small><p>${esc(e.text)}</p></div>`).join('')):''}</div>${disclosure('Private support & demo information','<p>Your journal is visible only to you in this demo. Psychologist messaging is not connected.</p><p>The companion uses your current check-in and synthetic mission history. It is an offline support tool, not a trained model.</p>','card support-info')}</div></div>`;
   }
+  const refreshWellbeing=(scroll=false)=>{const card=document.querySelector('.daily-form-card');if(card)card.outerHTML=wellbeing();if(scroll)document.querySelector('.daily-form-card')?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});};
   function action(el) {
     const name=el.dataset.action,id=el.dataset.id;
     if(name==='ui-begin'){ui.welcome=true;sessionStorage.setItem('pulse-welcome','done');redraw();return;}
     if(name==='ui-help'){$help().hidden=!$help().hidden;return;}
+    if(name==='ui-wellbeing-step'){ui.wellbeingStep=Math.max(0,Math.min(3,Number(id)));refreshWellbeing(true);return;}
+    if(name==='ui-support-choice'){const input=el.closest('form').elements.supportWanted;input.value=el.dataset.value;remember(input.form);keepExtra(input.form);refreshWellbeing();return;}
     if(name==='ui-rating'){
       const group=el.closest('[data-rating]'),input=group.querySelector('input');input.value=el.dataset.value;
       group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===el)));
-      group.querySelector('.rating-title span').textContent=`${input.value} / 10`;remember(input.form);return;
+      group.querySelector('.rating-title span').textContent=`${input.value} / 10`;remember(input.form);if(input.form.id==='wellbeing-extra-form')keepExtra(input.form);return;
     }
     if(name==='ui-med-tab')ui.medTab=id;
     if(name==='ui-locker'){ui.lockerId=id;ui.cabinetPage=0;ui.binId=null;}

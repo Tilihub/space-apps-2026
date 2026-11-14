@@ -2,6 +2,19 @@
 
 My personal concept notes and requirements for May the Pulse Be With You. Only Tommy edits this file. The team's common plan is [shared/PLAN.md](../../shared/PLAN.md).
 
+## Latest UI review — 2026-11-15
+
+Tommy explicitly authorized implementation in the existing `integration/onboard-app` connection during this session; the older planning-only state below is historical. Continue on `tommy/frontend-polish`, UI review PR #74 based on integration PR #73. zt remains the design/integration collaborator; owner modules and the protected contract are unchanged in this visual pass.
+
+- Entry screen: original supplied team logo blended into the background and one centered bold Begin mission button. No taglines or extra footer text on entry.
+- App typography: stronger, readable DM Sans, including small labels; logo cyan/gold on a calm dark background. Consistent navigation rows.
+- Overview: larger anatomical body, four instruments (resting pulse, body temperature, sleep, actual saved training). Synthetic regional skin map remains explicitly labelled. No lower shortcut cards or repeated symptom legends. Orange quiet pending-task cues and an unnamed floating planet remain.
+- Body models: c1/c3 female, c2/c4/c5 male, as Tommy confirmed. A layered 3D pedestal replaces the flat floor disc.
+- Overview symptoms: pulse point only at rest; tap for a location/symptom label that hides after three seconds. Preserve broad locations for older reports rather than inventing left/right specificity.
+- Report symptoms: 24 front and 26 back points, anatomical left/right, local highlight, area-specific basic symptoms, 1–10 severity and optional short note. No Another symptom action. Exact location is retained in the existing free-text note; medical rules remain unchanged.
+- Wellbeing: ten-question **product draft**, nine 1–10 items plus one yes/no support preference, organized into Today/Focus/Crew/Support. See [the exact proposal and sources](wellbeing-questionnaire-proposal.md). No validated psychological score or diagnosis is produced.
+- Persistence boundary: existing mood/stress/fatigue are saved through the health API; the seven new questions are explicitly labelled session drafts and clear on sign-out/profile switch. Tommy asked to build/review this here first. Full backend storage needs a separate agreed schema/privacy review; do not claim these additional answers are backend-saved.
+
 ## My part and working agreement
 
 - Tommy supplies the concepts, intended user journeys, and feature requirements.

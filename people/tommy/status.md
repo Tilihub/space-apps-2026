@@ -8,12 +8,17 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — psychometric check-in and body picking
-- Working on: Tommy requested the exact original team logo, a larger thermal body, four clean overview instruments, subtle orange task cues and a bare unnamed planet companion. Current-day presentation inputs are now populated for all five synthetic crew through existing APIs. Regional skin sensors are separately simulated with Tommy’s explicit approval; server/modules/rules remain unchanged.
+- Last updated: 2026-11-15 — detailed anatomy and ten-question draft
+- Working on: Latest UI review is ready: minimal branded entry, stronger typography, a layered 3D pedestal, 50 anatomical points, tap-only overview labels and the ten-question wellbeing draft. Existing core answers save normally; seven extra answers remain clearly labelled session drafts. Awaiting Tommy's review; backend implementation is unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Updated #74 for Tommy's latest review: the entry has only the unchanged team logo and a centered bold Begin mission action. Strengthened app/label/chart typography and replaced the flat floor disc with a lit, layered 3D pedestal for both body variants.
+- Added 50 anatomical locations (24 front / 26 back), paired left/right from the person's perspective, including shoulders, upper arms, elbows, hands, chest/back regions, hips, thighs, knees, lower legs and feet. Exact point/side is saved in the existing optional symptom note, preserving broad-area compatibility and all existing medical decisions. Removed Another symptom, retained short note. Overview labels now open on tap and close after 3 seconds; pins continue pulsing without permanent labels.
+- Re-read Tommy/zt plans, PET-2 and teammate research; checked official WHO-5, NASA behavioral-health material and the primary Inspiration4 survey report. Wrote wellbeing-questionnaire-proposal.md with exact custom daily prompts, source/scale differences and no clinical score. Ten-question UI draft uses four sections; switching questions preserves the body's orientation.
+- Existing mood/stress/fatigue continue to save to health. Seven extra responses are session drafts, clearly distinguished in the UI; survive reload and clear on profile switch/sign-out. Backend/API/schema/permissions remain unchanged. Browser checked all ten choices, main 6/4/4 save, session reload retention, fresh-author blank answers, exact left-knee report and transient overview label, both meshes, rear points and pedestal. Symmetry/ID invariants and root suite passed (102/102). Isolated QA on port 8014 was stopped after verification; presentation store on 8012 is unchanged. The simplified entry preview is open for Tommy.
 
 - Follow-up to #74: blended the unchanged supplied logo in the header, welcome and profile picker; used DM Sans consistently, moved the dark palette toward logo cyan/gold, aligned navigation rows across widths and added the quiet rounded orange outline around pending tasks.
 - Tommy confirmed the presentation-model mapping: c1/c3 female; c2/c4/c5 male. Both initial iframe source and subsequent body updates use this mapping; the canvas exposes the actual model as an accessible image label.
@@ -127,6 +132,7 @@
 ## Next steps
 
 - Continue from `tommy/frontend-polish`. Review the filled port-8012 demo with Tommy and zt, then refine the visuals here. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.
 - The single onboard server and role walkthrough remain in `integration/onboard-app/README.md`. Keep the distinction between actual module behavior and simulated cabinet hardware, credentials, Earth transport and offline scripted conversation clear.

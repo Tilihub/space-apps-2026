@@ -1,3 +1,4 @@
+import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
 import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
@@ -48,12 +49,12 @@ async function api(path, { method='GET', body, publicRequest=false }={}) {
 }
 let noticeTimer;
 function notice(message,error=false) {
- const copy={'Today’s check-in was saved to the health module.':'Check-in saved.','Symptom report saved. Medicine guidance is shown below.':'Symptom report saved.','Decision saved by the medicine module.':'Decision saved.','Workout summary saved in the health module.':'Workout saved.','Collection complete. Doses and stock were updated.':'Collection complete.','Collection opened. Confirm each dispensed item once.':'Ready to collect. Confirm each item.'};
+ const copy={'Today’s check-in was saved to the health module.':'Mood, stress and fatigue saved.','Symptom report saved. Medicine guidance is shown below.':'Symptom report saved.','Decision saved by the medicine module.':'Decision saved.','Workout summary saved in the health module.':'Workout saved.','Collection complete. Doses and stock were updated.':'Collection complete.','Collection opened. Confirm each dispensed item once.':'Ready to collect. Confirm each item.'};
  clearTimeout(noticeTimer);$('#notice').hidden=false;$('#notice').className=`notice ${error?'error':''}`;$('#notice').textContent=copy[message]??message;
  if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
 }
 function clearNotice() { $('#notice').hidden=true; }
-function resetLocal() { sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
+function resetLocal() { for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
   const old=token;
   // Revoke only this tab's old session. Other tabs keep their own tokens.
@@ -89,7 +90,12 @@ function bodyOptions(mode) {
   const map={head:'head',eyes:'eyes','nose-throat':'neck',heart:'chest',lungs:'chest',gut:'stomach',skin:'arms',muscles:'back','whole-body':'legs'};
   const reported={};
   for(const r of data.symptoms?.reports??[]) if(r.missionDay===clock?.missionDay) for(const s of r.symptoms) {
-    const sym=SYMPTOMS.find(x=>x.code===s.code); if(sym) reported[r.note?.match(/Body area: (head|eyes|neck|chest|arms|back|stomach|legs)\./)?.[1]??map[sym.area]]={short:sym.label,severity:s.severity};
+    const sym=SYMPTOMS.find(x=>x.code===s.code);
+    if(sym){
+      const area=r.note?.match(/Body area: (head|eyes|neck|chest|arms|back|stomach|legs)\./)?.[1]??map[sym.area];
+      const exact=r.note?.match(/Point: ([a-z-]+)\./)?.[1];
+      reported[POINT_BY_ID[exact]?exact:area]={short:sym.label,severity:s.severity};
+    }
   }
   return {mode,body:({c1:'female',c2:'male',c3:'female',c4:'male',c5:'male'})[user?.crewId]??'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
 }
@@ -318,7 +324,7 @@ async function handleForm(form,submitter) {
   await health.submitCheckIn(values);delete drafts[id];notice('Today’s check-in was saved to the health module.');
  } else if(id==='symptom-form') {
   const symptoms=stagedSymptoms.length?[...stagedSymptoms]:[{code:v.code,severity:Number(v.severity)}];
-  suggestion=await api('/meds/symptom-reports',{method:'POST',body:{symptoms,note:[selectedArea?`Body area: ${selectedArea}.`:'',v.note].filter(Boolean).join(' ')}});
+  suggestion=await api('/meds/symptom-reports',{method:'POST',body:{symptoms,note:[selectedArea?`Body area: ${POINT_BY_ID[selectedArea]?.area??selectedArea}. ${POINT_BY_ID[selectedArea]?`Point: ${selectedArea}. Location: ${POINT_BY_ID[selectedArea].label} (${POINT_BY_ID[selectedArea].view}).`:''}`:'',v.note].filter(Boolean).join(' ')}});
   stagedSymptoms=[]; delete drafts[id]; notice(suggestion.redFlag?'Urgent symptoms: contact the medical officer now.':'Symptom report saved. Medicine guidance is shown below.',suggestion.redFlag);
  } else if(id==='import-form') {
   const result=await api('/meds/grants/import',{method:'POST',body:{code:v.code.trim()}});
