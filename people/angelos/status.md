@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:42 (Asia/Nicosia)
-- Working on: Explicit session reset complete and published in PR #25.
+- Last updated: 2026-11-14 15:00 (Asia/Nicosia)
+- Working on: Reviewed Tommy's published integration handoff; ANG-1 is the proposed next step.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -47,6 +47,15 @@
 - Reset checks use temporary databases only; the user's active session has not been reset.
 - Pushed the reset implementation and updated PR #25's title and description with
   the final behavior and all 38 validation checks.
+- Read Tommy's product plan and canonical implementation-tasks.md on main at
+  05ad81a, plus his latest branch status at 58f7d52. Merged the published handoff
+  into this branch; this step changes no application code.
+- Identified ANG-1 (app-facing health adapter and separate crew histories) before
+  ANG-2 (basic companion and authorized journal context). Existing reports/reset
+  are already delivered and should be reused, not rebuilt.
+- Confirmed PET-1 requires selected, source-labelled fixtures; the historical CSV
+  is not automatically one person's baseline. Synthetic longitudinal data are
+  explicitly allowed where suitable person-level records are unavailable.
 
 ## Blocked / need from others
 
@@ -72,6 +81,13 @@
   require seven measured days in each period; the current history is partial.
 - Walk through the code slowly with angelos when requested. He wants to understand
   each part and may later rebuild a simpler version himself; avoid unsolicited code changes.
+- If angelos requests the next implementation, start with ANG-1: agree crew IDs,
+  mission clock, field names/units/scales and callable/API packets with zt; expose
+  submission/history/daily findings/weekly reports with two isolated demo users.
+  Assignment acceptance and the common-plan decisions remain team coordination.
+- Start ANG-2 after ANG-1 is connected. Keep journal context restricted to the
+  author, their psychologist and their authorized assistant; exclude it and private
+  derived details from ordinary reports to other roles.
 - Agree the daily input fields, units, scales, and timezone with the app/sensor owners.
 - Add an API adapter, then connect the structured findings to a UI
   and companion conversation. No language model or live sensor integration exists yet.
