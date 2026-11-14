@@ -8,12 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:51
+- Last updated: 2026-11-14 14:53
 - Working on: Publishing Tommy's explicit owner-by-owner work handoff for teammates and their coding tools. Planning only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
+- Opened PR #39 to publish Tommy's explicit teammate/coding-tool handoff, task index, and reusable prompt.
 - Tommy requested publication for the team and their coding tools. Added a start-here workflow, owner/task index (ZT-1, ANG-1/2, DAD-1/2, POT-1/2, PET-1/2), delivery expectations, and a copy/paste coding-tool prompt to [implementation-tasks.md](implementation-tasks.md).
 - Refreshed the handoff against Angelos's newly published reset/backup status at 80d86db without reassigning work already delivered.
 - Published and merged clarified requirements and proposed contributor tasks in PR #38; the handoff is available on main.
