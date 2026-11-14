@@ -248,3 +248,5 @@ Tommy confirmed identical QR/manual-code behavior, no 15-minute expiry, a reusab
 PR #49 supplies a new common module architecture. Review found crew-readable detailed history/weekly routes that conflict with Tommy’s visibility decision. Tommy selected correction before approval; re-review the updated contract before approving. The nine-item fixture remains a proposal, not a newly confirmed catalogue decision.
 
 Published-work refresh: the former open health/environment/inventory prototypes are now on main. PR #50 adds external baseline import; #51 supplies PET-1/PET-2; #52 proposes stage stories that differ from those fixtures. See contract-review.md for the exact differences and verification. No replacement case version is silently adopted.
+
+Latest review outcome: after the privacy correction at 76b2e09, Tommy explicitly requested immediate approval of #49. An APPROVED review was submitted and verified; the remaining QR/dispenser clarifications stay as implementation follow-ups. Tommy deferred extra Home indicators for later. No merge of #49 was performed by this chat.

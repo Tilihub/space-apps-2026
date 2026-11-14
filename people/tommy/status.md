@@ -9,10 +9,12 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Reviewing PR #49 against Tommy’s confirmed requirements. Tommy selected corrections before approval; request-changes review posted; refreshed instructions for #50–#53 published on main. Planning/review only.
+- Working on: PR #49 approved at 76b2e09 on Tommy’s latest explicit instruction; recording final review/handoff. Home-indicator decision deferred.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Tommy superseded the earlier correction-first timing with “approve Zisis soon”. Submitted and verified an APPROVED review on PR #49 at 76b2e09. Privacy correction is resolved; QR/dispenser wording remains a documented implementation follow-up. This chat did not merge #49. Tommy deferred extra Home indicators.
 
 - Re-reviewed updated PR #49 at 76b2e09: care-only detailed analysis and separate Today output now resolve the privacy blocker; allergy/profile instructions and stage graph were corrected. Re-ran its npm test: 7/7 passed. Posted exact wording for remaining repeated-code and per-item dispenser semantics; approval remains pending those corrections.
 
@@ -71,6 +73,8 @@
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- PR #49 is approved. Follow its author’s merge, then use the adopted contract for module adaptation. Preserve latest QR/dispenser/allergy requirements; align Petros’s fixtures with the chosen stage cases and confirm the reports/transport owner. Extra Home indicators remain deferred.
 
 - Latest common review is published on main in contract-review.md via #54. PR #49 remains pending corrections; its author has the review, refreshed handoff link and exact remaining wording. If the updated contract is adopted, align #51 data/tests with its #52 target cases.
 
