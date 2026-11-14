@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 18:48 (Asia/Nicosia)
-- Working on: Petros's aligned stage-data PR #64 independently verified; all 51 root checks pass. No algorithm change required.
+- Working on: Petros's aligned stage-data PR #64 independently verified; results and regression checks published in PR #65. All 51 root checks pass; no algorithm change required.
 - Branch: angelos/verify-stage-data
 
 ## Done
@@ -188,6 +188,9 @@
   teammate source, real NASA observation or comparison algorithm was modified.
 - Continue from angelos/verify-stage-data for this verification handoff. Petros
   owns merging #64; zt owns core/page composition; Potest owns companion adaptation.
+- Verification PR: https://github.com/Tilihub/space-apps-2026/pull/65 (only
+  people/angelos/). Candidate source is pinned at 1b736f5; no source PR approval
+  or merge on Petros's behalf was performed.
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
