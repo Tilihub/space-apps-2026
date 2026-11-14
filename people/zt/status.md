@@ -8,11 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:33
-- Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
-  so every teammate can build their piece to it alone and joining them is only the final link.
-  Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
-- Branch: zt/app-contract
+- Last updated: 2026-11-14 18:28
+- Working on: status check of the team ([team-jobs.md](team-jobs.md)). The app contract is merged
+  (PR #49); a first UI look is on branch `zt/ui-look`, no PR yet.
+- Branch: zt/status-check-1830
 
 ## Done
 
@@ -24,7 +23,7 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work. Last refreshed 2026-11-14 15:54
+  from each person's actual work. Last refreshed 2026-11-14 18:28
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
@@ -46,7 +45,10 @@
 
 ## Blocked / need from others
 
-- A teammate's approval on the contract pull request, after the team has looked at it together
+- Nothing blocks zt. Teammates are waiting on zt for: the core server and pages (angelos's health
+  module is ready for it), and four contract questions for the table (dadis2's Emergency scope and
+  one course per medicine, who builds mind, petros's demo data vs the demo cases). See
+  [team-jobs.md](team-jobs.md), "Connections that need agreeing"
 
 ## Next steps
 
@@ -56,8 +58,9 @@
 - Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
   the workout give points? Ask potest to take reports and the Earth link. Record the answers in
   the contract's "Still open".
-- Contract (branch `zt/app-contract`): go through it with the team, fix what they change, get one
-  approval and merge. Then each owner builds their module to it (wave 1 before leaving Saturday).
+- Contract (merged, PR #49): settle the four open questions above at the table, then change the
+  contract in one pull request a teammate approves. Each owner builds their module to it (wave 1
+  before leaving Saturday).
 - Build the core and the pages in `integration/onboard-app/` to the contract (section 5): server,
   login, clock, events, then the astronaut app and the medical officer platform, starting from
   the UI skeleton's layout. The skeleton's 3 crew, 0–10 sliders and sleep slider must follow the

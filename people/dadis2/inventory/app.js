@@ -11,7 +11,7 @@
   "use strict";
 
   var L = window.MedLogic;
-  var STORE_KEY = "medInventory.v4";
+  var STORE_KEY = "medInventory.v5"; // v5: new sample data (pseudoephedrine stock, emergencyUse)
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   var TIER = {
@@ -208,17 +208,27 @@
     var sf = L.safetyChecks(state, me, it, qty, t);
     var gate = L.gateFor(state, me, it, qty, t, sf);
     // needsCmo: needs approval (from the onboard doctor, or from Earth for controlled medicines)
-    return { item: it, qty: qty, safety: sf, gate: gate, needsCmo: gate.type === "cmo" || gate.type === "earth", needsEarth: gate.type === "earth" };
+    // blocked: not for this user right now (allergy, daily limit, none left), nobody to ask
+    return { item: it, qty: qty, safety: sf, gate: gate, needsCmo: gate.type === "cmo" || gate.type === "earth", needsEarth: gate.type === "earth", blocked: gate.type === "blocked" };
   }
   function canRequest(it) { return it.kind === "medication" && it.tier !== "4" && (!it.ownerCrewId || it.ownerCrewId === me); }
-  // Red tint: needs CMO approval for this user (prescription, controlled without a standing order,
-  // or a self-care item blocked for them by a safety check)
-  function needsCmoMap(t) {
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
+  // On the Emergency screen: emergency items, prescription and controlled medicines (under "Can't wait
+  // for approval?") and the few marked emergencyUse ("Also used in emergencies")
+  function onEmergencyScreen(it) {
+    return it.tier === "4" || (it.kind === "medication" && (it.tier === "2" || it.tier === "3")) || !!it.emergencyUse;
+  }
+  // What each bin shows for this user, and why: "rx" = 🔒 needs approval; "no" = dimmed, not for them now
+  function lockMap(t) {
     var m = {};
     state.items.forEach(function (it) {
       if (it.tier === "4" || it.kind === "equipment") return;
-      if (canRequest(it)) m[it.id] = optionFor(it, t).needsCmo;
-      else m[it.id] = it.tier === "2" || it.tier === "3";
+      if (canRequest(it)) {
+        var o = optionFor(it, t);
+        if (o.needsCmo) m[it.id] = { kind: "rx", why: o.gate.short };
+        else if (o.blocked) m[it.id] = { kind: "no", why: o.gate.short, icon: o.gate.short.indexOf("allergy") === 0 ? "⚠" : "" };
+      } else if (it.ownerCrewId) m[it.id] = { kind: "no", why: firstName(it.ownerCrewId) + "'s own medicine", icon: "" };
+      else if (it.tier === "2" || it.tier === "3") m[it.id] = { kind: "rx", why: "the CMO uses it" };
     });
     return m;
   }
@@ -403,12 +413,12 @@
 
   // A due dose that safety checks hold back (allergy, daily limit counting every source, too close to
   // another dose). Shown on the card instead of "Due now"; the stock reserve never holds a granted dose.
+  // Why a granted dose can't be collected now ("" if it can). Reserve and conditions were weighed by
+  // whoever granted it; allergies, 24-hour limits and missing stock still hold it back.
   function doseHold(it, units, t) {
-    var sf = L.safetyChecks(state, me, it, units, t);
-    var hard = sf.checks.filter(function (c) { return c.result === "block" && c.name !== "Stock and reserve"; });
-    if (hard.length) return blockReason({ checks: hard });
-    if (!sf.lot && !L.pickLot(state, it, units, t).lot) return "None left";
-    return "";
+    var h = L.grantHold(state, me, it, units, t);
+    if (h.checks.length) return blockReason({ checks: h.checks });
+    return h.lot ? "" : "None left";
   }
   function collectable(g, t) {
     return L.grantDue(state, g, t).filter(function (d) { return !doseHold(L.getItem(state, d.itemId), d.units, t); });
@@ -425,7 +435,7 @@
           '<div class="hc-actions"><button class="link" data-act="seen" data-id="' + r.id + '">OK</button></div></div>';
       }
       return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for ' + (r.gate === "earth" ? "Earth" : "the CMO") + '</div><div class="hc-title">' + esc(it.name) + "</div>" +
-        '<div class="hc-actions"><button class="link" data-act="em-for" data-id="' + it.id + '">Can\'t wait? Emergency</button></div></div>';
+        (onEmergencyScreen(it) ? '<div class="hc-actions"><button class="link" data-act="em-for" data-id="' + it.id + '">Can\'t wait? Emergency</button></div>' : "") + "</div>";
     }).join("");
   }
 
@@ -455,20 +465,24 @@
     var list = state.items.filter(function (it) {
       return canRequest(it) && (!q || (it.name + " " + it.indications.map(symLabel).join(" ")).toLowerCase().indexOf(q) >= 0);
     }).map(function (it) { return optionFor(it, t); });
-    var self = list.filter(function (o) { return !o.needsCmo; }).sort(function (a, b) {
+    var self = list.filter(function (o) { return !o.needsCmo && !o.blocked; }).sort(function (a, b) {
       return (a.item.ownerCrewId ? 0 : 1) - (b.item.ownerCrewId ? 0 : 1) || a.item.name.localeCompare(b.item.name);
     });
-    var cmoList = list.filter(function (o) { return o.needsCmo; }).sort(function (a, b) { return a.item.name.localeCompare(b.item.name); });
+    var byName = function (a, b) { return a.item.name.localeCompare(b.item.name); };
+    var cmoList = list.filter(function (o) { return o.needsCmo; }).sort(byName);
+    var notNow = list.filter(function (o) { return o.blocked; }).sort(byName);
     function tile(o) {
-      var use = o.item.indications.slice(0, 2).map(symLabel).join(", ") || o.item.strength;
-      return '<button class="tile' + (o.needsCmo ? " rx" : "") + (o.safety.lot ? "" : " off") + '" data-act="pick" data-id="' + o.item.id + '"><span class="tile-name">' +
+      // Situational reasons (reserve, condition, allergy, limit) replace the usual "what it's for"
+      var use = (o.blocked || (o.needsCmo && o.item.tier === "1")) ? cap(o.gate.short) : o.item.indications.slice(0, 2).map(symLabel).join(", ") || o.item.strength;
+      return '<button class="tile' + (o.needsCmo ? " rx" : "") + (o.blocked || !o.safety.lot ? " off" : "") + '" data-act="pick" data-id="' + o.item.id + '"><span class="tile-name">' +
         (o.needsCmo ? "🔒 " : "") + esc(o.item.name) + (o.item.ownerCrewId ? ' <span class="tag muted">Yours</span>' : "") + '</span><span class="tile-use">' + esc(use) +
         (o.needsEarth ? " · 🌍 Earth" : "") + "</span></button>";
     }
     var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Request a medicine</h2></div>';
     html += '<input id="reqQ" class="search" type="search" placeholder="Search: headache, sleep…" aria-label="Search" value="' + esc(ui.query) + '" data-bind="query" data-live>';
     if (self.length) html += '<h3>You can take</h3><div class="tiles">' + self.map(tile).join("") + "</div>";
-    if (cmoList.length) html += '<h3>Ask the CMO</h3><div class="tiles">' + cmoList.map(tile).join("") + "</div>";
+    if (cmoList.length) html += '<h3>Needs approval</h3><div class="tiles">' + cmoList.map(tile).join("") + "</div>";
+    if (notNow.length) html += '<h3>Not for you now</h3><div class="tiles">' + notNow.map(tile).join("") + "</div>";
     if (!list.length) html += '<p class="muted">Nothing found.</p>';
     return html;
   }
@@ -479,11 +493,14 @@
       (o.needsCmo ? "🔒 " : "") + esc(it.name) + "</h2></div>";
     html += '<div class="hcard ' + (o.needsCmo ? "rx" : "ok") + '"><div class="hc-title">' + esc(doseText(it, o.qty)) + '</div><div class="hc-sub">' + esc(it.strength) + "</div>";
     html += sf.result === "block" ? '<div class="chips"><span class="tag bad">' + esc(blockReason(sf)) + "</span></div>" : warnChips(sf, it);
-    if (!sf.lot) html += '<div class="hc-sub">None left. Ask the CMO.</div>';
-    else {
+    var emLink = '<button class="link" data-act="em-for" data-id="' + it.id + '">' + (o.blocked ? "Emergency? Use the Emergency screen" : "Can't wait? Emergency") + "</button>";
+    if (!sf.lot) html += '<div class="hc-sub">None left. Tell the CMO.</div>';
+    else if (o.blocked) {
+      html += '<div class="hc-sub">' + esc(o.gate.why) + ".</div>" + (onEmergencyScreen(it) ? '<div class="hc-actions">' + emLink + "</div>" : "");
+    } else {
       html += '<div class="hc-actions"><button class="btn primary big" data-act="' + (o.needsCmo ? "ask" : "take") + '" data-id="' + it.id + '"' +
         (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsEarth ? "Ask Earth" : o.needsCmo ? "Ask the CMO" : "Get it") + "</button>" +
-        (o.needsCmo ? '<button class="link" data-act="em-for" data-id="' + it.id + '">Can\'t wait? Emergency</button>' : "") + "</div>";
+        (o.needsCmo && onEmergencyScreen(it) ? emLink : "") + "</div>";
       if (o.needsEarth) html += '<div class="hc-sub small">Earth decides on controlled medicines. A reply takes about 24 minutes.</div>';
     }
     return html + "</div>";
@@ -507,13 +524,15 @@
 
   function startTake(itemId, reportId) {
     var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
-    if (!o.safety.lot) { toast("None left. Ask the CMO."); return; }
+    if (!o.safety.lot) { toast("None left. Tell the CMO."); return; }
+    if (o.blocked) { toast(cap(o.gate.short) + "."); return; }
     if (o.needsCmo) { askCmo(itemId, reportId); return; }
     startFlow({ itemId: it.id, qty: o.qty, lotId: o.safety.lot.id, authType: o.gate.type, signedBy: [me], reason: reasonFrom(reportId), reportId: reportId || null });
   }
 
   function askCmo(itemId, reportId) {
     var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
+    if (o.blocked) { toast(cap(o.gate.short) + "."); return; }
     // Controlled medicines go to Earth (final say); everything else to the onboard doctor.
     // If it can't wait, the Emergency button is always there.
     var gateType = o.gate.type === "earth" || it.tier === "3" || it.controlled ? "earth" : "cmo";
@@ -543,12 +562,10 @@
     if (!g || g.patientId !== me) { toast("This grant isn't yours."); return; }
     var due = L.grantDue(state, g, t), items = [], blocked = [];
     due.forEach(function (d) {
-      var it = L.getItem(state, d.itemId), sf = L.safetyChecks(state, me, it, d.units, t);
-      // Safety checks still run. Reserve is not a reason to stop a granted dose; allergies and limits are.
-      var hard = sf.checks.filter(function (c) { return c.result === "block" && c.name !== "Stock and reserve"; });
-      var lot = sf.lot || L.pickLot(state, it, d.units, t).lot;
-      if (hard.length || !lot) { blocked.push(it.name + ": " + (hard.length ? blockReason({ checks: hard }) : "none left")); return; }
-      items.push(Object.assign({ lotId: lot.id, done: false }, d));
+      // Safety checks still run (see doseHold): allergies, limits and stock can stop a granted dose
+      var it = L.getItem(state, d.itemId), h = L.grantHold(state, me, it, d.units, t);
+      if (h.checks.length || !h.lot) { blocked.push(it.name + ": " + (h.checks.length ? blockReason({ checks: h.checks }) : "none left")); return; }
+      items.push(Object.assign({ lotId: h.lot.id, done: false }, d));
     });
     if (!items.length) { toast(blocked.length ? blocked.join(" · ") + ". Ask the CMO." : "Nothing to collect now."); return; }
     startFlow({ kind: "collect", grantId: g.id, items: items, blocked: blocked });
@@ -682,7 +699,8 @@
       f.entry = L.dispense(state, Object.assign({
         patientId: f.patientId, itemId: f.itemId, lotId: f.lotId, qty: f.qty, reason: f.reason, authType: f.authType, signedBy: f.signedBy,
         requestId: f.requestId, scanSkipped: !!f.scanSkipped, override: f.override || null,
-        approvalBypassed: !!f.approvalBypassed, groundReview: !!f.approvalBypassed
+        // Released without approval, or given despite a warning: Earth reviews it
+        approvalBypassed: !!f.approvalBypassed, groundReview: !!f.approvalBypassed || !!(f.override && f.override.length)
       }, extra || {}), now());
     } catch (err) { f.error = err.message; return; }
     if (f.reportId) markReport(f.reportId);
@@ -763,10 +781,10 @@
       lockersHit[loc.locker.id] = true;
     });
     var any = Object.keys(lockersHit).length > 0;
-    var rx = needsCmoMap(t);
+    var rx = lockMap(t);
     var html = '<div class="lockers-head"><span class="lh-title">Lockers</span>';
     if (focus && focus.clearable && firstItem) html += '<span class="lh-focus">' + esc(firstItem.name) + ' <button class="link small" data-act="locker-clear">Clear</button></span>';
-    html += '<span class="legend-rx"><span class="rx-swatch"></span>🔒 Needs approval</span></div>';
+    html += '<span class="legend-rx"><span class="rx-swatch"></span>🔒 Needs approval <span class="no-swatch"></span>Not for you now</span></div>';
     if (locating && any) {
       html += '<div class="bay-strip" aria-hidden="true">' + state.lockers.map(function (lk) {
         return '<div class="mini-locker' + (lockersHit[lk.id] ? " on" : "") + (lk.emergency ? " em" : "") + '"><span>' + esc(lk.label) + "</span></div>";
@@ -800,10 +818,10 @@
       for (var b = 1; b <= nBins; b++) {
         var it = byBin[b], mark = shelfT ? shelfT[b] : null;
         if (it) {
-          var tag = o.clickable ? "button" : "div", isRx = !!o.rx[it.id];
-          html += "<" + tag + ' class="bin' + (isRx ? " rx" : "") + (mark === "done" ? " got" : mark ? (o.pulse ? " target" : " preview") : "") + '"' +
-            (o.clickable ? ' data-act="bin" data-id="' + it.id + '"' : "") + ' title="' + esc(itemLabel(it)) + (isRx ? " (needs CMO approval)" : "") +
-            '"><span class="bin-num">' + b + (isRx ? " 🔒" : "") + '</span><span class="bin-name">' + esc(shortName(it)) + "</span></" + tag + ">";
+          var tag = o.clickable ? "button" : "div", lk = o.rx[it.id], isRx = !!lk && lk.kind === "rx", isNo = !!lk && lk.kind === "no";
+          html += "<" + tag + ' class="bin' + (isRx ? " rx" : isNo ? " no" : "") + (mark === "done" ? " got" : mark ? (o.pulse ? " target" : " preview") : "") + '"' +
+            (o.clickable ? ' data-act="bin" data-id="' + it.id + '"' : "") + ' title="' + esc(itemLabel(it)) + (lk ? " (" + esc(lk.why) + ")" : "") +
+            '"><span class="bin-num">' + b + (isRx ? " 🔒" : isNo && lk.icon ? " " + lk.icon : "") + '</span><span class="bin-name">' + esc(shortName(it)) + "</span></" + tag + ">";
         } else {
           html += '<div class="bin empty"><span class="bin-num">' + b + "</span></div>";
         }
@@ -910,7 +928,7 @@
   // Risks of an emergency medicine for this patient. Never a hard block in an emergency:
   // "block" level risks need a second deliberate tap and are logged as an override.
   function emRisks(patientId, it) {
-    if (it.kind === "equipment") return [];
+    if (it.kind !== "medication") return [];
     var sf = L.safetyChecks(state, patientId, it, it.doseUnits || 1, now()), name = firstName(patientId), out = [];
     sf.checks.forEach(function (c) {
       if (c.result === "pass") return;
@@ -942,12 +960,19 @@
     }).join("") + "</div>";
     function emTile(it) {
       var s = L.stock(state, it, t), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
-      return '<button class="tile em' + (it.tier !== "4" ? " wait" : "") + (em.itemId === it.id ? " sel" : "") + (risks.length ? " risk" : "") + '" data-act="em-item" data-id="' + it.id +
-        '"><span class="tile-name">' + esc(it.name) + '</span><span class="tile-use">' + (it.kind === "equipment" ? "Equipment" : esc(it.strength) + " · " + s.usable + " left") +
+      var wait = it.tier === "2" || it.tier === "3", aid = !!it.emergencyUse && it.tier !== "4";
+      var use = aid ? esc(it.emergencyUse) + (it.kind === "medication" ? " · " + s.usable + " left" : "")
+        : (it.kind === "equipment" ? "Equipment" : esc(it.strength) + " · " + s.usable + " left");
+      return '<button class="tile em' + (wait ? " wait" : aid ? " aid" : "") + (em.itemId === it.id ? " sel" : "") + (risks.length ? " risk" : "") + '" data-act="em-item" data-id="' + it.id +
+        '"><span class="tile-name">' + esc(it.name) + '</span><span class="tile-use">' + use +
         (it.tier === "3" ? " · Earth decides normally" : it.tier === "2" ? " · CMO decides normally" : "") + "</span>" +
         (risks.length ? '<span class="tile-risk' + (block ? " block" : "") + '">⚠ ' + esc(risks[0].short) + "</span>" : "") + "</button>";
     }
     html += '<div class="tiles">' + state.items.filter(function (it) { return it.tier === "4"; }).map(emTile).join("") + "</div>";
+    // Self-care medicines and supplies that matter in an emergency (data: emergencyUse). Medicines go to
+    // whoever needs help, with the usual allergy and limit warnings; supplies only light up their bin.
+    var aid = state.items.filter(function (it) { return it.emergencyUse && it.tier !== "4"; });
+    if (aid.length) html += '<h3 class="em-sub">Also used in emergencies</h3><div class="tiles">' + aid.map(emTile).join("") + "</div>";
     // Medicines that normally need the CMO or Earth, for when it truly can't wait
     var waitable = state.items.filter(function (it) {
       return it.kind === "medication" && (it.tier === "2" || it.tier === "3") && (!it.ownerCrewId || it.ownerCrewId === em.patientId);
@@ -957,14 +982,15 @@
       '<div class="tiles">' + waitable.map(emTile).join("") + "</div></details>";
     if (em.itemId) {
       var it = L.getItem(state, em.itemId), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
-      var needsReason = it.tier !== "4";
+      // Only medicines that normally need approval need a reason; self-care and emergency items don't
+      var needsReason = it.tier === "2" || it.tier === "3";
       if (risks.length) {
         html += '<div class="em-warn' + (block ? " block" : "") + '"><b>⚠ ' + (block ? "Warning" : "Check") + "</b>" +
           risks.map(function (r) { return "<div>" + esc(r.text) + "</div>"; }).join("") +
           (block ? '<div class="em-warn-note">Only give it if there is no other option. It will be logged for the CMO and ground.</div>' : "") + "</div>";
       }
       if (needsReason) html += '<div class="em-warn"><b>Without approval</b><div>' + esc(it.name) + " normally needs " + (it.tier === "3" ? "Earth" : "the CMO") + ". Say why it can't wait.</div></div>";
-      html += '<div class="em-go">' + (it.kind === "equipment"
+      html += '<div class="em-go">' + (it.kind !== "medication"
         ? '<button class="btn danger big" data-act="em-locate">Show me</button>'
         : '<input id="emReason" type="text" placeholder="' + (needsReason ? "Why it can't wait (required)" : "What happened? (optional)") + '" value="' + esc(em.reason) + '" data-bind="em.reason">' +
           '<button class="btn danger big' + (em.confirm ? " confirm" : "") + '" data-act="em-release">' +
@@ -976,7 +1002,7 @@
 
   function emergencyRelease() {
     var em = ui.em, t = now(), it = L.getItem(state, em.itemId), qty = it.doseUnits || 1;
-    var bypass = it.tier !== "4", reason = String(em.reason || "").trim();
+    var bypass = it.tier === "2" || it.tier === "3", reason = String(em.reason || "").trim();
     if (bypass && !reason) { em.error = "Say why it can't wait for approval."; return; }
     em.error = "";
     var overrides = emRisks(em.patientId, it).filter(function (r) { return r.level === "block"; }).map(function (r) { return r.text; });

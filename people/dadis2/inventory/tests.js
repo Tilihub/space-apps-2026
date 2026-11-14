@@ -90,6 +90,47 @@
       authType: "break-glass", signedBy: ["c4"], approvalBypassed: true }, at(8, 30));
     return eq([e.approvalBypassed, e.groundReview, !!e.docsDue], [true, "pending", true]);
   });
+  // --- approval per medicine and person ---
+
+  function gate(s, crewId, itemId, t) {
+    var it = L.getItem(s, itemId), q = it.doseUnits || 1;
+    return L.gateFor(s, crewId, it, q, t, L.safetyChecks(s, crewId, it, q, t));
+  }
+  // (Recent doses in the sample log may still make one wait, for example a second NSAID.)
+  check("With the sample stock, no shared self-care medicine needs approval for someone it's safe for", function () {
+    var s = fresh(), bad = [];
+    s.items.filter(function (it) { return it.kind === "medication" && it.tier === "1" && !it.ownerCrewId; }).forEach(function (it) {
+      var g = gate(s, "c1", it.id, at(8, 30));
+      if (g.type === "cmo" || g.type === "earth") bad.push(it.id + ": " + g.short);
+    });
+    return bad.length ? bad.join(", ") : true;
+  });
+  check("An allergy: not for that person, and nobody can grant it", function () {
+    var s = fresh(), r = draft(s, L.EARTH, "c3", at(0), [{ itemId: "ibuprofen-400", units: 1, perDay: 1, days: 1 }]);
+    return eq([gate(s, "c3", "ibuprofen-400", at(8, 30)).type, !!(r.error && r.error.indexOf("allergic") >= 0)], ["blocked", true]);
+  });
+  check("Not safe with someone's condition: the CMO decides, and the granted dose isn't held back by it", function () {
+    var s = fresh(), it = L.getItem(s, "ibuprofen-400");
+    return eq([gate(s, "c4", it.id, at(8, 30)).type, L.grantHold(s, "c4", it, 1, at(8, 30)).checks.length], ["cmo", 0]);
+  });
+  check("Only the reserve left: the CMO decides, and the granted dose can use the reserve", function () {
+    var s = fresh(), it = L.getItem(s, "loperamide-2"), lots = L.lotsOf(s, it.id);
+    lots.forEach(function (l, i) { l.qty = i === 0 ? it.reserve : 0; });
+    var h = L.grantHold(s, "c1", it, 2, at(8, 30));
+    return eq([gate(s, "c1", it.id, at(8, 30)).short, h.checks.length, !!h.lot], ["kept in reserve: the CMO decides", 0, true]);
+  });
+  check("At the daily limit, self-care waits instead of asking the CMO", function () {
+    var s = fresh(), it = L.getItem(s, "loratadine-10"), lot = L.pickLot(s, it, 1, at(8, 0)).lot;
+    L.dispense(s, { patientId: "c1", itemId: it.id, lotId: lot.id, qty: 1, authType: "self", signedBy: ["c1"] }, at(8, 0));
+    var g = gate(s, "c1", it.id, at(8, 30));
+    return eq([g.type, g.short], ["blocked", "daily limit reached"]);
+  });
+  check("Emergency-use items are self-care medicines or supplies, each saying what it's for", function () {
+    var list = fresh().items.filter(function (it) { return it.emergencyUse; });
+    var bad = list.filter(function (it) { return (it.tier !== "1" && it.tier !== "S") || typeof it.emergencyUse !== "string"; });
+    return list.length >= 2 && !bad.length ? true : "bad: " + bad.map(function (it) { return it.id; }).join(", ");
+  });
+
   check("The backup doctor can't grant medicine to themselves", function () {
     return errorLike(draft(fresh(), "c3", "c3", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "themselves");
   });

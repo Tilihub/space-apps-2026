@@ -336,8 +336,7 @@
     function add(name, result, msg) { checks.push({ name: name, result: result, msg: msg }); }
 
     // Allergy
-    var allergyHits = item.classes.concat(item.ingredients.map(function (g) { return g.name; }))
-      .filter(function (c) { return crew.allergies.indexOf(c) >= 0; });
+    var allergyHits = allergiesTo(state, patientId, item);
     add("Allergy", allergyHits.length ? "block" : "pass",
       allergyHits.length ? crew.name + " is allergic to " + allergyHits.join(", ") : "No known allergy");
 
@@ -468,26 +467,58 @@
 
   // ---------- authorisation (spec section 4) ----------
 
-  // Returns which gate applies: none | self | standing-order | cmo | earth | break-glass
-  // (dadis2's decision, 14 Nov, evening: Earth has the final say on controlled medicines and when the
-  // CMO is the patient; the onboard doctor grants the rest. Nothing is ever fully locked: if it can't
-  // wait, the Emergency button releases it, logged, with paperwork and Earth review. Standing orders
-  // are grants from Earth issued before launch.)
+  // The crew member's allergies that this item hits (by class or ingredient)
+  function allergiesTo(state, patientId, item) {
+    var crew = getCrew(state, patientId);
+    if (!crew || !item) return [];
+    return (item.classes || []).concat((item.ingredients || []).map(function (g) { return g.name; }))
+      .filter(function (c) { return crew.allergies.indexOf(c) >= 0; });
+  }
+
+  // Returns which gate applies: none | self | standing-order | cmo | earth | break-glass | blocked,
+  // with `short` (a few words for bins and tiles) and `why`.
+  // (dadis2's decisions, 14 Nov, evening.)
+  // - By category: self-care → yourself; prescription → the onboard doctor; controlled → Earth (final
+  //   say); emergency → the Emergency button. Standing orders are grants from Earth before launch.
+  // - Then the person's situation, for self-care: kept in reserve, or not safe with their condition →
+  //   the doctor decides; daily limit reached → wait; none left → nothing to give.
+  // - An allergy blocks every category: nobody grants it. Only Emergency's two-tap "Give anyway" can.
+  // - If approval can't wait, the Emergency button releases it, logged, with paperwork and Earth review.
   function gateFor(state, patientId, item, qty, now, safety) {
-    if (item.tier === "4") return { type: "break-glass", why: "Emergency item: release immediately, document within 2 hours" };
+    if (item.tier === "4") return { type: "break-glass", short: "emergency medicine", why: "Emergency item: release immediately, document within 2 hours" };
+    var blocks = safety ? safety.checks.filter(function (c) { return c.result === "block"; }).map(function (c) { return c.name; }) : [];
+    if (blocks.indexOf("Allergy") >= 0) return { type: "blocked", short: "allergy: not for you", why: "Allergy: nobody grants it. In an emergency, only \"Give anyway\" can release it" };
     if (item.tier === "3") {
       var so = standingOrder(state, patientId, item.id);
       if (so) {
         var taken = recentDoses(state, patientId, 24, now).filter(function (e) { return e.itemId === item.id; }).reduce(function (s, e) { return s + e.qty; }, 0);
-        if (taken + qty <= so.maxPerDay && (!safety || safety.result !== "block")) return { type: "standing-order", why: "Standing order: " + so.maxPerDay + " per 24 h. Your PIN, then count check" };
+        if (taken + qty <= so.maxPerDay && (!safety || safety.result !== "block")) return { type: "standing-order", short: "standing order", why: "Standing order: " + so.maxPerDay + " per 24 h. Your PIN, then count check" };
       }
-      return { type: "earth", why: "Controlled medicine (" + (item.controlled || "controlled") + "): Earth decides. If it can't wait, use Emergency" };
+      return { type: "earth", short: "needs Earth's approval", why: "Controlled medicine (" + (item.controlled || "controlled") + "): Earth decides. If it can't wait, use Emergency" };
     }
-    if (item.tier === "2") return { type: "cmo", why: "Prescription item: CMO signs" };
-    if (item.ownerCrewId && item.ownerCrewId !== patientId) return { type: "cmo", why: "Crew-specific item of another crew member: CMO signs" };
-    if (safety && safety.result === "block") return { type: "cmo", why: "A safety check blocked self-care: the CMO decides" };
-    if (item.tier === "1") return { type: "self", why: "Self-care: confirm with your PIN" };
-    return { type: "none", why: "Supply item" };
+    if (item.tier === "2") return { type: "cmo", short: "needs the CMO's approval", why: "Prescription medicine: the CMO signs" };
+    if (item.ownerCrewId && item.ownerCrewId !== patientId) return { type: "blocked", short: "someone else's medicine", why: "Another crew member's own medicine" };
+    if (item.tier === "1" && blocks.length) {
+      if (safety && !safety.lot) return { type: "blocked", short: "none left", why: "None left: tell the CMO" };
+      if (blocks.indexOf("Daily maximum") >= 0) return { type: "blocked", short: "daily limit reached", why: "Wait: the 24-hour limit allows another dose later" };
+      if (blocks.indexOf("Same class") >= 0) return { type: "blocked", short: "too close to another dose", why: "Wait: another medicine of the same kind was taken in the last 24 hours" };
+      if (blocks.indexOf("Contraindication") >= 0) return { type: "cmo", short: "not safe for you: the CMO decides", why: "Not safe with your condition: the CMO decides" };
+      if (blocks.indexOf("Stock and reserve") >= 0) return { type: "cmo", short: "kept in reserve: the CMO decides", why: "Only the reserve is left: the CMO decides" };
+      return { type: "cmo", short: "the CMO decides", why: "A safety check blocked self-care: the CMO decides" };
+    }
+    if (item.tier === "1") return { type: "self", short: "self-care", why: "Self-care: confirm with your PIN" };
+    return { type: "none", short: "supply", why: "Supply item" };
+  }
+
+  // Checks that still hold back a granted dose at collection time. The doctor or Earth already weighed
+  // the stock reserve and the person's conditions when granting, so those don't hold it back. An
+  // allergy, the 24-hour limits and expired or missing stock still do.
+  function grantHold(state, patientId, item, units, now) {
+    var sf = safetyChecks(state, patientId, item, units, now);
+    return {
+      checks: sf.checks.filter(function (c) { return c.result === "block" && c.name !== "Stock and reserve" && c.name !== "Contraindication"; }),
+      lot: sf.lot || pickLot(state, item, units, now).lot
+    };
   }
 
   function needsCountCheck(item) { return item.tier === "3" || !!item.controlled; }
@@ -613,6 +644,11 @@
     if (!item || item.kind !== "medication") return "Only medicines can be granted.";
     if (item.tier === "4") return item.name + " is an emergency medicine: use the Emergency button.";
     if (item.ownerCrewId && item.ownerCrewId !== patientId) return item.name + " belongs to another crew member.";
+    var allergic = allergiesTo(state, patientId, item);
+    if (allergic.length) {
+      var p = getCrew(state, patientId);
+      return (p ? p.name : patientId) + " is allergic to " + allergic.join(", ") + ": nobody grants " + item.name + ". In an emergency, only \"Give anyway\" can release it.";
+    }
     if (issuerId === EARTH) return null;
     var c = getCrew(state, issuerId);
     if (!c || !(c.isCMO || c.isBackupCMO)) return "Only the onboard doctor or Earth can issue a grant.";
@@ -872,7 +908,7 @@
     stock: stock, useRate: useRate, coverage: coverage, itemFlags: itemFlags, nextExpiry: nextExpiry, unitsUsed: unitsUsed,
     recentDoses: recentDoses, pickLot: pickLot, safetyChecks: safetyChecks,
     redFlags: redFlags, standingOrder: standingOrder, suggest: suggest,
-    gateFor: gateFor, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
+    gateFor: gateFor, allergiesTo: allergiesTo, grantHold: grantHold, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
     dispense: dispense, alerts: alerts, validateReport: validateReport,
     EARTH: EARTH, canGrant: canGrant, encodeGrant: encodeGrant, decodeGrant: decodeGrant, acceptGrant: acceptGrant, addGrant: addGrant,
     getGrant: getGrant, grantLastDay: grantLastDay, revokeGrant: revokeGrant, grantConflicts: grantConflicts, activeCourses: activeCourses, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
