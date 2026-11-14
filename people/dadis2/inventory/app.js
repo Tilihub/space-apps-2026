@@ -424,7 +424,8 @@
         return '<div class="hcard"><div class="hc-kicker">Not approved</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-sub">Talk to the CMO.</div>' +
           '<div class="hc-actions"><button class="link" data-act="seen" data-id="' + r.id + '">OK</button></div></div>';
       }
-      return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for ' + (r.gate === "earth" ? "Earth" : "the CMO") + '</div><div class="hc-title">' + esc(it.name) + "</div></div>";
+      return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for ' + (r.gate === "earth" ? "Earth" : "the CMO") + '</div><div class="hc-title">' + esc(it.name) + "</div>" +
+        '<div class="hc-actions"><button class="link" data-act="em-for" data-id="' + it.id + '">Can\'t wait? Emergency</button></div></div>';
     }).join("");
   }
 
@@ -481,7 +482,9 @@
     if (!sf.lot) html += '<div class="hc-sub">None left. Ask the CMO.</div>';
     else {
       html += '<div class="hc-actions"><button class="btn primary big" data-act="' + (o.needsCmo ? "ask" : "take") + '" data-id="' + it.id + '"' +
-        (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsEarth ? "Ask Earth" : o.needsCmo ? "Ask the CMO" : "Get it") + "</button></div>";
+        (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsEarth ? "Ask Earth" : o.needsCmo ? "Ask the CMO" : "Get it") + "</button>" +
+        (o.needsCmo ? '<button class="link" data-act="em-for" data-id="' + it.id + '">Can\'t wait? Emergency</button>' : "") + "</div>";
+      if (o.needsEarth) html += '<div class="hc-sub small">Earth decides on controlled medicines. A reply takes about 24 minutes.</div>';
     }
     return html + "</div>";
   }
@@ -511,7 +514,9 @@
 
   function askCmo(itemId, reportId) {
     var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
-    var gateType = "cmo"; // every request goes to the onboard doctor; Earth is never required
+    // Controlled medicines go to Earth (final say); everything else to the onboard doctor.
+    // If it can't wait, the Emergency button is always there.
+    var gateType = o.gate.type === "earth" || it.tier === "3" || it.controlled ? "earth" : "cmo";
     state.requests.unshift({
       id: "R" + state.seq++, time: t.toISOString(), patientId: me, itemId: it.id, qty: o.qty, reason: reasonFrom(reportId),
       tier: it.tier, gate: gateType, status: "pending", signatures: []
@@ -520,7 +525,7 @@
     ui.screen = "main";
     ui.pick = null;
     save();
-    toast("Sent to the CMO");
+    toast(gateType === "earth" ? "Sent to Earth (about 24 min for a reply). Can't wait? Use Emergency." : "Sent to the CMO");
   }
 
   // ---------- collecting under a grant: all due bins open together, dose by dose ----------
@@ -676,10 +681,17 @@
     try {
       f.entry = L.dispense(state, Object.assign({
         patientId: f.patientId, itemId: f.itemId, lotId: f.lotId, qty: f.qty, reason: f.reason, authType: f.authType, signedBy: f.signedBy,
-        requestId: f.requestId, scanSkipped: !!f.scanSkipped, override: f.override || null
+        requestId: f.requestId, scanSkipped: !!f.scanSkipped, override: f.override || null,
+        approvalBypassed: !!f.approvalBypassed, groundReview: !!f.approvalBypassed
       }, extra || {}), now());
     } catch (err) { f.error = err.message; return; }
     if (f.reportId) markReport(f.reportId);
+    // A request for the same medicine is answered by the emergency release (Earth still reviews it)
+    if (f.approvalBypassed) {
+      state.requests.forEach(function (r) {
+        if (r.status === "pending" && r.patientId === f.patientId && r.itemId === f.itemId) { r.status = "released-emergency"; r.entryId = f.entry.id; }
+      });
+    }
 
     f.gains = []; f.newBadges = []; f.levelUp = false; f.newBest = false;
     if (!f.emergency) {
@@ -722,6 +734,7 @@
     if (f.newBest) html += '<div class="hc-sub">New best: ' + f.seconds + " s</div>";
     if (e && e.countCheck && e.countCheck.counted !== e.countCheck.expected) html += '<div class="tag bad block">Count doesn\'t match. The CMO will check.</div>';
     if (e && e.override) html += '<div class="tag bad block">⚠ Given despite: ' + esc(e.override.join("; ")) + ". Flagged for the CMO and ground.</div>";
+    if (e && e.approvalBypassed) html += '<div class="tag bad block">Released without approval. The CMO and Earth review it.</div>';
     if (e && e.docsDue) html += '<div class="tag bad block">CMO: write what happened by ' + clock(e.docsDue) + ".</div>";
     html += '<div class="hc-sub">Close the bin and the locker.</div><button class="btn primary big" data-act="flow-close">Back</button></div>';
     return html;
@@ -927,37 +940,52 @@
         c.conditions.map(function (x) { return '<span class="who-tag">⚠ ' + esc(CONDITION_SHORT[x] || x) + "</span>"; }).join("");
       return '<button class="who' + (em.patientId === c.id ? " sel" : "") + '" data-act="em-who" data-id="' + c.id + '">' + esc(firstName(c.id)) + (c.id === me ? " (me)" : "") + tags + "</button>";
     }).join("") + "</div>";
-    html += '<div class="tiles">' + state.items.filter(function (it) { return it.tier === "4"; }).map(function (it) {
+    function emTile(it) {
       var s = L.stock(state, it, t), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
-      return '<button class="tile em' + (em.itemId === it.id ? " sel" : "") + (risks.length ? " risk" : "") + '" data-act="em-item" data-id="' + it.id + '"><span class="tile-name">' + esc(it.name) +
-        '</span><span class="tile-use">' + (it.kind === "equipment" ? "Equipment" : esc(it.strength) + " · " + s.usable + " left") + "</span>" +
+      return '<button class="tile em' + (it.tier !== "4" ? " wait" : "") + (em.itemId === it.id ? " sel" : "") + (risks.length ? " risk" : "") + '" data-act="em-item" data-id="' + it.id +
+        '"><span class="tile-name">' + esc(it.name) + '</span><span class="tile-use">' + (it.kind === "equipment" ? "Equipment" : esc(it.strength) + " · " + s.usable + " left") +
+        (it.tier === "3" ? " · Earth decides normally" : it.tier === "2" ? " · CMO decides normally" : "") + "</span>" +
         (risks.length ? '<span class="tile-risk' + (block ? " block" : "") + '">⚠ ' + esc(risks[0].short) + "</span>" : "") + "</button>";
-    }).join("") + "</div>";
+    }
+    html += '<div class="tiles">' + state.items.filter(function (it) { return it.tier === "4"; }).map(emTile).join("") + "</div>";
+    // Medicines that normally need the CMO or Earth, for when it truly can't wait
+    var waitable = state.items.filter(function (it) {
+      return it.kind === "medication" && (it.tier === "2" || it.tier === "3") && (!it.ownerCrewId || it.ownerCrewId === em.patientId);
+    });
+    html += '<details class="cant-wait"' + (em.cantWait ? " open" : "") + '><summary data-act="em-cantwait">Can\'t wait for approval?</summary>' +
+      '<p class="hint">Only if it truly can\'t wait for the CMO or Earth. A reason is required. It\'s logged as released without approval, the paperwork is due in 2 hours, and Earth reviews it.</p>' +
+      '<div class="tiles">' + waitable.map(emTile).join("") + "</div></details>";
     if (em.itemId) {
       var it = L.getItem(state, em.itemId), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
+      var needsReason = it.tier !== "4";
       if (risks.length) {
         html += '<div class="em-warn' + (block ? " block" : "") + '"><b>⚠ ' + (block ? "Warning" : "Check") + "</b>" +
           risks.map(function (r) { return "<div>" + esc(r.text) + "</div>"; }).join("") +
           (block ? '<div class="em-warn-note">Only give it if there is no other option. It will be logged for the CMO and ground.</div>' : "") + "</div>";
       }
+      if (needsReason) html += '<div class="em-warn"><b>Without approval</b><div>' + esc(it.name) + " normally needs " + (it.tier === "3" ? "Earth" : "the CMO") + ". Say why it can't wait.</div></div>";
       html += '<div class="em-go">' + (it.kind === "equipment"
         ? '<button class="btn danger big" data-act="em-locate">Show me</button>'
-        : '<input id="emReason" type="text" placeholder="What happened? (optional)" value="' + esc(em.reason) + '" data-bind="em.reason">' +
+        : '<input id="emReason" type="text" placeholder="' + (needsReason ? "Why it can't wait (required)" : "What happened? (optional)") + '" value="' + esc(em.reason) + '" data-bind="em.reason">' +
           '<button class="btn danger big' + (em.confirm ? " confirm" : "") + '" data-act="em-release">' +
           (block ? (em.confirm ? "Tap again to give anyway" : "Give anyway") : "Release now") + "</button>") + "</div>";
+      if (em.error) html += '<p class="error">' + esc(em.error) + "</p>";
     }
     return html;
   }
 
   function emergencyRelease() {
     var em = ui.em, t = now(), it = L.getItem(state, em.itemId), qty = it.doseUnits || 1;
+    var bypass = it.tier !== "4", reason = String(em.reason || "").trim();
+    if (bypass && !reason) { em.error = "Say why it can't wait for approval."; return; }
+    em.error = "";
     var overrides = emRisks(em.patientId, it).filter(function (r) { return r.level === "block"; }).map(function (r) { return r.text; });
     if (overrides.length && !em.confirm) { em.confirm = true; return; }
     var lot = L.pickLot(state, it, qty, t).lot || L.fefoLots(state, it).filter(function (l) { return l.qty >= qty; })[0];
     if (!lot) { toast("None left."); return; }
     startFlow({
       emergency: true, patientId: em.patientId, itemId: it.id, qty: qty, lotId: lot.id, authType: "break-glass", signedBy: [me],
-      reason: String(em.reason || "").trim() || "Emergency", override: overrides.length ? overrides : null
+      reason: reason || "Emergency", override: overrides.length ? overrides : null, approvalBypassed: bypass
     });
     ui.em = null;
   }
@@ -1069,8 +1097,8 @@
   // ---------- approvals (CMO's screen) ----------
 
   function requestGate(r) { return r.gate || (r.tier === "3" ? "earth" : "cmo"); }
-  // The CMO can approve anyone, themselves included (flagged for Earth review); the backup never themselves
-  function approverOptions(patientId) { return state.crew.filter(function (c) { return c.isCMO || (c.isBackupCMO && c.id !== patientId); }); }
+  // A doctor never approves their own medicine: the backup doctor or Earth does
+  function approverOptions(patientId) { return state.crew.filter(function (c) { return (c.isCMO || c.isBackupCMO) && c.id !== patientId; }); }
 
   function sigFields(path, label, options, cur, idp) {
     cur = cur || {};
@@ -1104,6 +1132,14 @@
     return html + '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-grant" data-id="' + r.id + '">Grant</button></div></div>';
   }
 
+  // Controlled medicines (and the CMO's own medicines when there's no backup): Earth has the final say.
+  // It goes with the next report; a reply takes about 24 minutes. If it can't wait: Emergency.
+  function earthRequestCard(r, t) {
+    return '<div class="card">' + requestHead(r, t) + '<div class="muted small">Earth decides on this. It goes with the next report; a reply takes about ' +
+      (state.mission.commDelayMin * 2) + " minutes. If it can't wait, use Emergency (logged, Earth reviews it).</div>" +
+      '<div class="actions"><button class="btn" data-act="earth-reply" data-id="' + r.id + '">Demo: Earth grants it</button></div></div>';
+  }
+
   // One active grant on the CMO's screen: its code, QR on request, and a two-tap Cancel
   function grantRow(g) {
     var confirming = ui.cancelConfirm === g.id, showing = ui.showQr === g.id, qrHtml = "";
@@ -1124,7 +1160,8 @@
     var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null;
     return "<b>" + e.qty + " × " + esc(itemLabel(it)) + "</b> for " + esc(crewName(e.patientId)) + ' <span class="muted small">' + fmtTime(e.time) + (lot ? " · lot " + esc(lot.lotNumber) : "") +
       " · " + esc(AUTH[e.auth.type]) + (e.auth.signedBy.length ? " (" + e.auth.signedBy.map(crewName).map(esc).join(", ") + ")" : "") + "</span>" +
-      (e.override ? '<div class="error small">⚠ Given despite: ' + esc(e.override.join("; ")) + "</div>" : "");
+      (e.override ? '<div class="error small">⚠ Given despite: ' + esc(e.override.join("; ")) + "</div>" : "") +
+      (e.approvalBypassed ? '<div class="error small">Released without approval (Emergency): ' + esc(e.reason) + "</div>" : "");
   }
 
   function viewApprovals() {
@@ -1141,6 +1178,10 @@
     if (!a.pending.length) html += '<p class="muted">Nothing waiting.</p>';
     a.pending.forEach(function (r) { html += requestCard(r, t); });
     if (a.pending.length) html += '<p class="hint">Demo PINs: ' + state.crew.map(function (c) { return esc(firstName(c.id)) + " " + c.pin; }).join(", ") + "</p>";
+    if (a.waitingEarth.length) {
+      html += "<h3>Waiting for Earth (" + a.waitingEarth.length + ")</h3>";
+      a.waitingEarth.forEach(function (r) { html += earthRequestCard(r, t); });
+    }
     var active = state.grants.filter(function (g) { return g.status === "active" && !L.grantFinished(state, g, t); });
     if (active.length) {
       html += "<h3>Active grants (" + active.length + ")</h3>";
@@ -1201,7 +1242,15 @@
     ui.appr[id] = {};
     save();
     var rep = res.grant.replaced.length ? " It replaces the earlier " + L.getItem(state, r.itemId).name + " course." : "";
-    toast("Granted. " + firstName(r.patientId) + " can collect it now." + rep + (res.grant.selfGranted ? " Self-granted: Earth reviews it." : ""));
+    toast("Granted. " + firstName(r.patientId) + " can collect it now." + rep);
+  }
+
+  // Demo stand-in for Earth's answer (the Earth console comes later; earth.html makes real codes)
+  function earthReply(id) {
+    var r = findRequest(id), res = issueGrant(r, L.EARTH, 1, 1, "simulated");
+    if (res.error) { toast(res.error); return; }
+    save();
+    toast("Earth granted it (demo). " + firstName(r.patientId) + " can collect it.");
   }
 
   // ---------- dose log (CMO) ----------
@@ -1220,6 +1269,7 @@
   function logRow(e) {
     var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null, review = "";
     if (e.override) review += '<span class="tag bad" title="' + esc(e.override.join("; ")) + '">⚠ Given despite warning</span>';
+    if (e.approvalBypassed) review += '<span class="tag bad">Without approval (Emergency)</span>';
     if (e.auth.type === "break-glass" && !e.documentation) review += '<span class="tag bad">Note due</span>';
     if (e.countCheck && e.countCheck.counted !== e.countCheck.expected) review += '<span class="tag ' + (e.countCheck.resolved ? "muted" : "bad") + '">Count mismatch</span>';
     if (e.scanSkipped) review += '<span class="tag warn">Scan skipped</span>';
@@ -1374,8 +1424,14 @@
     },
     resume: function () { if (ui.paused) { ui.flow = ui.paused; ui.flow.start = Date.now(); ui.flow.error = ""; ui.paused = null; ui.screen = "main"; } },
     "drop-paused": function () { ui.paused = null; },
-    "em-who": function (d) { ui.em.patientId = d.id; ui.em.confirm = false; },
-    "em-item": function (d) { ui.em.itemId = d.id; ui.em.confirm = false; },
+    "em-who": function (d) { ui.em.patientId = d.id; ui.em.confirm = false; ui.em.error = ""; },
+    "em-item": function (d) { ui.em.itemId = d.id; ui.em.confirm = false; ui.em.error = ""; },
+    "em-cantwait": function () { ui.em.cantWait = !ui.em.cantWait; },
+    // "Can't wait? Emergency" from a request or a medicine: opens Emergency with it ready to release
+    "em-for": function (d) {
+      ui.view = "home"; ui.flow = null; ui.drawerItemId = null; ui.screen = "emergency";
+      ui.em = { patientId: me, itemId: d.id, reason: "", confirm: false, cantWait: true, error: "" };
+    },
     "em-release": function () { emergencyRelease(); },
     "em-locate": function () {
       var it = L.getItem(state, ui.em.itemId), lot = L.lotsOf(state, it.id)[0];
@@ -1389,6 +1445,7 @@
     "filter-flag": function (d) { ui.filters.flag = ui.filters.flag === d.flag ? "" : d.flag; },
     "clear-filters": function () { ui.filters = { q: "", pack: "", tier: "", flag: "" }; },
     "appr-grant": function (d) { grantRequest(d.id); },
+    "earth-reply": function (d) { earthReply(d.id); },
     "appr-deny": function (d) { findRequest(d.id).status = "denied"; save(); toast("Denied"); },
     "report-seen": function (d) { var r = state.reports.filter(function (x) { return x.id === d.id; })[0]; if (r) r.cmoSeen = true; save(); },
     "doc-save": function (d) {

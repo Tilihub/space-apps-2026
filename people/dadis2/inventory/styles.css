@@ -200,6 +200,10 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .tile.off { opacity: .45; }
 .tile.sel { border: 2px solid var(--bad); background: var(--bad-bg); }
 .tile.em { border-left: 5px solid var(--bad-solid); }
+.tile.em.wait { border-left-color: var(--warn); }
+details.cant-wait { margin-top: 14px; border: 1px dashed var(--warn); border-radius: 12px; padding: 10px 12px; }
+details.cant-wait summary { cursor: pointer; font-weight: 700; color: var(--warn); }
+details.cant-wait .hint { margin: 8px 0; }
 .tile-name { font-weight: 700; }
 .tile-use { font-size: 13px; color: var(--muted); }
 .em-who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }

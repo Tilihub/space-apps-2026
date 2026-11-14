@@ -142,7 +142,7 @@
         qty: r.qty,
         reason: r.reason,
         tier: item.tier,
-        gate: "cmo",
+        gate: item.tier === "3" || item.controlled ? "earth" : "cmo",
         status: r.status,
         signatures: (r.signatures || []).map(function (s) {
           return { crewId: s.crewId, role: s.role, time: new Date(now.getTime() - s.minutesAgo * 60000).toISOString() };
@@ -468,10 +468,11 @@
 
   // ---------- authorisation (spec section 4) ----------
 
-  // Returns which gate applies: none | self | standing-order | cmo | break-glass
-  // (dadis2's decision, 14 Nov, evening: the onboard doctor can grant everything, controlled
-  // medicines included. Grants from Earth are supplementary, never required. Standing orders are
-  // grants from Earth issued before launch.)
+  // Returns which gate applies: none | self | standing-order | cmo | earth | break-glass
+  // (dadis2's decision, 14 Nov, evening: Earth has the final say on controlled medicines and when the
+  // CMO is the patient; the onboard doctor grants the rest. Nothing is ever fully locked: if it can't
+  // wait, the Emergency button releases it, logged, with paperwork and Earth review. Standing orders
+  // are grants from Earth issued before launch.)
   function gateFor(state, patientId, item, qty, now, safety) {
     if (item.tier === "4") return { type: "break-glass", why: "Emergency item: release immediately, document within 2 hours" };
     if (item.tier === "3") {
@@ -480,7 +481,7 @@
         var taken = recentDoses(state, patientId, 24, now).filter(function (e) { return e.itemId === item.id; }).reduce(function (s, e) { return s + e.qty; }, 0);
         if (taken + qty <= so.maxPerDay && (!safety || safety.result !== "block")) return { type: "standing-order", why: "Standing order: " + so.maxPerDay + " per 24 h. Your PIN, then count check" };
       }
-      return { type: "cmo", why: "Controlled medicine (" + (item.controlled || "controlled") + "): the CMO grants it; Earth reviews afterwards" };
+      return { type: "earth", why: "Controlled medicine (" + (item.controlled || "controlled") + "): Earth decides. If it can't wait, use Emergency" };
     }
     if (item.tier === "2") return { type: "cmo", why: "Prescription item: CMO signs" };
     if (item.ownerCrewId && item.ownerCrewId !== patientId) return { type: "cmo", why: "Crew-specific item of another crew member: CMO signs" };
@@ -500,9 +501,7 @@
     if (role === "patient" && crewId !== ctx.patientId) return "The patient signs for a standing order or self-care";
     if (role === "approver") {
       if (!c.isCMO && !c.isBackupCMO) return c.name + " isn't the CMO or backup CMO";
-      // The CMO may approve their own medicine (no one else on board may have to). It's flagged
-      // and goes to Earth for review afterwards, which never blocks it.
-      if (crewId === ctx.patientId && !c.isCMO) return "The approver can't be the patient";
+      if (crewId === ctx.patientId) return "The approver can't be the patient" + (c.isCMO ? ": the backup doctor or Earth decides" : "");
       if (c.isBackupCMO && !c.isCMO) {
         var cmo = state.crew.filter(function (x) { return x.isCMO; })[0];
         if (cmo && cmo.id !== ctx.patientId && !ctx.cmoUnavailable) return "The backup CMO signs only when the CMO is the patient or unavailable";
@@ -543,7 +542,8 @@
       grantId: opts.grantId || null,                          // grant this dose was collected under
       grantIdx: opts.grantIdx == null ? null : opts.grantIdx,  // which medicine of the grant
       slot: opts.slot || null,                                 // dose time collected, e.g. "2026-11-14@08"
-      override: opts.override || null   // safety warnings the person giving it chose to override (emergency only)
+      override: opts.override || null,  // safety warnings the person giving it chose to override (emergency only)
+      approvalBypassed: !!opts.approvalBypassed // released through Emergency without the normal approval (CMO or Earth)
     };
     state.doseLog.unshift(entry);
     if (opts.requestId) {
@@ -605,10 +605,10 @@
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
   function ymdOf(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
-  // Who may grant what (dadis2's decision, 14 Nov, evening): the onboard doctor can grant every
-  // medicine, controlled ones included, also to themselves (flagged for Earth review, never blocked).
-  // Earth can grant the same medicines, as a supplement, never a requirement. Emergency items are
-  // never granted: they open through the Emergency button.
+  // Who may grant what (dadis2's decision, 14 Nov, evening): the onboard doctor grants self-care and
+  // prescription medicines, never to themselves. Earth has the final say on controlled medicines and
+  // on the doctor's own medicines. Emergency items are never granted. Anything that can't wait for
+  // Earth goes through the Emergency button (logged, paperwork, Earth review), so nothing is locked.
   function canGrant(state, issuerId, patientId, item) {
     if (!item || item.kind !== "medication") return "Only medicines can be granted.";
     if (item.tier === "4") return item.name + " is an emergency medicine: use the Emergency button.";
@@ -616,7 +616,8 @@
     if (issuerId === EARTH) return null;
     var c = getCrew(state, issuerId);
     if (!c || !(c.isCMO || c.isBackupCMO)) return "Only the onboard doctor or Earth can issue a grant.";
-    if (issuerId === patientId && !c.isCMO) return "The backup doctor can't grant medicine to themselves: the CMO does.";
+    if (issuerId === patientId) return "A doctor can't grant medicine to themselves: the backup doctor or Earth does.";
+    if (item.tier === "3" || item.controlled) return item.name + " is controlled: Earth decides. If it can't wait, use Emergency.";
     return null;
   }
 
@@ -774,7 +775,7 @@
   }
 
   // Adds the grant. Any running course of the same medicine is replaced by this one (see above).
-  // A grant the CMO gives themselves is flagged selfGranted (Earth reviews it afterwards).
+  // canGrant refuses self-grants; selfGranted is only a safety flag (Earth would review it).
   function addGrant(state, draft, now) {
     var cf = grantConflicts(state, draft, now);
     var g = {

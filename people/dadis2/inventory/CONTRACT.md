@@ -13,20 +13,28 @@ the **onboard doctor** or from a **flight surgeon on Earth**.
 - **Collection is dose by dose.** At each dose time, every compartment of the grant that has a dose
   due opens **together**. The crew member scans each box, and each one is recorded once. Missed
   dose times are not added up, so there's never a double dose.
-- **Who may grant what** (dadis2's decision, 14 Nov, evening: the onboard doctor has unrestricted
-  access, and Earth is supplementary, never a requirement):
+- **Who may grant what** (dadis2's decision, 14 Nov, evening): Earth has the final say on some
+  matters, and **Emergency** is the way out when something truly can't wait, so nothing is ever
+  fully locked. This matches `MED_TIERS` in `shared/contract/`.
 
-| Category | Onboard doctor (CMO, or backup when the CMO is unavailable) | Earth |
-|---|---|---|
-| Self-care (white, grey) | Yes | Yes, optional |
-| Prescription (purple, brown) | Yes | Yes, optional |
-| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **Yes.** Earth reviews it afterwards; this never blocks it | Yes, optional |
-| Emergency (red) | Never by grant: Emergency button (break-glass) | Never by grant |
+| Category | Onboard doctor (CMO, or backup when the CMO is the patient or unavailable) | Earth | Can't wait? |
+|---|---|---|---|
+| Self-care (white, grey) | Yes | Yes | No approval needed |
+| Prescription (purple, brown) | Yes | Yes | Emergency: "Can't wait for approval", reason required |
+| Controlled (C-II to C-IV, for example zolpidem, modafinil) | **No, Earth decides** | Yes | Emergency: "Can't wait for approval", reason required |
+| Emergency (red) | Never by grant | Never by grant | Emergency button, anyone |
 
-- **The CMO for themselves:** the CMO may grant medicine to themselves. It's flagged
-  `selfGranted: true`, and every dose goes to ground review, which never blocks it. The backup doctor
-  can't grant to themselves.
-- **Requests:** every request goes to the onboard doctor. None waits for Earth.
+- **A doctor never grants to themselves.** When the CMO is the patient, the backup doctor decides
+  (prototype) or Earth (the shared contract has no backup).
+- **Requests:** prescription requests go to the onboard doctor. Controlled requests go to Earth,
+  shown as "Waiting for Earth"; a reply takes about 24 minutes. Both show "Can't wait? Emergency".
+- **Emergency without approval:**
+  - opens the Emergency screen with that medicine ready, under "Can't wait for approval?"
+  - a reason is required
+  - the dose is logged with `approvalBypassed: true` and the reason
+  - the paperwork is due in 2 hours, and Earth reviews it (`groundReview: "pending"`)
+  - controlled medicines still get a count check
+  - any open request for that medicine is closed as `released-emergency`
 - **Standing orders** are treated as grants from Earth issued before launch.
 
 ## 1a. Several grants for one person: never a double dose
@@ -199,11 +207,11 @@ when the box is scanned.
 
 ## 7. Checks
 
-Open `tests.html` in a browser: 36 checks, all passing (14 Nov 2026). They cover:
-- who may grant what, including controlled medicines by the onboard doctor and the CMO's self-grant
+Open `tests.html` in a browser: 37 checks, all passing (14 Nov 2026). They cover:
+- who may grant what: controlled medicines by Earth only, no self-grants, and an emergency release
+  without approval being logged for review
 - one course per medicine (replacing), adding up ingredients across grants, and two NSAIDs
 - the code format
-- who may grant what
 - binding to the right person, once
 - two bins opening together while an unrelated bin stays closed
 - one record per collection

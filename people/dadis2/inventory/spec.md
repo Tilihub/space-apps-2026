@@ -102,7 +102,7 @@ microgravity, and the last instruction is always to close the bin and the locker
 | **S: Supply** | Bandages, gloves, alcohol pads | Anyone | No |
 | **1: Self-care** | Over-the-counter: acetaminophen, loratadine, meclizine | The crew member, after automatic safety checks | No |
 | **2: Prescription** | Antibiotics, ondansetron, injectables | A grant from the onboard doctor (CMO, or backup if the patient is the CMO) or from Earth | No |
-| **3: Controlled** | Zolpidem, modafinil, opioids, benzodiazepines | A grant from the onboard doctor, or optionally from Earth. The crew member confirms the count left in the bin | Yes, asynchronous, never blocks |
+| **3: Controlled** | Zolpidem, modafinil, opioids, benzodiazepines | A grant from Earth (final say). If it can't wait: Emergency, with a reason, logged. The crew member confirms the count left in the bin | Yes, asynchronous |
 | **4: Emergency** | Epinephrine, atropine, naloxone, AED | Anyone, immediately (break-glass) | Yes, plus documentation within 2 hours |
 
 Rules:
@@ -117,11 +117,14 @@ Rules:
 - **Reserve.** Every item has a reserve kept for the conditions it's carried for. A self-care
   dispense that would dip into the reserve becomes a CMO decision.
 - **Crew-specific items.** Only their owner can self-release them.
-- **Requests.** Every request goes to the CMO's Approvals screen, on the CMO's own device, controlled
-  medicines included. The doctor picks a course (times a day, days), signs with their PIN and issues
-  a grant. The crew member sees "Waiting for the CMO", then a grant card with "Collect now".
-  - Earth grants are supplementary, never a requirement (dadis2, 14 Nov, evening).
-  - The CMO can grant to themselves (flagged, Earth reviews afterwards).
+- **Requests** (dadis2, 14 Nov, evening):
+  - Prescription requests go to the CMO's Approvals screen, on the CMO's own device. The doctor
+    picks a course (times a day, days), signs with their PIN and issues a grant.
+  - Controlled medicines go to Earth, which has the final say. A doctor never grants to themselves.
+  - The crew member sees "Waiting for the CMO" or "Waiting for Earth", always with "Can't wait?
+    Emergency", then a grant card with "Collect now".
+  - Emergency without approval needs a reason and is logged and reviewed. Nothing is ever fully
+    locked.
 - **One course per medicine.** A newer grant for the same medicine replaces the running course, and
   ingredients are added up across grants. See [CONTRACT.md](CONTRACT.md) §1a.
 - **Break-glass.** It is never blocked. The reason is required, the event goes to the approvals page as

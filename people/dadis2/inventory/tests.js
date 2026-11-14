@@ -70,22 +70,25 @@
     var res = draft(fresh(), "c2", "c4", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]);
     return eq([res.error || null, res.grant && res.grant.issuerId], [null, "c2"]);
   });
-  check("The onboard doctor can grant a controlled medicine (Earth isn't required)", function () {
-    var res = draft(fresh(), "c2", "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]);
-    return eq(res.error || null, null);
+  check("The onboard doctor can't grant a controlled medicine: Earth decides", function () {
+    return errorLike(draft(fresh(), "c2", "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]), "Earth decides");
   });
-  check("A controlled request goes to the onboard doctor, never only to Earth", function () {
+  check("A controlled request goes to Earth", function () {
     var s = fresh(), it = L.getItem(s, "zolpidem-5");
-    return eq(L.gateFor(s, "c4", it, 1, at(8, 30), null).type, "cmo");
+    return eq(L.gateFor(s, "c4", it, 1, at(8, 30), null).type, "earth");
   });
-  check("Earth can grant a controlled medicine too (supplementary)", function () {
+  check("Earth can grant a controlled medicine", function () {
     var res = draft(fresh(), L.EARTH, "c1", at(0), [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 3 }]);
     return eq(res.error || null, null);
   });
-  check("The CMO can grant medicine to themselves, flagged for Earth review", function () {
-    var s = fresh(), res = draft(s, "c2", "c2", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]);
-    if (res.error) return res.error;
-    return eq(L.addGrant(s, res.grant, at(8, 0)).selfGranted, true);
+  check("A doctor can't grant medicine to themselves (backup doctor or Earth does)", function () {
+    return errorLike(draft(fresh(), "c2", "c2", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "themselves");
+  });
+  check("If it can't wait, an Emergency release without approval is logged for review", function () {
+    var s = fresh(), it = L.getItem(s, "zolpidem-5"), lot = L.pickLot(s, it, 1, at(8, 30)).lot;
+    var e = L.dispense(s, { patientId: "c4", itemId: it.id, lotId: lot.id, qty: 1, reason: "Can't sleep before EVA, no reply from Earth yet",
+      authType: "break-glass", signedBy: ["c4"], approvalBypassed: true }, at(8, 30));
+    return eq([e.approvalBypassed, e.groundReview, !!e.docsDue], [true, "pending", true]);
   });
   check("The backup doctor can't grant medicine to themselves", function () {
     return errorLike(draft(fresh(), "c3", "c3", at(0), [{ itemId: "ondansetron-4", units: 1, perDay: 1, days: 1 }]), "themselves");
@@ -224,8 +227,8 @@
   });
   check("Different medicines that add up past an ingredient limit are refused", function () {
     var s = fresh();
-    addFor(s, L.EARTH, "c1", [{ itemId: "acetaminophen-325", units: 2, perDay: 4, days: 5 }]);          // 2,600 mg a day
-    var r = addFor(s, "c2", "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);          // +1,300 mg a day
+    addFor(s, "c2", "c1", [{ itemId: "acetaminophen-325", units: 2, perDay: 4, days: 5 }]);             // 2,600 mg a day (doctor)
+    var r = addFor(s, L.EARTH, "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);       // +1,300 mg a day (Earth)
     return r.error && r.error.indexOf("acetaminophen") >= 0 ? true : "got " + JSON.stringify(r.error || r.id);
   });
   check("Two different NSAIDs at the same time are refused", function () {
@@ -237,7 +240,7 @@
   check("A cancelled course doesn't count against a new one", function () {
     var s = fresh(), g1 = addFor(s, L.EARTH, "c1", [{ itemId: "acetaminophen-325", units: 2, perDay: 4, days: 5 }]);
     L.revokeGrant(s, g1.id, "c2", at(9, 0));
-    var r = addFor(s, "c2", "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);
+    var r = addFor(s, L.EARTH, "c1", [{ itemId: "oxycodone-apap", units: 1, perDay: 4, days: 3 }]);
     return r.error ? r.error : true;
   });
   check("Collecting still respects the daily limit across every source", function () {
