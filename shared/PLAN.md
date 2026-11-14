@@ -56,3 +56,5 @@ Proposed times; change them on Saturday morning:
 If the Local Event has its own judging or presentation slot, add it here.
 
 The submission checklist is in [submission/project-page.md](submission/project-page.md).
+
+<!-- test line, this pull request will be closed -->
