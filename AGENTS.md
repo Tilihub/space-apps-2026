@@ -73,7 +73,8 @@ human's folder or into `integration/`.
 
 ## Saving and sharing work
 
-- Commit small and often, with a clear message ending in the `AI-assisted:` line.
+- Commit small and often, with a clear message. Leave AI attribution out of commits and pull
+  requests (no `Co-Authored-By` or "Generated with" lines); the team discloses AI use itself.
 - Push at least every hour, and always before your human stops: `git push -u origin <branch>`.
 - To bring other people's work into your branch, merge main into it:
   `git fetch origin`, then `git merge origin/main`. Don't rebase.

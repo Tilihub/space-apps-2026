@@ -27,5 +27,4 @@ Large files (videos, raw photos) go in the team's shared drive, not here.
 ## Use of AI
 
 This project is built with help from AI coding tools (Claude Code and OpenAI Codex).
-Commits made with AI help end with an `AI-assisted:` line, and each person's status file
-lists what the AI did. A summary goes here before submission.
+A summary goes here before submission.

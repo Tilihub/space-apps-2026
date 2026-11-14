@@ -26,10 +26,3 @@
      what to do next, what to watch out for. -->
 
 -
-
-## AI use
-
-<!-- One line per piece of work: time · tool · what the AI did · which files.
-     This feeds the "Use of AI" part of the submission. -->
-
--
