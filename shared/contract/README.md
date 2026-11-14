@@ -18,7 +18,7 @@ file and those requirements disagree, ask zt and Tommy.
 ```
 Ship's main computer (one laptop in the demo), Node.js server
 ├─ core     login, crew list, mission clock, events, saving    zt
-├─ health   /api/health/*   check-ins, today vs your normal     angelos
+├─ health   /api/health/*   check-ins and health analyses       angelos
 ├─ meds     /api/meds/*     symptoms, medicines, lockers        dadis2
 ├─ env      /api/env/*      cabin air and alerts                potest
 ├─ mind     /api/mind/*     journal and companion (wave 2)      angelos
@@ -43,7 +43,7 @@ Ship's main computer (one laptop in the demo), Node.js server
 | Piece | Owner | Folder | Wave 1: the first joined demo | Wave 2 |
 |---|---|---|---|---|
 | Core and every page | zt | `integration/onboard-app/` | server, login, clock, events; astronaut app; medical officer platform | Earth console, final look |
-| health | angelos | `people/angelos/health/` | check-ins, today vs your normal, history, crew overview | weekly report |
+| health | angelos | `people/angelos/health/` | check-ins and the astronaut's daily summary; for the medical officer: today vs normal, history, crew overview | weekly report |
 | mind | angelos | `people/angelos/mind/` | | journal, companion |
 | meds | dadis2 | `people/dadis2/meds/` | symptom reports, suggestions, lockers, collecting, requests and approvals, grants, dose log | stock, emergency button, Earth codes |
 | env | potest | `people/potest/env/` | current readings, history, alerts, snapshot | radiation |
@@ -132,11 +132,16 @@ medical officer.
 
 | Role | Who | Page | Can see |
 |---|---|---|---|
-| `crew` | every crew member, Leo included | astronaut app | only their own data, plus cabin conditions |
-| `medical_officer` | Leo (`c2`) only | medical officer platform | every crew member's health and medicine data, and approvals. **Never** the journal or the companion |
+| `crew` | every crew member, Leo included | astronaut app | only their own entries, their basic daily summary, their medicines, and cabin conditions. **Not** the detailed health analyses |
+| `medical_officer` | Leo (`c2`) only | medical officer platform | every crew member's health analyses and medicine data, and approvals. **Never** the journal or the companion |
 | `earth` | the specialist on Earth (simulated) | Earth console | cabin conditions, requests waiting for Earth, and (wave 2) reports sent to Earth |
 
 When Leo is the patient, anything that needs the medical officer's approval goes to Earth instead.
+
+The detailed health analyses (today against the crew member's normal, their history, the weekly
+report) are for care roles only, not for the astronaut (Tommy, PR #47). Hiding them in a page is
+not enough: the server refuses them to every other role. For now the only care role in the app is
+the medical officer; a psychologist role may come later.
 
 ### Fields, units and scales
 
@@ -210,15 +215,18 @@ existing tests as the checklist: the median of the baseline days, a limit that i
 3 scaled MADs and the demo floor (10 bpm, 1.5 h, 2 points), at least 5 baseline days, and days in
 a row. These stay demo values, not medical limits, and the message never diagnoses.
 
-Paths are after `/api/health`.
+Paths are after `/api/health`. The astronaut gets only `POST /check-ins` and `GET /today`; every
+analysis is for the medical officer (see "Crew and roles"). A crew member, Leo included, who calls
+an analysis path as `crew` gets `wrong_role`.
 
 | Method and path | Who | Send | Get back |
 |---|---|---|---|
-| `POST /check-ins` | crew | the check-in below | 201 `{ checkIn, daily }`; `already_done` if this mission day already has one |
-| `GET /daily?crewId=` | crew (own), medical_officer | | `Daily`, below |
-| `GET /history?crewId=&days=14` | crew (own), medical_officer | | `{ crewId, baseline: [CheckIn], checkIns: [CheckIn] }`, oldest first. `days` is 1–60 |
+| `POST /check-ins` | crew | the check-in below | 201 `{ checkIn, today }`; `already_done` if this mission day already has one |
+| `GET /today` | crew (own) | | `Today`, below: the basic daily summary for the astronaut's Home |
+| `GET /daily?crewId=c4` | medical_officer | | `Daily`, below |
+| `GET /history?crewId=c4&days=14` | medical_officer | | `{ crewId, baseline: [CheckIn], checkIns: [CheckIn] }`, oldest first. `days` is 1–60 |
 | `GET /crew` | medical_officer | | `{ crew: [{ crewId, checkedInToday, status, changed: ["sleepHours"] }] }` for all five |
-| `GET /weekly?crewId=` | crew (own), medical_officer | | wave 2: this week against last week, per measure. angelos adds the exact shape here |
+| `GET /weekly?crewId=c4` | medical_officer | | wave 2: this week against last week, per measure. angelos adds the exact shape here |
 
 A check-in sends any of these fields (at least one, nothing else):
 
@@ -230,7 +238,17 @@ A check-in sends any of these fields (at least one, nothing else):
 The server adds `id`, `crewId`, `recordedAt` (from `ctx.now()`) and `missionDay`; that is a
 `CheckIn`. Only the five `COMPARED_MEASURES` are compared. The others are stored and shown.
 
-`Daily`:
+`Today`, for the astronaut:
+
+```json
+{ "crewId": "c4", "missionDay": 42, "checkedInToday": true, "checkIn": { "id": "chk_…", "sleepHours": 5.5 } }
+```
+
+`checkIn` is today's own entries as sent (`null` before checking in), with no comparison. Which
+other fields the astronaut sees on Home is still open (Tommy and zt). Until it is agreed, nothing
+else goes in `Today`.
+
+`Daily`, for the medical officer:
 
 ```json
 {
@@ -241,7 +259,7 @@ The server adds `id`, `crewId`, `recordedAt` (from `ctx.now()`) and `missionDay`
       "changed": true, "direction": "lower", "daysInARow": 3 }
   ],
   "gaps": ["restingHeartRateBpm: not measured today"],
-  "message": "3 measures are different from your normal. This is not a diagnosis.",
+  "message": "3 measures differ from this crew member's normal. This is not a diagnosis.",
   "limitations": ["Demo comparison rules, not medical limits."]
 }
 ```
@@ -265,9 +283,11 @@ with its own role.
 |---|---|---|---|
 | `POST /journal` | crew | `{ "text": "…" }`, up to 5,000 characters | 201 `{ entry }` |
 | `GET /journal?days=14` | crew | | `{ entries: [...] }`, own only |
-| `POST /companion` | crew | `{ "message": "…", "context": { "daily": {} } }` | `{ reply, links: [{ "screen": "checkin" }] }` |
+| `POST /companion` | crew | `{ "message": "…", "context": { "today": {} } }` | `{ reply, links: [{ "screen": "checkin" }] }` |
 
-Modules don't call each other, so the page sends the crew member's own `daily` result as `context`.
+Modules don't call each other, so the page sends the crew member's own `today` result as `context`.
+Whether the companion may also use the detailed analyses, without showing them to the astronaut,
+is still open.
 How the companion answers (fixed rules or a language model) is angelos's choice. An online model
 needs internet at the venue and a key that is never committed.
 
@@ -424,8 +444,9 @@ An outline. Whoever takes it writes the exact paths and shapes here.
 ## 12. Wave 1 is done when this works
 
 1. Tomas (`c4`) logs in on the astronaut app. Home shows his body figure and the readiness placeholder.
-2. He checks in: slept 5.5 h, mood 4, stress 7, fatigue 7. Readiness details show today against
-   his normal, changed 3 days in a row.
+2. He checks in: slept 5.5 h, mood 4, stress 7, fatigue 7. His Home shows today's check-in as
+   done. On the medical officer platform, Leo sees Tomas's analysis: today against his normal,
+   changed 3 days in a row. Tomas calling `GET /api/health/daily` himself gets `wrong_role`.
 3. He reports a headache, severity 6, and is offered acetaminophen. He opens the locker and scans
    the box. The dose log shows it, and later asks "Did it help?".
 4. He asks for a prescription medicine. Within a few seconds Leo (`c2`), on the medical officer
@@ -437,6 +458,7 @@ An outline. Whoever takes it writes the exact paths and shapes here.
 ## 13. Still open
 
 - Readiness and task scores: Tommy and zt (Q16). A placeholder until then.
+- Which health fields the astronaut sees on Home (`Today`): Tommy and zt.
 - Crew names, Kai, and each crew member's demo story: change them here if the team prefers others.
 - Psychologist role and journal access (Q11): wave 2.
 - Emergency access details (Q15): with dadis2, wave 2.
