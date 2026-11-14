@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:25
+- Last updated: 2026-11-14 13:26
 - Working on: Product concepts and personal planning for zt to use; no UI implementation from this chat.
 - Branch: tommy/concepts-plan
 
@@ -18,6 +18,7 @@
 - Recorded Tommy's working agreement: he supplies concepts; zt owns visual design and UI implementation.
 - Closed UI prototype PR #20 without merging and deleted remote branch `tommy/crew-access-ui`.
 - Organized the requested entry/account flow and the broader supplied concepts in `people/tommy/plan.md`.
+- Published the concepts-only handoff in PR #24; it contains only the personal plan and status.
 
 ## Blocked / need from others
 
