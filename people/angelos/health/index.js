@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import {
   BASELINE_DAYS, COMPARED_MEASURES, CONTRACT_VERSION, CREW, DEMO_START, LAUNCH, MEDICAL_OFFICER_ID,
   MEASUREMENTS, SCALES, apiError, checkFields, missionDayOf, resolveCrewId,
@@ -74,7 +75,7 @@ export function createHealthModule({ fixtureUrl } = {}) {
         checkFields(row, ['missionDay', 'time', ...MEASURES], ['missionDay', 'time']);
         if (!Number.isInteger(row.missionDay) || row.missionDay < BASELINE_DAYS.from
           || row.missionDay >= missionDayOf(DEMO_START) || days.has(row.missionDay)
-          || !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.time)) {
+          || typeof row.time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(row.time)) {
           throw apiError('invalid_field', 'Fixture days must be unique reference/recent days before demo start, with HH:MM time.');
         }
         days.add(row.missionDay);
@@ -89,7 +90,8 @@ export function createHealthModule({ fixtureUrl } = {}) {
       crew[member.id] = { baseline, checkIns: rows.filter(row => row.missionDay > BASELINE_DAYS.to) };
     }
     const state = { contractVersion: CONTRACT_VERSION, scaleVersion: 'self-report-1-10-v1',
-      source: { kind: 'synthetic', fixture: fixtureSource }, crew };
+      source: { kind: 'synthetic', fixture: fixtureSource,
+        sha256: createHash('sha256').update(rawPacket).digest('hex') }, crew };
     await ctx.store.save(state);
     return state;
   }
@@ -114,7 +116,9 @@ export function createHealthModule({ fixtureUrl } = {}) {
           checkFields(req.query, []);
           const crewId = requestedCrew(req);
           const fields = validateValues(req.body);
-          if (Object.keys(req.body).length === 0) throw apiError('invalid_field', 'Provide at least one measurement field.');
+          if (Object.values(fields).every(value => value === null)) {
+            throw apiError('invalid_field', 'Provide at least one measured value. Leave other measurements blank if unavailable.');
+          }
           const { at, day } = clock(ctx);
           if (day <= BASELINE_DAYS.to) throw apiError('invalid_field', 'New check-ins must follow the fixed reference period.');
           const person = state.crew[crewId];

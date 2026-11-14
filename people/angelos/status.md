@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:56 (Asia/Nicosia)
-- Working on: ANG-1 health module published in PR #57; ready for zt's core/form integration.
+- Last updated: 2026-11-14 18:03 (Asia/Nicosia)
+- Working on: Reviewed Petros's latest PET-1/PET-2 package and current team instructions; verified data adoption in PR #57, with the stage-fixture differences explicit.
 - Branch: angelos/health-module
 
 ## Done
@@ -110,6 +110,29 @@
 - Published angelos/health-module and opened
   https://github.com/Tilihub/space-apps-2026/pull/57 with the module interface,
   checks and explicit core/data dependencies. Only people/angelos/ is changed.
+- Refreshed main and reviewed Petros's latest fetched package at 12c840e (PR #51),
+  zt's newer UI-look branch, Potest's Crew Support handoff and Tommy's latest
+  adopted-contract review at d93f684. No newer shared contract revision was found.
+  Older branch notes do not override the approved shared 1-10/care-only contract.
+- Confirmed the bundled health.json exactly matches Petros's source Git blob.
+  Added an unchanged copy of his paired scenarios.json and app-contract checks for
+  c1 usual, c3 missing and c4 five-change/three-day inputs. Other crew histories
+  and fixed references remain unchanged in every case; crew analysis access fails.
+- Added a persisted SHA-256 fingerprint of each newly loaded source file, strict
+  HH:MM string validation and rejection of forms with no observed measurement.
+  Nulls remain missing and true zero sleep remains valid. Editing the source file
+  never replaces the stored reference/fingerprint until an explicit reset.
+- Passed all 30 root JavaScript checks (23 health + 7 example) using the exact
+  root node test script. No real SQLite/session data or teammate files changed.
+- Added health/DATA_REVIEW.md with field/source selection, computed medians and
+  concrete PET-1 versus adopted stage-case differences. The historical CSV is
+  research context, not a continuous personal baseline. Measurement guides remain
+  zt's UI input; journal/chat remains outside this module.
+- Refreshed again before publication: main 75a7377 includes dadis2's merged grant
+  safety work (#58); Potest's #55 now also has a one-profile Crew Assistant demo
+  at afc71dd. These do not change the shared health interface. Preserved the
+  Python prototype used by that demo and kept clinical companion-context access
+  as an unresolved shared-contract decision, not an authorization bypass here.
 
 ## Blocked / need from others
 
@@ -118,6 +141,8 @@
 - Petros's bundled example predates the approved demo cases (c4 reference sleep
   7.8 h instead of 6.8 h). Petros must publish the updated canonical health.json.
   Do not call the exact live-demo scenario accepted with the old example.
+  Also align c3's six-day mood change and pulse gaps, c1's ranges and the separate
+  historical cabin replay; see health/DATA_REVIEW.md for the reviewed differences.
 - The shared owner table still names angelos for mind. Coordinate the user's
   Potest handoff with zt rather than changing the protected contract implicitly.
 - npm is not installed/on PATH here. Run its exact root test script directly with
@@ -138,6 +163,8 @@
   the core/pages land. This module does not contain another server or login.
 - When Petros's updated data lands, explicitly reset a fresh demo store, then check
   c4's day-42 input against 6.8 h baseline and three consecutive short nights.
+  Run the checks against the paired scenarios for that version; the bundled PET-1
+  scenarios deliberately pin the earlier publication and do not redefine the demo.
 - The Python CLI, external-baseline reader and old HTTP prototype remain separate
   in health_monitor/ for study. Their SQLite files and 0-10 histories are unchanged;
   they are not silently converted or exposed by the new five-person app module.

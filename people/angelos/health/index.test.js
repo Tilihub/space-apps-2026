@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -41,6 +42,8 @@ test('reset reads all five personal references from the external PET-1 fixture',
   const state = ctx.saved();
   assert.equal(state.scaleVersion, 'self-report-1-10-v1');
   assert.equal(state.source.kind, 'synthetic');
+  const source = await readFile(exampleFixture, 'utf8');
+  assert.equal(state.source.sha256, createHash('sha256').update(source).digest('hex'));
   assert.equal(Object.keys(state.crew).length, 5);
   for (const person of Object.values(state.crew)) {
     assert.deepEqual(person.baseline.map(row => row.missionDay), [29, 30, 31, 32, 33, 34, 35]);
@@ -114,7 +117,8 @@ test('missing measurements remain null and extra sensor values are stored withou
 test('new app uses integer self-reports 1-10 and finite sensor values in contract units', async () => {
   const { mod, ctx } = await setup();
   const before = structuredClone(ctx.saved());
-  for (const body of [null, [], {}, { mood: 0 }, { mood: 2.5 }, { stress: 11 }, { fatigue: '7' },
+  for (const body of [null, [], {}, { mood: null }, { sleepHours: null, stress: null },
+    { mood: 0 }, { mood: 2.5 }, { stress: 11 }, { fatigue: '7' },
     { sleepHours: 25 }, { sleepHours: -1 }, { restingHeartRateBpm: Infinity }, { spo2Pct: NaN },
     { temperatureC: 80 }, { systolicMmHg: true }]) {
     assert.equal((await post(mod, ctx, body)).status, 400, JSON.stringify(body));
@@ -287,6 +291,7 @@ test('invalid replacement fixture fails before overwriting saved state', async (
       packet => { packet.crew.c1.checkIns[0].mood = 0; },
       packet => { packet.crew.c1.checkIns[1].missionDay = 29; },
       packet => { packet.crew.c1.checkIns[0].missionDay = 42; },
+      packet => { packet.crew.c1.checkIns[0].time = ['07:30']; },
       packet => { packet.crew.c1.checkIns[0].time = '25:00'; }]) {
       const packet = structuredClone(source);
       alter(packet);
@@ -297,8 +302,12 @@ test('invalid replacement fixture fails before overwriting saved state', async (
     // Valid changes in the supplied file are read as data, not replaced by generated values.
     source.crew.c1.checkIns.slice(0, 7).forEach(row => { row.sleepHours = 9; });
     await writeFile(fixturePath, JSON.stringify(source));
+    assert.equal((await post(mod, ctx)).status, 201);
+    assert.deepEqual(ctx.saved().crew.c1.baseline, original.crew.c1.baseline);
+    assert.equal(ctx.saved().source.sha256, original.source.sha256);
     await mod.reset(ctx);
     assert.equal(referenceFor(ctx.saved().crew.c1.baseline, 'sleepHours').normal, 9);
+    assert.notEqual(ctx.saved().source.sha256, original.source.sha256);
   } finally {
     if (dirname(fixturePath) !== folder || !folder.startsWith(join(tmpdir(), 'health-fixture-test-'))) {
       throw new Error('Refusing cleanup outside this fixture test directory.');
@@ -306,3 +315,31 @@ test('invalid replacement fixture fails before overwriting saved state', async (
     await rm(folder, { recursive: true, force: true });
   }
 });
+
+const pet1 = JSON.parse(await readFile(new URL('./fixtures/scenarios.json', import.meta.url), 'utf8'));
+for (const [crewId, scenario] of Object.entries(pet1.cases)) {
+  test(`published PET-1 ${crewId} input works through the app contract without mixing roles or histories`, async () => {
+    const { mod, ctx } = await setup();
+    const initial = structuredClone(ctx.saved().crew);
+    const response = await post(mod, ctx, scenario.checkInBody, crewUser(crewId));
+    assert.equal(response.status, 201);
+    assert.equal(response.body.data.today.crewId, crewId);
+    assert.ok(!('daily' in response.body.data));
+    const result = (await daily(mod, ctx, crewId)).body.data;
+    assert.deepEqual(result.measures.filter(row => row.changed).map(row => row.measure), scenario.expectedChangedMeasures);
+    assert.deepEqual(result.measures.filter(row => row.today === null).map(row => row.measure),
+      scenario.expectedMissingComparedMeasures);
+    if (scenario.expectedDaysInARow !== undefined) {
+      assert.ok(result.measures.filter(row => row.changed).every(row => row.daysInARow === scenario.expectedDaysInARow));
+    }
+    assert.equal(result.status, scenario.expectedChangedMeasures.length ? 'changes_found'
+      : scenario.expectedMissingComparedMeasures.length ? 'not_enough_data' : 'no_changes');
+    assert.deepEqual(ctx.saved().crew[crewId].baseline, initial[crewId].baseline);
+    for (const otherId of Object.keys(initial).filter(id => id !== crewId)) {
+      assert.deepEqual(ctx.saved().crew[otherId], initial[otherId]);
+    }
+    for (const path of ['/daily', '/history', '/weekly']) {
+      assert.equal((await request(mod, ctx, path, { user: crewUser(crewId) })).status, 403);
+    }
+  });
+}

@@ -22,6 +22,7 @@ not an edit to the protected team contract.
 - [x] Read external personal-history JSON and persist its fixed baseline/source/scale with a runnable synthetic example.
 - [x] ANG-1: port the comparison into the shared Node module interface, using c1-c5, UTC mission time and 1-10 integer self-reports.
 - [x] Receive app check-ins and enforce own-entry versus medical-analysis access on the server.
+- [x] Verify Petros's published PET-1 health/scenario files through the app contract, retain source fingerprints, and document differences from the newer stage cases.
 - [ ] ANG-1: zt imports the module into the core and connects the form; verify the joined save/reload path.
 - [ ] Petros publishes the updated canonical fixture matching the accepted demo cases; reset a fresh demo and verify the exact scenario.
 - [ ] Coordinate the user's Potest companion handoff with zt; keep companion work out of this health module.

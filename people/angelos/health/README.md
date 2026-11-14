@@ -88,7 +88,9 @@ Only measurement fields are accepted. Identity comes from the core session;
 `recordedAt` and `missionDay` come from its UTC mission clock. Mood, stress and
 fatigue are integers **1-10**; sleep is **hours in the preceding 24 hours**.
 Omitted or null measures stay missing, never zero or invented values. At least one
-field is required; `{ "mood": null }` can record an explicitly missed check-in.
+actual measured answer is required, following Petros's wellbeing-form handoff.
+An entirely unanswered form is rejected without saving a check-in. A measured
+zero hours of sleep is valid; it is different from an unanswered field.
 The server rejects a second check-in for the same person and mission day with
 HTTP 409 (`already_done`). The frontend should retain the form on an error and
 refresh the current-entry view only after a successful response.
@@ -119,7 +121,10 @@ The external fixture supplies reference days (mission 29-35) and recent days
 `reset(ctx)` re-reads Petros's canonical `demo-data/health.json` when present.
 Only if that file does not exist, it uses the bundled example file; invalid or
 unreadable files fail rather than triggering fallback. No replacement observations
-are generated. The chosen source is recorded in the module state.
+are generated. The chosen source and a SHA-256 fingerprint of the loaded file
+are recorded in the module state on initialization/reset. Later check-ins retain
+that fingerprint and the fixed baseline. Old stored references without a
+fingerprint are preserved; the code does not invent provenance for them.
 The store separates `baseline` from `checkIns`. Saving new readings never changes
 the original reference. A fresh store is seeded once on its first request.
 
@@ -152,6 +157,12 @@ the live-demo case. Petros owns the updated canonical fixture. The module will
 use it on the next explicit reset or fresh store. This example is not evidence
 that the exact live-demo story has passed acceptance. No teammate's records
 are silently rewritten here.
+
+The [data review](DATA_REVIEW.md) records which of Petros's files this module
+uses, the verified baseline medians and the remaining live-demo differences.
+All three inputs from his paired `scenarios.json` pass through the real shared
+request dispatcher in our tests. They validate PET-1's published example, which
+predates the newer stage cases; they do not redefine the adopted demo story.
 
 `createHealthModule({ fixtureUrl })` lets the core choose another compatible,
 labelled synthetic file before initializing a fresh demo store or explicitly

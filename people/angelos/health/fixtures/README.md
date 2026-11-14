@@ -1,7 +1,7 @@
 # PET-1 example input provenance
 
-`health.json` is an unchanged copy of
-`people/petros_the_space_larper/demo-data/health.json` from commit
+`health.json` and `scenarios.json` are unchanged copies of the same-named files in
+`people/petros_the_space_larper/demo-data/` from commit
 `12c840ee2ab9ced49b01a12efb5e5063487de594` on
 `petros_the_space_larper/astronaut-health-research`.
 
@@ -16,3 +16,8 @@ zt's demo cases (for example c4's 6.8 h reference instead of this file's 7.8 h).
 Petros owns that update. The module reads his canonical file on reset when it
 exists, otherwise uses this labelled example. Tests pin this example explicitly
 so their expected values stay reproducible. No teammate's source file was edited.
+
+The scenarios' medicine and cabin fields are retained only as part of the source
+example. Health tests send **only** `checkInBody`; they do not import its synthetic
+cabin warning into Potest's historical environment replay or its symptoms into
+dadis2's module.
