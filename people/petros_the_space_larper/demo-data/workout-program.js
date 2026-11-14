@@ -1,67 +1,83 @@
-const strength = (id, label, reps) => ({
-  id, label, kind: 'resistance', equipment: 'ARED', sets: 4, repsPerSet: reps,
-  instruction: 'Use your assigned load and rest between sets as directed.',
+const flywheel = 'Compact flywheel';
+const resistanceExercises = [
+  ['squat', 'Harness squat', 'harness'],
+  ['deadlift', 'Deadlift', 'bar'],
+  ['heel-raise', 'Harness heel raise', 'harness'],
+  ['bar-row', 'Bent-over row', 'bar'],
+];
+
+const strength = (id, label, attachment, repsPerSet, restBetweenSetsSeconds) => ({
+  id, label, kind: 'resistance', equipment: `${flywheel} with ${attachment}`, sets: 4, repsPerSet,
+  restBetweenSetsSeconds, repsInReserve: [2, 3],
+  instruction: `Secure your feet and use your assigned flywheel setting. Finish each set with 2–3 clean reps in reserve. Rest ${restBetweenSetsSeconds / 60} min between sets.`,
 });
 
 const timed = (id, label, equipment, durationSeconds, instruction) => ({
   id, label, kind: 'timed', equipment, durationSeconds, instruction,
 });
 
-function strengthAndEndurance(day, label, reps, exercises, equipment) {
+const rowWarmUp = seconds => timed('warm-up', 'Rowing warm-up', flywheel, seconds,
+  'Check the foot restraints and build gradually from easy rowing.');
+const rowCoolDown = () => timed('cool-down', 'Rowing cool-down', flywheel, 300,
+  'Row easily and gradually reduce effort.');
+
+function strengthAndEndurance(day, volume, reps, restSeconds) {
   return {
-    label,
+    label: `${volume} resistance and steady rowing`,
     sessions: [
       {
         id: `day-${day}-resistance`, label: 'Resistance training',
-        steps: exercises.map(([id, title]) => strength(id, title, reps)),
+        preparation: 'Check the anchor and restraints. Warm up each movement at light effort before the working sets.',
+        steps: resistanceExercises.map(([id, title, attachment]) => strength(id, title, attachment, reps, restSeconds)),
       },
       {
-        id: `day-${day}-endurance`, label: 'Steady aerobic training',
+        id: `day-${day}-endurance`, label: 'Steady rowing',
         recommendedMinutesAfterResistance: [240, 360],
         steps: [
-          timed('warm-up', 'Aerobic warm-up', equipment, 300, 'Build gradually to the assigned workload.'),
-          timed('steady', 'Steady aerobic exercise', equipment, 1800, 'Hold the assigned steady workload. The study used a workload calibrated to 75% of individual VO₂peak.'),
-          timed('cool-down', 'Aerobic cool-down', equipment, 300, 'Reduce the workload gradually.'),
+          rowWarmUp(300),
+          {
+            ...timed('steady', 'Steady rowing', flywheel, 1800,
+              'Hold the workload calibrated to about 75% of your measured rowing VO₂peak. Use your assigned steady effort.'),
+            oxygenUptakePercentOfPeak: 75,
+          },
+          rowCoolDown(),
         ],
       },
     ],
   };
 }
 
-function intervals(day, equipment, count, workSeconds, recoverySeconds, warmUpSeconds) {
-  const label = `Aerobic intervals · ${count} × ${workSeconds < 60 ? `${workSeconds} sec` : `${workSeconds / 60} min`}`;
+function intervals(day, count, workSeconds, recoverySeconds, warmUpSeconds, workTarget, heartRatePercentOfPeak) {
+  const label = `Rowing intervals · ${count} × ${workSeconds < 60 ? `${workSeconds} sec` : `${workSeconds / 60} min`}`;
+  const recoveryTarget = 'Between efforts, row easily at about 2–3 out of 10.';
   return {
     label,
     sessions: [{
       id: `day-${day}-intervals`, label,
       steps: [
-        timed('warm-up', 'Aerobic warm-up', equipment, warmUpSeconds, 'Build gradually to the assigned workload.'),
+        rowWarmUp(warmUpSeconds),
         {
-          id: 'intervals', label: 'Work and recovery intervals', kind: 'intervals', equipment,
+          id: 'intervals', label: 'Rowing work and recovery intervals', kind: 'intervals', equipment: flywheel,
           count, workSeconds, recoverySeconds, durationSeconds: count * workSeconds + (count - 1) * recoverySeconds,
-          instruction: 'Alternate work at the assigned intensity with easy recovery. Start the cool-down after the final work interval.',
+          workTarget, recoveryTarget,
+          ...(heartRatePercentOfPeak ? { heartRatePercentOfPeak } : {}),
+          instruction: `${workTarget} ${recoveryTarget} Start the cool-down after the final work interval.`,
         },
-        timed('cool-down', 'Aerobic cool-down', equipment, 300, 'Reduce the workload gradually.'),
+        rowCoolDown(),
       ],
     }],
   };
 }
 
 const week = [
-  strengthAndEndurance(1, 'Resistance (higher volume) and steady cycling', 12, [
-    ['squat', 'Squat'], ['deadlift', 'Deadlift'], ['heel-raise', 'Heel raise'], ['bench-press', 'Bench press'],
-  ], 'CEVIS cycle'),
-  intervals(2, 'CEVIS cycle', 6, 120, 120, 300),
-  strengthAndEndurance(3, 'Resistance (moderate volume) and steady treadmill', 8, [
-    ['single-leg-squat', 'Single-leg squat'], ['romanian-deadlift', 'Romanian deadlift'],
-    ['heel-raise', 'Heel raise'], ['cable-row', 'Cable row'],
-  ], 'T2 treadmill with harness'),
-  intervals(4, 'CEVIS cycle', 8, 30, 15, 600),
-  strengthAndEndurance(5, 'Resistance (lower volume) and steady cycling', 6, [
-    ['sumo-squat', 'Sumo squat'], ['sumo-deadlift', 'Sumo deadlift'], ['heel-raise', 'Heel raise'],
-    ['bench-press', 'Bench press'],
-  ], 'CEVIS cycle'),
-  intervals(6, 'T2 treadmill with harness', 4, 240, 180, 300),
+  strengthAndEndurance(1, 'Higher-volume', 12, 120),
+  intervals(2, 6, 120, 120, 300, 'Build to hard rowing, about 7–8 out of 10, using your assigned power or pace.'),
+  strengthAndEndurance(3, 'Moderate-volume', 8, 120),
+  intervals(4, 8, 30, 15, 600, 'Row hard and controlled, about 8–9 out of 10, at your assigned short-interval power or pace.'),
+  strengthAndEndurance(5, 'Lower-volume', 6, 180),
+  intervals(6, 4, 240, 180, 300,
+    'Use your assigned power or pace. When a measured rowing peak and live pulse are available, aim for 85–95% of peak late in each effort. Otherwise use the assigned hard effort, about 8–9 out of 10.',
+    [85, 95]),
   { label: 'Rest day', sessions: [] },
 ];
 
@@ -79,13 +95,24 @@ const stageDay = {
   }],
 };
 
-export function getDailyWorkout(missionDay, { stage = false } = {}) {
+export function getDailyWorkout(missionDay, { stage = false, rowingHrPeakBpm } = {}) {
   if (!Number.isSafeInteger(missionDay) || missionDay < 0) {
     throw new RangeError('missionDay must be a non-negative integer from the mission clock.');
   }
+  if (rowingHrPeakBpm !== undefined
+    && (!Number.isFinite(rowingHrPeakBpm) || rowingHrPeakBpm < 20 || rowingHrPeakBpm > 250)) {
+    throw new RangeError('rowingHrPeakBpm must be a measured peak in bpm between 20 and 250.');
+  }
   const dayOfWeek = missionDay % 7 + 1;
+  const day = structuredClone(stage ? stageDay : week[dayOfWeek - 1]);
+  if (rowingHrPeakBpm !== undefined) {
+    for (const step of day.sessions.flatMap(session => session.steps)) {
+      if (step.heartRatePercentOfPeak) {
+        step.targetHeartRateBpm = step.heartRatePercentOfPeak.map(percent => Math.round(rowingHrPeakBpm * percent / 100));
+      }
+    }
+  }
   return {
-    ...structuredClone(stage ? stageDay : week[dayOfWeek - 1]),
-    missionDay, dayOfWeek, program: stage ? 'stage-demo' : 'iss-sprint-demo',
+    ...day, missionDay, dayOfWeek, program: stage ? 'stage-demo' : 'mars-transit',
   };
 }
