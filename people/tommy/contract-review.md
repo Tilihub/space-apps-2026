@@ -18,6 +18,12 @@ Validation: ran the PR's actual `npm test` in an isolated public-source copy on 
 - zt added five stage cases at `2ec9cd5`, PR #52. These are a new narrative proposal, not a matching replacement for PET-1 yet.
 - PR #49 remains at `fb0c20f`. Submitted **CHANGES_REQUESTED** at Tommy’s instruction, with the visibility correction and explicit latest inventory requirements. No approval or merge was issued.
 
+### Later refresh during the same review
+
+Main advanced to `854c361` while the review was running: #52 stage cases and **DAD-2 #53** are now merged. DAD-2 provides `earth.html`, `MedGround.makeGrant`, offline QR SVG generation, course-end import expiry, revocation logic and clear simulated-sender labels. Opened the actual Earth screen and the existing browser regression page from isolated public-source copies: **28/28 checks passed**. The QR contains the same code text; phone-camera decoding and real issuer verification were not tested/implemented. Do not assign ground-side QR generation from scratch again.
+
+The next dadis2 work is adapting delivered DAD-1/DAD-2 to the agreed shared module/profile/clock and current product semantics. Its documented “Already added” behavior still needs a repeat-code path to the existing due grant, and its four-crew/backup-CMO prototype needs alignment with the proposed five-crew/one-CMO contract. The case conflicts below remain relevant even though #52's personal draft is merged.
+
 ### New case/fixture differences to settle
 
 | Topic | PET-1 #51 | zt stage proposal #52 | Required coordination |

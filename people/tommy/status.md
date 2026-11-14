@@ -14,6 +14,8 @@
 
 ## Done
 
+- Re-fetched again while publishing: main 854c361 now includes zt’s #52 demo-case draft and dadis2’s DAD-2 #53. Reviewed the new code/QR/validity/revocation contract, opened the Earth tool and ran its browser regression page: 28/28 passed. Saved a screenshot for Tommy; phone-camera decoding and real issuer verification not tested. Updated handoff so DAD-2 is not reassigned from scratch.
+
 - Opened PR #54 publishing the confirmed inventory decisions, #49 request-changes review and refreshed #50/#51/#52 handoffs; only Tommy’s planning/status files changed.
 
 - Re-fetched at Tommy’s request. Main b5f98a5 includes health/environment/inventory prototype merges; reviewed new external importer #50 (928dc4e), PET-1/PET-2 #51 (12c840e) and zt’s five demo cases #52 (2ec9cd5).
