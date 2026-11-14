@@ -41,10 +41,13 @@ test('only the reply with context uses today’s check-in and earlier sleep hist
   const replies = await (await request('compare')).json();
   assert.deepEqual(Object.keys(replies), ['noContext', 'withContext']);
   assert.match(replies.noContext, /hardest to get through today/);
-  assert.doesNotMatch(replies.noContext, /5\.5|7\.8|7\/10|in a row|medical officer/);
+  assert.doesNotMatch(replies.noContext, /5\.5|7\.8|7\/10|in a row|medical officer|sleep block|behavioral health/);
   assert.match(replies.withContext, /5\.5 hours.*7\/10/);
   assert.match(replies.withContext, /7\.8 hours for 2 nights in a row.*5\.9 hours on day 40.*5\.6 hours on day 41/);
-  assert.match(replies.withContext, /crew medical officer/);
+  assert.match(replies.withContext, /protect your next sleep block.*crew medical officer.*noncritical task/);
+  assert.match(replies.withContext, /hard to work safely, tell the medical officer now/);
+  assert.match(replies.withContext, /comfortable breathing.*private check-in with your mission’s behavioral health provider/);
+  assert.match(replies.withContext, /next check-in, log your sleep, fatigue and stress again/);
 });
 
 test('one short historical night and a current short night do not trigger the repeated sleep pattern', () => {
@@ -54,6 +57,6 @@ test('one short historical night and a current short night do not trigger the re
     shortSleepDays: 1,
   });
   assert.match(reply, /0 hours of sleep/);
-  assert.doesNotMatch(reply, /stress|7\.8|in a row|medical officer/);
+  assert.doesNotMatch(reply, /stress|7\.8|in a row|medical officer|sleep block|behavioral health/);
   assert.match(reply, /hardest to get through today/);
 });

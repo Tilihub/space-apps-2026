@@ -25,9 +25,17 @@ Prompt: “I feel worn down and out of sorts today. Can you help me make sense o
 | Case | What the scripted reply did |
 | --- | --- |
 | No context | Acknowledges a hard day and asks what has been hardest today. |
-| With context | Uses today's 5.5 hours of sleep and stress at 7/10, recognizes two earlier nights well below the 7.8-hour reference, and suggests reviewing the sleep logs with the crew medical officer. |
+| With context | Uses today's check-in and the repeated sleep shortfall to suggest protecting the next sleep block, reviewing workload with the crew medical officer, and following up at the next check-in. It offers a short wind-down and private behavioral health support if stress continues. |
 
 Tests check both responses and verify that one historical short night plus today's short sleep doesn't trigger the repeated-pattern response.
+
+## Research behind Tomas’s plan
+
+- **Sleep and workload.** Protect the next planned sleep block and discuss moving a noncritical task with the crew medical officer. Petros proposes reviewing duty periods and revisiting any crew-approved schedule change at the next check-in. NASA includes work/rest schedules and task loading in fatigue management. [Deep-space countermeasures](../../people/petros_the_space_larper/astronaut-deep-space-countermeasures.md#mental-health-and-crew-performance) · [NASA Medical Operations §6.1](https://www.nasa.gov/reference/6-0-medical-operations/#h-6-1-circadian-shifting-operations-and-fatigue-management)
+- **Coping and professional support.** Offer comfortable breathing as an optional wind-down. The HI-SEAS study in Petros's review tested acceptance of an offline stress-management resource in a small analog crew. If stress continues, suggest a private conversation through the designated mission channel. [HI-SEAS study](https://drpst.dartmouth.edu/user_resources/publications/pdf/Anderson%20AMHP%202016-1.pdf) · [NASA Medical Operations §6.3](https://www.nasa.gov/reference/6-0-medical-operations/)
+- **Follow-up.** Record sleep, fatigue and stress again to help Tomas and the medical officer review the effect of an agreed change. The two-night trigger is a demo rule. The sleep records describe duration, and the check-in describes how Tomas feels. [Physical and mental health research](../../people/petros_the_space_larper/astronaut-physical-and-mental-health.md) · [Mars-transit prototype](../../people/petros_the_space_larper/mars-transit-prototype.md)
+
+## Run the checks
 
 ```powershell
 node --test "**/*.test.js" people/potest/crew-support/server.test.mjs

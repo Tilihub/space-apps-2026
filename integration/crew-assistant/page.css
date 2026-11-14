@@ -11,7 +11,7 @@ table { width: 100%; border-collapse: collapse; }
 th, td { padding: .45rem .3rem; text-align: left; border-bottom: 1px solid #3f536e; }
 .tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .65rem; }
 .tabs [aria-selected="false"] { background: #253850; color: #eef4fb; }
-.reply { background: #253850; border-radius: .55rem; padding: .85rem; overflow-wrap: anywhere; }
+.reply { background: #253850; border-radius: .55rem; padding: .85rem; overflow-wrap: anywhere; white-space: pre-line; }
 @media (max-width: 720px) {
   .inputs { grid-template-columns: minmax(0, 1fr); }
 }
