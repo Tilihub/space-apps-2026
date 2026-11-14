@@ -166,6 +166,9 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .plan-next.ok { color: var(--ok); }
 .plan-next.due { color: var(--accent); }
 .code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+.qr-box { background: #fff; border-radius: 10px; padding: 8px; width: min(240px, 100%); margin-top: 10px; border: 1px solid var(--line); }
+.qr-box svg { display: block; width: 100%; height: auto; }
+.grant-row .actions { margin-top: 8px; }
 .collect-list { display: grid; gap: 8px; margin-top: 12px; text-align: left; }
 .collect-row { border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px 10px; }
 .collect-row .where { justify-content: flex-start; margin: 6px 0; }

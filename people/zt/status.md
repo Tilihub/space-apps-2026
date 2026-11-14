@@ -8,9 +8,11 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:24
-- Working on: the five demo cases for the 7-minute live demo ([demo-cases.md](demo-cases.md))
-- Branch: zt/demo-cases
+- Last updated: 2026-11-14 17:33
+- Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
+  so every teammate can build their piece to it alone and joining them is only the final link.
+  Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
+- Branch: zt/app-contract
 
 ## Done
 
@@ -28,26 +30,39 @@
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
   tablet/laptop ([PR #43](https://github.com/Tilihub/space-apps-2026/pull/43)). Every screen from the overview is there as labelled boxes; one tab per astronaut
   with `?crew=1`, `?crew=2`, `?crew=3`; all fake data in one block at the top of the script
+- Wrote the onboard app contract in `shared/contract/` (branch `zt/app-contract`): one Node.js
+  server on one laptop, one module per piece, pages that draw everything. It fixes 5 crew (`c1`–`c5`,
+  Leo `c2` the only medical officer), 1–10 self-reports, sleep in hours, one mission clock, and
+  every module's paths and data. Shared code, an example module and 7 passing tests (`npm test`).
+  `AGENTS.md`, `CODEOWNERS` and `shared/PLAN.md` point to it
 - Wrote the demo cases in [demo-cases.md](demo-cases.md): one narrator and five crew members, the
   medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
   real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
   from potest's ISS RR-9 replay ([PR #52](https://github.com/Tilihub/space-apps-2026/pull/52))
+- Updated the contract (PR #49) for Tommy's PR #47 and the demo cases: health analyses are for the
+  medical officer only, enforced by the server; crew stories, values and CO₂ timing match the demo
+  cases; new allergies, blocked items, emergency release, stock, workout records and radiation;
+  wave 2 is the rest of the live demo. The demo cases now show every comparison in E's scene
 
 ## Blocked / need from others
 
--
+- A teammate's approval on the contract pull request, after the team has looked at it together
 
 ## Next steps
 
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- UI skeleton (branch `zt/ui-skeleton`): agree with the team what goes where, then move boxes
-  around in [ui-skeleton/index.html](ui-skeleton/index.html). Keep it unstyled until the layout
-  is agreed. Astronaut C as medical officer and readiness on 0–100 are placeholders, not decisions.
+- Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
+  the workout give points? Ask potest to take reports and the Earth link. Record the answers in
+  the contract's "Still open".
+- Contract (branch `zt/app-contract`): go through it with the team, fix what they change, get one
+  approval and merge. Then each owner builds their module to it (wave 1 before leaving Saturday).
+- Build the core and the pages in `integration/onboard-app/` to the contract (section 5): server,
+  login, clock, events, then the astronaut app and the medical officer platform, starting from
+  the UI skeleton's layout. The skeleton's 3 crew, 0–10 sliders and sleep slider must follow the
+  contract (5 crew, 1–10, sleep in hours).
 - Go through the app overview in [plan.md](plan.md) with Tommy. It's a draft, open to change.
-- Integration (with Tommy): plan how the pieces join, starting with one crew list, the same field
-  names, 0–10 scales and one mission clock.
 - Finish `shared/PLAN.md` with Tommy and open the pull request. Someone other than zt must approve it.
 - Keep [team-jobs.md](team-jobs.md) current at each status check: update the tables and add one
   line to History. It records what people actually do; the agreed split goes in `shared/PLAN.md`.

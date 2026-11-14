@@ -142,6 +142,49 @@
     return eq(c, { compartmentId: "L2-1-07", lockerId: "L2", shelfId: "L2-1", bin: 7 });
   });
 
+  // --- DAD-2: validity, cancelling, ground side, QR ---
+
+  check("A grant can still be added on the last day of its course", function () {
+    var s = fresh(), res = draft(s, L.EARTH, "c4", at(0), TWO); // longest medicine: 5 days → last day 18 Nov
+    return eq(L.acceptGrant(s, res.grant, "c4", at(23, 0, 4)), null);
+  });
+  check("An expired grant is refused", function () {
+    var s = fresh(), res = draft(s, L.EARTH, "c4", at(0), TWO);
+    var why = L.acceptGrant(s, res.grant, "c4", at(8, 0, 5));
+    return why && why.indexOf("expired") >= 0 ? true : "got " + why;
+  });
+  check("A cancelled grant opens nothing", function () {
+    var s = fresh(), g = added(s), err = L.revokeGrant(s, g.id, "c2", at(9, 0));
+    return eq([err, g.status, ids(L.grantDue(s, g, at(20, 30)))], [null, "revoked", []]);
+  });
+  check("Earth can cancel a grant", function () {
+    var s = fresh(), g = added(s);
+    return eq([L.revokeGrant(s, g.id, L.EARTH, at(9, 0)), g.revokedBy], [null, L.EARTH]);
+  });
+  check("A crew member who isn't a doctor can't cancel a grant", function () {
+    var s = fresh(), g = added(s), why = L.revokeGrant(s, g.id, "c4", at(9, 0));
+    return why && g.status === "active" ? true : "got " + why + ", status " + g.status;
+  });
+  check("The ground tool's code reads back on a crew device, sender marked not verified", function () {
+    var s = fresh(), r = window.MedGround.makeGrant(s, { patientId: "c4", start: "2026-11-14", items: TWO });
+    if (!r.ok) return r.error;
+    var back = L.decodeGrant(s, r.code);
+    return eq([back.grant.items, r.senderVerified, r.verification, r.validUntil], [TWO, false, "simulated", "2026-11-18"]);
+  });
+  check("The ground tool refuses emergency medicines with a plain reason", function () {
+    var r = window.MedGround.makeGrant(fresh(), { patientId: "c4", start: "2026-11-14", items: [{ itemId: "epinephrine-1mg", units: 1, perDay: 1, days: 1 }] });
+    return !r.ok && r.error.indexOf("emergency") >= 0 ? true : "got " + JSON.stringify(r);
+  });
+  check("The ground tool refuses another crew member's personal medicine", function () {
+    var r = window.MedGround.makeGrant(fresh(), { patientId: "c1", start: "2026-11-14", items: [{ itemId: "omeprazole-20", units: 1, perDay: 1, days: 3 }] });
+    return !r.ok && r.error.indexOf("another crew member") >= 0 ? true : "got " + JSON.stringify(r);
+  });
+  check("The QR image is made from the exact code", function () {
+    var code = "RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW", q = window.MedQR.svg(code);
+    var ok = q.modules >= 21 && q.svg.indexOf("<svg") === 0 && q.svg.indexOf("QR code for " + code) > 0;
+    return ok ? true : "modules " + q.modules;
+  });
+
   // --- report ---
 
   var passed = results.filter(function (r) { return r.ok; }).length;
