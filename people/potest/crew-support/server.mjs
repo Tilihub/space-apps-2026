@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { ChatError, DEFAULT_MODEL, getReply, validateMessages } from './chat.mjs';
+import { ChatError, getScriptedReply, validateMessages } from './chat.mjs';
 
 const MAX_BODY_BYTES = 160_000;
 const SUPPORT_PLACEHOLDER = '<div class="box">Support</div>';
@@ -41,9 +41,7 @@ async function readBody(request) {
   }
 }
 
-export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = false,
-  fetchOpenAI = globalThis.fetch, timeoutMs = 25_000, handleRequest } = {}) {
-  const mode = demo ? 'demo' : apiKey ? 'live' : 'unconfigured';
+export function createCrewSupportServer({ handleRequest } = {}) {
   let activeRequests = 0;
   return createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, async (request, response) => {
     response.setHeader('Cache-Control', 'no-store');
@@ -74,7 +72,6 @@ export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = 
         return send(response, 200, dashboard.replace(SUPPORT_PLACEHOLDER,
           `<a class="box" href="/support${query}">Open Crew Support chat</a>`), 'text/html');
       }
-      if (path === '/api/crew-support/status') return send(response, 200, { mode });
       const page = pages.get(path);
       if (page) {
         if (path === '/support') {
@@ -89,21 +86,14 @@ export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = 
     if (activeRequests >= 4) return send(response, 429, { error: 'Crew Support is busy. Try again shortly.' });
 
     activeRequests += 1;
-    const disconnected = new AbortController();
-    response.on('close', () => disconnected.abort());
-    let timeout;
     try {
       const body = await readBody(request);
       const messages = validateMessages(body?.messages);
-      timeout = AbortSignal.timeout(timeoutMs);
-      const signal = AbortSignal.any([timeout, disconnected.signal]);
-      const result = await getReply(messages, { mode, model, apiKey, fetchOpenAI, signal });
-      if (!response.destroyed) send(response, 200, result);
+      if (!response.destroyed) send(response, 200, { reply: getScriptedReply(messages) });
     } catch (error) {
       if (response.destroyed) return;
       if (error instanceof ChatError) return send(response, error.status, { error: error.message });
-      if (timeout?.aborted) return send(response, 504, { error: 'OpenAI took too long. Try again when the connection is stable.' });
-      return send(response, 502, { error: 'Crew Support could not reach OpenAI. Check the connection and try again.' });
+      return send(response, 500, { error: 'Crew Support could not reply. Try again.' });
     } finally {
       activeRequests -= 1;
     }
@@ -112,12 +102,8 @@ export function createCrewSupportServer({ apiKey, model = DEFAULT_MODEL, demo = 
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.CREW_SUPPORT_PORT ?? '4170');
-  const demo = process.argv.includes('--demo');
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  createCrewSupportServer({ apiKey, model: process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL, demo })
+  createCrewSupportServer()
     .listen(port, '127.0.0.1', function () {
       console.log(`Mission dashboard: http://127.0.0.1:${this.address().port}/#mind`);
-      if (demo) console.log('Scripted demo mode. OpenAI will not be called.');
-      else if (!apiKey) console.log('Set OPENAI_API_KEY for live chat or restart with --demo.');
     });
 }

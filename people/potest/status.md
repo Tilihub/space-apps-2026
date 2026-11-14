@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:57 (Europe/Athens)
-- Working on: Crew Assistant context comparison in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
+- Last updated: 2026-11-14 18:33 (Europe/Athens)
+- Working on: Offline Crew Assistant comparison in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
 - Branch: potest/crew-support-chat
 
 ## Done
@@ -23,13 +23,13 @@
 - POT-1: Verified a same-origin parent iframe can read the snapshot, distinguish archival and synthetic data, and receive one event per forward transition. Tested stale status, recovery, event deduplication, and loop reset in Chrome and checked packet mapping in Node.
 - Clarified the source-time chart window and playback speed labels. Verified in Chrome that a one-second playback step advances five recorded minutes for RR-9, and that hourly and sol-based series display their actual next source-time interval.
 - Kept chart history visible across automatic replay loops. Verified rollover on the ISS and Mars-sol plots, plus original snapshot and CSV timestamps, in Chrome.
-- Added [Crew Support](crew-support/README.md), a local demo that links the Mind screen to a scripted or OpenAI-backed conversation. Six HTTP tests passed with mocked OpenAI. Verified the two-turn scripted chat, clearing, draft retention on failure and crew navigation in Chrome.
-- Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the [Crew Assistant demo](../../integration/crew-assistant/README.md). Verified no context, check-in only, health only and full context in Chrome. Two integration tests cover the scripted results and the mocked OpenAI context packets.
+- Added [Crew Support](crew-support/README.md), a local scripted conversation linked from the Mind screen.
+- Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the [Crew Assistant demo](../../integration/crew-assistant/README.md). Removed external model calls. Today-only replies share one approach, and both history-based replies identify the same repeated short sleep and suggest the same next step. Verified both groups in Chrome and passed 47 Node tests.
 
 ## Blocked / need from others
 
 - zt and the report assembler still need to agree on the shared mission-clock mapping and adopt the proposed snapshot and event IDs. The bridge preserves the source clock and leaves mission time unset unless the parent supplies an offset.
-- Live chat verification requires a billed OpenAI API project key. The local demo covers fictional conversations. Authenticating users and connecting the human support workflow remain integration tasks.
+- Authenticating users and connecting the human support workflow remain integration tasks.
 - The joined demo uses a single synthetic profile. The app contract leaves the companion’s use of detailed health analysis open.
 
 ## Next steps
@@ -39,4 +39,4 @@
 
 - Have zt wire the incident view to `environmentMonitor.getSnapshot()` and subscribe to replay alerts using the handoff example.
 - POT-2 report transport remains conditional on ownership agreement and confirmation that the queue is uncovered.
-- Share the Crew Support route contract with zt and Angelos for the Mind/companion integration. Run a fictional live smoke test when a project key is available.
+- Share the offline demo with zt and Angelos for the Mind/companion integration.

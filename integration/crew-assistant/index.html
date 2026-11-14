@@ -12,8 +12,7 @@
   <main>
     <header>
       <h1>Crew Assistant comparison</h1>
-      <p class="intro">Tomas · Mission day 42 · Synthetic Mars-transit case</p>
-      <p id="mode" role="status">Loading demo…</p>
+      <p class="intro">Tomas · Mission day 42 · Offline scripted demo</p>
     </header>
 
     <div class="inputs">
@@ -55,13 +54,19 @@
 
     <section class="chat assistant" aria-labelledby="assistant-title">
       <h2 id="assistant-title">Crew Assistant</h2>
-      <form id="compare">
-        <label for="question">Ask the same question in four fresh conversations</label>
-        <textarea id="question" rows="2" maxlength="2000" required>I feel worn down and out of sorts today. Can you help me make sense of it?</textarea>
-        <button id="compare-button" disabled>Compare replies</button>
-      </form>
+      <blockquote>“I feel worn down and out of sorts today. Can you help me make sense of it?”</blockquote>
+      <button id="compare-button" type="button" disabled>Compare replies</button>
       <p id="compare-status" role="status"></p>
-      <div id="results" class="results" aria-live="polite"></div>
+      <div id="results" aria-live="polite" hidden>
+        <div class="reply-group">
+          <h3>Responding to today</h3>
+          <div id="today-replies" class="results"></div>
+        </div>
+        <div class="reply-group history">
+          <h3>Responding to a pattern</h3>
+          <div id="history-replies" class="results"></div>
+        </div>
+      </div>
     </section>
   </main>
 </body>

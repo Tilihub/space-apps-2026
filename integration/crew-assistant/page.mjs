@@ -4,9 +4,9 @@ const exampleButton = document.querySelector('#load-example');
 const saveButton = document.querySelector('#save-check-in');
 const compareButton = document.querySelector('#compare-button');
 const compareStatus = document.querySelector('#compare-status');
-const compareForm = document.querySelector('#compare');
 const results = document.querySelector('#results');
-const modeLabel = document.querySelector('#mode');
+const todayReplies = document.querySelector('#today-replies');
+const historyReplies = document.querySelector('#history-replies');
 const inputNames = {
   sleep_hours: 'sleepHours', resting_heart_rate_bpm: 'restingHeartRateBpm',
   mood: 'mood', stress: 'stress', fatigue: 'fatigue',
@@ -25,11 +25,11 @@ function fill(values) {
   for (const key of Object.keys(inputNames)) checkInForm.elements[key].value = values[key] ?? '';
 }
 
-function showSaved(values, mode) {
+function showSaved(values) {
   fill(values);
   for (const element of checkInForm.elements) element.disabled = true;
   checkInStatus.textContent = 'Saved for mission day 42. Skipped fields remain missing.';
-  compareButton.disabled = mode === 'unconfigured';
+  compareButton.disabled = false;
 }
 
 function drawHealth({ baselineDays, health }) {
@@ -59,12 +59,7 @@ function drawHealth({ baselineDays, health }) {
 try {
   const state = await request('state');
   drawHealth(state);
-  modeLabel.textContent = {
-    demo: 'Scripted comparison · Runs locally with synthetic data',
-    live: 'Live OpenAI comparison · Sends the selected synthetic context and question to OpenAI',
-    unconfigured: 'Replies unavailable · Set OPENAI_API_KEY or run with --demo',
-  }[state.mode];
-  if (state.checkIn) showSaved(state.checkIn, state.mode);
+  if (state.checkIn) showSaved(state.checkIn);
   else exampleButton.disabled = saveButton.disabled = false;
 
   exampleButton.addEventListener('click', () => fill(Object.fromEntries(
@@ -80,36 +75,36 @@ try {
     }));
     try {
       const saved = await request('check-in', values);
-      showSaved(saved.checkIn, state.mode);
+      showSaved(saved.checkIn);
     } catch (error) {
       checkInStatus.textContent = error.message;
       saveButton.disabled = false;
     }
   });
 } catch (error) {
-  modeLabel.textContent = error.message;
+  checkInStatus.textContent = error.message;
 }
 
-compareForm.addEventListener('submit', async event => {
-  event.preventDefault();
+compareButton.addEventListener('click', async () => {
   compareButton.disabled = true;
-  results.replaceChildren();
+  results.hidden = true;
+  todayReplies.replaceChildren();
+  historyReplies.replaceChildren();
   compareStatus.textContent = 'Comparing four replies…';
   try {
-    const message = document.querySelector('#question').value.trim();
-    const { comparisons } = await request('compare', { message });
+    const { comparisons } = await request('compare');
     for (const comparison of comparisons) {
       const card = document.createElement('article');
       card.className = 'result';
-      const title = document.createElement('h3');
+      const title = document.createElement('h4');
       title.textContent = comparison.label;
       const reply = document.createElement('p');
-      reply.textContent = comparison.error ?? comparison.reply;
+      reply.textContent = comparison.reply;
       card.append(title, reply);
-      results.append(card);
+      (comparison.usesHistory ? historyReplies : todayReplies).append(card);
     }
-    compareStatus.textContent = comparisons.some(item => item.error)
-      ? 'Some replies failed. You can run the comparison again.' : 'Comparison complete.';
+    results.hidden = false;
+    compareStatus.textContent = 'Comparison complete.';
   } catch (error) {
     compareStatus.textContent = error.message;
   } finally {

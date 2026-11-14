@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "people" / "angelos" / "health_monitor"))
 
 from check_in import CheckInStore
-from monitor import baseline_statistics
+from monitor import analyze, baseline_statistics
 
 CLOCK_START = date(2026, 10, 3)
 DEMO_DAY = 42
@@ -28,6 +28,14 @@ def demo_state(store):
     reference, _ = baseline_statistics(baseline)
     past = [row for row in saved if mission_day(row) < DEMO_DAY]
     today = next((row for row in saved if mission_day(row) == DEMO_DAY), None)
+    short_sleep_days = 0
+    if past and mission_day(past[-1]) == DEMO_DAY - 1:
+        history = analyze({"baseline": baseline, "recent": past[:-1], "current": past[-1]})
+        short_sleep_days = next(
+            (finding["consecutive_flagged_days"] for finding in history["findings"]
+             if finding["metric"] == "sleep_hours" and finding["delta"] < 0),
+            0,
+        )
     return {
         "baselineDays": len(baseline),
         "health": {
@@ -37,6 +45,7 @@ def demo_state(store):
                            for row in past[-2:]],
             } for field in HISTORY_FIELDS
         },
+        "shortSleepDays": short_sleep_days,
         "checkIn": {field: today.get(field) for field in FIELDS} if today else None,
     }
 

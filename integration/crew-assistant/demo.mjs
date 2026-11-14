@@ -3,8 +3,9 @@ import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { ChatError, DEFAULT_MODEL, getReply, validateMessages } from '../../people/potest/crew-support/chat.mjs';
+import { ChatError } from '../../people/potest/crew-support/chat.mjs';
 import { createCrewSupportServer } from '../../people/potest/crew-support/server.mjs';
+import { getComparisonReply } from './replies.mjs';
 
 const bridge = fileURLToPath(new URL('./health_bridge.py', import.meta.url));
 const example = JSON.parse(await readFile(new URL('./tomas-check-in.json', import.meta.url), 'utf8'));
@@ -44,9 +45,7 @@ function callHealth(python, database, operation, data) {
   });
 }
 
-export async function createDemoServer({ apiKey, model = DEFAULT_MODEL, demo = false,
-  python = process.env.CREW_ASSISTANT_PYTHON || 'python', fetchOpenAI = globalThis.fetch } = {}) {
-  const mode = demo ? 'demo' : apiKey ? 'live' : 'unconfigured';
+export async function createDemoServer({ python = process.env.CREW_ASSISTANT_PYTHON || 'python' } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'crew-assistant-'));
   const database = join(directory, 'tomas.sqlite3');
   const cleanup = () => rm(directory, { recursive: true, force: true });
@@ -56,9 +55,7 @@ export async function createDemoServer({ apiKey, model = DEFAULT_MODEL, demo = f
     await cleanup();
     throw new Error('The check-in store could not start. Check that Python 3 is available and that the PET-1 fixture is present.');
   }
-  let comparing = false;
-
-  const server = createCrewSupportServer({ apiKey, model, demo, fetchOpenAI,
+  const server = createCrewSupportServer({
     async handleRequest({ request, response, path, send, readBody }) {
       const asset = assets.get(path);
       if (request.method === 'GET' && asset) {
@@ -67,42 +64,27 @@ export async function createDemoServer({ apiKey, model = DEFAULT_MODEL, demo = f
         return true;
       }
       if (path === '/api/crew-assistant/state' && request.method === 'GET') {
-        send(200, { ...await callHealth(python, database, 'read'), example, mode });
+        send(200, { ...await callHealth(python, database, 'read'), example });
         return true;
       }
       if (path === '/api/crew-assistant/check-in' && request.method === 'POST') {
         send(201, await callHealth(python, database, 'save', await readBody()));
         return true;
       }
-      if (path !== '/api/crew-assistant/compare' || request.method !== 'POST') return false;
-      if (mode === 'unconfigured') throw new ChatError(503, 'Set OPENAI_API_KEY or start the server with --demo.');
-      if (comparing) throw new ChatError(429, 'A comparison is already running.');
-      comparing = true;
-      const disconnected = new AbortController();
-      response.once('close', () => disconnected.abort());
-      try {
-        const body = await readBody();
-        const messages = validateMessages([{ role: 'user', content: body?.message }]);
-        const state = await callHealth(python, database, 'read');
-        if (!state.checkIn) throw new ChatError(409, 'Save the mission-day check-in before comparing replies.');
-        const timeout = AbortSignal.timeout(25_000);
-        const signal = AbortSignal.any([timeout, disconnected.signal]);
-        const comparisons = await Promise.all(cases.map(async ({ id, label, checkIn, health }) => {
-          const context = {};
-          if (checkIn) context.checkIn = state.checkIn;
-          if (health) context.health = state.health;
-          try {
-            const result = await getReply(messages, { mode, model, apiKey, fetchOpenAI, signal, context });
-            return { id, label, ...result };
-          } catch (error) {
-            const message = error instanceof ChatError ? error.message : 'OpenAI did not respond. Check the connection.';
-            return { id, label, error: timeout.aborted ? 'OpenAI took too long.' : message };
-          }
-        }));
-        if (!response.destroyed) send(200, { mode, comparisons });
-      } finally {
-        comparing = false;
-      }
+      if (path !== '/api/crew-assistant/compare' || request.method !== 'GET') return false;
+      const state = await callHealth(python, database, 'read');
+      if (!state.checkIn) throw new ChatError(409, 'Save the mission-day check-in before comparing replies.');
+      const comparisons = cases.map(({ id, label, checkIn, health }) => ({
+        id,
+        label,
+        usesHistory: health,
+        reply: getComparisonReply({
+          checkIn: checkIn ? state.checkIn : undefined,
+          sleepHistory: health ? state.health.sleep_hours : undefined,
+          shortSleepDays: health ? state.shortSleepDays : 0,
+        }),
+      }));
+      if (!response.destroyed) send(200, { comparisons });
       return true;
     },
   });
@@ -110,11 +92,7 @@ export async function createDemoServer({ apiKey, model = DEFAULT_MODEL, demo = f
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { server, cleanup } = await createDemoServer({
-    apiKey: process.env.OPENAI_API_KEY?.trim(),
-    model: process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL,
-    demo: process.argv.includes('--demo'),
-  });
+  const { server, cleanup } = await createDemoServer();
   const port = Number(process.env.CREW_ASSISTANT_PORT ?? '4171');
   server.listen(port, '127.0.0.1', () => {
     console.log(`Crew Assistant comparison: http://127.0.0.1:${server.address().port}/crew-assistant`);
