@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:23 (Asia/Nicosia)
-- Working on: Health component merged into main through PR #57; ready for zt/Potest to use via health/HANDOFF.md. Local health feature work is complete.
-- Branch: angelos/health-module
+- Last updated: 2026-11-14 18:48 (Asia/Nicosia)
+- Working on: Petros's aligned stage-data PR #64 independently verified; all 51 root checks pass. No algorithm change required.
+- Branch: angelos/verify-stage-data
 
 ## Done
 
@@ -165,14 +165,15 @@
 
 ## Blocked / need from others
 
+- Stage-data correction is verified at Petros commit 1b736f5 (PR #64), not yet
+  merged into main 0a3204e at this check. Petros merges his source; zt initializes
+  a fresh demo store or explicitly resets at DEMO_START to adopt the new reference.
 - No remaining local health feature blocker. zt owns the joined server and pages;
   neither is on main yet. The client/module HTTP boundary is tested; the real
   page save/reload path still needs verification after composition.
-- Petros's bundled example predates the approved demo cases (c4 reference sleep
-  7.8 h instead of 6.8 h). Petros must publish the updated canonical health.json.
-  Do not call the exact live-demo scenario accepted with the old example.
-  Also align c3's six-day mood change and pulse gaps, c1's ranges and the separate
-  historical cabin replay; see health/DATA_REVIEW.md for the reviewed differences.
+- The earlier source differences are resolved in the tested PR #64 candidate:
+  c1 no flags, c3 mood/stress streaks 6/3 with pulse gaps 39/41, c4 6.8 h sleep
+  reference and sleep-only three-day flag. Existing stores stay fixed until reset.
 - The shared owner table still names angelos for mind. Coordinate the user's
   Potest handoff with zt rather than changing the protected contract implicitly.
 - npm is not installed/on PATH here. Run its exact root test script directly with
@@ -180,6 +181,13 @@
 
 ## Next steps
 
+- No new local health feature is needed for the corrected source. New pinned
+  stage-data tests cover actual app submission, expected medians/streaks,
+  baseline/person isolation, role refusals and reset. All 51 root checks pass:
+  39 health/client/workout, 5 Petros workout and 7 shared examples. No user database,
+  teammate source, real NASA observation or comparison algorithm was modified.
+- Continue from angelos/verify-stage-data for this verification handoff. Petros
+  owns merging #64; zt owns core/page composition; Potest owns companion adaptation.
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
