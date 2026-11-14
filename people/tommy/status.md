@@ -9,10 +9,12 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: PR #49 approved at 76b2e09 on Tommy’s latest explicit instruction; recording final review/handoff. Home-indicator decision deferred.
+- Working on: Checked the adopted app contract on main fa5346d; same reviewed 76b2e09 content, #49 merged. Flagged new #55 Mind/companion coordination overlap.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Refreshed main and re-read the adopted app contract/rules at Tommy’s request. #49 is merged; contract files are unchanged from tested 76b2e09. Reviewed new Crew Support #55 documentation/status: standalone server/routes overlap with Angelos’s assigned mind module and need an agreed adaptation, not parallel app servers. No live API call or repeated unchanged tests performed.
 
 - Published the final #49 approval outcome and deferred Home decision through merged PR #56, including the 76b2e09 follow-up review; own planning/status files only.
 
@@ -76,8 +78,8 @@
 
 ## Next steps
 
-- PR #49 has an APPROVED review at 76b2e09, on Tommy’s latest explicit instruction. Its author can proceed with the merge; do not repeat the superseded wait-for-approval instruction from earlier Done entries.
+- PR #49 is merged; follow shared/contract/README.md for new module work. Keep the recorded product follow-ups visible rather than the historical request-changes timing.
 - Follow contract-review.md (updated via #56) and the adopted shared contract for module work. Preserve identical QR/manual-code behavior, reusable due-dose credentials, batch/per-item dispenser confirmation and normal allergy blocking. The remaining wording is an implementation follow-up.
-- Align PET-1 fixtures and expected checks with the contract’s target stage cases; confirm potest or another accepted owner for reports/transport. DAD-1, DAD-2, ANG-1 and PET-1/PET-2 deliveries should be reused, not assigned from scratch.
+- Coordinate #55 Crew Support with zt/Angelos/potest before adopting its server/routes or live mode. Align PET-1 fixtures and expected checks with the contract’s target stage cases; confirm potest or another accepted owner for reports/transport. DAD-1, DAD-2, ANG-1 and PET-1/PET-2 deliveries should be reused, not assigned from scratch.
 - Extra Home indicators are deferred at Tommy’s request. Readiness, catalogue size and remaining clinical/psychologist/emergency details stay explicit decisions.
 - Continue planning in tommy/concepts-plan. Do not edit another person’s folder or implement UI from this chat; zt owns assembly/layout. Update status and push before a break.
