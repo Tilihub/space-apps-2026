@@ -1,24 +1,30 @@
 <!doctype html>
 <!--
-  3D body model (zt): a suggestion to replace the 2D body figure on the home page of
-  ../ui-look/index.html. Open this file in a browser (made for landscape tablet or laptop).
-    index.html?crew=1   Astronaut A: headache, so the head is red
-    index.html?crew=2   Astronaut B: healthy, every point blue
-  Add &body=female or &body=male to pick the body, and &mode=heat or &mode=status for the colouring.
-  Drag to turn the body, pinch or scroll to zoom, tap a point (or the body itself) to open it.
+  3D body model (zt): a suggestion for the body figure in ../ui-look/index.html, in two modes.
+    View   (home page): the body only shows where the astronaut already reported a symptom, as a soft
+           red glow with a small label ("Head · Headache"). You can turn and zoom it, not tap it.
+    Report (check-in symptom report): tap the body where it hurts. The tapped area lights up and the
+           page is told which one it is. Areas already reported show in red.
+  Open this file in a browser (made for landscape tablet or laptop):
+    index.html?crew=1   Astronaut A: reported a headache
+    index.html?crew=2   Astronaut B: nothing reported
+  Add &mode=view or &mode=report, and &body=female or &body=male to pick the body.
+  Drag to turn, pinch or scroll to zoom. The back is only reachable by turning (or the Back button).
 
   Needs internet the first time: three.js (the 3D library, MIT licence) comes from the jsDelivr CDN
   and the fonts from Google Fonts. The browser keeps a copy, so open it once online on the demo
   laptop before the demo.
 
   Body shapes: "Human Base Meshes" by Blender Studio (CC0: free for any use, no credit needed),
-  the realistic male and female, reduced to about 26,000 triangles each. They are packed into the
+  the realistic female and male, reduced to about 26,000 triangles each. They are packed into the
   data block at the very end of this file, so this one file works on its own.
 
-  To drop it into the look page later: copy the module script (mountBody3D) and the data block,
-  then call mountBody3D(container, person, (key) => { location.hash = `point:${key}`; }).
-  The heat map numbers (person.heat: 0 = as usual, 1 = look at this) are placeholders: the team
-  still has to agree what the heat map shows.
+  To drop it into the look page later: copy the importmap, the module script above "Demo page" and the
+  data block, then call
+    const body = mountBody3D(container, { mode: 'report', body: 'female', reported, selected: null, onSelect });
+    body.setSelected('chest');   // change the selection from outside (does not call onSelect)
+    body.update({ reported });   // or { mode }, { body }, { selected }
+  Area keys: head, eyes, neck, chest, arms, back, stomach, legs (window.BODY_AREAS has the labels).
 -->
 <html lang="en" data-theme="dark">
 <head>
@@ -41,7 +47,7 @@
   }
 </script>
 <style>
-  /* ---------- Design tokens: copied from ../ui-look/index.html, plus the heat map colours ---------- */
+  /* ---------- Design tokens: copied from ../ui-look/index.html ---------- */
   :root {
     --font-ui: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-display: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
@@ -67,11 +73,6 @@
     --fig-bottom: #0F1C34;
     --grid-dot: rgba(160, 185, 230, 0.11);
     --shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
-    /* Heat map, from "as usual" to "look at this" */
-    --heat-0: #4C7FC9;
-    --heat-1: #4AA58C;
-    --heat-2: #CFA54A;
-    --heat-3: #E8606F;
   }
   [data-theme="light"] {
     color-scheme: light;
@@ -93,10 +94,6 @@
     --fig-bottom: #E8EFF9;
     --grid-dot: rgba(20, 40, 80, 0.09);
     --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px rgba(16, 24, 40, 0.06);
-    --heat-0: #6C9BD8;
-    --heat-1: #5CAB8B;
-    --heat-2: #D3A646;
-    --heat-3: #DC4A5E;
   }
 
   /* ---------- Demo page only (the look page has its own) ---------- */
@@ -140,24 +137,28 @@
   .notes li { margin-bottom: 6px; }
   .tap-log { margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: var(--surface-3); font-size: 14px; color: var(--text-2); }
   .tap-log b { color: var(--text); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chips button { font: 600 13px var(--font-ui); color: var(--text-2); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 0 12px; min-height: 34px; cursor: pointer; }
+  .chips button[aria-pressed="true"] { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  [hidden] { display: none !important; }
   @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
 </style>
 </head>
 <body>
   <header class="topbar">
     <div>
-      <div class="eyebrow">Suggestion · Home page body card</div>
+      <div class="eyebrow">Suggestion · Home page and check-in</div>
       <h1 class="page-title">3D body model</h1>
     </div>
     <div class="controls">
+      <div class="seg" role="group" aria-label="Mode" data-group="mode">
+        <button type="button" data-value="view">View</button><button type="button" data-value="report">Report</button>
+      </div>
       <div class="seg" role="group" aria-label="Crew member" data-group="crew">
         <button type="button" data-value="1">Astronaut A</button><button type="button" data-value="2">Astronaut B</button>
       </div>
       <div class="seg" role="group" aria-label="Body" data-group="body">
         <button type="button" data-value="female">Female</button><button type="button" data-value="male">Male</button>
-      </div>
-      <div class="seg" role="group" aria-label="Colouring" data-group="mode">
-        <button type="button" data-value="heat">Heat map</button><button type="button" data-value="status">Status</button>
       </div>
       <button type="button" class="icon-btn" id="theme-btn" aria-label="Switch look"></button>
     </div>
@@ -167,18 +168,28 @@
     <section class="card body-card">
       <div class="card-head"><span class="eyebrow">Body</span><span class="eyebrow" id="who"></span></div>
       <div class="figure-wrap" id="body3d"></div>
-      <p class="hint">Drag to turn · Tap a point for details</p>
+      <p class="hint" id="hint"></p>
     </section>
     <aside class="card notes">
       <span class="eyebrow">How it works</span>
-      <h2>Same six points, now in 3D</h2>
-      <ul>
-        <li>Blue means fine, red means look at this. Red points pulse gently.</li>
-        <li><b>Heat map</b> colours the skin from blue (as usual) to red (look at this). The numbers are placeholders.</li>
-        <li><b>Status</b> keeps the body calm blue and only lets red areas glow.</li>
-        <li>It turns slowly on its own while nobody touches it. Front and Back jump to a side.</li>
-      </ul>
-      <div class="tap-log" id="tap-log">Tap a point or the body: the look page would open its detail screen.</div>
+      <div id="notes-view">
+        <h2>View: home page</h2>
+        <ul>
+          <li>The body stays calm. Only areas with a reported symptom glow soft red, with a small label.</li>
+          <li>Turn and zoom it, but tapping does nothing here.</li>
+          <li>It turns slowly on its own while nobody touches it. Front and Back jump to a side.</li>
+        </ul>
+      </div>
+      <div id="notes-report">
+        <h2>Report: symptom check-in</h2>
+        <ul>
+          <li>Tap the body where it hurts. That area lights up blue, and the page is told which one.</li>
+          <li>Areas already reported show in red. Turn the body to reach the back. It doesn't turn on its own here.</li>
+          <li>The chips below set the selection from outside, like the look page's own buttons would.</li>
+        </ul>
+        <div class="chips" id="chips"></div>
+        <div class="tap-log" id="tap-log">Tap an area on the body.</div>
+      </div>
     </aside>
   </main>
 
@@ -187,29 +198,92 @@
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
   // =====================================================================================
-  // mountBody3D(container, person, onPointClick, options) – the part the look page needs
-  //   person: { body: 'male' | 'female', alerts: { head: { short: 'Headache' } }, heat: { head: 0.9, … } }
-  //   onPointClick(key) is called with 'head', 'eyes', 'heart', 'lungs', 'gut' or 'muscles'
-  //   options.mode: 'heat' (default) or 'status'
-  //   Returns { update(person), setMode(mode), dispose() }
+  // mountBody3D(container, options) – the part the look page needs
+  //   options.mode: 'view' (home: shows reported areas, not tappable) or 'report' (tap an area to select it)
+  //   options.body: 'female' or 'male'
+  //   options.reported: { head: { short: 'Headache' } } – areas with a symptom already reported
+  //   options.selected: an area key or null (report mode)
+  //   options.onSelect(key): called when the astronaut taps an area in report mode
+  //   Returns { update(changes), setSelected(key), dispose() }
   // =====================================================================================
-  const AREA_NAMES = { head: 'Head', eyes: 'Eyes', heart: 'Heart', lungs: 'Lungs', gut: 'Gut', muscles: 'Muscles and bones' };
-  const LABEL_SIDE = { head: 'L', lungs: 'L', gut: 'L', eyes: 'R', heart: 'R', muscles: 'R' }; // same sides as the 2D figure
+  const BODY_AREAS = { head: 'Head', eyes: 'Eyes', neck: 'Neck', chest: 'Chest', arms: 'Arms', back: 'Back', stomach: 'Stomach', legs: 'Legs' };
+  const KEYS = Object.keys(BODY_AREAS);
+  const LABEL_SIDE = { head: 'L', neck: 'L', arms: 'L', stomach: 'L', eyes: 'R', chest: 'R', back: 'R', legs: 'R' };
+  const IDLE_MS = 6000; // view mode: turn slowly on its own after this long without a touch
 
-  // Where each area sits, measured on the model (metres). H = height, e = the eye on the right of the screen.
-  // pin: x, y of the point (the front surface is found by aiming straight at the body).
-  // zones: [x, y, z, radius] spheres that colour the skin for that area. Muscles and bones is everything else.
-  const areaLayout = (H, e) => ({
-    head: { pin: [0, e[1] + 0.075], zones: [[0, e[1] + 0.035, e[2] - 0.085, 0.14]] },
-    eyes: { pin: [e[0], e[1]], zones: [[e[0], e[1], e[2], 0.03], [-e[0], e[1], e[2], 0.03]] },
-    heart: { pin: [0.05, 0.725 * H], zones: [[0.045, 0.725 * H, 0.05, 0.09]] },
-    lungs: { pin: [-0.085, 0.75 * H], zones: [[-0.085, 0.745 * H, 0, 0.15], [0.085, 0.745 * H, 0, 0.15]] },
-    gut: { pin: [0, 0.585 * H], zones: [[0, 0.59 * H, 0.01, 0.15]] },
-    muscles: { pin: [0.095, 0.36 * H], zones: [] },
+  // Where each label points to, measured on the model (metres). H = height, e = the eye on the right of the screen.
+  // [x, y, side]: side 1 = front of the body, -1 = back.
+  const labelTargets = (H, e) => ({
+    head: [0, e[1] + 0.075, 1], eyes: [e[0], e[1], 1], neck: [0, e[1] - 0.15, 1], chest: [0.07, 0.73 * H, 1],
+    arms: [-0.25, 0.68 * H, 1], back: [0, 0.72 * H, -1], stomach: [0, 0.58 * H, 1], legs: [0.1, 0.33 * H, 1],
   });
-  const BASE_WEIGHT = 0.15; // how strongly "muscles and bones" colours the skin outside the other zones
-  const HEAT_AT = [0, 0.4, 0.7, 1]; // where the four heat colours sit: blue, green, yellow, red
-  const IDLE_MS = 6000; // turn slowly on its own after this long without a touch
+
+  // Below the armpit, every horizontal slice of the body has a gap between the torso and each arm.
+  // Find that gap per height; above the armpit, keep the last one (that splits off the shoulder).
+  const armLimits = (pos, H) => {
+    const y0 = 0.3 * H, y1 = 0.86 * H, step = 0.02;
+    const limit = new Array(Math.ceil((y1 - y0) / step)).fill(Infinity);
+    const slices = limit.map(() => []);
+    for (let i = 0; i < pos.length; i += 3) {
+      const y = pos[i + 1];
+      if (y >= y0 && y < y1) slices[Math.floor((y - y0) / step)].push(Math.abs(pos[i]));
+    }
+    let found = false;
+    slices.forEach((xs, s) => {
+      xs.sort((a, b) => a - b);
+      let gap = null;
+      for (let i = 1; i < xs.length && gap === null; i++) if (xs[i - 1] > 0.1 && xs[i] - xs[i - 1] > 0.025) gap = (xs[i] + xs[i - 1]) / 2;
+      if (gap !== null) { limit[s] = gap; found = true; } else if (found) limit[s] = limit[s - 1];
+    });
+    return { y0, step, limit };
+  };
+
+  // Which area each point of the skin belongs to, from the body's proportions
+  const classify = (pos, H, e) => {
+    const arm = armLimits(pos, H);
+    const area = new Uint8Array(pos.length / 3);
+    for (let i = 0; i < area.length; i++) {
+      const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2], ax = Math.abs(x);
+      const armLimit = arm.limit[Math.floor((y - arm.y0) / arm.step)] ?? Infinity;
+      let key;
+      if ((ax - e[0]) ** 2 + (y - e[1]) ** 2 + (z - e[2]) ** 2 < 0.026 ** 2) key = 'eyes';
+      else if (y > e[1] - 0.105 - 0.3 * z) key = 'head'; // above the chin at the front, above the nape at the back
+      else if (ax > armLimit) key = 'arms';
+      else if (y < 0.475 * H) key = 'legs';
+      else if (y > e[1] - 0.19 && ax < 0.075) key = 'neck';
+      else if (z < 0) key = 'back';
+      else key = y > 0.66 * H ? 'chest' : 'stomach';
+      area[i] = KEYS.indexOf(key);
+    }
+    return area;
+  };
+
+  // Which points of the skin touch each other, to soften the edges of a highlighted area
+  const neighbours = (index, n) => {
+    const start = new Uint32Array(n + 1);
+    for (let t = 0; t < index.length; t++) start[index[t] + 1] += 2;
+    for (let i = 0; i < n; i++) start[i + 1] += start[i];
+    const fill = start.slice(0, n);
+    const list = new Uint32Array(start[n]);
+    for (let t = 0; t < index.length; t += 3) {
+      const [a, b, c] = [index[t], index[t + 1], index[t + 2]];
+      list[fill[a]++] = b; list[fill[a]++] = c; list[fill[b]++] = a; list[fill[b]++] = c; list[fill[c]++] = a; list[fill[c]++] = b;
+    }
+    return { start, list };
+  };
+  const soften = (values, adj, rounds = 4) => {
+    let src = values, dst = new Float32Array(values.length);
+    for (let r = 0; r < rounds; r++) {
+      for (let i = 0; i < src.length; i++) {
+        let sum = src[i], count = 1;
+        for (let j = adj.start[i]; j < adj.start[i + 1]; j++) { sum += src[adj.list[j]]; count++; }
+        dst[i] = sum / count;
+      }
+      [src, dst] = [dst, src];
+    }
+    for (let i = 0; i < src.length; i++) src[i] = Math.min(1, src[i] * 1.5);
+    return src;
+  };
 
   // ---- Body shapes: unpack the data block at the end of the file (base64 → gzip → numbers) ----
   const meshCache = {};
@@ -230,9 +304,26 @@
     geometry.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(m.verts * 3), 3));
     geometry.setAttribute('aPulse', new THREE.BufferAttribute(new Float32Array(m.verts), 1));
     geometry.computeBoundingSphere();
-    const size = [0, 1, 2].map((i) => m.max[i] - m.min[i]);
+    const H = m.max[1];
     const eye = m.eyes[0][0] > 0 ? m.eyes[0] : m.eyes[1];
-    meshCache[sex] = { geometry, H: m.max[1], W: size[0], D: size[2], eye };
+    const area = classify(pos, H, eye);
+    // Label anchor per area: the point of that area nearest the target, on the side that faces the target
+    const normal = geometry.attributes.normal.array;
+    const targets = labelTargets(H, eye);
+    const anchors = {};
+    for (const key of KEYS) {
+      const [tx, ty, side] = targets[key];
+      const id = KEYS.indexOf(key);
+      let best = -1, bestD = Infinity;
+      for (let i = 0; i < area.length; i++) {
+        if (area[i] !== id || normal[i * 3 + 2] * side < 0.3) continue;
+        const d = (pos[i * 3] - tx) ** 2 + (pos[i * 3 + 1] - ty) ** 2;
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      const n = new THREE.Vector3().fromArray(normal, best * 3);
+      anchors[key] = { pin: new THREE.Vector3().fromArray(pos, best * 3).addScaledVector(n, 0.004), normal: n };
+    }
+    meshCache[sex] = { geometry, H, W: m.max[0] - m.min[0], D: m.max[2] - m.min[2], area, anchors, adj: neighbours(index, m.verts) };
     return meshCache[sex];
   };
 
@@ -243,41 +334,28 @@
     .b3d > canvas.over-body { cursor: pointer; }
     .b3d-ui { position: absolute; inset: 0; pointer-events: none; }
     .b3d-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-    .b3d-lines line { stroke: var(--text-3, #6F7D98); stroke-width: 1; opacity: .5; transition: opacity .2s; }
-    .b3d-lines line.red { stroke: var(--alert, #FF6B7D); opacity: .75; }
-    .b3d-lines line.behind { opacity: .14; }
-    .b3d-lines line.hot { opacity: 1; }
-    .b3d-dot { position: absolute; left: 0; top: 0; width: 40px; height: 40px; margin: -20px 0 0 -20px; padding: 0; border: 0; background: none;
-      display: grid; place-items: center; cursor: pointer; pointer-events: auto; transition: opacity .2s; }
-    .b3d-dot::before { content: ''; position: absolute; left: 7px; top: 7px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent, #5AB0FF); opacity: .25; }
-    .b3d-dot i { position: relative; width: 11px; height: 11px; border-radius: 50%; background: var(--accent, #5AB0FF);
-      box-shadow: 0 0 0 2.5px var(--surface, #0E1527), 0 0 12px var(--accent, #5AB0FF); transition: transform .15s; }
-    .b3d-dot.red::before { background: var(--alert, #FF6B7D); opacity: .5; animation: b3d-pulse 2.4s ease-out infinite; }
-    .b3d-dot.red i { background: var(--alert, #FF6B7D); box-shadow: 0 0 0 2.5px var(--surface, #0E1527), 0 0 14px var(--alert, #FF6B7D); }
-    .b3d-dot.behind { opacity: .3; }
-    .b3d-dot.hot i { transform: scale(1.4); }
-    .b3d-label { position: absolute; top: 0; padding: 5px 9px; border: 0; border-radius: 10px; background: none; color: var(--text, #EAF0FA);
-      font: inherit; text-align: left; cursor: pointer; pointer-events: auto; transition: background .15s, opacity .2s; white-space: nowrap; }
+    .b3d-lines line { stroke: var(--alert, #FF6B7D); stroke-width: 1; opacity: .7; transition: opacity .2s; }
+    .b3d-lines circle { fill: var(--alert, #FF6B7D); transition: opacity .2s; }
+    .b3d-lines .sel { stroke: var(--b3d-sel, #5AB0FF); opacity: 1; }
+    .b3d-lines circle.sel { fill: var(--b3d-sel, #5AB0FF); stroke: none; }
+    .b3d-lines .behind { opacity: .2; }
+    .b3d-label { position: absolute; top: 0; padding: 4px 10px; border-radius: 9px; white-space: nowrap; transition: opacity .2s;
+      font: 600 12.5px/1.35 var(--font-ui, system-ui, sans-serif); color: var(--text, #EAF0FA);
+      background: color-mix(in srgb, var(--surface, #0E1527) 80%, transparent); border: 1px solid var(--border-strong, rgba(160, 185, 230, .22)); }
     .b3d-label.L { left: 6px; }
-    .b3d-label.R { right: 6px; text-align: right; }
-    .b3d-label b { display: block; font: 600 13.5px/1.25 var(--font-ui, system-ui, sans-serif); }
-    .b3d-label span { display: block; font: 600 12px/1.3 var(--font-ui, system-ui, sans-serif); color: var(--accent, #5AB0FF); }
-    .b3d-label.red span { color: var(--alert, #FF6B7D); }
+    .b3d-label.R { right: 6px; }
+    .b3d-label span { color: var(--alert, #FF6B7D); }
+    .b3d-label.sel { border-color: var(--b3d-sel, #5AB0FF); box-shadow: 0 0 0 1px var(--b3d-sel, #5AB0FF) inset; }
     .b3d-label.behind { opacity: .55; }
-    .b3d-label.hot, .b3d-label:focus-visible { background: var(--surface-3, rgba(127, 127, 127, .15)); outline: none; opacity: 1; }
-    .b3d-dot:focus-visible { outline: 2px solid var(--accent, #5AB0FF); outline-offset: -6px; border-radius: 50%; }
     .b3d-views { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
     .b3d-views button { font: 600 13px var(--font-ui, system-ui, sans-serif); min-height: 36px; padding: 0 16px; border-radius: 12px; cursor: pointer;
       color: var(--text-2, #A7B4CB); background: var(--surface, #0E1527); border: 1px solid var(--border-strong, rgba(160, 185, 230, .22)); }
     .b3d-views button[aria-pressed="true"] { color: var(--text, #EAF0FA); border-color: var(--accent, #5AB0FF); box-shadow: 0 0 0 1px var(--accent, #5AB0FF) inset; }
     .b3d-legend { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
       font-size: 12.5px; color: var(--text-2, #A7B4CB); white-space: nowrap; }
-    .b3d-legend .bar { width: 96px; height: 7px; border-radius: 4px; }
-    .b3d-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .b3d-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
     .b3d-msg { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px; font-size: 13px; color: var(--text-3, #6F7D98); }
     .b3d-msg[hidden] { display: none; }
-    @keyframes b3d-pulse { 0% { transform: scale(.6); opacity: .55; } 100% { transform: scale(1.9); opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { .b3d-dot.red::before { animation: none; } }
   `;
 
   const VERTEX = /* glsl */ `
@@ -293,7 +371,7 @@
     }`;
   const FRAGMENT = /* glsl */ `
     uniform vec3 uRim; uniform vec3 uAlert; uniform float uRimAmt; uniform float uSpec;
-    uniform float uTime; uniform float uPulse; uniform float uScanY; uniform vec3 uHotPos; uniform float uHotR; uniform float uHot;
+    uniform float uTime; uniform float uPulse; uniform float uScanY;
     varying vec3 vN; varying vec3 vV; varying vec3 vCol; varying float vPulse; varying vec3 vPos;
     void main() {
       vec3 n = normalize(vN); vec3 v = normalize(vV);
@@ -303,9 +381,8 @@
       c += vCol * 0.14 * clamp(dot(n, normalize(vec3(0.7, -0.1, 0.4))), 0.0, 1.0);   // fill from the right
       c += uSpec * pow(max(dot(n, normalize(L + v)), 0.0), 28.0);        // soft sheen
       c += uRim * pow(1.0 - max(dot(n, v), 0.0), 3.0) * uRimAmt;          // hologram edge glow
-      c = mix(c, uAlert * 1.15, vPulse * uPulse * (0.5 + 0.5 * sin(uTime * 2.6)) * 0.28); // red areas breathe
+      c = mix(c, uAlert * 1.15, vPulse * uPulse * (0.5 + 0.5 * sin(uTime * 2.6)) * 0.25); // red areas breathe
       c += uRim * 0.2 * exp(-pow((vPos.y - uScanY) / 0.025, 2.0));      // slow scan line
-      c += uRim * uHot * 0.3 * (1.0 - smoothstep(uHotR * 0.5, uHotR, distance(vPos, uHotPos))); // highlighted area
       gl_FragColor = vec4(c, 1.0);
     }`;
 
@@ -318,17 +395,16 @@
     return s.startsWith('color(') ? n.slice(0, 3) : n.slice(0, 3).map((x) => x / 255);
   };
   const mix = (a, b, t) => [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * t);
-  const toCss = (c) => `rgb(${c.map((x) => Math.round(x * 255)).join(' ')})`;
 
-  const mountBody3D = (container, person, onPointClick, options = {}) => {
+  const mountBody3D = (container, options = {}) => {
     if (!document.getElementById('b3d-style')) {
       const style = document.createElement('style');
       style.id = 'b3d-style';
       style.textContent = STYLE;
       document.head.append(style);
     }
-    const dataEl = options.dataEl ?? document.getElementById('body3d-meshes');
-    let mode = options.mode === 'status' ? 'status' : 'heat';
+    let opts = { mode: 'view', body: 'female', reported: {}, selected: null, ...options };
+    const dataEl = opts.dataEl ?? document.getElementById('body3d-meshes');
     const reduceQuery = matchMedia('(prefers-reduced-motion: reduce)');
     let reduced = reduceQuery.matches;
     let disposed = false;
@@ -358,7 +434,7 @@
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     } catch (err) {
       msg.textContent = 'The 3D body needs WebGL, which this browser has turned off.';
-      return { update: () => {}, setMode: () => {}, dispose: () => { container.innerHTML = ''; } };
+      return { update: () => {}, setSelected: () => {}, dispose: () => { container.innerHTML = ''; } };
     }
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
@@ -375,7 +451,6 @@
     const uniforms = {
       uRim: { value: new THREE.Vector3() }, uAlert: { value: new THREE.Vector3() }, uRimAmt: { value: 0.6 }, uSpec: { value: 0.1 },
       uTime: { value: 0 }, uPulse: { value: 1 }, uScanY: { value: -10 },
-      uHotPos: { value: new THREE.Vector3() }, uHotR: { value: 0.1 }, uHot: { value: 0 },
     };
     const material = new THREE.ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT });
 
@@ -386,118 +461,102 @@
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.372, 96), ringMat);
     for (const m of [floor, ring]) { m.rotation.x = -Math.PI / 2; m.position.y = 0.002; scene.add(m); }
 
-    // ---- The six points: a dot on the body, a label at the side, and a line between them ----
-    const keys = Object.keys(AREA_NAMES);
+    // ---- Labels: one per area, shown only for reported (red) or selected (blue) areas ----
     const svgNS = 'http://www.w3.org/2000/svg';
-    const pts = {};
-    let uiHot = null;
-    let meshHot = null;
-    for (const key of keys) {
-      const dot = document.createElement('button');
-      dot.className = 'b3d-dot';
-      dot.innerHTML = '<i></i>';
-      const label = document.createElement('button');
+    const tags = {};
+    for (const key of KEYS) {
+      const label = document.createElement('div');
       label.className = `b3d-label ${LABEL_SIDE[key]}`;
-      label.innerHTML = `<b>${AREA_NAMES[key]}</b><span></span>`;
       const line = document.createElementNS(svgNS, 'line');
-      linesSvg.append(line);
-      for (const b of [dot, label]) {
-        b.type = 'button';
-        b.addEventListener('click', () => select(key));
-        b.addEventListener('pointerenter', () => { uiHot = key; });
-        b.addEventListener('pointerleave', () => { if (uiHot === key) uiHot = null; });
-        b.addEventListener('focus', () => { uiHot = key; });
-        b.addEventListener('blur', () => { if (uiHot === key) uiHot = null; });
-        ui.append(b);
-      }
-      pts[key] = { dot, label, line, pin: new THREE.Vector3(), normal: new THREE.Vector3(0, 0, 1), w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false };
+      const dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('r', '3');
+      linesSvg.append(line, dot);
+      ui.append(label);
+      tags[key] = { label, line, dot, on: false, w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false };
     }
 
-    let body = null; // { mesh data } of the body on screen
+    let body = null; // the body on screen: geometry, areas and label anchors
     let mesh = null;
-    let zones = []; // flat list: { c: Vector3, r, key }
-    let hotZone = {};
     let theme = null;
+    let hover = null;
     const size = { w: 1, h: 1 };
     let fitDist = 0;
     const defaultTarget = new THREE.Vector3();
 
-    const select = (key) => {
-      uiHot = key;
-      onPointClick?.(key);
-    };
-
     const measureLabels = () => {
-      for (const key of keys) { pts[key].w = pts[key].label.offsetWidth; pts[key].h = pts[key].label.offsetHeight; }
+      for (const key of KEYS) if (tags[key].on) { tags[key].w = tags[key].label.offsetWidth; tags[key].h = tags[key].label.offsetHeight; }
     };
 
     const updateLabels = () => {
-      for (const key of keys) {
-        const a = person.alerts?.[key];
-        const { dot, label, line } = pts[key];
-        for (const el of [dot, label, line]) el.classList.toggle('red', Boolean(a));
-        label.querySelector('span').textContent = a ? a.short : 'Fine';
-        const text = `${AREA_NAMES[key]}: ${a ? a.short : 'fine'}`;
-        dot.setAttribute('aria-label', text);
-        label.setAttribute('aria-label', text);
+      const report = opts.mode === 'report';
+      for (const key of KEYS) {
+        const t = tags[key];
+        const r = opts.reported?.[key];
+        const sel = report && opts.selected === key;
+        t.on = Boolean(r || sel);
+        t.label.innerHTML = r ? `${BODY_AREAS[key]}<span> · ${r.short}</span>` : BODY_AREAS[key];
+        for (const el of [t.label, t.line, t.dot]) {
+          el.style.display = t.on ? '' : 'none';
+          el.classList.toggle('sel', sel);
+        }
       }
       measureLabels();
+      legend.innerHTML = report
+        ? `<span><i style="background: var(--b3d-sel, #5AB0FF)"></i>Selected</span><span><i style="background: var(--alert, #FF6B7D)"></i>Already reported</span>`
+        : `<span><i style="background: var(--alert, #FF6B7D)"></i>Reported symptom</span>`;
     };
 
-    const heatValue = (key) => person.heat?.[key] ?? (person.alerts?.[key] ? 0.9 : 0.15);
-    const ramp = (h) => {
-      const x = Math.min(1, Math.max(0, h));
-      let i = 0;
-      while (i < HEAT_AT.length - 2 && x > HEAT_AT[i + 1]) i++;
-      return mix(theme.heat[i], theme.heat[i + 1], (x - HEAT_AT[i]) / (HEAT_AT[i + 1] - HEAT_AT[i]));
-    };
-
-    // Colour every point of the skin: blend the area values by distance (a smooth heat map)
+    // Colour the skin: calm blue, soft red where reported, blue where selected (report mode)
     const recolor = () => {
       if (!body || !theme) return;
-      const pos = body.geometry.attributes.position.array;
-      const col = body.geometry.attributes.aColor.array;
-      const pulse = body.geometry.attributes.aPulse.array;
-      const list = zones.map((z) => ({ x: z.c.x, y: z.c.y, z: z.c.z, r2: z.r * z.r, v: heatValue(z.key), red: Boolean(person.alerts?.[z.key]) }));
-      const vBase = heatValue('muscles');
-      const redBase = Boolean(person.alerts?.muscles);
-      const baseTop = mix(theme.figTop, theme.accent, theme.dark ? 0.32 : 0.12);
-      const baseBottom = mix(theme.figBottom, theme.accent, theme.dark ? 0.18 : 0.06);
-      for (let i = 0, n = pos.length / 3; i < n; i++) {
-        const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
-        let num = BASE_WEIGHT * vBase, den = BASE_WEIGHT, glow = 0;
-        for (const k of list) {
-          const q = ((x - k.x) ** 2 + (y - k.y) ** 2 + (z - k.z) ** 2) / k.r2;
-          const w = Math.exp(-q * q);
-          num += w * k.v; den += w;
-          if (k.red && w > glow) glow = w;
-        }
-        if (redBase) glow = Math.max(glow, BASE_WEIGHT / den);
-        const c = mode === 'heat'
-          ? ramp(num / den)
-          : mix(mix(baseBottom, baseTop, Math.min(1, y / body.H)), theme.alert, glow * 0.85);
+      const { geometry, area, adj, H } = body;
+      const n = area.length;
+      const report = opts.mode === 'report';
+      const pick = (want) => {
+        if (!want.some(Boolean)) return null;
+        const v = new Float32Array(n);
+        for (let i = 0; i < n; i++) v[i] = want[area[i]] ? 1 : 0;
+        return soften(v, adj);
+      };
+      const red = pick(KEYS.map((k) => Boolean(opts.reported?.[k])));
+      const sel = report ? pick(KEYS.map((k) => k === opts.selected)) : null;
+      const hov = report && hover !== opts.selected ? pick(KEYS.map((k) => k === hover)) : null;
+      const pos = geometry.attributes.position.array;
+      const col = geometry.attributes.aColor.array;
+      const pulse = geometry.attributes.aPulse.array;
+      const top = mix(theme.figTop, theme.accent, theme.dark ? 0.32 : 0.12);
+      const bottom = mix(theme.figBottom, theme.accent, theme.dark ? 0.18 : 0.06);
+      for (let i = 0; i < n; i++) {
+        let c = mix(bottom, top, Math.min(1, pos[i * 3 + 1] / H));
+        if (hov) c = mix(c, theme.accent, hov[i] * 0.35);
+        if (red) c = mix(c, theme.alert, red[i] * 0.8);
+        if (sel) c = mix(c, theme.sel, sel[i] * 0.9);
         col.set(c, i * 3);
-        pulse[i] = glow;
+        pulse[i] = (red ? red[i] : 0) * (sel ? 1 - sel[i] : 1);
       }
-      body.geometry.attributes.aColor.needsUpdate = true;
-      body.geometry.attributes.aPulse.needsUpdate = true;
-      legend.innerHTML = mode === 'heat'
-        ? `<span>As usual</span><i class="bar" style="background: linear-gradient(90deg, ${theme.heat.map((c, i) => `${toCss(c)} ${HEAT_AT[i] * 100}%`).join(', ')})"></i><span>Look at this</span>`
-        : `<span><i class="dot" style="background: var(--accent, #5AB0FF)"></i>Fine</span><span><i class="dot" style="background: var(--alert, #FF6B7D)"></i>Look at this</span>`;
+      geometry.attributes.aColor.needsUpdate = true;
+      geometry.attributes.aPulse.needsUpdate = true;
+    };
+
+    const refresh = () => {
+      if (!BODY_AREAS[opts.selected]) opts.selected = null;
+      if (opts.mode !== 'report') { hover = null; canvas.classList.remove('over-body'); }
+      updateLabels();
+      recolor();
     };
 
     const readTheme = () => {
       const c = readColor;
-      const alert = c('--alert', '#FF6B7D');
       const surface = c('--surface', '#0E1527');
       theme = {
-        accent: c('--accent', '#5AB0FF'), accent2: c('--accent-2', '#62E3EE'), alert, surface,
+        accent: c('--accent', '#5AB0FF'), accent2: c('--accent-2', '#62E3EE'), alert: c('--alert', '#FF6B7D'),
         figTop: c('--fig-top', '#1A3760'), figBottom: c('--fig-bottom', '#0F1C34'),
-        heat: [c('--heat-0', '#4C7FC9'), c('--heat-1', '#4AA58C'), c('--heat-2', '#CFA54A'), c('--heat-3', toCss(alert))],
         dark: surface[0] * 0.3 + surface[1] * 0.6 + surface[2] * 0.1 < 0.5,
       };
+      theme.sel = theme.dark ? mix(theme.accent2, [1, 1, 1], 0.2) : theme.accent; // selected area: stands out from the blue body
+      container.style.setProperty('--b3d-sel', `rgb(${theme.sel.map((x) => Math.round(x * 255)).join(' ')})`);
       uniforms.uRim.value.fromArray(theme.dark ? theme.accent2 : theme.accent);
-      uniforms.uAlert.value.fromArray(alert);
+      uniforms.uAlert.value.fromArray(theme.alert);
       uniforms.uRimAmt.value = theme.dark ? 0.55 : 0.3;
       uniforms.uSpec.value = theme.dark ? 0.06 : 0.1;
       floorMat.color.setRGB(...theme.accent, THREE.LinearSRGBColorSpace);
@@ -535,9 +594,8 @@
       controls.update();
     };
 
-    const raycaster = new THREE.Raycaster();
     const showBody = async () => {
-      const sex = person.body === 'male' ? 'male' : 'female';
+      const sex = opts.body === 'male' ? 'male' : 'female';
       let data;
       try {
         data = await loadBodyMesh(sex, dataEl);
@@ -546,67 +604,51 @@
         console.error(err);
         return;
       }
-      if (disposed || (person.body === 'male' ? 'male' : 'female') !== sex) return;
+      if (disposed || (opts.body === 'male' ? 'male' : 'female') !== sex) return;
       body = data;
       if (!mesh) { mesh = new THREE.Mesh(body.geometry, material); scene.add(mesh); } else mesh.geometry = body.geometry;
-      const layout = areaLayout(body.H, body.eye);
-      zones = [];
-      hotZone = {};
-      for (const key of keys) {
-        const [x, y] = layout[key].pin;
-        raycaster.set(new THREE.Vector3(x, y, 2), new THREE.Vector3(0, 0, -1));
-        const hit = raycaster.intersectObject(mesh, false)[0];
-        const p = pts[key];
-        if (hit) { p.normal.copy(hit.face.normal); p.pin.copy(hit.point).addScaledVector(p.normal, 0.004); } else p.pin.set(x, y, 0.1);
-        for (const [zx, zy, zz, r] of layout[key].zones) zones.push({ c: new THREE.Vector3(zx, zy, zz), r, key });
-        const z0 = layout[key].zones[0];
-        hotZone[key] = key === 'eyes' ? { c: new THREE.Vector3(0, body.eye[1], body.eye[2]), r: 0.07 }
-          : z0 ? { c: new THREE.Vector3(z0[0], z0[1], z0[2]), r: z0[3] } : { c: p.pin.clone(), r: 0.2 };
-      }
       msg.hidden = true;
       fit();
       recolor();
     };
 
-    // Which area a spot on the skin belongs to (for taps and mouse hover on the body itself)
-    const areaAt = (p) => {
-      let best = 'muscles', bestW = 0.35;
-      for (const z of zones) {
-        const q = p.distanceToSquared(z.c) / (z.r * z.r);
-        const w = Math.exp(-q * q);
-        if (w > bestW) { bestW = w; best = z.key; }
-      }
-      return best;
-    };
-    const pick = (clientX, clientY) => {
+    // Which area is under the finger or mouse (report mode only)
+    const raycaster = new THREE.Raycaster();
+    const areaUnder = (clientX, clientY) => {
       if (!mesh) return null;
       const r = canvas.getBoundingClientRect();
       raycaster.setFromCamera(new THREE.Vector2(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1), camera);
       const hit = raycaster.intersectObject(mesh, false)[0];
-      return hit ? areaAt(hit.point) : null;
+      return hit ? KEYS[body.area[hit.face.a]] : null;
     };
 
-    // ---- Input: drag turns (OrbitControls), a short tap picks, the mouse hovers ----
+    // ---- Input: drag turns (OrbitControls), a short tap selects, the mouse hovers ----
     let lastInput = performance.now() - IDLE_MS + 2500; // start turning 2.5 s after opening
     let dragging = false;
     let down = null;
     let hoverAt = null;
+    let turn = null;
     controls.addEventListener('start', () => { dragging = true; turn = null; lastInput = performance.now(); });
     controls.addEventListener('end', () => { dragging = false; lastInput = performance.now(); });
     canvas.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
     canvas.addEventListener('pointerup', (e) => {
-      if (!down) return;
+      if (!down || opts.mode !== 'report') return;
       const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8 && performance.now() - down.t < 600;
       down = null;
-      if (!tap) return;
-      const key = pick(e.clientX, e.clientY);
-      if (key) { meshHot = key; select(key); }
+      const key = tap ? areaUnder(e.clientX, e.clientY) : null;
+      if (!key) return;
+      opts.selected = key;
+      refresh();
+      opts.onSelect?.(key);
     });
-    canvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && !e.buttons) hoverAt = [e.clientX, e.clientY]; });
-    canvas.addEventListener('pointerleave', () => { hoverAt = null; meshHot = null; canvas.classList.remove('over-body'); });
+    canvas.addEventListener('pointermove', (e) => { if (opts.mode === 'report' && e.pointerType === 'mouse' && !e.buttons) hoverAt = [e.clientX, e.clientY]; });
+    canvas.addEventListener('pointerleave', () => {
+      hoverAt = null;
+      canvas.classList.remove('over-body');
+      if (hover) { hover = null; recolor(); }
+    });
 
     // Front / Back: turn smoothly to that side
-    let turn = null;
     const off = new THREE.Vector3();
     const sph = new THREE.Spherical();
     const setAzimuth = (theta) => {
@@ -625,40 +667,40 @@
       });
     }
 
-    // ---- Every frame: turn, draw, then place the dots, labels and lines over the drawing ----
+    // ---- Every frame: turn, draw, then place the labels and lines over the drawing ----
     const timer = new THREE.Timer();
     const v = new THREE.Vector3();
     const toCam = new THREE.Vector3();
-    const GAP = 40;
-    const placeOverlay = () => {
+    const GAP = 32;
+    const placeLabels = () => {
       const cols = { L: [], R: [] };
-      for (const key of keys) {
-        const p = pts[key];
-        v.copy(p.pin).project(camera);
-        p.x = ((v.x + 1) / 2) * size.w;
-        p.y = ((1 - v.y) / 2) * size.h;
-        p.behind = p.normal.dot(toCam.copy(camera.position).sub(p.pin).normalize()) < 0.05;
-        cols[LABEL_SIDE[key]].push(p);
+      for (const key of KEYS) {
+        const t = tags[key];
+        if (!t.on) continue;
+        const a = body.anchors[key];
+        v.copy(a.pin).project(camera);
+        t.x = ((v.x + 1) / 2) * size.w;
+        t.y = ((1 - v.y) / 2) * size.h;
+        t.behind = a.normal.dot(toCam.copy(camera.position).sub(a.pin).normalize()) < 0.05;
+        cols[LABEL_SIDE[key]].push(t);
       }
       for (const col of Object.values(cols)) {
         col.sort((a, b) => a.y - b.y);
         let prev = -Infinity;
-        for (const p of col) { p.ly = Math.max(p.y, prev + GAP, 50 + p.h / 2); prev = p.ly; }
+        for (const t of col) { t.ly = Math.max(t.y, prev + GAP, 50 + t.h / 2); prev = t.ly; }
         let next = Infinity;
-        for (const p of [...col].reverse()) { p.ly = Math.min(p.ly, next - GAP, size.h - 34 - p.h / 2); next = p.ly; }
-      }
-      const hot = uiHot ?? meshHot;
-      for (const key of keys) {
-        const p = pts[key];
-        const left = LABEL_SIDE[key] === 'L';
-        p.dot.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`;
-        p.label.style.transform = `translateY(${(p.ly - p.h / 2).toFixed(1)}px)`;
-        const x1 = left ? 6 + p.w + 2 : size.w - 6 - p.w - 2;
-        p.line.setAttribute('x1', x1.toFixed(1));
-        p.line.setAttribute('y1', p.ly.toFixed(1));
-        p.line.setAttribute('x2', p.x.toFixed(1));
-        p.line.setAttribute('y2', p.y.toFixed(1));
-        for (const el of [p.dot, p.label, p.line]) { el.classList.toggle('behind', p.behind && hot !== key); el.classList.toggle('hot', hot === key); }
+        for (const t of [...col].reverse()) { t.ly = Math.min(t.ly, next - GAP, size.h - 34 - t.h / 2); next = t.ly; }
+        for (const t of col) {
+          const left = t.label.classList.contains('L');
+          t.label.style.transform = `translateY(${(t.ly - t.h / 2).toFixed(1)}px)`;
+          t.line.setAttribute('x1', (left ? 6 + t.w : size.w - 6 - t.w).toFixed(1));
+          t.line.setAttribute('y1', t.ly.toFixed(1));
+          t.line.setAttribute('x2', t.x.toFixed(1));
+          t.line.setAttribute('y2', t.y.toFixed(1));
+          t.dot.setAttribute('cx', t.x.toFixed(1));
+          t.dot.setAttribute('cy', t.y.toFixed(1));
+          for (const el of [t.label, t.line, t.dot]) el.classList.toggle('behind', t.behind);
+        }
       }
     };
 
@@ -668,12 +710,12 @@
       const elapsed = timer.getElapsed();
       const now = performance.now();
       if (hoverAt && !dragging) {
-        meshHot = pick(...hoverAt);
-        canvas.classList.toggle('over-body', Boolean(meshHot));
+        const key = areaUnder(...hoverAt);
+        canvas.classList.toggle('over-body', Boolean(key));
+        if (key !== hover) { hover = key; recolor(); }
         hoverAt = null;
       }
-      const hot = uiHot ?? meshHot;
-      controls.autoRotate = !reduced && !dragging && !turn && !hot && now - lastInput > IDLE_MS;
+      controls.autoRotate = opts.mode === 'view' && !reduced && !dragging && !turn && !hover && now - lastInput > IDLE_MS;
       controls.enableDamping = !reduced;
       if (turn) {
         const k = Math.min(1, (now - turn.t0) / turn.dur);
@@ -688,11 +730,9 @@
       uniforms.uTime.value = elapsed;
       uniforms.uPulse.value = reduced ? 0 : 1;
       uniforms.uScanY.value = reduced || !body ? -10 : body.H + 0.3 - ((elapsed % 7) / 7) * (body.H + 0.6);
-      if (hot && hotZone[hot]) { uniforms.uHotPos.value.copy(hotZone[hot].c); uniforms.uHotR.value = hotZone[hot].r; }
-      uniforms.uHot.value += ((hot ? 1 : 0) - uniforms.uHot.value) * Math.min(1, dt * 10);
 
       renderer.render(scene, camera);
-      if (body) placeOverlay();
+      if (body) placeLabels();
       const az = controls.getAzimuthalAngle();
       viewBtns[0].setAttribute('aria-pressed', String(Math.cos(az) > 0.7));
       viewBtns[1].setAttribute('aria-pressed', String(Math.cos(az) < -0.7));
@@ -707,19 +747,19 @@
     sizeWatch.observe(container);
     document.fonts?.ready.then(() => { if (!disposed) measureLabels(); });
 
-    updateLabels();
+    refresh();
     readTheme();
     fit();
     showBody();
 
     return {
-      update: (next) => {
-        const bodyChanged = next.body !== person.body;
-        person = next;
-        updateLabels();
-        if (bodyChanged) showBody(); else recolor();
+      update: (changes) => {
+        const bodyChanged = 'body' in changes && changes.body !== opts.body;
+        opts = { ...opts, ...changes };
+        refresh();
+        if (bodyChanged) showBody();
       },
-      setMode: (next) => { mode = next === 'status' ? 'status' : 'heat'; recolor(); },
+      setSelected: (key) => { opts.selected = key; refresh(); },
       dispose: () => {
         disposed = true;
         renderer.setAnimationLoop(null);
@@ -736,47 +776,50 @@
     };
   };
   window.mountBody3D = mountBody3D;
+  window.BODY_AREAS = BODY_AREAS;
 
   // =====================================================================================
   // Demo page: fake data and the buttons at the top
   // =====================================================================================
-  // heat: 0 = as usual, 1 = look at this, per area (placeholder numbers, still to agree with the team)
   const crew = [
-    {
-      id: 1, name: 'Astronaut A', body: 'female',
-      alerts: { head: { short: 'Headache' } }, // red points; every other point is blue
-      heat: { head: 0.92, eyes: 0.55, heart: 0.3, lungs: 0.45, gut: 0.2, muscles: 0.15 },
-    },
-    {
-      id: 2, name: 'Astronaut B', body: 'male',
-      alerts: {},
-      heat: { head: 0.08, eyes: 0.1, heart: 0.3, lungs: 0.15, gut: 0.08, muscles: 0.12 },
-    },
+    { id: 1, name: 'Astronaut A', body: 'female', reported: { head: { short: 'Headache' } } },
+    { id: 2, name: 'Astronaut B', body: 'male', reported: {} },
   ];
 
   const params = new URLSearchParams(location.search);
   const state = {
     crew: params.get('crew') === '2' ? '2' : '1',
     body: params.get('body'),
-    mode: params.get('mode') === 'status' ? 'status' : 'heat',
+    mode: params.get('mode') === 'report' ? 'report' : 'view',
+    selected: null,
   };
-  const currentPerson = () => {
-    const p = crew.find((c) => String(c.id) === state.crew);
-    return { ...p, body: state.body === 'male' || state.body === 'female' ? state.body : p.body };
-  };
+  const person = () => crew.find((c) => String(c.id) === state.crew);
+  const bodyOf = () => (state.body === 'male' || state.body === 'female' ? state.body : person().body);
 
   const tapLog = document.getElementById('tap-log');
-  const body3d = mountBody3D(document.getElementById('body3d'), currentPerson(), (key) => {
-    tapLog.innerHTML = `Tapped <b>${AREA_NAMES[key]}</b>. The look page would open <b>#point:${key}</b>.`;
-  }, { mode: state.mode });
+  const chips = document.getElementById('chips');
+  chips.innerHTML = Object.entries(BODY_AREAS).map(([key, label]) => `<button type="button" data-key="${key}">${label}</button>`).join('');
+
+  const body3d = mountBody3D(document.getElementById('body3d'), {
+    mode: state.mode, body: bodyOf(), reported: person().reported, selected: null,
+    onSelect: (key) => {
+      state.selected = key;
+      tapLog.innerHTML = `onSelect('<b>${key}</b>'): the check-in would note <b>${BODY_AREAS[key]}</b>.`;
+      syncControls();
+    },
+  });
 
   const syncControls = () => {
-    const person = currentPerson();
-    const on = { crew: state.crew, body: person.body, mode: state.mode };
+    const on = { crew: state.crew, body: bodyOf(), mode: state.mode };
     for (const seg of document.querySelectorAll('.seg')) {
       for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.value === on[seg.dataset.group]));
     }
-    document.getElementById('who').textContent = person.name;
+    for (const b of chips.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.key === state.selected));
+    const report = state.mode === 'report';
+    document.getElementById('notes-view').hidden = report;
+    document.getElementById('notes-report').hidden = !report;
+    document.getElementById('hint').textContent = report ? 'Tap the body where it hurts · Drag to turn' : 'Drag to turn · Red shows a reported symptom';
+    document.getElementById('who').textContent = person().name;
     const dark = document.documentElement.dataset.theme !== 'light';
     const themeBtn = document.getElementById('theme-btn');
     themeBtn.textContent = dark ? '☀' : '☾';
@@ -790,13 +833,21 @@
       const b = e.target.closest('button');
       if (!b) return;
       const group = seg.dataset.group;
-      if (group === 'crew') { state.crew = b.dataset.value; state.body = null; }
+      if (group === 'crew') { state.crew = b.dataset.value; state.body = null; state.selected = null; }
       if (group === 'body') state.body = b.dataset.value;
-      if (group === 'mode') { state.mode = b.dataset.value; body3d.setMode(state.mode); }
-      if (group !== 'mode') body3d.update(currentPerson());
+      if (group === 'mode') state.mode = b.dataset.value;
+      body3d.update({ mode: state.mode, body: bodyOf(), reported: person().reported, selected: state.selected });
       syncControls();
     });
   }
+  chips.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    state.selected = b.dataset.key;
+    body3d.setSelected(state.selected);
+    tapLog.innerHTML = `Set from outside: <b>${BODY_AREAS[state.selected]}</b> (no onSelect call).`;
+    syncControls();
+  });
   document.getElementById('theme-btn').addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;

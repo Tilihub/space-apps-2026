@@ -44,8 +44,9 @@
   cases; new allergies, blocked items, emergency release, stock, workout records and radiation;
   wave 2 is the rest of the live demo. The demo cases now show every comparison in E's scene
 - Made a 3D body model ([body-3d/index.html](body-3d/index.html), branch `zt/body-3d`): realistic
-  female and male bodies (Blender Studio, CC0) you can turn and zoom, a heat map or calm status
-  colouring, the same six clickable points, night and day looks. Not in the look page yet
+  female and male bodies (Blender Studio, CC0) you can turn and zoom, night and day looks. View mode
+  (home) glows only reported areas; report mode (check-in) lets you tap one of eight areas (head, eyes,
+  neck, chest, arms, back, stomach, legs). Not in the look page yet
 
 ## Blocked / need from others
 
