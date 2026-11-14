@@ -10,6 +10,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; }
 main { max-width: 1140px; margin: auto; padding: 48px 26px 36px; }
 .page-head, .panel-head, figcaption { display: flex; justify-content: space-between; gap: 1rem; }
@@ -24,8 +25,8 @@ h2 { font-size: 1.3rem; letter-spacing: -.015em; }
   border: 1px solid var(--line); border-radius: 999px; padding: .48rem .8rem;
   color: var(--accent); font-size: .8rem;
 }
-.offline span { width: .45rem; height: .45rem; border-radius: 50%; background: var(--accent); }
-.controls { display: grid; grid-template-columns: 1.45fr 1fr 1fr; gap: 14px; margin: 25px 0 18px; }
+.offline::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; }
+.controls { display: grid; grid-template-columns: 1.6fr 1.1fr 1fr .8fr; gap: 14px; margin: 25px 0 18px; }
 label { display: grid; gap: .42rem; color: var(--muted); font-size: .82rem; min-width: 0; }
 select, button {
   border: 1px solid var(--line); background: var(--panel); color: inherit;
@@ -34,8 +35,44 @@ select, button {
 select { font-size: .92rem; width: 100%; }
 button { cursor: pointer; white-space: nowrap; font-size: .84rem; }
 button:hover { border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .panel { border: 1px solid var(--line); border-radius: 13px; padding: 21px; background: var(--panel); }
+.playback {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+  background: #0e181e; border: 1px solid var(--line); border-radius: 9px;
+  margin-bottom: 18px; padding: 10px 12px;
+}
+.playback-buttons { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.playback-buttons button { min-width: 62px; }
+.playback-buttons label { display: flex; align-items: center; }
+.scrub { flex: 1 1 230px; }
+.scrub > span { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 14px; }
+#seek { width: 100%; margin: 0; accent-color: var(--accent); }
+#replay-clock { color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+.cabin { margin-bottom: 18px; }
+.cabin .panel-head p { font-size: .85rem; }
+.cabin-metrics { display: grid; margin-top: 11px; gap: 9px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr)); }
+.cabin-metrics button {
+  display: grid; gap: 4px; justify-items: start; text-align: left;
+  padding: 10px 12px; border-left: 3px solid var(--state-color, var(--muted));
+  white-space: normal;
+}
+.cabin-metrics button[aria-pressed="true"] { background: #1a2931; }
+.cabin-metrics strong { font-size: 1.12rem; font-variant-numeric: tabular-nums; }
+.cabin-metrics small { color: var(--state-color, var(--muted)); font-size: .8rem; }
+[data-level="0"] { --state-color: #6edcc1; }
+[data-level="1"] { --state-color: #ffc573; }
+[data-level="2"] { --state-color: #ff9298; }
+.cabin details { color: var(--muted); font-size: .82rem; margin-top: 9px; }
+summary { cursor: pointer; width: fit-content; }
+.cabin details ul { padding-left: 19px; margin: .4rem 0; }
+.events { margin-top: 20px; }
+.events p { margin-top: .55rem; color: var(--muted); font-size: .86rem; }
+.events ol { margin: .55rem 0 0; padding: 0; list-style: none; }
+.events li { display: flex; gap: .25rem .8rem; flex-wrap: wrap; padding: .55rem 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
+.events li strong { color: var(--state-color, var(--muted)); }
+.events li span { color: var(--muted); }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin: 19px 0 8px; gap: 9px; }
 .stats div { min-width: 0; background: #0e181e; border-radius: 8px; padding: .65rem .75rem; }
 .stats span { display: block; margin-bottom: .24rem; color: var(--muted); font-size: .78rem; }
@@ -56,6 +93,7 @@ a { color: var(--accent); text-underline-offset: 3px; }
   main { padding: 25px 13px; }
   .controls { grid-template-columns: 1fr 1fr; gap: 9px; }
   .controls label:first-child { grid-column: 1 / -1; }
+  .playback { gap: 10px; }
   .panel { padding: 12px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .page-head { flex-wrap: wrap; }

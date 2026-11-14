@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 12:43
-- Working on: Environmental graphs and dataset handoff
+- Last updated: 2026-11-14 13:07
+- Working on: Environmental replay and incident snapshot handoff
 - Branch: potest/environmental-graphs
 
 ## Done
@@ -18,6 +18,7 @@
 - Created my status file and personal plan.
 - Built and tested the [offline environmental graphs](environmental-graphs/index.html) with ISS, Artemis, Curiosity, ExoMars, Perseverance, and InSight data.
 - Documented the archive sources, data transformations, and CO₂ chart handoff in the [graph README](environmental-graphs/README.md).
+- Added looping replay, synchronized cabin readings, demo alerts, event history, and incident snapshot export. Verified both high and low alert paths and offline replay in Chrome.
 
 ## Blocked / need from others
 
@@ -29,4 +30,4 @@
      what to do next, what to watch out for. -->
 
 - Open `people/potest/environmental-graphs/index.html` in a browser. Use the RR-9 cabin dataset first.
-- Pass the value, unit, UTC timestamp, and archive source into the incident summary. Keep the scenario clock and source timestamp visible.
+- Try **Alert exercise · Synthetic** for a quick demonstration of escalation and recovery. Use **Export snapshot** to hand cabin context to the team’s incident summary.

@@ -6,6 +6,7 @@
   <title>Mission Environment Monitor</title>
   <link rel="stylesheet" href="monitor.css">
   <script src="data/series.js" defer></script>
+  <script src="alerts.js" defer></script>
   <script src="monitor.js" defer></script>
 </head>
 <body>
@@ -13,16 +14,59 @@
     <header class="page-head">
       <div>
         <h1>Mission Environment</h1>
-        <p>Explore archived spacecraft and Mars surface measurements.</p>
+        <p>Replay spacecraft and Mars surface measurements.</p>
       </div>
-      <span class="offline"><span></span>Offline replay</span>
+      <span id="mode-label" class="offline">Historical replay</span>
     </header>
 
     <div class="controls" aria-label="Chart controls">
       <label>Dataset <select id="dataset"></select></label>
       <label>Measurement <select id="metric"></select></label>
-      <label>Time window <select id="window"></select></label>
+      <label>Chart window <select id="window"></select></label>
+      <label>View
+        <select id="view">
+          <option value="replay">Replay</option>
+          <option value="archive">Archive</option>
+        </select>
+      </label>
     </div>
+
+    <section id="playback" class="playback" aria-label="Replay controls">
+      <div class="playback-buttons">
+        <button id="play" type="button">Pause</button>
+        <button id="restart" type="button">Restart</button>
+        <label>Speed
+          <select id="speed">
+            <option value="1">1 reading/s</option>
+            <option value="4" selected>4 readings/s</option>
+            <option value="16">16 readings/s</option>
+            <option value="64">64 readings/s</option>
+            <option value="256">256 readings/s</option>
+          </select>
+        </label>
+      </div>
+      <label class="scrub">
+        <span>Replay position <span id="progress"></span></span>
+        <input id="seek" type="range" min="0" max="0" value="0" aria-label="Replay position">
+      </label>
+      <span id="replay-clock"></span>
+    </section>
+
+    <section id="cabin" class="cabin" aria-labelledby="cabin-heading" hidden>
+      <div class="panel-head">
+        <div>
+          <h2 id="cabin-heading">Cabin status</h2>
+          <p>Demo limits in source units. Two consecutive readings confirm each alert or recovery.</p>
+        </div>
+        <button id="snapshot" type="button">Export snapshot</button>
+      </div>
+      <div id="cabin-metrics" class="cabin-metrics"></div>
+      <details>
+        <summary>Alert thresholds</summary>
+        <ul id="thresholds"></ul>
+        <p>The NASA habitat CO₂ criterion uses a one-hour average of partial pressure. The ISS archive provides concentration in ppm. The demo evaluates each channel using its own illustrative limits.</p>
+      </details>
+    </section>
 
     <section class="panel" aria-labelledby="chart-title">
       <div class="panel-head">
@@ -33,7 +77,7 @@
         <button id="download" type="button">Export CSV</button>
       </div>
       <div class="stats" aria-label="Measurements in the selected window">
-        <div><span>Latest in window</span><strong id="latest">—</strong></div>
+        <div><span>Current reading</span><strong id="latest">—</strong></div>
         <div><span>Minimum</span><strong id="min">—</strong></div>
         <div><span>Maximum</span><strong id="max">—</strong></div>
         <div><span>Recorded samples</span><strong id="count">—</strong></div>
@@ -44,15 +88,22 @@
         </div>
         <figcaption>
           <output id="reading" for="dataset metric window" aria-live="polite"></output>
-          <span id="chart-help">Hover, tap, or use the arrow keys to inspect readings.</span>
+          <span id="chart-help">Pause to inspect readings with a pointer or the arrow keys.</span>
         </figcaption>
       </figure>
       <p id="notes" class="notes"></p>
     </section>
 
+    <section id="event-panel" class="events" aria-labelledby="event-heading" hidden>
+      <h2 id="event-heading">Replay events</h2>
+      <p id="events-empty">No alert transitions at this replay position.</p>
+      <ol id="events"></ol>
+    </section>
+
     <aside class="sources" aria-label="Data sources">
       <div><strong>Dataset</strong> <a id="source" target="_blank" rel="noopener noreferrer"></a></div>
       <div><strong>Why monitor the environment?</strong> <a href="https://www.nasa.gov/hrp/hazards/" target="_blank" rel="noopener noreferrer">NASA HRP · 5 Hazards of Human Spaceflight</a></div>
+      <div id="standard" hidden><strong>Flight reference</strong> <a href="https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2" target="_blank" rel="noopener noreferrer">NASA-STD-3001 Volume 2, Rev. F</a></div>
       <p>NASA identifies hostile and closed environments and space radiation as hazards for crews. An incident summary can include the cabin readings around a reported symptom for crew review.</p>
     </aside>
     <noscript>Enable JavaScript to view the offline graphs.</noscript>

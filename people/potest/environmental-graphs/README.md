@@ -2,13 +2,23 @@
 
 Open [index.html](index.html) in Chrome, Edge, or Firefox. The dashboard works directly from the filesystem. It loads the checked-in chart data and needs no server, external fonts, packages, or network connection.
 
-The default graph uses NASA’s ISS RR‑9 CO₂ channel and opens on its last 24 hours. Use the controls to switch datasets, select a measurement, expand the time window, or save the displayed readings as CSV. Hover, tap, or focus the chart and use the arrow keys to inspect a point. The date and unit appear beside the value.
+The dashboard automatically replays NASA’s ISS RR‑9 data from the first timestamp and loops after the last timestamp. The chart window controls how much history is visible. Pause, restart, change the playback speed, or scrub through the replay. The timestamp stays on the source clock. The replay advances by recorded timestamps, so long gaps pass quickly and appear as breaks in the chart. Switch to **Archive** for the static graph and CSV export. Pause the replay to inspect an individual point with the pointer or arrow keys.
+
+The ISS cabin cards show CO₂, temperature, and relative humidity at the same replay position. Warning and Danger are illustrative demo states. Two consecutive readings confirm a threshold crossing or recovery. The cards show when they are checking a potential escalation, and a gap clears the previous alert state. The event list shows the latest six transitions at the current replay position and starts over at each loop. Choose **Alert exercise · Synthetic** for a predictable high and low excursion, including recovery.
+
+| Cabin measurement | Warning | Danger |
+| --- | --- | --- |
+| CO₂ concentration | ≥ 3,500 ppm | ≥ 3,900 ppm |
+| Temperature | ≤ 19 °C or ≥ 27 °C | ≤ 16 °C or ≥ 30 °C |
+| Relative humidity | ≤ 30% or ≥ 70% | ≤ 20% or ≥ 85% |
+
+These limits demonstrate the app’s behavior. NASA-STD-3001 Rev. F, V2 6004, specifies a one-hour average CO₂ partial pressure of at most 3 mmHg for nominal habitat conditions. Computing it from concentration requires total cabin pressure. V2 6012 specifies a combined temperature and humidity operating envelope. The replay uses independent limits in the source units. [NASA-STD-3001 Volume 2 Rev. F](https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2)
 
 ## Data files
 
 `data/series.js` contains the processed series loaded by the dashboard. The original downloads are in `environmental-graphs/data/raw/` at the workspace root. The team repository copy includes the chart data. To regenerate it with Python 3.9 or later, run `python build_data.py --raw-dir <path-to-raw-downloads>` from this directory. The script uses the standard library.
 
-Each dataset has a stable `id`, source URL, time mode, and metrics. Each metric has an `id`, unit, aggregation interval in seconds, gap threshold, and `points` triples of `[time, value, sampleCount]`. A UTC time is expressed in Unix seconds. Perseverance time represents seconds within Sol 49 on the local mean solar time clock. InSight time is the sol number. For the team’s incident summary, use dataset `RR-9-telemetry` and metric `co2_iss`. Select the most recent point at or before the replay time, and retain the archive timestamp and source with the reading.
+Each dataset has a stable `id`, source URL, time mode, and metrics. Each metric has an `id`, unit, aggregation interval in seconds, gap threshold, and `points` triples of `[time, value, sampleCount]`. A UTC time is expressed in Unix seconds. Perseverance time represents seconds within Sol 49 on the local mean solar time clock. InSight time is the sol number. **Export snapshot** packages the selected cabin context for an incident. The JSON contains the dataset, source URL, historical or synthetic provenance, replay timestamp, and each channel’s value, unit, measurement timestamp, and alert state. Stale readings carry a null value and the last recorded timestamp.
 
 The window statistics describe the displayed series, with counts reporting original valid samples. The dashboard omits missing or invalid values and breaks the line across gaps. Each graph discloses aggregation when applied. NASA’s RR‑9 cabin archive timestamps are in 2018 and its radiation timestamps are in 2017. Both retain the published dates. Spacecraft exposures, Mars weather, and a simulated health incident each have their own clock. Use the CO₂ graph as context for a report of symptoms and crew follow-up.
 
@@ -32,4 +42,4 @@ Downloads were collected on November 14, 2026. Keep the source and applicable te
 
 The dashboard uses the challenge-listed NASA Human Research Program **5 Hazards of Human Spaceflight** to explain why the crew reviews closed-environment conditions along with symptoms. List that resource and every used dataset under the appropriate NASA data and references fields. [Challenge resources](https://hackathlone.com/challenges/health-monitoring-software) · [NASA HRP](https://www.nasa.gov/hrp/hazards/) · [NASA Space Apps organizer guidance](https://github.com/nasa/spaceapps/discussions/1827)
 
-Original dashboard code is provided under [Apache 2.0](LICENSE). Public mission data retains the terms of its publisher. The dashboard, data processing script, and documentation were generated with assistance from OpenAI Codex during the hackathon. The readings came from the cited archives. Include this AI usage in the submission disclosure. [2026 AI guidance](https://github.com/nasa/spaceapps/discussions/1849) · [Participant terms](https://www.spaceappschallenge.org/legal/)
+Original dashboard code is provided under [Apache 2.0](LICENSE). Public mission data retains the terms of its publisher. The dashboard, data processing script, documentation, and labeled synthetic exercise were generated with assistance from OpenAI Codex during the hackathon. Historical readings came from the cited archives. Include this AI usage in the submission disclosure. [2026 AI guidance](https://github.com/nasa/spaceapps/discussions/1849) · [Participant terms](https://www.spaceappschallenge.org/legal/)

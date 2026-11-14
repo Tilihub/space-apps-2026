@@ -16,6 +16,7 @@ even if they are free or open source.
 | NASA PDS, Curiosity RAD RDR | https://pds-ppi.igpp.ucla.edu/data/MSL-M-RAD-3-RDR-V1.0/DATA/CRUISE/ | Curiosity interplanetary cruise radiation dose rates for detectors B and E | potest |
 | NASA PDS, Perseverance MEDA | https://doi.org/10.17189/1522849 | Mars Sol 49 air temperature, pressure, wind, and thermal irradiance | potest |
 | NASA InSight Mars Weather Service | https://api.nasa.gov/assets/insight/InSight%20Weather%20API%20Documentation.pdf | Archived Mars surface pressure, temperature, and wind summaries | potest |
+| NASA-STD-3001 Volume 2 Rev. F | https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2 | Reference habitat CO₂ criterion and temperature–humidity operating envelope | potest |
 
 ## Space agency partner data and other references
 
