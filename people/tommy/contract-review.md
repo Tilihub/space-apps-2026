@@ -2,11 +2,19 @@
 
 Reviewed 2026-11-14 against `zt/app-contract` at `fb0c20f` and Tommy's latest answers. Tommy explicitly asked for review/approval, then chose **correction before approval** after the history-access conflict was explained. This file is Tommy's review/handoff, not a change to zt's protected contract or another member's implementation.
 
-## Review result
+## Follow-up review of 76b2e09
+
+zt updated #49 during this review. Re-read its changed contract/helper/event list and stage instructions; the updated `npm test` still passes **7/7**. The detailed-analysis privacy conflict is now corrected: crew use a separate `Today` response; daily comparisons/history/weekly are care-only, including after a check-in. Profile/allergy endpoints and normal allergy blocking are explicit, and the stage Mind history graph moved to the doctor view.
+
+Approval is still pending the two remaining medication-flow clarifications posted with ready-to-copy wording: resolve repeated QR/manual entry to the same existing course grant at later due times (no 15-minute lifetime), and explicitly permit per-item app confirmation for a simulated dispenser while preserving batch and prescribed/self-service quantity semantics. The existing /import already_done and mandatory-box-scan/collection-is-dose wording otherwise remains misleading.
+
+The updated contract chooses the #52 stage values as the proposed target and assigns workout pages/records to zt/Angelos in wave 2, with Petros supplying replay data. Points remain conditional/deferred. If this contract is approved, PET-1 #51 must be revised to those values and its expected outcomes updated together; the currently verified package still represents the earlier cases. Reports/transport remain only proposed for potest and need acceptance.
+
+## Initial review at fb0c20f
 
 The proposed architecture supplies useful common instructions: one onboard Node.js 24 server, JavaScript modules in owner folders, server-side permissions/storage, five canonical crew IDs, one mission clock, new synthetic 1–10 histories, explicit measurement units/nulls, routes and an example test context. These address earlier connection gaps.
 
-**Approval is pending corrections.** The health route table currently permits `crew` to read `/history` and `/weekly` (contract README lines 219 and 221). Tommy excluded detailed history/weekly analysis from astronaut views. Restrict those routes to relevant clinical roles and enforce it on the server; keep the basic daily Home/check-in result separate. Update the general role wording and demo instructions consistently. Earth receives authorized reports, not blanket access to raw private histories; journal permissions do not change.
+**Initial finding, corrected at 76b2e09:** the health route table permitted `crew` to read `/history` and `/weekly` (contract README lines 219 and 221). Tommy excluded detailed history/weekly analysis from astronaut views. Restrict those routes to relevant clinical roles and enforce it on the server; keep the basic daily Home/check-in result separate. Update the general role wording and demo instructions consistently. Earth receives authorized reports, not blanket access to raw private histories; journal permissions do not change.
 
 Validation: ran the PR's actual `npm test` in an isolated public-source copy on checksum-verified official Node **v24.22.3**. **7 tests passed, 0 failed, 0 skipped.** These exercise the example/shared helper flow, not implemented health/meds/env modules or the joined app. No permanent Node install, npm install or teammate data was used.
 
@@ -80,4 +88,4 @@ There are substantial usable instructions, but they are proposed until the contr
 
 ## Next action
 
-A request-changes review has been posted on PR #49 asking zt for these corrections. Re-read the actual updated head and re-run relevant checks before approval. Tommy's latest instruction is to correct first, so no approval or merge should be represented as completed yet.
+The request-changes review and follow-ups are posted on PR #49. Re-review the actual updated head for the remaining credential/dispenser wording before approval. Tommy's latest instruction is to correct first, so no approval or merge should be represented as completed yet.

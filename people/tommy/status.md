@@ -14,6 +14,8 @@
 
 ## Done
 
+- Re-reviewed updated PR #49 at 76b2e09: care-only detailed analysis and separate Today output now resolve the privacy blocker; allergy/profile instructions and stage graph were corrected. Re-ran its npm test: 7/7 passed. Posted exact wording for remaining repeated-code and per-item dispenser semantics; approval remains pending those corrections.
+
 - Re-fetched again while publishing: main 854c361 now includes zt’s #52 demo-case draft and dadis2’s DAD-2 #53. Reviewed the new code/QR/validity/revocation contract, opened the Earth tool and ran its browser regression page: 28/28 passed. Saved a screenshot for Tommy; phone-camera decoding and real issuer verification not tested. Updated handoff so DAD-2 is not reassigned from scratch.
 
 - Published the confirmed inventory decisions, #49 request-changes review and refreshed #50–#53 handoffs through merged PR #54; only Tommy’s planning/status files changed.
@@ -70,7 +72,7 @@
 
 ## Next steps
 
-- Latest common review is published on main in contract-review.md via #54. PR #49 remains pending corrections; its author has the review and refreshed handoff link. Choose one #51/#52 case/fixture version before owners change their modules.
+- Latest common review is published on main in contract-review.md via #54. PR #49 remains pending corrections; its author has the review, refreshed handoff link and exact remaining wording. If the updated contract is adopted, align #51 data/tests with its #52 target cases.
 
 - The PR #49 request-changes review is posted. Re-read the updated head and check the requested corrections before any approval. Use contract-review.md as the latest owner compatibility handoff; do not implement or edit other owners’ modules.
 
