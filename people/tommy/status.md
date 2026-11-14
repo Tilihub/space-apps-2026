@@ -8,11 +8,22 @@
 
 ## Now
 
-- Last updated: 2026-11-14 — ecosystem review
-- Working on: Opened zt’s UI/3D handoff for Tommy and checked current backend readiness (main 43a4dad). Tommy chose the 3D body first; acceptance discussion precedes frontend changes.
-- Branch: tommy/concepts-plan
+- Last updated: 2026-11-14 — functional demo integration
+- Working on: Tommy explicitly requested implementation of the common backend/UI connections, followed by backend testing before visual redesign. This supersedes the earlier planning-only scope for this connection.
+- Branch: tommy/functional-demo
+- Preview: `node integration/onboard-app/start.js` (Node 24); the local review uses port 8010 with a separate temporary synthetic store.
 
 ## Done
+
+- Replaced the example-only registry with the actual health and meds modules and connection adapters for mind, environment and clinical reports. Existing core/session/storage implementation remains unchanged; no teammate source was edited.
+- Reused zt's `ui-look` shell (`dace837`) and interactive 3D scene (`0e8fbff`), replacing the fake-data controller with actual API forms, role-aware clinical screens, inventory/approval/credential/dispensing/follow-up flows, and persistent records.
+- Merged Potest's pending `crew-support-chat` source into this integration branch solely to import the original companion route/client. PR #55 was not approved by this chat. Journal is connection-owned and author-only; the current companion uses only own-today context and remains explicitly scripted.
+- Connected Petros's actual flywheel/rowing program and workout controller to Angelos's health storage. Independently exercised a complete stage workout in the browser: 25 repetitions, labelled synthetic average/peak/recovery, saved record.
+- Connected Potest's original archive/rules to the shared mission clock, labelled RR-9 and Curiosity replay provenance, retained data gaps and actual overnight Danger/recovery. Mapping uses the confirmed recovery at 16:48 source UTC = day 42 07:00 mission UTC.
+- Added the first working reports/Earth-link connection: medical-only creation/content, clinical and environmental snapshots without journal, offline queue, 12 mission minutes each way, specialist reply and original-format multi-item code/QR generation. Final owner and exact shared interface still need team review.
+- Browser-tested saved check-in/reload, symptom advice/NSAID block, companion current-entry context, collection/reload/stock update, stage workout save, medical analysis, report delivery/reply and a two-item Earth credential dispensed item by item. Camera hardware was not used.
+- Final root suite: 99/99 tests pass, none skipped. Added joined real-HTTP checks for the production registry, journal privacy/restart, clinical restrictions, equivalent repeated code/QR payload, allergy/wrong-patient rejection, two-item due-dose/retry/next-dose access, cabin recovery and report queue/delayed reply, plus actual controller-to-health workout persistence. See integration/onboard-app/README.md for the handoff and remaining limits.
+
 
 - Opened PR #72 for the UI/3D and backend readiness review; only Tommy’s review/status files changed. The selected 3D preview remains available for Tommy’s inspection.
 
@@ -82,15 +93,12 @@
 
 ## Blocked / need from others
 
-- No blocker to documenting or proposing tasks. Tommy and the owners still need to agree the assignments and connection contracts.
-- Agree shared crew IDs, clock, field names/scales and packet formats; keep historical source time/provenance explicit.
-- Implement the decided hidden clinical-report content, and resolve personal-analytics naming, score meaning and first-demo identity flow with zt. Confirm approval categories, reporting interval/triggers/window, and the permission implementation.
-- Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
+- No blocker to local connected-demo testing. PR #55 source is included unchanged as a dependency; coordinate its merge/review with Potest and zt before merging an integration PR that contains his files.
+- zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
 
-- Discuss ui-backend-review.md with Tommy. Do not say the whole backend/UI is finished: 90 passing tests and the additional HTTP flow verify the delivered pieces, while the real module registry/pages remain unconnected.
-- Tommy chose the 3D body first. zt’s UI branch explicitly hands the visual work over; follow AGENTS.md for continuing unmerged work and preserve his personal files. Frontend changes can follow the acceptance discussion, in Tommy’s own space or his integration connection.
-- First connection needs canonical c1–c5 identity/roles, core clock, true sleepHours versus separate quality, symptom/3D mapping and per-item collection. Keep clinical analyses private; Home indicators/readiness remain deferred.
-- Reuse current health/meds and fixed stage data. Coordinate pending companion #55, env module and report/journal workflows with their owners. The new meds module addresses the historical #58 replacement findings; do not reassign those fixes from the old review.
-- Continue on tommy/concepts-plan for review notes. Update status and push before a break.
+- Continue from `tommy/functional-demo`. Run the single onboard server, use the role selector in separate tabs, and follow the end-to-end walkthrough in `integration/onboard-app/README.md`.
+- Finish manual demo checks and publish this functional connection for review. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
+- Ask Tommy to test the joined behavior and choose backend fixes before visual UI changes. zt remains the visual design owner; use his original UI/3D as the base.
+- Handoff: health/meds are direct owner imports; training uses Petros's controller; companion imports Potest's pending #55 route; journal/environment/report glue is in this connection's `adapters/`. Do not patch someone else's personal folder. Agree shared contract changes through a separately approved PR.

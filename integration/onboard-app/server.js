@@ -20,6 +20,9 @@ const PAGES = normalize(fileURLToPath(new URL('./pages/', import.meta.url)));
 const FILES = Object.freeze({
   '/shared/contract/contract.js': 'shared/contract/contract.js',
   '/people/angelos/health/client.js': 'people/angelos/health/client.js',
+  '/people/dadis2/inventory/vendor/qrcode.js': 'people/dadis2/inventory/vendor/qrcode.js',
+  '/people/dadis2/inventory/qr.js': 'people/dadis2/inventory/qr.js',
+  '/people/potest/crew-support/companion-client.js': 'people/potest/crew-support/companion-client.js',
 });
 
 /** Whole folders, read-only. */

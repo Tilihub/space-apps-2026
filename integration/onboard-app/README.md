@@ -1,68 +1,138 @@
-# Onboard app
+# Connected onboard demo
 
-The joined onboard app from the [app contract](../../shared/contract/README.md): one Node.js server
-that holds all data and rules, one module per piece, and pages that draw everything. zt builds this
-folder (contract section 2); every teammate's module is imported straight from their own folder.
+One Node.js 24 server, one mission clock, durable module stores, and zt's UI with the 3D body.
+Tommy requested the functional integration on 14 November, before further visual design work.
+This connection now runs actual module requests instead of the UI's original fake-data block.
 
 ## What it joins
 
-| Piece | From | In the app yet |
+| Piece | Source | Current connection |
 |---|---|---|
-| Core: login, crew, mission clock, events, saving, files | zt, this folder | yes |
-| example module | `shared/contract/example/` | yes, only to prove the core; health replaces it |
-| health | angelos, `people/angelos/health/` | not yet; `alignment.test.js` already runs it in the core |
-| meds | dadis2, `people/dadis2/meds/` | not yet; `alignment.test.js` already runs it in the core |
-| env | potest, `people/potest/env/` | not built yet |
-| mind | to agree (angelos or potest) | wave 2 |
-| demo data | petros, `people/petros_the_space_larper/demo-data/` | served read-only at `/demo-data/`; health loads its `health.json` |
-| Pages | zt, `pages/` | only `/demo/` (demo controls) so far |
+| Sessions, permissions, mission clock, events, storage, HTTP | zt, this folder | Existing core, unchanged |
+| Health, clinical history/weekly comparisons, workout records | `people/angelos/health/` | Imported directly; real API calls from the pages |
+| Symptoms, allergies, inventory, grants, dose schedules, dispenser batches, emergencies, stock | `people/dadis2/meds/` | Imported directly; real API calls, including Earth decisions |
+| QR rendering | dadis2's `inventory/qr.js` and vendored MIT `vendor/qrcode.js` | Served from the originals, no additional dependencies |
+| Daily training and live session controller | `people/petros_the_space_larper/demo-data/` | Imported by the browser; completed stage summaries go to health |
+| Companion | Potest's `crew-support/companion.js` and `companion-client.js`, branch `potest/crew-support-chat` at `f4bac9d` | Imported unchanged; that branch was merged into this integration branch, without approving PR #55 |
+| Private journal | `adapters/mind.js` | Connection-owned implementation of contract section 7, sharing the mind module with the imported companion route |
+| Cabin archive and alert rules | Potest's `environmental-graphs/data/series.js` and `alerts.js` | Originals read directly by `adapters/environment.js`; one deterministic server replay for all tabs |
+| Reports and Earth transport | `adapters/reports.js` | First connection implementation of section 11's outline; ownership/interface handoff still needs team review |
+| UI appearance | `zt/ui-look` at `dace837` | Copied HTML/CSS/icon shell; original fake-data controller replaced with `pages/app.js` |
+| Interactive 3D body | `zt/body-3d` at `0e8fbff` | Copied scene with a small same-origin iframe message bridge; original mesh credits retained (Blender Studio Human Base Meshes, CC0) |
 
-## Run it
+The original teammate folders have not been edited by this connection. Owner modules and rules
+remain the source of truth. Adapters belong to the connection and can be replaced by the future
+owner modules without a second server. PR #55's unchanged files retain their original Git history.
+Do not treat this as that PR's approval or adoption of the broader-history companion experiment.
 
-Node.js 24, no packages, nothing to install. From the repo root:
+## Run and test
+
+From the repo root, with Node 24 on PATH:
 
 ```bash
 node integration/onboard-app/start.js
 ```
 
-It prints the addresses: `http://localhost:8000/` on this laptop, and one for other devices on the
-same network. Use another port with `PORT=8001 node integration/onboard-app/start.js`. Stop with
-Ctrl+C. (`npm start` comes later: it needs a change to the root `package.json`, which is protected.)
+Open the printed URL (default `http://localhost:8000/`). No package installation is required.
+Use `PORT=8010` for another port. `PULSE_DATA_DIR=/absolute/path` selects a separate demo store;
+otherwise ignored `integration/onboard-app/data/` is used. Stop with Ctrl+C. The clock pauses
+while the process is stopped. `/demo/` retains zt's plain core controls.
 
-Open `/demo/` to log in, move the mission clock, reset the demo and watch the events.
+```bash
+npm test
+```
 
-Tests: `npm test` (or `node --test "**/*.test.js"`) from the repo root runs these with everyone else's.
+The root suite includes `connected.test.js`: real HTTP, the production registry, role separation,
+private journal and restart persistence, same-credential two-item collection and next dose,
+real cabin recovery, offline report queuing/12-minute delivery/reply, and Petros's controller
+saving a synthetic workout to health. Potest's older Python comparison experiment also needs
+Python 3 on PATH for its own tests. No private database or API key is needed.
 
-## How it works
+## Try the connected flows
 
-- `start.js` starts everything. `modules.js` lists the modules. `core.js` is the core (no HTTP).
-  `server.js` puts it on the network: `/api/...` goes to the core, everything else is a file.
-- **Saved data** goes to `data/` (not committed): `core.json` for the clock, logins and the event
-  counter, and one `<module>.json` per module. A module with no saved data gets its `reset` at
-  start. Delete `data/` to start completely fresh; "Reset demo" does the same without a restart.
-- **One request at a time per module**, so two requests can never mix their load-and-save steps
-  and lose a change. Different modules still run side by side.
-- **Mission clock:** starts at day 42, 07:30 (`DEMO_START`), runs at normal speed, and only jumps
-  forward. It **pauses while the server is off**: a restart carries on from the last saved time
-  (saved every 5 seconds). Reset demo puts it back to day 42, 07:30.
-- **Logins** are simulated: pick a crew member and a platform. The medical officer platform is
-  Leo (`c2`) only. Tokens survive a restart. Reset demo doesn't log anyone out.
-- **Events:** ids keep counting up across restarts. Pages ask `GET /api/events?after=<id>` every
-  2 seconds and always carry on from the `lastId` they get back.
-- **Files it serves:** `pages/` at `/`, `shared/contract/contract.js`, angelos's
-  `people/angelos/health/client.js` at the same paths as in the repo, and petros's `demo-data/`
-  at `/demo-data/`. Nothing else in the repo is reachable.
+1. Log in as Tomas (`c4`). Save today's check-in: 4.6 h sleep, 63 resting bpm, mood 6, stress 4,
+   fatigue 4. Other measurements may remain missing. Today's saved values survive reload.
+2. Report a headache, severity 5. The module suggests acetaminophen and blocks NSAIDs. In Med bay,
+   expand the cabinet, choose an allowed self-care quantity and confirm each dispensed item.
+   Stock and the collected-dose log change only at confirmation. Follow-up is separate.
+3. Request a prescription item from Locker 2. In a second tab log in as Medical officer Leo,
+   review requests and approve/deny the course. Controlled items and Leo's own prescriptions
+   require the Earth role. Switch back and refresh; collect only the currently due quantities.
+4. In the medical platform select a patient, inspect the real clinical analysis/history and
+   create a report. Astronaut sessions cannot fetch these contents. Take the simulated link
+   down to queue it, restore the link, then advance 12 mission minutes to deliver to Earth.
+5. In a third tab use Earth specialist. Open the delivered report, reply, and optionally generate
+   a one- or two-item RX2 credential using the original encoder. A return reply takes another
+   12 mission minutes. Give its code/QR to the patient. Entering it again finds the same course;
+   collecting again is refused until the next dose. No 15-minute access timer is added.
+6. Fitness shows the actual flywheel/rowing week. Choose the labelled synthetic stage demo for
+   a complete pulse-recording test. Start, complete warm-up, advance a minute, record push-up reps,
+   complete the exercise, advance a minute and save with recovery. Do not wait beyond the finite
+   replay if you want a recovery reading. Saved summaries survive reload; active checklists do not.
+7. Mind saves a private journal entry. Switch to another crew member or clinical role: the entry
+   is inaccessible. The floating companion fetches the current author's own latest check-in on
+   each turn. Medical officer and Earth sessions cannot call the mind routes.
+8. Any crew member can raise an emergency for a crewmate and release only emergency-tier items.
+   Confirm dispensing, then inspect the patient's dose log/stock and close paperwork as Leo.
 
-## Does it work yet
+Clock controls affect every tab. Reset is explicitly confirmed in the UI and resets all module
+stores to the same day-42 fixture; it is not a per-user action. Do not reset someone else's demo
+store while they are using it. Initial stores load Petros's synthetic historical data; no today
+check-in is fabricated. Forms keep unsaved inputs on request failures; old-session responses are
+discarded. A pending collection is remembered only in that tab and every confirmation is checked
+again by the backend. Polling updates metadata; private journal text never enters events.
 
-Step 1 of 5 works: the core with the example module. 12 tests pass, including health and meds
-running inside the core over real HTTP with petros's day-42 data (`alignment.test.js`): Tomas
-checks in, Leo sees sleep under his normal 3 days in a row, Tomas is refused the analysis, and a
-headache offers acetaminophen with ibuprofen blocked.
+## Environment mapping
 
-Next:
+Cabin data is the original RR-9 historical series, using Potest's unchanged two-reading rules.
+The adapter maps **17 September 2018 16:48 UTC to mission day 42 07:00 UTC**, the actual confirmed
+recovery sample (the earlier 16:45 suggestion puts confirmation three minutes late). It starts
+alert analysis on 15 September, avoiding the early flat-fill interval. Historical alert output
+retains both the latest level and `peakLevel`; the overnight event reaches Danger. This mapping
+is connection-owned and ready for Potest's review, not a modification of the archive.
 
-1. Health in the app: add it to `modules.js`, follow angelos's
-   `people/angelos/health/TEAM_NEXT_STEPS.md` (zt's part).
-2. Meds in the app, with dadis2's "For zt" notes in `people/dadis2/meds/README.md`.
-3. A bare astronaut page, then the medical officer page, then env when potest's module exists.
+Radiation uses the original Curiosity cruise detector B on 8 December 2011, mapping its first
+sample to mission day 42 midnight. Both sources are labelled historical replay, with original
+source timestamps. Once a source ends, readings become unavailable; no artificial loop or storm
+is introduced. Graphs retain gaps. No live sensor is claimed.
+
+## Reports connection API
+
+The contract currently specifies the workflow, not exact report fields. These routes are the
+working proposal in this connection; agree the final owner/interface with zt and Potest before
+promoting it to the protected shared contract.
+
+| Route | Roles | Shape |
+|---|---|---|
+| `GET /api/reports` | medical officer, Earth | `{ reports }`; Earth sees delivered reports only; medical officer sees only delivered replies |
+| `POST /api/reports` | medical officer | `{ crewId, note, health: { daily, history, weekly?, workouts? }, meds: { reports, doses, profile }, environment }` → `{ report }` |
+| `GET /api/reports/link` | medical officer, Earth | `{ linkUp, delayMinutes: 12, simulated: true }` |
+| `POST /api/reports/link` | medical officer, Earth | `{ linkUp: boolean }` |
+| `POST /api/reports/:id/replies` | Earth | `{ note, code }`, at least one nonempty → `{ reply }` |
+| `GET /api/reports/catalogue` | Earth | Public demo medicine labels/IDs only, no patient profile |
+| `POST /api/reports/grants-code` | Earth | `{ crewId, items: [{ itemId, units, perDay, days }] }` → `{ code, verification: 'simulated', note }` |
+
+Reports contain clinical history, symptoms, collected medicines/allergies, a cabin snapshot,
+48-hour CO₂ history and cabin alerts. Journal/companion fields are rejected, and the reports
+module never reads the mind store. Patient IDs in clinical rows are checked. Reports/replies
+move queued → sent → received once per record, use the shared clock, and persist across restart.
+No real network transmission or automatic clinical-report trigger is implemented. The generator
+is a connection endpoint, not an unannounced addition to dadis2's `/api/meds` module.
+
+## Remaining limits and handoff
+
+- The current approved-context companion is scripted, not a trained LLM. Potest's separate
+  Python experiment with detailed history is preserved but not connected to crew clinical data;
+  broader assistant context remains an open product decision.
+- Psychologist login/private messaging is not built. Journal access is author-only until its
+  separate role is agreed. Journal text is not sent to the current companion route.
+- No live wearable is paired. Weekly sessions can be checked off, but without pulse samples
+  the existing controller cannot save a numeric summary. The synthetic stage mode proves the
+  full recording pipeline. Petros's adapter accepts a future real device source.
+- Camera QR uses the browser's BarcodeDetector where available. Without it, paste the exact QR
+  payload or type the equivalent code. QR rendering itself is local/offline via dadis2's library.
+- The 3D viewer still loads Three.js from zt's original CDN import map and fonts from Google.
+  Its first load needs network access; health/inventory/storage APIs have no external dependency.
+- Hardware dispensing, signed Earth credentials, account registration and production security
+  are not implemented. Demo identity/approval selection is intentionally simulated.
+- Readiness scoring, crew-visible clinical trends, gamification and visual redesign are deferred.
