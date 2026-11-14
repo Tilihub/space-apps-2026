@@ -62,6 +62,8 @@ Do this when your human asks for onboarding, or when they don't have a folder in
 - `shared/`: add new files freely. Change a file someone else made only if they agree.
   In `shared/sources.md`, add rows only, at the end of the right table.
   In `shared/decisions/`, add new files only.
+  In `shared/reports.md`, add entries only, at the end (zt's and Tommy's tools may also mark
+  entries solved).
 - `integration/<connection>/`: only a connection your human is working on. To start one, create
   its folder with a short `README.md`: what it joins, which people's work it uses, how to run it,
   and whether it works yet.
@@ -84,8 +86,9 @@ human's folder or into `integration/`.
 - Once `final/README.md` lists a command that checks the product still works, run it before
   merging anything that touches `final/`.
 - You may merge your own pull request when it has no conflicts with main and it only touches
-  your human's folder, new files in `shared/`, rows in `shared/sources.md`, or an `integration/`
-  connection your human is working on: `gh pr merge --merge`. Anything else needs agreement first:
+  your human's folder, new files in `shared/`, rows in `shared/sources.md`, entries in
+  `shared/reports.md`, or an `integration/` connection your human is working on:
+  `gh pr merge --merge`. Anything else needs agreement first:
   from the author, for someone else's file in `shared/`, or a teammate's approval for protected
   files (see "Changes that need approval").
 
@@ -108,8 +111,28 @@ one, propose it as a change to `shared/PLAN.md`.
 ## Conflicts
 
 - In your human's own files: fix them.
-- In `shared/sources.md`: keep both sides.
+- In `shared/sources.md` and `shared/reports.md`: keep both sides.
 - Anywhere else: stop and tell your human. They sort it out with that file's owner.
+
+## Reporting problems and structure changes
+
+zt (GitHub `Tilihub`) and Tommy (GitHub `tommy2002t`) look after the repo's setup. Report to them
+when something goes wrong with git, GitHub or the repo's organisation that you can't fix within
+these rules, or when you change how the repo is organised (for example a new folder outside your
+human's own, or a shared file moved or renamed):
+
+1. Add an entry at the end of `shared/reports.md`, using the template at the top of that file,
+   and publish it like any other work.
+2. Tell your human to tell zt or Tommy in person.
+
+If the problem stops you from publishing (for example, a push fails), skip step 1: tell your human
+to show zt or Tommy the error in person.
+
+A pull request waiting for a teammate's approval is normal, not a problem.
+
+**If your human is zt or Tommy:** when they ask you to check the reports, read `shared/reports.md`,
+explain each open entry and help fix it. When one is solved, change its status to `solved`
+with a line on how.
 
 ## Never
 
