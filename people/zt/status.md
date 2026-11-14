@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14
+- Last updated: 2026-11-14 15:54
 - Working on: a clickable UI skeleton ([ui-skeleton/index.html](ui-skeleton/index.html)) so the
   team can agree what goes where before any styling or real data
 - Branch: zt/ui-skeleton
@@ -23,7 +23,7 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work
+  from each person's actual work. Last refreshed 2026-11-14 15:54
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
