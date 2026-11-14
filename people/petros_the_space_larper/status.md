@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:22
-- Working on: Deep-space health countermeasure handoff in [PR #35](https://github.com/Tilihub/space-apps-2026/pull/35)
+- Last updated: 2026-11-14 14:30
+- Working on: Mars-transit prototype scope and offline behavior
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -30,6 +30,7 @@
 - Added [mission countermeasures](astronaut-physical-and-mental-health.md#countermeasures-during-missions), with operational practice, flight and ground-analog studies, and proposed prototype support.
 - Merged and verified the general countermeasure notes in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32).
 - Added [deep-space countermeasure notes](astronaut-deep-space-countermeasures.md) covering lunar flight evidence, Mars analogs, robotic radiation measurements, and proposed Mars-transit app workflows.
+- Added a [Mars-transit prototype proposal](mars-transit-prototype.md) with mental and physical health fields, offline procedures, report delivery states, and demo checks.
 
 ## Blocked / need from others
 
@@ -46,3 +47,4 @@
 - Review the proposed well-being fields alongside the existing daily check-in. Use synthetic self-reports in the public demo.
 - Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
 - Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
+- Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
