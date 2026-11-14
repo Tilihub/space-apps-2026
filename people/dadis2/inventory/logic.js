@@ -48,8 +48,15 @@
       mission: d.mission,
       crew: d.crew,
       conditionLabels: d.conditionLabels || {},
+      currentUserId: d.currentUserId,
       lockers: d.lockers,
+      shelves: d.shelves,
       packs: d.packs,
+      players: d.players || {},
+      demoSymptoms: d.demoSymptoms || [],
+      rxCodes: d.rxCodes || {},
+      demoPlan: d.demoPlan || [],
+      plans: [],
       symptoms: d.symptoms,
       redFlagVitals: d.redFlagVitals,
       redFlagSeverity: d.redFlagSeverity,
@@ -79,6 +86,9 @@
       it.stability = it.stability || "stable";
       it.reserve = it.reserve || 0;
       it.plannedUsePer30d = it.plannedUsePer30d || 0;
+      var place = (d.placement || {})[it.id] || [null, null];
+      it.shelfId = place[0];
+      it.bin = place[1];
       state.items.push(it);
       lots.forEach(function (l, i) {
         state.lots.push({
@@ -87,7 +97,6 @@
           lotNumber: l[0],
           qty: l[1],
           expiry: l[2],
-          slot: it.slot,
           tag: "TAG-" + l[0]
         });
       });
@@ -140,14 +149,6 @@
       });
     });
 
-    (d.sampleReports || []).forEach(function (r) {
-      var rep = JSON.parse(JSON.stringify(r));
-      rep.time = new Date(now.getTime() - (r.minutesAgo || 0) * 60000).toISOString();
-      delete rep.minutesAgo;
-      rep.source = "sample";
-      state.reports.push(rep);
-    });
-
     return state;
   }
 
@@ -161,10 +162,21 @@
   function getSymptom(state, code) { return state.symptoms.filter(function (s) { return s.code === code; })[0] || null; }
   function lotsOf(state, itemId) { return state.lots.filter(function (l) { return l.itemId === itemId; }); }
 
-  function locationOf(state, item, lot) {
-    var pack = getPack(state, item.packId);
-    var locker = pack ? getLocker(state, pack.lockerId) : null;
-    return { locker: locker, pack: pack, slot: (lot && lot.slot) || item.slot };
+  function getShelf(state, id) { return state.shelves.filter(function (s) { return s.id === id; })[0] || null; }
+
+  var SHELF_NAMES = { 1: "Top shelf", 2: "Middle shelf", 3: "Bottom shelf" };
+
+  // Where an item is: locker → shelf (a colour-coded zone) → bin
+  function locationOf(state, item) {
+    var shelf = getShelf(state, item.shelfId);
+    var locker = shelf ? getLocker(state, shelf.lockerId) : null;
+    return {
+      locker: locker,
+      shelf: shelf,
+      shelfName: shelf ? SHELF_NAMES[shelf.level] : "",
+      pack: getPack(state, shelf ? shelf.packId : item.packId),
+      bin: item.bin
+    };
   }
 
   // ---------- mission ----------
@@ -447,7 +459,8 @@
     suggestions.sort(function (a, b) {
       if (order[a.safety.result] !== order[b.safety.result]) return order[a.safety.result] - order[b.safety.result];
       if (b.matched.length !== a.matched.length) return b.matched.length - a.matched.length;
-      return (a.item.ownerCrewId ? 0 : 1) - (b.item.ownerCrewId ? 0 : 1);
+      if (!!a.item.ownerCrewId !== !!b.item.ownerCrewId) return a.item.ownerCrewId ? -1 : 1;
+      return (a.item.sedating ? 1 : 0) - (b.item.sedating ? 1 : 0);
     });
     return { escalate: false, reasons: [], suggestions: suggestions, askCmo: askCmo };
   }
@@ -520,7 +533,10 @@
       countCheck: opts.countCheck || null,
       followUp: null,
       scanSkipped: !!opts.scanSkipped,
-      requestId: opts.requestId || null
+      requestId: opts.requestId || null,
+      planId: opts.planId || null,
+      planIdx: opts.planIdx == null ? null : opts.planIdx,
+      override: opts.override || null   // safety warnings the person giving it chose to override (emergency only)
     };
     state.doseLog.unshift(entry);
     if (opts.requestId) {
@@ -533,7 +549,7 @@
   // ---------- alerts ----------
 
   function alerts(state, now) {
-    var a = { expired: [], potencyRisk: [], beforeEnd: [], shortfall: [], belowReserve: [], pending: [], docsDue: [], groundReview: [], countIssues: [], followUps: [] };
+    var a = { expired: [], potencyRisk: [], beforeEnd: [], shortfall: [], belowReserve: [], pending: [], awaitingPickup: [], urgentReports: [], docsDue: [], groundReview: [], countIssues: [], followUps: [] };
     state.items.forEach(function (it) {
       var f = itemFlags(state, it, now);
       if (f.indexOf("expired") >= 0) a.expired.push(it);
@@ -542,7 +558,9 @@
       if (f.indexOf("shortfall") >= 0) a.shortfall.push(it);
       if (f.indexOf("below-reserve") >= 0 || f.indexOf("empty") >= 0) a.belowReserve.push(it);
     });
-    a.pending = state.requests.filter(function (r) { return r.status === "pending" || r.status === "approved"; });
+    a.pending = state.requests.filter(function (r) { return r.status === "pending"; });
+    a.awaitingPickup = state.requests.filter(function (r) { return r.status === "approved"; });
+    a.urgentReports = state.reports.filter(function (r) { return !r.cmoSeen && redFlags(state, r).length > 0; });
     state.doseLog.forEach(function (e) {
       if (e.auth.type === "break-glass" && !e.documentation) a.docsDue.push(e);
       if (e.groundReview === "pending") a.groundReview.push(e);
@@ -553,6 +571,83 @@
       }
     });
     return a;
+  }
+
+  // ---------- plans from Earth (spec section 8a) ----------
+  // Code: RX1-<CREW>-<YYMMDD start>-<ITEM><units>X<times a day>X<days>[.<ITEM>...]-<check>
+  // Example: RX1-C4-261114-OND1X2X3.CAL2X3X5-<check>. Short enough to type; also fits in a QR code.
+
+  var RX_SLOTS = { 1: [8], 2: [8, 20], 3: [8, 14, 20], 4: [8, 12, 16, 20] };
+
+  function rxCheck(body) {
+    var h = 7;
+    for (var i = 0; i < body.length; i++) h = (h * 31 + body.charCodeAt(i)) % 1296;
+    var s = h.toString(36).toUpperCase();
+    return s.length < 2 ? "0" + s : s;
+  }
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function encodeRx(state, patientId, start, items) {
+    var codes = {};
+    Object.keys(state.rxCodes).forEach(function (k) { codes[state.rxCodes[k]] = k; });
+    var ymd = String(start.getFullYear()).slice(2) + pad2(start.getMonth() + 1) + pad2(start.getDate());
+    var body = "RX1-" + patientId.toUpperCase() + "-" + ymd + "-" + items.map(function (x) {
+      return codes[x.itemId] + x.units + "X" + x.perDay + "X" + x.days;
+    }).join(".");
+    return body + "-" + rxCheck(body);
+  }
+
+  function decodeRx(state, raw) {
+    var code = String(raw || "").toUpperCase().replace(/\s+/g, "");
+    var m = /^(RX1-([A-Z0-9]+)-(\d{6})-([A-Z0-9.]+))-([A-Z0-9]{2})$/.exec(code);
+    if (!m) return { error: "That isn't a plan code." };
+    if (rxCheck(m[1]) !== m[5]) return { error: "The code has a typo. Check it and try again." };
+    var patientId = m[2].toLowerCase();
+    if (!getCrew(state, patientId)) return { error: "Unknown crew member in the code." };
+    var y = 2000 + Number(m[3].slice(0, 2)), mo = Number(m[3].slice(2, 4)), da = Number(m[3].slice(4, 6));
+    var start = new Date(y, mo - 1, da);
+    if (start.getMonth() !== mo - 1 || start.getDate() !== da) return { error: "Bad date in the code." };
+    var items = [], parts = m[4].split(".");
+    for (var i = 0; i < parts.length; i++) {
+      var pm = /^([A-Z]{3})(\d)X(\d)X(\d{1,2})$/.exec(parts[i]);
+      if (!pm) return { error: "Can't read " + parts[i] + "." };
+      var it = getItem(state, state.rxCodes[pm[1]]);
+      if (!it) return { error: "Unknown medicine " + pm[1] + "." };
+      var units = Number(pm[2]), perDay = Number(pm[3]), days = Number(pm[4]);
+      if (units < 1 || perDay < 1 || perDay > 4 || days < 1 || days > 30) return { error: it.name + ": dose out of range." };
+      if (it.maxPerDay && units * perDay > it.maxPerDay) return { error: it.name + ": over the daily limit." };
+      if (it.ownerCrewId && it.ownerCrewId !== patientId) return { error: it.name + " belongs to another crew member." };
+      items.push({ itemId: it.id, units: units, perDay: perDay, days: days });
+    }
+    return { plan: { code: code, patientId: patientId, start: y + "-" + pad2(mo) + "-" + pad2(da), items: items } };
+  }
+
+  // Where one medicine of a plan stands right now: not-started | due | later | done-today | finished
+  function planItemStatus(state, plan, idx, now) {
+    var x = plan.items[idx], start = parseDate(plan.start), day = daysBetween(start, now) + 1;
+    var slots = RX_SLOTS[x.perDay];
+    var entries = state.doseLog.filter(function (e) { return e.planId === plan.id && e.planIdx === idx; });
+    var total = x.perDay * x.days, taken = entries.length;
+    var today = entries.filter(function (e) { return daysBetween(new Date(e.time), now) === 0; }).length;
+    var s = { day: day, days: x.days, total: total, taken: taken, today: today, slots: slots, nextHour: null };
+    if (day < 1) { s.state = "not-started"; return s; }
+    if (day > x.days || taken >= total) { s.state = "finished"; return s; }
+    if (today >= x.perDay) { s.state = "done-today"; return s; }
+    // Due when the latest dose time today has passed and nothing was taken since then.
+    // Missed earlier doses are not added up, so there's never a double dose.
+    var h = now.getHours();
+    var passed = slots.filter(function (x) { return h >= x; });
+    var upcoming = slots.filter(function (x) { return x > h; });
+    if (passed.length) {
+      var slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), passed[passed.length - 1]);
+      var takenSince = entries.some(function (e) { return new Date(e.time) >= slotTime; });
+      if (!takenSince) { s.state = "due"; return s; }
+    }
+    if (!upcoming.length) { s.state = "done-today"; return s; }
+    s.state = "later";
+    s.nextHour = upcoming[0];
+    return s;
   }
 
   // ---------- validation of incoming reports ----------
@@ -572,7 +667,7 @@
     parseDate: parseDate,
     daysBetween: daysBetween,
     buildState: buildState,
-    getItem: getItem, getCrew: getCrew, getPack: getPack, getLocker: getLocker, getLot: getLot, getSymptom: getSymptom,
+    getItem: getItem, getCrew: getCrew, getPack: getPack, getLocker: getLocker, getShelf: getShelf, getLot: getLot, getSymptom: getSymptom,
     lotsOf: lotsOf, fefoLots: fefoLots, locationOf: locationOf,
     missionInfo: missionInfo,
     planningExpiry: planningExpiry, lotStatus: lotStatus,
@@ -580,6 +675,7 @@
     recentDoses: recentDoses, pickLot: pickLot, safetyChecks: safetyChecks,
     redFlags: redFlags, standingOrder: standingOrder, suggest: suggest,
     gateFor: gateFor, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
-    dispense: dispense, alerts: alerts, validateReport: validateReport
+    dispense: dispense, alerts: alerts, validateReport: validateReport,
+    encodeRx: encodeRx, decodeRx: decodeRx, planItemStatus: planItemStatus
   };
 })(window);

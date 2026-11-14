@@ -1,13 +1,17 @@
-// UI for the medical inventory prototype. Plain JS, no build step.
+// UI for the medicine prototype. Plain JS, no build step.
 // Logic lives in logic.js (MedLogic); sample data in data.js.
-// Health monitoring can send symptom reports with MedInventory.receiveSymptomReport(report)
-// or window.postMessage(report) (format in spec.md, section 8).
+//
+// The app runs on each crew member's own device, so there is no patient picker.
+// Home is one page: the medicine panel on the left, the three lockers on the right.
+// Symptoms are entered on another page (not part of this module), which sends a report with
+// MedInventory.receiveSymptomReport(report) or window.postMessage(report).
+// A flight surgeon on Earth can send a plan as a short code or QR code ("Import from Earth").
 
 (function () {
   "use strict";
 
   var L = window.MedLogic;
-  var STORE_KEY = "medInventory.v1";
+  var STORE_KEY = "medInventory.v3";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   var TIER = {
@@ -38,47 +42,87 @@
     "standing-order": "Standing order",
     cmo: "CMO sign-off",
     "cmo+witness": "CMO and witness sign-off",
-    "break-glass": "Emergency break-glass"
+    "ground-plan": "Plan from Earth",
+    "break-glass": "Emergency"
+  };
+  var SHELF_SHORT = { 1: "Top", 2: "Middle", 3: "Bottom" };
+
+  // Gamification: points for safe habits only (right box, quick find, answering "Did it help?",
+  // taking a planned dose on schedule), never for taking extra medicine.
+  var XP = { firstTry: 10, found: 5, fast: 5, followUp: 10, onSchedule: 5 };
+  var FAST_SEC = 30;
+  var BADGES = {
+    "first-find": { icon: "🎯", label: "First find" },
+    "sharp-eye": { icon: "👁️", label: "Sharp eye" },
+    "good-reporter": { icon: "📝", label: "Good reporter" },
+    "speedy": { icon: "⚡", label: "Speedy" },
+    "course-complete": { icon: "🏁", label: "Plan complete" }
   };
 
   var state = null;
+  var me = null;
   var ui = {
-    view: "dashboard",
+    view: "home",
+    screen: "main",      // main | request | confirm | emergency | import
+    flow: null,          // active retrieval: locate → (count) → done
+    paused: null,        // a retrieval paused by the Emergency button
+    pick: null,          // { itemId, reportId } on the confirm screen
+    query: "",
+    em: null,
+    rxCode: "", rxPreview: null, rxError: "", qrActive: false,
     filters: { q: "", pack: "", tier: "", flag: "" },
-    wiz: null,
     drawerItemId: null,
-    map: { lockerId: null, packId: null, focus: null },
-    appr: {},
-    docs: {},
-    notes: {},
-    logPatient: "",
-    pasteJson: ""
+    lockerFocus: null,
+    appr: {}, docs: {}, notes: {},
+    logPatient: ""
   };
   var toastTimer = null;
+  var qr = { stream: null, timer: null, detector: null };
 
   function now() { return new Date(); }
 
-  // ---------- storage (per-viewer demo state; works without it) ----------
+  // ---------- storage (per-viewer demo state; the page works without it) ----------
 
   function load() {
     var saved = null;
     try { saved = localStorage.getItem(STORE_KEY); } catch (e) { saved = null; }
     if (saved) {
-      try { state = JSON.parse(saved); return; } catch (e) { /* fall through */ }
+      try { state = JSON.parse(saved); } catch (e) { state = null; }
     }
-    state = L.buildState(window.INVENTORY_DATA, now());
+    if (!state || !state.shelves || !state.rxCodes) state = L.buildState(window.INVENTORY_DATA, now());
   }
   function save() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
   }
   function reset() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    qrStop();
     state = L.buildState(window.INVENTORY_DATA, now());
-    ui.wiz = null; ui.drawerItemId = null; ui.appr = {}; ui.docs = {}; ui.notes = {};
-    ui.map = { lockerId: null, packId: null, focus: null };
+    resolveUser();
+    ui.flow = null; ui.paused = null; ui.screen = "main"; ui.pick = null; ui.em = null; ui.drawerItemId = null; ui.lockerFocus = null;
+    ui.rxCode = ""; ui.rxPreview = null; ui.rxError = "";
+    ui.appr = {}; ui.docs = {}; ui.notes = {};
     save();
-    toast("Demo data reset");
+    toast("Demo reset");
   }
+
+  function resolveUser() {
+    var id = null;
+    try { id = new URLSearchParams(window.location.search).get("user"); } catch (e) { id = null; }
+    me = id && L.getCrew(state, id) ? id : state.currentUserId;
+  }
+  function meCrew() { return L.getCrew(state, me); }
+  function isCMO() { var c = meCrew(); return !!(c && (c.isCMO || c.isBackupCMO)); }
+
+  // ---------- gamification ----------
+
+  function player(id) {
+    id = id || me;
+    if (!state.players[id]) state.players[id] = { xp: 0, streak: 0, retrievals: 0, firstTryScans: 0, followUps: 0, bestTimeSec: null, badges: [] };
+    return state.players[id];
+  }
+  function level(xp) { return Math.floor(xp / 100) + 1; }
+  function unlock(p, id, list) { if (p.badges.indexOf(id) < 0) { p.badges.push(id); list.push(id); } }
 
   // ---------- formatting ----------
 
@@ -88,35 +132,33 @@
     });
   }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
-  function fmtDate(v) {
-    var d = L.parseDate(v);
-    return d ? d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear() : "–";
-  }
-  function fmtTime(v) {
-    var d = new Date(v);
-    return d.getDate() + " " + MONTHS[d.getMonth()] + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
-  }
+  function fmtDate(v) { var d = L.parseDate(v); return d ? d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear() : "–"; }
+  function fmtShort(v) { var d = L.parseDate(v); return d ? d.getDate() + " " + MONTHS[d.getMonth()] : "–"; }
+  function fmtTime(v) { var d = new Date(v); return d.getDate() + " " + MONTHS[d.getMonth()] + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
   function clock(v) { var d = new Date(v); return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
   function ago(v) {
     var m = Math.round((now() - new Date(v)) / 60000);
     if (m < 1) return "just now";
     if (m < 60) return m + " min ago";
     var h = Math.round(m / 60);
-    if (h < 48) return h + " h ago";
-    return Math.round(h / 24) + " days ago";
+    return h < 48 ? h + " h ago" : Math.round(h / 24) + " days ago";
   }
-  function crewName(id) { var c = L.getCrew(state, id); return c ? c.name : String(id); }
+  function crewName(id) {
+    if (id === "ground") return "Flight surgeon (Earth)";
+    var c = L.getCrew(state, id);
+    return c ? c.name : String(id);
+  }
   function firstName(id) { return crewName(id).split(" ")[0]; }
   function itemLabel(it) { return it.name + (it.strength ? " " + it.strength : ""); }
   function symLabel(code) { var s = L.getSymptom(state, code); return s ? s.label : code; }
-  function shortName(it) { var n = it.name.replace(/ \(.*\)$/, ""); return n.length > 16 ? n.slice(0, 15) + "…" : n; }
-  function cmo() { return state.crew.filter(function (c) { return c.isCMO; })[0]; }
-  function backupCmo() { return state.crew.filter(function (c) { return c.isBackupCMO; })[0]; }
-  function textOn(hex) {
-    var h = hex.replace("#", "");
-    var r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "#111" : "#fff";
+  function shortName(it) { var n = it.name.replace(/ \(.*\)$/, ""); return n.length > 18 ? n.slice(0, 17) + "…" : n; }
+  function unitWord(it, qty) {
+    var f = { cream: "tube", ointment: "tube", "orally disintegrating tablet": "dissolving tablet" }[it.form] || it.form || "unit";
+    return qty === 1 || /s$/.test(f) ? f : f + "s";
   }
+  function doseText(it, qty) { return qty + " " + unitWord(it, qty); }
+  function timesADay(n) { return n === 1 ? "once a day" : n === 2 ? "twice a day" : n + " times a day"; }
+  function cmo() { return state.crew.filter(function (c) { return c.isCMO; })[0]; }
 
   // ---------- small components ----------
 
@@ -128,55 +170,56 @@
     var p = L.getPack(state, packId);
     return '<span class="chip"><span class="dot" style="background:' + p.hex + '"></span>' + esc(p.colour) + (long ? " · " + esc(p.name) : "") + "</span>";
   }
-  function flagTags(flags) {
-    return flags.map(function (f) { return '<span class="tag ' + FLAG[f].cls + '">' + FLAG[f].label + "</span>"; }).join("");
-  }
+  function flagTags(flags) { return flags.map(function (f) { return '<span class="tag ' + FLAG[f].cls + '">' + FLAG[f].label + "</span>"; }).join(""); }
   function lotTag(st) { var x = LOTSTATUS[st]; return '<span class="tag ' + x.cls + '">' + x.label + "</span>"; }
   function resultBadge(r) {
     if (r === "pass") return '<span class="badge ok">All checks pass</span>';
     if (r === "warn") return '<span class="badge warn">Warning</span>';
     return '<span class="badge bad">Blocked</span>';
   }
-  function checkResult(r) {
-    return r === "pass" ? '<span class="badge ok">Pass</span>' : r === "warn" ? '<span class="badge warn">Warn</span>' : '<span class="badge bad">Block</span>';
+  function whereChips(loc) {
+    return '<span class="w-chip">Locker ' + esc(loc.locker.label) + '</span><span class="w-chip" style="--zone:' + loc.pack.hex + '"><span class="zone-dot"></span>' +
+      esc(loc.shelfName) + '</span><span class="w-chip">Bin ' + esc(loc.bin) + "</span>";
   }
-  function checksTable(sf) {
-    return '<div class="table-wrap"><table><tbody>' + sf.checks.map(function (c) {
-      return "<tr><td>" + esc(c.name) + "</td><td>" + checkResult(c.result) + "</td><td>" + esc(c.msg) + "</td></tr>";
-    }).join("") + "</tbody></table></div>";
-  }
-  function locText(loc) {
-    return "Locker <b>" + esc(loc.locker.label) + "</b> <span class=\"muted\">(" + esc(loc.locker.zone) + ")</span> → <b>" +
-      esc(loc.pack.colour) + " pack</b> <span class=\"muted\">(" + esc(loc.pack.name) + ")</span> → slot <b>" + esc(loc.slot) + "</b>";
-  }
-  function locShort(loc) { return "Locker " + loc.locker.label + " · " + loc.pack.colour + " pack · slot " + loc.slot; }
-  function crewTags(c) {
-    var t = "";
-    c.allergies.forEach(function (a) { t += '<span class="tag bad">Allergy: ' + esc(a) + "</span>"; });
-    c.conditions.forEach(function (x) { t += '<span class="tag warn">' + esc(state.conditionLabels[x] || x) + "</span>"; });
-    if (c.nextEVA) {
-      var h = Math.round((new Date(c.nextEVA) - now()) / 3600000);
-      if (h > -2) t += '<span class="tag info">EVA ' + (h <= 0 ? "now" : "in " + h + " h") + "</span>";
-    }
-    (c.standingOrders || []).forEach(function (o) {
-      var it = L.getItem(state, o.itemId);
-      t += '<span class="tag muted">Standing order: ' + esc(it ? it.name : o.itemId) + "</span>";
+  function warnChips(sf, it, forSleep) {
+    var chips = [];
+    sf.checks.forEach(function (c) {
+      if (c.result !== "warn") return;
+      if (c.name === "EVA") chips.push("Makes you sleepy: EVA soon");
+      else if (c.name === "Same class") chips.push("Sleepy medicine taken recently");
+      else if (c.name === "Duplicate ingredient") chips.push("Same ingredient earlier today");
+      else if (c.name === "Expiry") chips.push("Older stock");
     });
-    return t ? "<span>" + t + "</span>" : "";
+    if (it.sedating && !forSleep && !chips.some(function (x) { return /sleepy/i.test(x); })) chips.unshift("May make you sleepy");
+    return chips.length ? '<div class="chips">' + chips.map(function (x) { return '<span class="tag warn">' + esc(x) + "</span>"; }).join("") + "</div>" : "";
   }
-  function approverOptions(patientId) {
-    return state.crew.filter(function (c) { return (c.isCMO || c.isBackupCMO) && c.id !== patientId; });
+  function blockReason(sf) {
+    var c = sf.checks.filter(function (x) { return x.result === "block"; })[0];
+    if (!c) return "";
+    return {
+      "Allergy": "Allergy", "Contraindication": "Not safe for you", "Daily maximum": "Daily limit reached",
+      "Same class": "Too close to another dose", "Stock and reserve": "Kept in reserve", "Expiry": "Expired"
+    }[c.name] || c.name;
   }
-  function sigFields(path, label, options, cur, idp) {
-    cur = cur || {};
-    return '<div class="sig"><span class="sig-label">' + esc(label) + '</span><select id="' + idp + '-who" data-bind="' + path + '.crewId"><option value="">Choose…</option>' +
-      options.map(function (c) {
-        return '<option value="' + c.id + '"' + (cur.crewId === c.id ? " selected" : "") + ">" + esc(c.name) + " (" + esc(c.role) + ")</option>";
-      }).join("") +
-      '</select><input id="' + idp + '-pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="PIN" value="' + esc(cur.pin || "") + '" data-bind="' + path + '.pin"></div>';
+
+  // What this user may do with an item right now
+  function optionFor(it, t) {
+    var qty = it.doseUnits || 1;
+    var sf = L.safetyChecks(state, me, it, qty, t);
+    var gate = L.gateFor(state, me, it, qty, t, sf);
+    return { item: it, qty: qty, safety: sf, gate: gate, needsCmo: gate.type === "cmo" || gate.type === "cmo+witness" };
   }
-  function pinHint() {
-    return '<p class="hint">Demo PINs: ' + state.crew.map(function (c) { return esc(c.name.split(" ")[0]) + " " + c.pin; }).join(", ") + "</p>";
+  function canRequest(it) { return it.kind === "medication" && it.tier !== "4" && (!it.ownerCrewId || it.ownerCrewId === me); }
+  // Red tint: needs CMO approval for this user (prescription, controlled without a standing order,
+  // or a self-care item blocked for them by a safety check)
+  function needsCmoMap(t) {
+    var m = {};
+    state.items.forEach(function (it) {
+      if (it.tier === "4" || it.kind === "equipment") return;
+      if (canRequest(it)) m[it.id] = optionFor(it, t).needsCmo;
+      else m[it.id] = it.tier === "2" || it.tier === "3";
+    });
+    return m;
   }
 
   // ---------- render ----------
@@ -187,16 +230,19 @@
     var sel = null;
     try { sel = active && typeof active.selectionStart === "number" ? active.selectionStart : null; } catch (e) { sel = null; }
 
+    if (!isCMO() && ui.view !== "home") ui.view = "home";
+    if (ui.qrActive && !(ui.view === "home" && ui.screen === "import")) qrStop();
     renderHeader();
-    var main = document.getElementById("main");
-    var html = "";
-    if (ui.view === "dispense") html = viewDispense();
+    var html;
+    if (ui.view === "stock") html = viewStock();
     else if (ui.view === "approvals") html = viewApprovals();
     else if (ui.view === "log") html = viewLog();
-    else if (ui.view === "map") html = viewMap();
-    else html = viewDashboard();
-    main.innerHTML = html;
+    else html = viewHome();
+    document.getElementById("main").innerHTML = html;
     renderDrawer();
+    renderDemo();
+    updateTimer();
+    attachQr();
 
     if (focusId) {
       var el = document.getElementById(focusId);
@@ -208,20 +254,598 @@
   }
 
   function renderHeader() {
-    var m = L.missionInfo(state, now());
-    document.getElementById("mission").innerHTML =
-      "<strong>" + esc(state.mission.name) + "</strong><span>Day " + m.day + " of " + m.total + "</span><span>" +
-      m.daysLeft + " days left</span><span>Signal delay " + state.mission.commDelayMin + " min one way</span>";
-    var buttons = document.querySelectorAll("#tabs [data-view]");
-    for (var i = 0; i < buttons.length; i++) buttons[i].classList.toggle("active", buttons[i].getAttribute("data-view") === ui.view);
+    var c = meCrew(), p = player();
+    document.getElementById("me").innerHTML =
+      '<span class="avatar">' + esc(c.name.charAt(0)) + '</span><span class="me-text"><b>' + esc(firstName(me)) + '</b><span class="lv">Level ' + level(p.xp) +
+      '</span></span><span class="xpbar" title="' + p.xp + ' XP"><span style="width:' + (p.xp % 100) + '%"></span></span>' +
+      '<span class="streak" title="Answers to &quot;Did it help?&quot; in a row">🔥 ' + p.streak + "</span>";
+    var nav = document.getElementById("tabs");
+    nav.hidden = !isCMO();
+    var tabs = nav.querySelectorAll("[data-view]");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle("active", tabs[i].getAttribute("data-view") === ui.view);
     var a = L.alerts(state, now());
-    var n = a.pending.length + a.docsDue.length + a.countIssues.length;
+    var n = a.pending.length + a.urgentReports.length + a.docsDue.length + a.countIssues.length;
     var badge = document.getElementById("apprCount");
     badge.textContent = n ? String(n) : "";
     badge.hidden = !n;
   }
 
-  // ---------- dashboard ----------
+  function renderDemo() {
+    document.getElementById("demo").innerHTML =
+      '<span class="muted">Demo · symptoms (stand-in for the symptom page):</span> ' +
+      state.demoSymptoms.map(function (d, i) { return '<button class="btn small" data-act="demo-symptoms" data-idx="' + i + '">' + esc(d.label) + "</button>"; }).join(" ") +
+      ' <button class="btn small" data-act="demo-code">🌍 Test code from Earth</button>' +
+      ' <span class="muted">· This device: ' + esc(meCrew().name) + ' (?user=c1 to c4)</span> <button class="btn small" data-act="reset">Reset demo</button>';
+  }
+
+  // ---------- home: one page, medicine panel + lockers ----------
+
+  function activeReport() {
+    return state.reports.filter(function (r) { return r.crewId === me && !r.handled; })[0] || null;
+  }
+
+  function viewHome() {
+    var t = now(), left, focus = null, locating = false;
+    if (ui.flow) {
+      left = viewFlow(ui.flow);
+      if (ui.flow.itemId) focus = { itemId: ui.flow.itemId, pulse: ui.flow.step === "locate" };
+      locating = ui.flow.step === "locate";
+    } else if (ui.screen === "request") left = viewRequest(t);
+    else if (ui.screen === "confirm") { left = viewConfirm(t); focus = { itemId: ui.pick.itemId }; }
+    else if (ui.screen === "emergency") { left = viewEmergency(t); if (ui.em.itemId) focus = { itemId: ui.em.itemId }; }
+    else if (ui.screen === "import") left = viewImport();
+    else left = viewMain(t);
+    if (!focus && ui.lockerFocus) focus = { itemId: ui.lockerFocus, clearable: true };
+    return '<div class="home-grid' + (locating ? " locating" : "") + '"><section class="col-left">' + left + '</section><section class="col-right" aria-label="Lockers">' +
+      lockersPanel(focus, locating, t) + "</section></div>";
+  }
+
+  function viewMain(t) {
+    var cards = "";
+    if (ui.paused) {
+      var pit = L.getItem(state, ui.paused.itemId);
+      cards += '<div class="hcard muted"><div class="hc-kicker">⏸ Paused</div><div class="hc-title">' + esc(pit.name) + "</div>" +
+        '<div class="hc-actions"><button class="btn primary big" data-act="resume">Resume</button><button class="link" data-act="drop-paused">Cancel</button></div></div>';
+    }
+    var rep = activeReport();
+    if (rep) cards += reportCard(rep, t);
+    cards += planCards(t);
+    cards += myRequestCards();
+    cards += followUpCards(t);
+    var html = '<div class="stack">';
+    html += cards || '<div class="calm"><div class="calm-icon">🙂</div><div>All good.</div></div>';
+    html += '<button class="big-action" data-act="go-request"><span class="ba-icon">💊</span><span>Request a medicine</span></button>';
+    html += '<button class="big-action alt" data-act="go-import"><span class="ba-icon">🌍</span><span>Import from Earth</span></button>';
+    html += badgeShelf();
+    return html + "</div>";
+  }
+
+  function reportCard(rep, t) {
+    var res = L.suggest(state, rep, t);
+    var forWhat = rep.symptoms.map(function (s) { return symLabel(s.code).toLowerCase(); }).join(" + ");
+    if (res.escalate) {
+      return '<div class="hcard danger"><div class="hc-kicker">🚨 ' + esc(res.reasons.join(" · ")) + '</div><div class="hc-title">Call the CMO now</div>' +
+        '<div class="hc-actions"><button class="btn danger big" data-act="emergency">Emergency</button><button class="link" data-act="dismiss-report">Dismiss</button></div></div>';
+    }
+    var ok = res.suggestions.filter(function (s) { return s.safety.result !== "block" && s.safety.lot; });
+    if (ok.length) {
+      var s = ok[0], it = s.item, alt = ok.slice(1, 3);
+      return '<div class="hcard ok"><div class="hc-kicker">For your ' + esc(forWhat) + '</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-sub">' +
+        esc(doseText(it, s.qty)) + (it.strength ? " · " + esc(it.strength) : "") + "</div>" +
+        warnChips(s.safety, it, rep.symptoms.some(function (x) { return x.code === "insomnia"; })) +
+        '<div class="hc-actions"><button class="btn primary big" data-act="take" data-id="' + it.id + '" data-report="' + esc(rep.id) + '">Get it</button>' +
+        '<button class="link" data-act="dismiss-report">Not now</button></div>' +
+        (alt.length ? '<div class="hc-alt">Or: ' + alt.map(function (a) {
+          return '<button class="link" data-act="pick" data-id="' + a.item.id + '" data-report="' + esc(rep.id) + '">' + esc(a.item.name) + "</button>";
+        }).join(" ") + "</div>" : "") + "</div>";
+    }
+    var askItem = res.askCmo.length ? res.askCmo[0].item : (res.suggestions.filter(function (x) { return x.safety.lot; })[0] || {}).item;
+    if (askItem) {
+      return '<div class="hcard rx"><div class="hc-kicker">For your ' + esc(forWhat) + '</div><div class="hc-title">Ask the CMO</div><div class="hc-sub">🔒 ' + esc(askItem.name) + "</div>" +
+        '<div class="hc-actions"><button class="btn primary big" data-act="ask" data-id="' + askItem.id + '" data-report="' + esc(rep.id) + '">Ask</button>' +
+        '<button class="link" data-act="dismiss-report">Not now</button></div></div>';
+    }
+    return '<div class="hcard"><div class="hc-kicker">For your ' + esc(forWhat) + '</div><div class="hc-title">No match</div><div class="hc-sub">Request one below, or ask the CMO.</div>' +
+      '<div class="hc-actions"><button class="link" data-act="dismiss-report">OK</button></div></div>';
+  }
+
+  function myPlans() { return state.plans.filter(function (p) { return p.patientId === me; }); }
+
+  function planCards(t) {
+    return myPlans().map(function (p) {
+      var sts = p.items.map(function (x, i) { return L.planItemStatus(state, p, i, t); });
+      if (sts.every(function (s) { return s.state === "finished"; })) {
+        if (p.doneSeen) return "";
+        return '<div class="hcard plan"><div class="hc-kicker">🌍 Plan from Earth</div><div class="hc-title">Plan complete 🏁</div>' +
+          '<div class="hc-actions"><button class="link" data-act="plan-seen" data-id="' + p.id + '">OK</button></div></div>';
+      }
+      var total = 0, taken = 0, maxDays = 0;
+      sts.forEach(function (s) { total += s.total; taken += Math.min(s.taken, s.total); maxDays = Math.max(maxDays, s.days); });
+      var day = sts[0].day;
+      var html = '<div class="hcard plan"><div class="hc-kicker">🌍 Plan from Earth · ' + (day < 1 ? "starts " + esc(fmtShort(p.start)) : "day " + Math.min(day, maxDays) + " of " + maxDays) +
+        "</div>";
+      p.items.forEach(function (x, i) {
+        var it = L.getItem(state, x.itemId), s = sts[i], action;
+        if (s.state === "due") action = '<button class="btn primary" data-act="plan-take" data-id="' + p.id + '" data-idx="' + i + '">Take now</button>';
+        else if (s.state === "later") action = '<span class="plan-next">Next ' + pad(s.nextHour) + ":00</span>";
+        else if (s.state === "done-today") action = '<span class="plan-next ok">✓ Today</span>';
+        else if (s.state === "finished") action = '<span class="plan-next ok">✓ Done</span>';
+        else action = '<span class="plan-next">' + esc(fmtShort(p.start)) + "</span>";
+        var dots = s.state === "finished" || s.state === "not-started" ? "" : '<span class="dots">' + s.slots.map(function (h, k) {
+          return '<i class="' + (k < s.today ? "on" : "") + '" title="' + pad(h) + ':00"></i>';
+        }).join("") + "</span>";
+        html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b><div class="muted small">' + esc(doseText(it, x.units)) + " · " + esc(timesADay(x.perDay)) + " · " +
+          x.days + " days</div>" + dots + "</div>" + action + "</div>";
+      });
+      html += '<div class="bar plan-bar"><span class="ok" style="width:' + (total ? Math.round(taken / total * 100) : 0) + '%"></span></div>';
+      return html + "</div>";
+    }).join("");
+  }
+
+  function myRequestCards() {
+    return state.requests.filter(function (r) {
+      return r.patientId === me && (r.status === "pending" || r.status === "approved" || (r.status === "denied" && !r.seen));
+    }).map(function (r) {
+      var it = L.getItem(state, r.itemId);
+      if (r.status === "approved") {
+        return '<div class="hcard ok"><div class="hc-kicker">✅ Approved</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-actions">' +
+          '<button class="btn primary big" data-act="pickup" data-id="' + r.id + '">Get it</button></div></div>';
+      }
+      if (r.status === "denied") {
+        return '<div class="hcard"><div class="hc-kicker">Not approved</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-sub">Talk to the CMO.</div>' +
+          '<div class="hc-actions"><button class="link" data-act="seen" data-id="' + r.id + '">OK</button></div></div>';
+      }
+      return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for the CMO</div><div class="hc-title">' + esc(it.name) + "</div></div>";
+    }).join("");
+  }
+
+  function followUpCards(t) {
+    return state.doseLog.filter(function (e) {
+      var it = L.getItem(state, e.itemId), age = t - new Date(e.time);
+      return e.patientId === me && !e.followUp && !e.planId && it && it.kind === "medication" && age > 30 * 60000 && age < 3 * L.DAY_MS;
+    }).slice(0, 2).map(function (e) {
+      var it = L.getItem(state, e.itemId);
+      return '<div class="hcard"><div class="hc-kicker">Quick check <span class="xp-pill">+' + XP.followUp + ' XP</span></div><div class="hc-title">Did ' + esc(it.name) + " help?</div>" +
+        '<div class="hc-actions"><button class="btn big" data-act="fu" data-id="' + e.id + '" data-eff="1">👍 Yes</button><button class="btn big" data-act="fu" data-id="' + e.id + '" data-eff="0">👎 No</button></div></div>';
+    }).join("");
+  }
+
+  function badgeShelf() {
+    var p = player();
+    return '<div class="badges">' + Object.keys(BADGES).map(function (id) {
+      var b = BADGES[id], got = p.badges.indexOf(id) >= 0;
+      return '<span class="bdg' + (got ? " got" : "") + '" title="' + esc(b.label) + '"><span class="bdg-icon">' + b.icon + '</span><span class="bdg-label">' + esc(b.label) + "</span></span>";
+    }).join("") + (p.bestTimeSec ? '<span class="best">Best find: ' + p.bestTimeSec + " s</span>" : "") + "</div>";
+  }
+
+  // ---------- request a medicine (own choice) ----------
+
+  function viewRequest(t) {
+    var q = ui.query.toLowerCase();
+    var list = state.items.filter(function (it) {
+      return canRequest(it) && (!q || (it.name + " " + it.indications.map(symLabel).join(" ")).toLowerCase().indexOf(q) >= 0);
+    }).map(function (it) { return optionFor(it, t); });
+    var self = list.filter(function (o) { return !o.needsCmo; }).sort(function (a, b) {
+      return (a.item.ownerCrewId ? 0 : 1) - (b.item.ownerCrewId ? 0 : 1) || a.item.name.localeCompare(b.item.name);
+    });
+    var cmoList = list.filter(function (o) { return o.needsCmo; }).sort(function (a, b) { return a.item.name.localeCompare(b.item.name); });
+    function tile(o) {
+      var use = o.item.indications.slice(0, 2).map(symLabel).join(", ") || o.item.strength;
+      return '<button class="tile' + (o.needsCmo ? " rx" : "") + (o.safety.lot ? "" : " off") + '" data-act="pick" data-id="' + o.item.id + '"><span class="tile-name">' +
+        (o.needsCmo ? "🔒 " : "") + esc(o.item.name) + (o.item.ownerCrewId ? ' <span class="tag muted">Yours</span>' : "") + '</span><span class="tile-use">' + esc(use) + "</span></button>";
+    }
+    var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Request a medicine</h2></div>';
+    html += '<input id="reqQ" class="search" type="search" placeholder="Search: headache, sleep…" aria-label="Search" value="' + esc(ui.query) + '" data-bind="query" data-live>';
+    if (self.length) html += '<h3>You can take</h3><div class="tiles">' + self.map(tile).join("") + "</div>";
+    if (cmoList.length) html += '<h3>Ask the CMO</h3><div class="tiles">' + cmoList.map(tile).join("") + "</div>";
+    if (!list.length) html += '<p class="muted">Nothing found.</p>';
+    return html;
+  }
+
+  function viewConfirm(t) {
+    var it = L.getItem(state, ui.pick.itemId), o = optionFor(it, t), sf = o.safety;
+    var html = '<div class="screen-head"><button class="back" data-act="' + (ui.pick.reportId ? "go-home" : "go-request") + '" aria-label="Back">←</button><h2>' +
+      (o.needsCmo ? "🔒 " : "") + esc(it.name) + "</h2></div>";
+    html += '<div class="hcard ' + (o.needsCmo ? "rx" : "ok") + '"><div class="hc-title">' + esc(doseText(it, o.qty)) + '</div><div class="hc-sub">' + esc(it.strength) + "</div>";
+    html += sf.result === "block" ? '<div class="chips"><span class="tag bad">' + esc(blockReason(sf)) + "</span></div>" : warnChips(sf, it);
+    if (!sf.lot) html += '<div class="hc-sub">None left. Ask the CMO.</div>';
+    else {
+      html += '<div class="hc-actions"><button class="btn primary big" data-act="' + (o.needsCmo ? "ask" : "take") + '" data-id="' + it.id + '"' +
+        (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsCmo ? "Ask the CMO" : "Get it") + "</button></div>";
+    }
+    return html + "</div>";
+  }
+
+  function reasonFrom(reportId) {
+    var r = state.reports.filter(function (x) { return x.id === reportId; })[0];
+    return r ? r.symptoms.map(function (s) { return symLabel(s.code); }).join(", ") : "Requested by crew member";
+  }
+  function markReport(reportId) {
+    var r = state.reports.filter(function (x) { return x.id === reportId; })[0];
+    if (r) r.handled = true;
+  }
+
+  function startFlow(f) {
+    ui.flow = Object.assign({ step: "locate", patientId: me, start: Date.now(), wrong: 0, error: "", requestId: null, reportId: null, planId: null, planIdx: null }, f);
+    ui.screen = "main";
+    ui.pick = null;
+    ui.lockerFocus = null;
+  }
+
+  function startTake(itemId, reportId) {
+    var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
+    if (!o.safety.lot) { toast("None left. Ask the CMO."); return; }
+    if (o.needsCmo) { askCmo(itemId, reportId); return; }
+    startFlow({ itemId: it.id, qty: o.qty, lotId: o.safety.lot.id, authType: o.gate.type, signedBy: [me], reason: reasonFrom(reportId), reportId: reportId || null });
+  }
+
+  function askCmo(itemId, reportId) {
+    var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
+    var gateType = o.needsCmo ? o.gate.type : (it.tier === "3" ? "cmo+witness" : "cmo");
+    state.requests.unshift({
+      id: "R" + state.seq++, time: t.toISOString(), patientId: me, itemId: it.id, qty: o.qty, reason: reasonFrom(reportId),
+      tier: it.tier, gate: gateType, status: "pending", signatures: []
+    });
+    if (reportId) markReport(reportId);
+    ui.screen = "main";
+    ui.pick = null;
+    save();
+    toast("Sent to the CMO");
+  }
+
+  function pickup(requestId) {
+    var r = state.requests.filter(function (x) { return x.id === requestId; })[0];
+    var it = L.getItem(state, r.itemId), pick = L.pickLot(state, it, r.qty, now());
+    if (!pick.lot) { toast("None left. Ask the CMO."); return; }
+    startFlow({
+      itemId: it.id, qty: r.qty, lotId: pick.lot.id, authType: r.gate || (r.tier === "3" ? "cmo+witness" : "cmo"),
+      signedBy: r.signatures.map(function (s) { return s.crewId; }), reason: r.reason, requestId: r.id
+    });
+  }
+
+  function planTake(planId, idx) {
+    var t = now(), p = state.plans.filter(function (x) { return x.id === planId; })[0], x = p.items[idx], it = L.getItem(state, x.itemId);
+    var sf = L.safetyChecks(state, me, it, x.units, t);
+    if (!sf.lot) { toast("None left. Ask the CMO."); return; }
+    if (sf.result === "block") { toast(blockReason(sf) + ". Ask the CMO first."); return; }
+    startFlow({ itemId: it.id, qty: x.units, lotId: sf.lot.id, authType: "ground-plan", signedBy: ["ground"], reason: "Plan from Earth", planId: p.id, planIdx: idx, onSchedule: true });
+  }
+
+  // ---------- retrieval flow: locate → scan → (count) → done ----------
+
+  function viewFlow(f) {
+    if (f.step === "count") return viewCount(f);
+    if (f.step === "done") return viewDone(f);
+    return viewLocate(f);
+  }
+
+  function viewLocate(f) {
+    var it = L.getItem(state, f.itemId), loc = L.locationOf(state, it);
+    var html = '<div class="find' + (f.emergency ? " em" : "") + '"><div class="hc-kicker">' + (f.emergency ? "🚨 Emergency" : "Find it") + "</div>" +
+      '<div class="where">' + whereChips(loc) + '</div><div class="what"><b>' + f.qty + " ×</b> " + esc(it.name) + ' <span class="muted">' + esc(it.strength) + "</span></div>";
+    if (f.error) html += '<div class="find-error">' + esc(f.error) + "</div>";
+    if (f.locateOnly) {
+      html += '<div class="find-actions"><button class="btn primary big" data-act="flow-close">Done</button></div>';
+    } else {
+      html += '<div class="find-actions"><span class="timer" id="timer">0:00</span><button class="btn primary big" data-act="scan-ok">📷 Scan</button>' +
+        (f.emergency ? '<button class="btn big" data-act="scan-skip">Skip scan</button>' : "") + "</div>" +
+        '<div class="demo-line"><button class="link small" data-act="scan-wrong">Demo: scan the wrong box</button> · <button class="link small" data-act="flow-close">Cancel</button></div>';
+    }
+    return html + "</div>";
+  }
+
+  function doScan(tag) {
+    var f = ui.flow, it = L.getItem(state, f.itemId);
+    var lot = state.lots.filter(function (l) { return l.tag === tag; })[0];
+    if (!lot || lot.itemId !== it.id) {
+      f.wrong++;
+      var other = lot ? L.getItem(state, lot.itemId) : null;
+      f.error = "Wrong box" + (other ? " (" + other.name + ")" : "") + ". Try bin " + it.bin + ".";
+      return;
+    }
+    if (L.lotStatus(state, it, lot, now()) === "expired" && !f.emergency) { f.error = "That box is expired. Take the other one."; return; }
+    if (lot.qty < f.qty) { f.error = "That box is nearly empty. Take the other one."; return; }
+    f.error = "";
+    f.lotId = lot.id;
+    f.seconds = Math.max(1, Math.round((Date.now() - f.start) / 1000));
+    afterScan();
+  }
+
+  function afterScan() {
+    var f = ui.flow, it = L.getItem(state, f.itemId);
+    if (L.needsCountCheck(it)) { f.step = "count"; f.count = ""; f.error = ""; }
+    else complete();
+  }
+
+  function counterOf(f) { return f.authType === "cmo+witness" ? (f.signedBy[1] || me) : me; }
+
+  function viewCount(f) {
+    var it = L.getItem(state, f.itemId);
+    return '<div class="hcard"><div class="hc-kicker">Count check</div><div class="hc-title">How many are left in bin ' + esc(it.bin) + "?</div>" +
+      '<div class="count-row"><input id="countInput" type="number" min="0" inputmode="numeric" aria-label="Number left" value="' + esc(f.count) + '" data-bind="flow.count">' +
+      '<button class="btn primary big" data-act="count-done">Done</button></div>' + (f.error ? '<p class="error">' + esc(f.error) + "</p>" : "") + "</div>";
+  }
+
+  function complete(extra) {
+    var f = ui.flow;
+    try {
+      f.entry = L.dispense(state, Object.assign({
+        patientId: f.patientId, itemId: f.itemId, lotId: f.lotId, qty: f.qty, reason: f.reason, authType: f.authType, signedBy: f.signedBy,
+        requestId: f.requestId, scanSkipped: !!f.scanSkipped, planId: f.planId, planIdx: f.planIdx, override: f.override || null
+      }, extra || {}), now());
+    } catch (err) { f.error = err.message; return; }
+    if (f.reportId) markReport(f.reportId);
+
+    f.gains = []; f.newBadges = []; f.levelUp = false; f.newBest = false;
+    if (!f.emergency) {
+      var p = player(), before = level(p.xp);
+      p.retrievals++;
+      if (!f.scanSkipped && f.wrong === 0) { f.gains.push(["Right box first try", XP.firstTry]); p.firstTryScans++; }
+      f.gains.push(["Found it", XP.found]);
+      if (f.seconds != null && f.seconds <= FAST_SEC) f.gains.push(["Quick find: " + f.seconds + " s", XP.fast]);
+      if (f.onSchedule) f.gains.push(["On schedule", XP.onSchedule]);
+      if (f.seconds != null && (p.bestTimeSec == null || f.seconds < p.bestTimeSec)) { p.bestTimeSec = f.seconds; f.newBest = true; }
+      f.gains.forEach(function (g) { p.xp += g[1]; });
+      unlock(p, "first-find", f.newBadges);
+      if (p.firstTryScans >= 5) unlock(p, "sharp-eye", f.newBadges);
+      if (f.seconds != null && f.seconds <= 20) unlock(p, "speedy", f.newBadges);
+      if (f.planId) {
+        var plan = state.plans.filter(function (x) { return x.id === f.planId; })[0], t = now();
+        if (plan && plan.items.every(function (x, i) { return L.planItemStatus(state, plan, i, t).state === "finished"; })) unlock(p, "course-complete", f.newBadges);
+      }
+      f.levelUp = level(p.xp) > before;
+    }
+    f.step = "done";
+    save();
+  }
+
+  function confetti() {
+    var colors = ["#f5b700", "#3a6be0", "#2e9a5b", "#d64545", "#7b4fc9", "#00a6c8"], s = "";
+    for (var i = 0; i < 28; i++) {
+      s += '<i style="left:' + ((i * 37) % 100) + "%;background:" + colors[i % colors.length] + ";animation-delay:" + ((i % 7) * 0.08).toFixed(2) + "s;animation-duration:" +
+        (1.4 + (i % 5) * 0.25).toFixed(2) + 's"></i>';
+    }
+    return '<div class="confetti" aria-hidden="true">' + s + "</div>";
+  }
+
+  function viewDone(f) {
+    var e = f.entry, total = 0;
+    (f.gains || []).forEach(function (g) { total += g[1]; });
+    var html = '<div class="done">' + (f.emergency ? "" : confetti()) + '<div class="done-check">✓</div><div class="hc-title">' + (f.emergency ? "Logged" : "Done!") + "</div>";
+    if (total) {
+      html += '<div class="xp-gain">+' + total + ' XP</div><ul class="gains">' + f.gains.map(function (g) {
+        return "<li><span>" + esc(g[0]) + "</span><b>+" + g[1] + "</b></li>";
+      }).join("") + "</ul>";
+    }
+    if (f.levelUp) html += '<div class="levelup">⬆ Level ' + level(player().xp) + "!</div>";
+    (f.newBadges || []).forEach(function (id) { html += '<div class="badge-new">' + BADGES[id].icon + " New badge: " + esc(BADGES[id].label) + "</div>"; });
+    if (f.newBest) html += '<div class="hc-sub">New best: ' + f.seconds + " s</div>";
+    if (e && e.countCheck && e.countCheck.counted !== e.countCheck.expected) html += '<div class="tag bad block">Count doesn\'t match. The CMO will check.</div>';
+    if (e && e.override) html += '<div class="tag bad block">⚠ Given despite: ' + esc(e.override.join("; ")) + ". Flagged for the CMO and ground.</div>";
+    if (e && e.docsDue) html += '<div class="tag bad block">CMO: write what happened by ' + clock(e.docsDue) + ".</div>";
+    html += '<div class="hc-sub">Close the bin and the locker.</div><button class="btn primary big" data-act="flow-close">Back</button></div>';
+    return html;
+  }
+
+  function updateTimer() {
+    var el = document.getElementById("timer");
+    if (!el || !ui.flow || ui.flow.step !== "locate") return;
+    var s = Math.max(0, Math.floor((Date.now() - ui.flow.start) / 1000));
+    el.textContent = Math.floor(s / 60) + ":" + pad(s % 60);
+    el.classList.toggle("slow", s > FAST_SEC);
+  }
+
+  // ---------- lockers panel (front view of the three lockers) ----------
+
+  function lockersPanel(focus, locating, t) {
+    var it = focus ? L.getItem(state, focus.itemId) : null;
+    var loc = it ? L.locationOf(state, it) : null;
+    var rx = needsCmoMap(t);
+    var html = '<div class="lockers-head"><span class="lh-title">Lockers</span>';
+    if (focus && focus.clearable && it) html += '<span class="lh-focus">' + esc(it.name) + ' <button class="link small" data-act="locker-clear">Clear</button></span>';
+    html += '<span class="legend-rx"><span class="rx-swatch"></span>🔒 Needs CMO approval</span></div>';
+    if (locating && loc) {
+      html += '<div class="bay-strip" aria-hidden="true">' + state.lockers.map(function (lk) {
+        return '<div class="mini-locker' + (lk.id === loc.locker.id ? " on" : "") + (lk.emergency ? " em" : "") + '"><span>' + esc(lk.label) + "</span></div>";
+      }).join("") + "</div>";
+    }
+    html += '<div class="locker-row">' + state.lockers.map(function (lk) {
+      var isTarget = loc && loc.locker.id === lk.id;
+      return lockerFront(lk, {
+        target: isTarget ? { shelfId: loc.shelf.id, bin: loc.bin } : null,
+        pulse: !!(focus && focus.pulse),
+        dim: !!(locating && loc && !isTarget),
+        focusShelf: !!(locating && isTarget),
+        clickable: !ui.flow,
+        rx: rx
+      });
+    }).join("") + "</div>";
+    return html;
+  }
+
+  function lockerFront(lk, o) {
+    var shelves = state.shelves.filter(function (s) { return s.lockerId === lk.id; }).sort(function (a, b) { return a.level - b.level; });
+    var html = '<div class="locker' + (lk.emergency ? " locker-em" : "") + (o.dim ? " dim" : "") + (o.focusShelf ? " focus" : "") + '"><div class="locker-plate"><span class="locker-num">' +
+      esc(lk.label) + '</span><span class="locker-name">' + esc(lk.name) + '</span></div><div class="locker-inside">';
+    shelves.forEach(function (sh) {
+      var pack = L.getPack(state, sh.packId), isT = !!(o.target && o.target.shelfId === sh.id);
+      var byBin = {}, maxBin = 0;
+      state.items.filter(function (i) { return i.shelfId === sh.id; }).forEach(function (i) { byBin[i.bin] = i; maxBin = Math.max(maxBin, i.bin); });
+      var nBins = Math.max(sh.cols, Math.ceil(maxBin / sh.cols) * sh.cols);
+      html += '<div class="shelf' + (isT ? " target" : "") + '" style="--zone:' + pack.hex + '"><div class="shelf-label"><span class="zone-dot"></span>' +
+        esc(SHELF_SHORT[sh.level]) + " · " + esc(sh.zone) + '</div><div class="bins" style="grid-template-columns:repeat(' + sh.cols + ',minmax(0,1fr))">';
+      for (var b = 1; b <= nBins; b++) {
+        var it = byBin[b], tgt = isT && o.target.bin === b;
+        if (it) {
+          var tag = o.clickable ? "button" : "div", isRx = !!o.rx[it.id];
+          html += "<" + tag + ' class="bin' + (isRx ? " rx" : "") + (tgt ? (o.pulse ? " target" : " preview") : "") + '"' +
+            (o.clickable ? ' data-act="bin" data-id="' + it.id + '"' : "") + ' title="' + esc(itemLabel(it)) + (isRx ? " (needs CMO approval)" : "") +
+            '"><span class="bin-num">' + b + (isRx ? " 🔒" : "") + '</span><span class="bin-name">' + esc(shortName(it)) + "</span></" + tag + ">";
+        } else {
+          html += '<div class="bin empty"><span class="bin-num">' + b + "</span></div>";
+        }
+      }
+      html += '</div><div class="strap"></div></div>';
+    });
+    return html + '</div><div class="locker-foot"></div></div>';
+  }
+
+  // ---------- import a plan from Earth ----------
+
+  function viewImport() {
+    var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Import from Earth</h2></div><div class="stack">';
+    html += '<div class="hcard"><div class="hc-kicker">A plan from your flight surgeon</div>';
+    if (ui.qrActive) {
+      html += '<video id="qrVideo" class="qr-video" autoplay playsinline muted></video><div class="hc-actions"><button class="btn" data-act="qr-stop">Stop camera</button></div>';
+    } else {
+      html += '<div class="hc-actions"><button class="btn big" data-act="qr-start">📷 Scan QR</button></div>';
+    }
+    html += '<div class="or">or type the code</div><div class="code-row"><input id="rxCode" class="code-input" type="text" spellcheck="false" autocomplete="off" placeholder="RX1-…" value="' +
+      esc(ui.rxCode) + '" data-bind="rxCode"><button class="btn primary" data-act="rx-check">Check</button></div>';
+    if (ui.rxError) html += '<p class="error">' + esc(ui.rxError) + "</p>";
+    html += "</div>";
+    if (ui.rxPreview) {
+      var p = ui.rxPreview;
+      html += '<div class="hcard plan"><div class="hc-kicker">🌍 From Earth · starts ' + esc(fmtShort(p.start)) + "</div>";
+      p.items.forEach(function (x) {
+        var it = L.getItem(state, x.itemId);
+        html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="muted small">' + esc(doseText(it, x.units)) +
+          " · " + esc(timesADay(x.perDay)) + " · " + x.days + " days</div></div></div>";
+      });
+      html += '<div class="hc-actions"><button class="btn primary big" data-act="rx-add">Add to my plan</button></div></div>';
+    }
+    return html + "</div>";
+  }
+
+  function checkRx() {
+    ui.rxError = ""; ui.rxPreview = null;
+    var res = L.decodeRx(state, ui.rxCode);
+    if (res.error) { ui.rxError = res.error; return; }
+    if (res.plan.patientId !== me) { ui.rxError = "This plan is for " + firstName(res.plan.patientId) + "."; return; }
+    if (state.plans.some(function (p) { return p.code === res.plan.code; })) { ui.rxError = "Already added."; return; }
+    ui.rxPreview = res.plan;
+  }
+
+  function addRx() {
+    var p = Object.assign({ id: "P" + state.seq++, importedAt: now().toISOString() }, ui.rxPreview);
+    state.plans.unshift(p);
+    ui.rxPreview = null; ui.rxCode = ""; ui.screen = "main";
+    save();
+    toast("Plan added");
+  }
+
+  function qrStart() {
+    ui.rxError = "";
+    if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      ui.rxError = "This device can't scan QR codes here. Type the code instead.";
+      return;
+    }
+    try { qr.detector = new window.BarcodeDetector({ formats: ["qr_code"] }); } catch (e) {
+      ui.rxError = "This device can't scan QR codes here. Type the code instead.";
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false }).then(function (stream) {
+      qr.stream = stream;
+      ui.qrActive = true;
+      render();
+      qr.timer = setInterval(function () {
+        var v = document.getElementById("qrVideo");
+        if (!v || v.readyState < 2) return;
+        qr.detector.detect(v).then(function (codes) {
+          if (codes && codes.length) { qrStop(); ui.rxCode = codes[0].rawValue; checkRx(); render(); }
+        }).catch(function () { /* keep trying */ });
+      }, 400);
+    }).catch(function () { ui.rxError = "No camera access. Type the code instead."; render(); });
+  }
+  function attachQr() {
+    var v = document.getElementById("qrVideo");
+    if (v && qr.stream && v.srcObject !== qr.stream) {
+      v.srcObject = qr.stream;
+      var pr = v.play && v.play();
+      if (pr && pr.catch) pr.catch(function () { /* autoplay blocked */ });
+    }
+  }
+  function qrStop() {
+    clearInterval(qr.timer);
+    qr.timer = null;
+    if (qr.stream) qr.stream.getTracks().forEach(function (tr) { tr.stop(); });
+    qr.stream = null;
+    ui.qrActive = false;
+  }
+
+  // ---------- emergency ----------
+
+  var CONDITION_SHORT = { "gi-bleed-risk": "bleeding risk", "hypertension": "high blood pressure" };
+
+  // Risks of an emergency medicine for this patient. Never a hard block in an emergency:
+  // "block" level risks need a second deliberate tap and are logged as an override.
+  function emRisks(patientId, it) {
+    if (it.kind === "equipment") return [];
+    var sf = L.safetyChecks(state, patientId, it, it.doseUnits || 1, now()), name = firstName(patientId), out = [];
+    sf.checks.forEach(function (c) {
+      if (c.result === "pass") return;
+      if (c.name === "Allergy") {
+        out.push({ level: "block", short: "Allergy", text: c.msg.replace(crewName(patientId), name) });
+      } else if (c.name === "Contraindication") {
+        out.push({ level: "block", short: "Not safe", text: name + ": " + c.msg.replace("Not suitable with: ", "not safe with ").toLowerCase() });
+      } else if (c.name === "Daily maximum") {
+        out.push({ level: "block", short: "Daily limit", text: name + ": daily limit reached (" + c.msg + ")" });
+      } else if (c.name === "Same class") {
+        out.push({ level: c.result, short: "Recent dose", text: name + ": " + c.msg.charAt(0).toLowerCase() + c.msg.slice(1) });
+      } else if (c.name === "Duplicate ingredient") {
+        out.push({ level: "warn", short: "Same ingredient", text: name + ": " + c.msg.charAt(0).toLowerCase() + c.msg.slice(1) });
+      }
+    });
+    return out;
+  }
+
+  function viewEmergency(t) {
+    var em = ui.em;
+    var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2 class="danger-text">Emergency</h2></div>';
+    var kept = state.requests.filter(function (r) { return r.patientId === me && (r.status === "pending" || r.status === "approved"); }).length +
+      myPlans().length + (ui.paused ? 1 : 0);
+    if (kept) html += '<p class="kept">↩ Your requests and plans are kept. They\'re back when you leave this screen.</p>';
+    html += '<div class="em-who"><span class="muted">Who needs help?</span>' + state.crew.map(function (c) {
+      var tags = c.allergies.map(function (a) { return '<span class="who-tag">🚫 ' + esc(a) + "</span>"; }).join("") +
+        c.conditions.map(function (x) { return '<span class="who-tag">⚠ ' + esc(CONDITION_SHORT[x] || x) + "</span>"; }).join("");
+      return '<button class="who' + (em.patientId === c.id ? " sel" : "") + '" data-act="em-who" data-id="' + c.id + '">' + esc(firstName(c.id)) + (c.id === me ? " (me)" : "") + tags + "</button>";
+    }).join("") + "</div>";
+    html += '<div class="tiles">' + state.items.filter(function (it) { return it.tier === "4"; }).map(function (it) {
+      var s = L.stock(state, it, t), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
+      return '<button class="tile em' + (em.itemId === it.id ? " sel" : "") + (risks.length ? " risk" : "") + '" data-act="em-item" data-id="' + it.id + '"><span class="tile-name">' + esc(it.name) +
+        '</span><span class="tile-use">' + (it.kind === "equipment" ? "Equipment" : esc(it.strength) + " · " + s.usable + " left") + "</span>" +
+        (risks.length ? '<span class="tile-risk' + (block ? " block" : "") + '">⚠ ' + esc(risks[0].short) + "</span>" : "") + "</button>";
+    }).join("") + "</div>";
+    if (em.itemId) {
+      var it = L.getItem(state, em.itemId), risks = emRisks(em.patientId, it), block = risks.some(function (r) { return r.level === "block"; });
+      if (risks.length) {
+        html += '<div class="em-warn' + (block ? " block" : "") + '"><b>⚠ ' + (block ? "Warning" : "Check") + "</b>" +
+          risks.map(function (r) { return "<div>" + esc(r.text) + "</div>"; }).join("") +
+          (block ? '<div class="em-warn-note">Only give it if there is no other option. It will be logged for the CMO and ground.</div>' : "") + "</div>";
+      }
+      html += '<div class="em-go">' + (it.kind === "equipment"
+        ? '<button class="btn danger big" data-act="em-locate">Show me</button>'
+        : '<input id="emReason" type="text" placeholder="What happened? (optional)" value="' + esc(em.reason) + '" data-bind="em.reason">' +
+          '<button class="btn danger big' + (em.confirm ? " confirm" : "") + '" data-act="em-release">' +
+          (block ? (em.confirm ? "Tap again to give anyway" : "Give anyway") : "Release now") + "</button>") + "</div>";
+    }
+    return html;
+  }
+
+  function emergencyRelease() {
+    var em = ui.em, t = now(), it = L.getItem(state, em.itemId), qty = it.doseUnits || 1;
+    var overrides = emRisks(em.patientId, it).filter(function (r) { return r.level === "block"; }).map(function (r) { return r.text; });
+    if (overrides.length && !em.confirm) { em.confirm = true; return; }
+    var lot = L.pickLot(state, it, qty, t).lot || L.fefoLots(state, it).filter(function (l) { return l.qty >= qty; })[0];
+    if (!lot) { toast("None left."); return; }
+    startFlow({
+      emergency: true, patientId: em.patientId, itemId: it.id, qty: qty, lotId: lot.id, authType: "break-glass", signedBy: [me],
+      reason: String(em.reason || "").trim() || "Emergency", override: overrides.length ? overrides : null
+    });
+    ui.em = null;
+  }
+
+  // ---------- stock (CMO) ----------
 
   function filteredItems(t) {
     var f = ui.filters, q = (f.q || "").toLowerCase();
@@ -237,9 +861,11 @@
     });
   }
 
-  function viewDashboard() {
-    var t = now(), a = L.alerts(state, t);
-    var html = '<section class="alerts" aria-label="Alerts">';
+  function viewStock() {
+    var t = now(), a = L.alerts(state, t), m = L.missionInfo(state, t);
+    var html = '<div class="mission-line"><b>' + esc(state.mission.name) + "</b> · Day " + m.day + " of " + m.total + " · " + m.daysLeft + " days left · Signal delay " +
+      state.mission.commDelayMin + " min</div>";
+    html += '<section class="alerts" aria-label="Alerts">';
     [
       ["expired", a.expired.length, "Items with an expired lot", "bad"],
       ["potency-risk", a.potencyRisk.length, "Potency at risk", "warn"],
@@ -247,36 +873,10 @@
       ["below-reserve", a.belowReserve.length, "Below reserve or empty", "warn"],
       ["before-end", a.beforeEnd.length, "Have lots expiring before mission end", "info"]
     ].forEach(function (c) {
-      html += '<button class="alert-card ' + c[3] + (ui.filters.flag === c[0] ? " active" : "") + (c[1] ? "" : " zero") +
-        '" data-act="filter-flag" data-flag="' + c[0] + '"><span class="n">' + c[1] + "</span><span>" + c[2] + "</span></button>";
-    });
-    [
-      ["approvals", a.pending.length, "Requests waiting for sign-off", "info"],
-      ["approvals", a.docsDue.length + a.countIssues.length, "Documentation or count issues", "bad"],
-      ["approvals", a.groundReview.length, "Waiting for ground review", "muted"],
-      ["log", a.followUps.length, "Dose follow-ups due", "muted"]
-    ].forEach(function (c) {
-      html += '<button class="alert-card ' + c[3] + (c[1] ? "" : " zero") + '" data-act="nav" data-view="' + c[0] + '"><span class="n">' +
-        c[1] + "</span><span>" + c[2] + "</span></button>";
+      html += '<button class="alert-card ' + c[3] + (ui.filters.flag === c[0] ? " active" : "") + (c[1] ? "" : " zero") + '" data-act="filter-flag" data-flag="' + c[0] +
+        '"><span class="n">' + c[1] + "</span><span>" + c[2] + "</span></button>";
     });
     html += "</section>";
-
-    html += '<section class="packs" aria-label="Packs">';
-    state.packs.forEach(function (p) {
-      var items = state.items.filter(function (i) { return i.packId === p.id; });
-      var units = 0, issues = 0;
-      items.forEach(function (it) {
-        units += L.stock(state, it, t).usable;
-        if (L.itemFlags(state, it, t).filter(function (x) { return x !== "before-end"; }).length) issues++;
-      });
-      var lk = L.getLocker(state, p.lockerId);
-      html += '<button class="pack-card' + (ui.filters.pack === p.id ? " active" : "") + '" data-act="filter-pack" data-id="' + p.id + '">' +
-        '<span class="swatch" style="background:' + p.hex + '"></span><span class="pc-body"><b>' + esc(p.name) + '</b><span class="muted">' +
-        esc(p.colour) + " · locker " + esc(lk.label) + "</span><span>" + items.length + " items · " + units + " units" +
-        (issues ? ' · <em class="t-warn">' + issues + " need attention</em>" : "") + "</span></span></button>";
-    });
-    html += "</section>";
-
     var f = ui.filters;
     function opt(v, label, cur) { return '<option value="' + v + '"' + (cur === v ? " selected" : "") + ">" + esc(label) + "</option>"; }
     html += '<section class="toolbar"><input id="q" type="search" placeholder="Search items" aria-label="Search items" value="' + esc(f.q) + '" data-bind="filters.q" data-live>' +
@@ -286,656 +886,157 @@
       ["S", "1", "2", "3", "4"].map(function (k) { return opt(k, TIER[k].label, f.tier); }).join("") + "</select>" +
       '<select id="fFlag" aria-label="Status" data-bind="filters.flag" data-rerender>' + opt("", "Any status", f.flag) +
       Object.keys(FLAG).map(function (k) { return opt(k, FLAG[k].label, f.flag); }).join("") + "</select>" +
-      (f.q || f.pack || f.tier || f.flag ? '<button class="btn small" data-act="clear-filters">Clear filters</button>' : "") + "</section>";
-
+      (f.q || f.pack || f.tier || f.flag ? '<button class="btn small" data-act="clear-filters">Clear</button>' : "") + "</section>";
     var rows = filteredItems(t);
-    html += '<div class="table-wrap"><table class="inv"><thead><tr><th>Item</th><th>Pack</th><th>Tier</th><th>Usable / reserve</th><th>Lasts</th><th>Next expiry</th><th>Status</th></tr></thead><tbody>';
+    html += '<div class="table-wrap"><table class="inv"><thead><tr><th>Item</th><th>Where</th><th>Tier</th><th>Usable / reserve</th><th>Lasts</th><th>Next expiry</th><th>Status</th></tr></thead><tbody>';
     rows.forEach(function (it) { html += itemRow(it, t); });
     if (!rows.length) html += '<tr><td colspan="7" class="muted">No items match.</td></tr>';
-    html += "</tbody></table></div>";
-    html += '<p class="hint">' + rows.length + " of " + state.items.length + " items. Click a row for lots, location and use. Planning expiry = labelled expiry minus a space-environment margin (assumption, see spec).</p>";
-    return html;
+    return html + "</tbody></table></div>";
   }
 
   function itemRow(it, t) {
-    var s = L.stock(state, it, t), flags = L.itemFlags(state, it, t), nx = L.nextExpiry(state, it);
+    var s = L.stock(state, it, t), flags = L.itemFlags(state, it, t), nx = L.nextExpiry(state, it), loc = L.locationOf(state, it);
     var stockCell, covCell;
     if (it.kind === "equipment") {
       stockCell = s.onHand + " unit" + (s.onHand === 1 ? "" : "s");
       covCell = '<span class="muted">Equipment</span>';
     } else {
       var max = Math.max(s.usable, it.reserve * 2, 1);
-      var pct = Math.min(100, s.usable / max * 100), rpct = Math.min(100, it.reserve / max * 100);
-      stockCell = '<div class="stock"><b>' + s.usable + '</b> <span class="muted">/ ' + it.reserve + "</span></div>" +
-        '<div class="bar"><span class="' + (s.usable < it.reserve ? "warn" : "ok") + '" style="width:' + pct + '%"></span>' +
-        (it.reserve ? '<i style="left:' + rpct + '%" title="Reserve"></i>' : "") + "</div>";
+      stockCell = '<div class="stock"><b>' + s.usable + '</b> <span class="muted">/ ' + it.reserve + '</span></div><div class="bar"><span class="' +
+        (s.usable < it.reserve ? "warn" : "ok") + '" style="width:' + Math.min(100, s.usable / max * 100) + '%"></span>' +
+        (it.reserve ? '<i style="left:' + Math.min(100, it.reserve / max * 100) + '%" title="Reserve"></i>' : "") + "</div>";
       var cov = L.coverage(state, it, t);
       if (cov.rate.perDay <= 0) covCell = '<span class="muted">No regular use</span>';
       else {
-        var cp = Math.min(100, cov.days / Math.max(cov.daysLeft, 1) * 100);
-        covCell = "<div>" + (cov.limitedBy ? cov.days + " of " + cov.daysLeft + " days" : "Whole mission") +
-          (cov.expiryGap ? ' <span class="muted small">(lots expire)</span>' : "") + "</div>" +
-          '<div class="bar"><span class="' + (cov.shortfall ? "warn" : cov.expiryGap ? "info" : "ok") + '" style="width:' + cp + '%"></span></div>';
+        covCell = "<div>" + (cov.limitedBy ? cov.days + " of " + cov.daysLeft + " days" : "Whole mission") + (cov.expiryGap ? ' <span class="muted small">(lots expire)</span>' : "") +
+          '</div><div class="bar"><span class="' + (cov.shortfall ? "warn" : cov.expiryGap ? "info" : "ok") + '" style="width:' + Math.min(100, cov.days / Math.max(cov.daysLeft, 1) * 100) + '%"></span></div>';
       }
     }
-    return '<tr data-act="open-item" data-id="' + it.id + '" tabindex="0">' +
-      "<td><b>" + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="sub">' + esc(it.form) +
-      (it.ownerCrewId ? " · for " + esc(crewName(it.ownerCrewId)) : "") + "</div></td>" +
-      "<td>" + packChip(it.packId) + "</td><td>" + tierBadge(it.tier, it.controlled) + "</td>" +
-      "<td>" + stockCell + "</td><td>" + covCell + "</td>" +
-      "<td>" + (nx ? fmtDate(nx.expiry) : '<span class="muted">–</span>') + "</td>" +
-      "<td>" + (flags.length ? flagTags(flags) : '<span class="tag ok">OK</span>') + "</td></tr>";
+    return '<tr data-act="open-item" data-id="' + it.id + '" tabindex="0"><td><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="sub">' + esc(it.form) +
+      (it.ownerCrewId ? " · for " + esc(crewName(it.ownerCrewId)) : "") + "</div></td><td>" + packChip(it.packId) + '<div class="sub">L' + esc(loc.locker.label) + " · " +
+      esc(SHELF_SHORT[loc.shelf.level]) + " · bin " + esc(loc.bin) + "</div></td><td>" + tierBadge(it.tier, it.controlled) + "</td><td>" + stockCell + "</td><td>" + covCell + "</td><td>" +
+      (nx ? fmtDate(nx.expiry) : '<span class="muted">–</span>') + "</td><td>" + (flags.length ? flagTags(flags) : '<span class="tag ok">OK</span>') + "</td></tr>";
   }
 
   // ---------- item drawer ----------
 
   function renderDrawer() {
     var d = document.getElementById("drawer"), bd = document.getElementById("backdrop");
-    if (!ui.drawerItemId) { d.hidden = true; bd.hidden = true; d.innerHTML = ""; return; }
-    var t = now(), it = L.getItem(state, ui.drawerItemId);
-    if (!it) { ui.drawerItemId = null; d.hidden = true; bd.hidden = true; return; }
-    var s = L.stock(state, it, t), loc = L.locationOf(state, it), flags = L.itemFlags(state, it, t);
-    var html = '<div class="drawer-head"><div><h2>' + esc(it.name) + ' <span class="muted">' + esc(it.strength) + "</span></h2><div>" +
-      tierBadge(it.tier, it.controlled) + " " + packChip(it.packId, true) + '</div></div><button class="icon" data-act="close-drawer" aria-label="Close">×</button></div>';
-    html += '<p class="loc">' + locText(loc) + "</p>";
+    var it = ui.drawerItemId ? L.getItem(state, ui.drawerItemId) : null;
+    if (!it) { ui.drawerItemId = null; d.hidden = true; bd.hidden = true; d.innerHTML = ""; return; }
+    var t = now(), s = L.stock(state, it, t), loc = L.locationOf(state, it), flags = L.itemFlags(state, it, t);
+    var html = '<div class="drawer-head"><div><h2>' + esc(it.name) + ' <span class="muted">' + esc(it.strength) + "</span></h2><div>" + tierBadge(it.tier, it.controlled) + " " +
+      packChip(it.packId, true) + '</div></div><button class="icon" data-act="close-drawer" aria-label="Close">×</button></div>';
+    html += '<div class="where">' + whereChips(loc) + "</div>";
     if (flags.length) html += "<p>" + flagTags(flags) + "</p>";
-    if (it.ownerCrewId) html += '<p class="note">Crew-specific: for ' + esc(crewName(it.ownerCrewId)) + " only.</p>";
+    if (it.ownerCrewId) html += '<p class="note">For ' + esc(crewName(it.ownerCrewId)) + " only.</p>";
     if (it.notes) html += '<p class="note">' + esc(it.notes) + "</p>";
-
     if (it.kind !== "equipment") {
-      var cov = L.coverage(state, it, t), used = L.unitsUsed(state, it.id, 30 * L.DAY_MS, t);
-      html += '<div class="stats">' +
-        stat(s.onHand, "On hand") + stat(s.usable, "Usable (not expired)") + stat(it.reserve, "Reserve") +
-        stat(used, "Used, last 30 days") +
-        stat(cov.rate.perDay > 0 ? cov.rate.perDay.toFixed(2) + "/day" : "–", "Use rate (" + cov.rate.basis + ")") +
-        stat(cov.rate.perDay > 0 ? (cov.limitedBy ? cov.days + " d" : "Whole mission") : "–",
-          "Lasts (" + cov.daysLeft + " days left)" + (cov.limitedBy ? ": limited by " + cov.limitedBy : "")) +
+      var cov = L.coverage(state, it, t);
+      html += '<div class="stats">' + stat(s.usable, "Usable") + stat(it.reserve, "Reserve") + stat(L.unitsUsed(state, it.id, 30 * L.DAY_MS, t), "Used, 30 days") +
+        stat(cov.rate.perDay > 0 ? (cov.limitedBy ? cov.days + " d" : "Whole mission") : "–", "Lasts" + (cov.limitedBy ? " (" + cov.limitedBy + ")" : "")) +
         stat(cov.waste, "Will expire unused") + "</div>";
-      if (it.indications.length) html += "<p><b>Used for:</b> " + it.indications.map(symLabel).map(esc).join(", ") + "</p>";
-      var info = [];
-      if (it.doseUnits) info.push("Usual dose " + it.doseUnits + " × " + it.form);
-      if (it.maxPerDay) info.push("max " + it.maxPerDay + " per 24 h");
-      if (it.sedating) info.push("sedating");
-      info.push("stability: " + it.stability);
-      html += '<p class="muted small">' + esc(info.join(" · ")) + "</p>";
     }
-
-    html += "<h3>Lots</h3><div class=\"table-wrap\"><table><thead><tr><th>Lot</th><th>Qty</th><th>Expiry</th><th>Planning expiry</th><th>Status</th><th>Tag</th></tr></thead><tbody>";
+    html += '<h3>Lots</h3><div class="table-wrap"><table><thead><tr><th>Lot</th><th>Qty</th><th>Expiry</th><th>Planning expiry</th><th>Status</th></tr></thead><tbody>';
     L.fefoLots(state, it).forEach(function (l) {
       var pe = L.planningExpiry(state, it, l);
-      html += "<tr><td>" + esc(l.lotNumber) + "</td><td>" + l.qty + "</td><td>" + fmtDate(l.expiry) + "</td><td>" +
-        (pe ? fmtDate(pe) : "–") + "</td><td>" + lotTag(L.lotStatus(state, it, l, t)) + '</td><td class="muted small">' + esc(l.tag) + "</td></tr>";
+      html += "<tr><td>" + esc(l.lotNumber) + "</td><td>" + l.qty + "</td><td>" + fmtDate(l.expiry) + "</td><td>" + (pe ? fmtDate(pe) : "–") + "</td><td>" + lotTag(L.lotStatus(state, it, l, t)) + "</td></tr>";
     });
-    html += "</tbody></table></div>";
-
-    html += '<div class="actions"><button class="btn" data-act="locate-item" data-id="' + it.id + '">Locate on map</button>' +
-      (it.kind !== "equipment" ? '<button class="btn primary" data-act="dispense-item" data-id="' + it.id + '">Dispense</button>' : "") + "</div>";
+    html += '</tbody></table></div><div class="actions"><button class="btn" data-act="locate-item" data-id="' + it.id + '">Show in locker</button></div>';
     d.innerHTML = html;
     d.hidden = false;
     bd.hidden = false;
   }
   function stat(v, label) { return '<div class="stat"><b>' + esc(v) + "</b><span>" + esc(label) + "</span></div>"; }
 
-  // ---------- dispense wizard ----------
-
-  function startWizard(opts) {
-    var c = cmo();
-    ui.wiz = Object.assign({
-      step: "start", patientId: null, report: { symptoms: [], vitals: {} }, result: null,
-      itemId: null, qty: 1, reason: "", preItem: false,
-      sigs: { patient: {}, approver: {}, witness: {} }, ack: false, cmoUnavailable: false,
-      authType: null, signedBy: [], lotId: null, scan: "", scanError: "", scanNote: "", scanSkipped: false,
-      count: "", emergency: false, releasedBy: c ? c.id : "", locateOnly: false, requestId: null, entry: null, error: "", query: ""
-    }, opts || {});
-    ui.view = "dispense";
-  }
-
-  function viewDispense() {
-    if (!ui.wiz) startWizard();
-    var w = ui.wiz, body;
-    switch (w.step) {
-      case "symptoms": body = viewSymptoms(w); break;
-      case "suggest": body = viewSuggest(w); break;
-      case "pick": body = viewPick(w); break;
-      case "auth": body = viewAuth(w); break;
-      case "queued": body = viewQueued(w); break;
-      case "locate": body = viewLocate(w); break;
-      case "scan": body = viewScan(w); break;
-      case "count": body = viewCount(w); break;
-      case "done": body = viewDone(w); break;
-      case "emergency": body = viewEmergency(w); break;
-      default: body = viewStart(w);
-    }
-    return '<div class="wizard' + (w.emergency ? " em" : "") + '">' + wizProgress(w) + body + "</div>";
-  }
-
-  function wizProgress(w) {
-    var steps = w.emergency ? ["Patient and item", "Locate", "Scan", "Done"] : ["Patient", "Need", "Authorise", "Locate", "Scan", "Done"];
-    var idx = w.emergency ? { emergency: 0, locate: 1, scan: 2, count: 2, done: 3 }
-      : { start: 0, symptoms: 1, suggest: 1, pick: 1, auth: 2, queued: 2, locate: 3, scan: 4, count: 4, done: 5 };
-    var cur = idx[w.step] || 0;
-    return '<ol class="progress">' + steps.map(function (s, i) {
-      return '<li class="' + (i < cur ? "done" : i === cur ? "cur" : "") + '">' + s + "</li>";
-    }).join("") + "</ol>";
-  }
-
-  function patientBar(w, allowChange) {
-    if (w.emergency) return '<div class="em-banner">Emergency release' + (w.patientId ? " for " + esc(crewName(w.patientId)) : "") + "</div>";
-    var c = L.getCrew(state, w.patientId);
-    if (!c) return "";
-    return '<div class="patient-bar">For <b>' + esc(c.name) + '</b> <span class="muted">' + esc(c.role) + "</span>" + crewTags(c) +
-      (allowChange ? '<button class="link" data-act="wiz-go" data-step="start">Change</button>' : "") + "</div>";
-  }
-
-  function viewStart(w) {
-    var html = "<h2>Who is it for?</h2><div class=\"crew-grid\">";
-    state.crew.forEach(function (c) {
-      html += '<button class="crew-card' + (w.patientId === c.id ? " sel" : "") + '" data-act="wiz-patient" data-id="' + c.id + '"><b>' +
-        esc(c.name) + '</b><span class="muted">' + esc(c.role) + "</span>" + crewTags(c) + "</button>";
-    });
-    html += "</div>";
-    var dis = w.patientId ? "" : " disabled";
-    html += "<h3>What do you need?</h3><div class=\"choice-row\">";
-    if (w.preItem && w.itemId) {
-      html += '<button class="btn primary big" data-act="wiz-choose" data-id="' + w.itemId + '"' + dis + ">Continue with " + esc(itemLabel(L.getItem(state, w.itemId))) + "</button>";
-    }
-    html += '<button class="btn ' + (w.preItem ? "" : "primary ") + 'big" data-act="wiz-go" data-step="symptoms"' + dis + ">Describe symptoms</button>" +
-      '<button class="btn big" data-act="wiz-go" data-step="pick"' + dis + ">I know which item</button></div>";
-    if (!w.patientId) html += '<p class="hint">Choose a crew member first.</p>';
-
-    html += "<h3>Reports from health monitoring</h3>";
-    if (!state.reports.length) html += '<p class="muted">No reports yet.</p>';
-    state.reports.forEach(function (r, i) {
-      html += '<div class="report"><div><b>' + esc(crewName(r.crewId)) + '</b> <span class="muted">' + ago(r.time) +
-        (r.source === "sample" ? " · sample" : "") + "</span><div>" +
-        r.symptoms.map(function (s) { return esc(symLabel(s.code)) + " " + s.severity + "/10"; }).join(", ") +
-        '</div></div><button class="btn" data-act="wiz-report" data-idx="' + i + '">Open</button></div>';
-    });
-    html += '<details class="paste"><summary>Paste a report as JSON (format in spec.md, section 8)</summary>' +
-      '<textarea id="pasteJson" rows="7" data-bind="pasteJson" spellcheck="false">' + esc(ui.pasteJson) + "</textarea>" +
-      '<button class="btn" data-act="paste-report">Load report</button></details>';
-    return html;
-  }
-
-  function symRow(w, s) {
-    var idx = -1;
-    w.report.symptoms.forEach(function (x, i) { if (x.code === s.code) idx = i; });
-    var on = idx >= 0;
-    var html = '<div class="sym' + (on ? " on" : "") + (s.redFlag ? " red" : "") + '"><label><input type="checkbox" data-act="wiz-sym" data-code="' +
-      s.code + '"' + (on ? " checked" : "") + "> " + esc(s.label) + "</label>";
-    if (on && !s.redFlag) {
-      var sev = w.report.symptoms[idx].severity;
-      html += '<label class="sev">Severity <input id="sev-' + s.code + '" type="range" min="1" max="10" value="' + sev +
-        '" data-bind="wiz.report.symptoms.' + idx + '.severity" data-rerender> <b>' + sev + "</b>/10</label>";
-    }
-    return html + "</div>";
-  }
-
-  function vitalInput(w, key, label, unit, step) {
-    var v = w.report.vitals[key];
-    return "<label>" + esc(label) + " (" + unit + ')<input id="v-' + key + '" type="number" step="' + (step || "1") + '" value="' +
-      (v == null ? "" : esc(v)) + '" data-bind="wiz.report.vitals.' + key + '"></label>';
-  }
-
-  function viewSymptoms(w) {
-    var html = patientBar(w, true) + "<h2>Symptoms</h2><div class=\"sym-grid\">";
-    state.symptoms.filter(function (s) { return !s.redFlag; }).forEach(function (s) { html += symRow(w, s); });
-    html += '</div><h3 class="urgent-h">Urgent symptoms</h3><div class="sym-grid">';
-    state.symptoms.filter(function (s) { return s.redFlag; }).forEach(function (s) { html += symRow(w, s); });
-    html += '</div><h3>Vitals <span class="muted">(optional, filled in by health monitoring when connected)</span></h3><div class="vitals">' +
-      vitalInput(w, "heartRate", "Heart rate", "bpm") + vitalInput(w, "spo2", "SpO₂", "%") +
-      vitalInput(w, "tempC", "Temperature", "°C", "0.1") + vitalInput(w, "systolic", "Systolic BP", "mmHg") + "</div>";
-    html += '<div class="actions"><button class="btn" data-act="wiz-go" data-step="start">Back</button><button class="btn primary" data-act="wiz-check"' +
-      (w.report.symptoms.length ? "" : " disabled") + ">Check options</button></div>";
-    return html;
-  }
-
-  function symptomsText(w) {
-    return w.report.symptoms.map(function (s) { return symLabel(s.code); }).join(", ");
-  }
-
-  function cleanVitals(v) {
-    var out = {};
-    Object.keys(v || {}).forEach(function (k) { if (v[k] !== "" && v[k] != null && !isNaN(Number(v[k]))) out[k] = Number(v[k]); });
-    return out;
-  }
-
-  function runCheck() {
-    var w = ui.wiz;
-    w.result = L.suggest(state, { crewId: w.patientId, symptoms: w.report.symptoms, vitals: cleanVitals(w.report.vitals) }, now());
-    w.step = "suggest";
-  }
-
-  function suggestionCard(s) {
-    var it = s.item, sf = s.safety, loc = L.locationOf(state, it, sf.lot);
-    var issues = sf.checks.filter(function (c) { return c.result !== "pass"; });
-    var btn;
-    if (!sf.lot) btn = '<span class="muted">No usable stock. Ask the CMO about an alternative.</span>';
-    else if (sf.result === "block") btn = '<button class="btn" data-act="wiz-choose" data-id="' + it.id + '">Ask the CMO for this</button>';
-    else btn = '<button class="btn primary" data-act="wiz-choose" data-id="' + it.id + '">Choose</button>';
-    return '<div class="sugg r-' + sf.result + '"><div class="sugg-head"><div><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) +
-      " · " + s.qty + " × " + esc(it.form) + "</span></div><div>" +
-      (it.ownerCrewId ? '<span class="badge muted">Your own</span> ' : "") +
-      (it.tier === "3" ? '<span class="badge t-3">Standing order</span> ' : "") + resultBadge(sf.result) + "</div></div>" +
-      '<div class="muted small">Matches: ' + s.matched.map(symLabel).map(esc).join(", ") + " · " + esc(locShort(loc)) + "</div>" +
-      (issues.length ? '<ul class="checks">' + issues.map(function (c) {
-        return '<li class="' + c.result + '"><b>' + esc(c.name) + ":</b> " + esc(c.msg) + "</li>";
-      }).join("") + "</ul>" : "") +
-      "<details><summary>" + (sf.checks.length - issues.length) + " of " + sf.checks.length + " checks passed</summary>" + checksTable(sf) + "</details>" +
-      '<div class="sugg-actions">' + btn + "</div></div>";
-  }
-
-  function viewSuggest(w) {
-    var r = w.result, html = patientBar(w, true);
-    if (r.escalate) {
-      var who = cmo() && cmo().id !== w.patientId ? cmo() : backupCmo();
-      html += '<div class="panel urgent"><h2>Get the CMO now</h2><p>These need a person, not a suggestion:</p><ul>' +
-        r.reasons.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul><p><b>" + esc(who.name) + "</b> (" + esc(who.role) +
-        ") decides. Ground is " + state.mission.commDelayMin + " minutes away one way, so don't wait for them.</p>" +
-        '<div class="actions"><button class="btn danger" data-act="emergency">Open emergency items</button>' +
-        '<button class="btn" data-act="wiz-go" data-step="symptoms">Back to symptoms</button></div></div>';
-      return html;
-    }
-    html += "<h2>Options</h2><p class=\"muted\">For: " + esc(symptomsText(w)) +
-      ". Suggestions are advice: you choose, and you can always ask the CMO instead.</p>";
-    if (!r.suggestions.length) html += "<p>No self-care item matches. Ask the CMO.</p>";
-    r.suggestions.forEach(function (s) { html += suggestionCard(s); });
-    if (r.askCmo.length) {
-      html += '<h3>Options that need the CMO</h3><div class="ask-list">';
-      r.askCmo.forEach(function (a) {
-        html += '<div class="ask"><span><b>' + esc(a.item.name) + "</b> " + esc(a.item.strength) + " " + tierBadge(a.item.tier, a.item.controlled) +
-          ' <span class="muted">for ' + a.matched.map(symLabel).map(esc).join(", ") + '</span></span><button class="btn" data-act="wiz-choose" data-id="' +
-          a.item.id + '">Request</button></div>';
-      });
-      html += "</div>";
-    }
-    html += '<div class="actions"><button class="btn" data-act="wiz-go" data-step="symptoms">Back</button>' +
-      '<button class="btn" data-act="wiz-go" data-step="pick">Choose another item</button></div>';
-    return html;
-  }
-
-  function viewPick(w) {
-    var t = now(), q = (w.query || "").toLowerCase();
-    var list = state.items.filter(function (it) {
-      return it.kind !== "equipment" && (!q || (it.name + " " + it.strength + " " + it.form).toLowerCase().indexOf(q) >= 0);
-    });
-    var html = patientBar(w, true) + '<h2>Choose an item</h2><input id="pickQ" type="search" placeholder="Search medicines and supplies" aria-label="Search" value="' +
-      esc(w.query || "") + '" data-bind="wiz.query" data-live><div class="pick-list">';
-    list.forEach(function (it) {
-      var s = L.stock(state, it, t);
-      html += '<div class="pick"><span><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + " · " + esc(it.form) +
-        (it.ownerCrewId ? " · for " + esc(crewName(it.ownerCrewId)) : "") + "</span></span><span>" + packChip(it.packId) + " " +
-        tierBadge(it.tier, it.controlled) + ' <span class="muted">' + s.usable + ' usable</span></span><button class="btn" data-act="wiz-choose" data-id="' +
-        it.id + '"' + (s.usable ? "" : " disabled") + ">Select</button></div>";
-    });
-    html += '</div><div class="actions"><button class="btn" data-act="wiz-go" data-step="start">Back</button></div>';
-    return html;
-  }
-
-  function currentAuth(w, t) {
-    var it = L.getItem(state, w.itemId), qty = Math.max(1, Number(w.qty) || 1);
-    var sf = L.safetyChecks(state, w.patientId, it, qty, t);
-    var gate = L.gateFor(state, w.patientId, it, qty, t, sf);
-    return { item: it, qty: qty, safety: sf, gate: gate };
-  }
-
-  function viewAuth(w) {
-    var t = now(), a = currentAuth(w, t), it = a.item, sf = a.safety, gate = a.gate, loc = L.locationOf(state, it, sf.lot);
-    var html = patientBar(w, false) + "<h2>Authorise</h2>";
-    html += '<div class="card"><div class="row-between"><div><b>' + esc(it.name) + "</b> " + esc(it.strength) + " · " + esc(it.form) + "</div><div>" +
-      tierBadge(it.tier, it.controlled) + " " + packChip(it.packId) + '</div></div><div class="muted small">' + esc(locShort(loc)) + "</div>" +
-      '<div class="form-row"><label>Quantity<input id="wizQty" type="number" min="1" value="' + a.qty + '" data-bind="wiz.qty" data-rerender></label>' +
-      '<label class="grow">Reason<input id="wizReason" type="text" value="' + esc(w.reason) + '" data-bind="wiz.reason"></label></div></div>';
-    html += "<h3>Safety checks " + resultBadge(sf.result) + "</h3>" + checksTable(sf);
-    if (!sf.lot) {
-      return html + '<div class="panel bad">No usable lot with ' + a.qty + ' left. Ask the CMO about an alternative.</div>' +
-        '<div class="actions"><button class="btn" data-act="wiz-back-from-auth">Back</button></div>';
-    }
-    html += '<div class="gate"><h3>' + esc(AUTH[gate.type]) + '</h3><p class="muted">' + esc(gate.why) + "</p>";
-    if (gate.type === "self" || gate.type === "standing-order") {
-      html += '<div class="sig"><span class="sig-label">PIN of ' + esc(crewName(w.patientId)) + '</span><input id="pinPatient" type="password" inputmode="numeric" autocomplete="new-password" placeholder="PIN" value="' +
-        esc(w.sigs.patient.pin || "") + '" data-bind="wiz.sigs.patient.pin"></div>';
-    }
-    if (gate.type === "cmo" || gate.type === "cmo+witness") {
-      if (sf.result === "block") {
-        html += '<label class="check"><input id="wizAck" type="checkbox" data-bind="wiz.ack"' + (w.ack ? " checked" : "") +
-          "> Approver: I have reviewed the blocked checks above and still approve</label>";
-      }
-      html += sigFields("wiz.sigs.approver", "Approver (CMO, or backup CMO)", approverOptions(w.patientId), w.sigs.approver, "apr");
-      var c = cmo();
-      if (c && c.id !== w.patientId) {
-        html += '<label class="check"><input id="wizCmoUn" type="checkbox" data-bind="wiz.cmoUnavailable"' + (w.cmoUnavailable ? " checked" : "") +
-          "> " + esc(c.name) + " (CMO) is unavailable, so the backup CMO signs</label>";
-      }
-      if (gate.type === "cmo+witness") html += sigFields("wiz.sigs.witness", "Witness (another crew member)", state.crew, w.sigs.witness, "wit");
-    }
-    if (gate.type !== "none") html += pinHint();
-    if (w.error) html += '<p class="error">' + esc(w.error) + "</p>";
-    html += '<div class="actions"><button class="btn" data-act="wiz-back-from-auth">Back</button>' +
-      (gate.type === "cmo" || gate.type === "cmo+witness" ? '<button class="btn" data-act="wiz-queue">CMO not here: send to approvals</button>' : "") +
-      '<button class="btn primary" data-act="wiz-authorise">' + (gate.type === "none" ? "Continue" : "Sign and continue") + "</button></div></div>";
-    return html;
-  }
-
-  function authorise() {
-    var w = ui.wiz, t = now(), a = currentAuth(w, t), err = null, signedBy = [];
-    if (!a.safety.lot) { w.error = "No usable stock"; return; }
-    var ctx = { patientId: w.patientId, approverId: w.sigs.approver.crewId, cmoUnavailable: w.cmoUnavailable };
-    switch (a.gate.type) {
-      case "none":
-        signedBy = [w.patientId];
-        break;
-      case "self":
-      case "standing-order":
-        err = L.checkSignature(state, "patient", w.patientId, w.sigs.patient.pin || "", ctx);
-        signedBy = [w.patientId];
-        break;
-      case "cmo":
-      case "cmo+witness":
-        if (a.safety.result === "block" && !w.ack) err = "The approver has to review the blocked checks first (tick the box).";
-        err = err || L.checkSignature(state, "approver", w.sigs.approver.crewId, w.sigs.approver.pin || "", ctx);
-        signedBy = [w.sigs.approver.crewId];
-        if (!err && a.gate.type === "cmo+witness") {
-          err = L.checkSignature(state, "witness", w.sigs.witness.crewId, w.sigs.witness.pin || "", ctx);
-          signedBy.push(w.sigs.witness.crewId);
-        }
-        break;
-      default:
-        err = "Use the emergency release for this item";
-    }
-    if (err) { w.error = err; return; }
-    w.error = "";
-    w.qty = a.qty;
-    w.authType = a.gate.type;
-    w.signedBy = signedBy;
-    w.lotId = a.safety.lot.id;
-    w.sigs = { patient: {}, approver: {}, witness: {} };
-    w.step = "locate";
-  }
-
-  function queueRequest() {
-    var w = ui.wiz, t = now(), a = currentAuth(w, t);
-    var r = {
-      id: "R" + state.seq++, time: t.toISOString(), patientId: w.patientId, itemId: a.item.id, qty: a.qty,
-      reason: w.reason, tier: a.item.tier, gate: a.gate.type, status: "pending", signatures: []
-    };
-    state.requests.unshift(r);
-    w.requestId = r.id;
-    w.step = "queued";
-    save();
-  }
-
-  function viewQueued(w) {
-    var it = L.getItem(state, w.itemId);
-    return patientBar(w, false) + '<div class="panel"><h2>Sent to approvals</h2><p>' + esc(Number(w.qty) || 1) + " × " + esc(itemLabel(it)) +
-      " is waiting for sign-off. Once it's signed, " + esc(firstName(w.patientId)) + " continues from retrieval on the Approvals page.</p>" +
-      '<div class="actions"><button class="btn primary" data-act="nav" data-view="approvals">Go to approvals</button><button class="btn" data-act="wiz-new">New dispense</button></div></div>';
-  }
-
-  function retrievalSteps(it, lot, qty, loc) {
-    return "<li>Open locker <b>" + esc(loc.locker.label) + "</b> (" + esc(loc.locker.zone) + ").</li>" +
-      "<li>Release the retention strap and pull the <b>" + esc(loc.pack.colour) + " pack</b> (" + esc(loc.pack.name) + "). Keep it tethered.</li>" +
-      "<li>Open slot <b>" + esc(loc.slot) + "</b>. Take <b>" + qty + " × " + esc(itemLabel(it)) + "</b>" +
-      (lot ? " from lot <b>" + esc(lot.lotNumber) + "</b>" + (lot.expiry ? " (expires " + fmtDate(lot.expiry) + ")" : "") : "") + ".</li>" +
-      "<li>Close the slot, put the pack back and fasten the strap before you let go of anything.</li>";
-  }
-
-  function viewLocate(w) {
-    var it = L.getItem(state, w.itemId), lot = w.lotId ? L.getLot(state, w.lotId) : null, loc = L.locationOf(state, it, lot);
-    var html = patientBar(w, false) + "<h2>Get it</h2><div class=\"locate\"><div><div class=\"target-line\">" + locText(loc) + "</div>" +
-      '<ol class="steps">' + retrievalSteps(it, lot, Number(w.qty) || 1, loc) + "</ol>";
-    if (w.locateOnly) html += '<button class="btn primary" data-act="wiz-em-back">Back to emergency items</button>';
-    else html += '<button class="btn primary big" data-act="wiz-go" data-step="scan">I have it: scan</button>';
-    html += "</div><div>" + mapSvg({ itemId: it.id, lotId: w.lotId }, loc.locker.id, true) + slotGrid(loc.pack, loc.slot) + "</div></div>";
-    return html;
-  }
-
-  function viewScan(w) {
-    var it = L.getItem(state, w.itemId), lot = L.getLot(state, w.lotId);
-    var html = patientBar(w, false) + "<h2>Scan to confirm</h2><p>Scan the tag on the package, or type it. Expected: <b>" + esc(itemLabel(it)) +
-      "</b>, lot " + esc(lot.lotNumber) + ".</p>";
-    html += '<div class="form-row"><input id="scanInput" type="text" placeholder="TAG-…" aria-label="Tag" autocomplete="off" value="' + esc(w.scan) +
-      '" data-bind="wiz.scan"><button class="btn primary" data-act="wiz-scan">Confirm</button></div>';
-    html += '<div class="demo-row"><span class="muted small">Demo:</span><button class="btn small" data-act="wiz-sim" data-kind="right">Simulate correct scan</button>' +
-      '<button class="btn small" data-act="wiz-sim" data-kind="wrong">Simulate wrong item</button>' +
-      (w.emergency ? '<button class="btn small danger-outline" data-act="wiz-skip-scan">Skip scan (emergency)</button>' : "") + "</div>";
-    if (w.scanError) html += '<p class="error">' + esc(w.scanError) + "</p>";
-    html += '<div class="actions"><button class="btn" data-act="wiz-go" data-step="locate">Back to location</button></div>';
-    return html;
-  }
-
-  function doScan() {
-    var w = ui.wiz, t = now(), it = L.getItem(state, w.itemId), qty = Number(w.qty) || 1, expected = L.getLot(state, w.lotId);
-    var tag = String(w.scan || "").trim().toUpperCase();
-    w.scanError = ""; w.scanNote = "";
-    if (!tag) { w.scanError = "Scan or type the tag first."; return; }
-    var lot = state.lots.filter(function (l) { return l.tag.toUpperCase() === tag; })[0];
-    if (!lot) { w.scanError = "Unknown tag " + tag + ". Check the label."; return; }
-    if (lot.itemId !== it.id) {
-      var other = L.getItem(state, lot.itemId);
-      w.scanError = "Wrong item: that's " + itemLabel(other) + ". Put it back in slot " + lot.slot + " and take " + itemLabel(it) + " from slot " + expected.slot + ".";
-      return;
-    }
-    if (L.lotStatus(state, it, lot, t) === "expired" && !w.emergency) {
-      w.scanError = "Lot " + lot.lotNumber + " is expired. Put it back and use lot " + expected.lotNumber + ".";
-      return;
-    }
-    if (lot.qty < qty) { w.scanError = "Lot " + lot.lotNumber + " has only " + lot.qty + " left."; return; }
-    if (lot.id !== expected.id) {
-      w.scanNote = "You took lot " + lot.lotNumber + " instead of the suggested " + expected.lotNumber + " (first to expire). Logged as " + lot.lotNumber + ".";
-    }
-    w.lotId = lot.id;
-    afterScan();
-  }
-
-  function afterScan() {
-    var w = ui.wiz, it = L.getItem(state, w.itemId);
-    if (L.needsCountCheck(it)) { w.step = "count"; w.count = ""; w.error = ""; }
-    else finish();
-  }
-
-  function counterOf(w) {
-    if (w.authType === "cmo+witness") return w.signedBy[1] || null;
-    if (w.authType === "standing-order") return w.patientId;
-    if (w.authType === "break-glass") return w.releasedBy;
-    return w.patientId;
-  }
-
-  function viewCount(w) {
-    var it = L.getItem(state, w.itemId), lot = L.getLot(state, w.lotId), loc = L.locationOf(state, it, lot), who = counterOf(w);
-    var html = patientBar(w, false) + "<h2>Count check</h2><p><b>" + esc(who ? crewName(who) : "A second crew member") +
-      "</b>: count the units left in slot " + esc(loc.slot) + " (lot " + esc(lot.lotNumber) + ") after taking " + (Number(w.qty) || 1) +
-      ". Type the number you see, without looking anything up.</p>";
-    html += '<div class="form-row"><label>Units left<input id="countInput" type="number" min="0" value="' + esc(w.count) + '" data-bind="wiz.count"></label>' +
-      '<button class="btn primary" data-act="wiz-count">Record count</button></div>';
-    html += '<p class="hint">Controlled medicines are counted at every release. A mismatch is flagged for the CMO and ground.</p>';
-    if (w.error) html += '<p class="error">' + esc(w.error) + "</p>";
-    return html;
-  }
-
-  function finish(extra) {
-    var w = ui.wiz;
-    try {
-      w.entry = L.dispense(state, Object.assign({
-        patientId: w.patientId, itemId: w.itemId, lotId: w.lotId, qty: Number(w.qty) || 1, reason: w.reason,
-        authType: w.authType, signedBy: w.signedBy, requestId: w.requestId, scanSkipped: w.scanSkipped
-      }, extra || {}), now());
-      save();
-      w.step = "done";
-    } catch (err) {
-      w.scanError = err.message;
-      w.error = err.message;
-    }
-  }
-
-  function viewDone(w) {
-    var e = w.entry, it = L.getItem(state, e.itemId), lot = L.getLot(state, e.lotId), t = now();
-    var notes = [];
-    if (w.scanNote) notes.push(["info", w.scanNote]);
-    if (e.scanSkipped) notes.push(["warn", "Scan skipped (emergency). Check the item against the log when things are calm."]);
-    if (e.countCheck) {
-      if (e.countCheck.counted !== e.countCheck.expected) notes.push(["bad", "Count mismatch: expected " + e.countCheck.expected + ", counted " + e.countCheck.counted + ". Flagged on the Approvals page."]);
-      else notes.push(["ok", "Count matches: " + e.countCheck.counted + " left in the slot."]);
-    }
-    if (e.docsDue) notes.push(["bad", "Write what happened by " + clock(e.docsDue) + " (Approvals page)."]);
-    if (e.groundReview === "pending") notes.push(["info", "Sent for ground review. The answer arrives after the signal delay."]);
-    if (L.lotStatus(state, it, lot, t) === "potency-risk") notes.push(["warn", "This lot is past its planning expiry. If it doesn't help, tell the CMO: potency may be low."]);
-    var s = L.stock(state, it, t);
-    if (it.reserve && s.usable < it.reserve) notes.push(["warn", "Stock is now below the reserve (" + s.usable + " usable, reserve " + it.reserve + "). The CMO decides the next releases."]);
-    if (it.kind === "medication") notes.push(["muted", "In about an hour, record whether it helped (Dose log)."]);
-
-    var html = '<div class="panel ok"><h2>Logged</h2><p><b>' + e.qty + " × " + esc(itemLabel(it)) + "</b> for " + esc(crewName(e.patientId)) +
-      " at " + clock(e.time) + ". Lot " + esc(lot.lotNumber) + ". " + esc(AUTH[e.auth.type]) +
-      (e.auth.signedBy.length ? " (" + e.auth.signedBy.map(crewName).map(esc).join(", ") + ")" : "") + ".</p>";
-    html += "<div>" + notes.map(function (n) { return '<div class="tag ' + n[0] + '" style="display:block;border-radius:6px;padding:6px 10px;margin:6px 0">' + esc(n[1]) + "</div>"; }).join("") + "</div>";
-    html += '<div class="actions"><button class="btn primary" data-act="wiz-new">New dispense</button>' +
-      (e.docsDue ? '<button class="btn" data-act="nav" data-view="approvals">Write documentation</button>' : "") +
-      '<button class="btn" data-act="nav" data-view="dashboard">Dashboard</button></div></div>';
-    return html;
-  }
-
-  // ---------- emergency ----------
-
-  function viewEmergency(w) {
-    var t = now();
-    var html = '<div class="panel urgent"><h2>Emergency release</h2><p>No sign-off needed. Everything is logged, and documentation is due within 2 hours.</p></div>';
-    html += '<h3>Patient</h3><div class="crew-grid">';
-    state.crew.forEach(function (c) {
-      html += '<button class="crew-card' + (w.patientId === c.id ? " sel" : "") + '" data-act="wiz-patient" data-id="' + c.id + '"><b>' +
-        esc(c.name) + '</b><span class="muted">' + esc(c.role) + "</span>" + crewTags(c) + "</button>";
-    });
-    html += '</div><h3>Item <span class="muted">(Red pack, locker M1 by the hatch)</span></h3><div class="crew-grid">';
-    state.items.filter(function (it) { return it.tier === "4"; }).forEach(function (it) {
-      var s = L.stock(state, it, t);
-      html += '<button class="em-item' + (w.itemId === it.id ? " sel" : "") + '" data-act="wiz-em-item" data-id="' + it.id + '"><b>' + esc(it.name) +
-        "</b><span>" + esc(it.strength) + '</span><span class="muted">' + (it.kind === "equipment" ? "Equipment" : s.usable + " left") +
-        (it.controlled ? " · " + esc(it.controlled) : "") + "</span></button>";
-    });
-    html += "</div>";
-    if (w.itemId) {
-      var it = L.getItem(state, w.itemId);
-      if (it.kind === "equipment") {
-        html += '<div class="actions"><button class="btn danger big" data-act="wiz-em-locate">Show where it is</button></div>';
-      } else {
-        html += '<div class="form-row"><label>Quantity<input id="emQty" type="number" min="1" value="' + esc(w.qty) + '" data-bind="wiz.qty"></label>' +
-          '<label class="grow">What is happening (required)<input id="emReason" type="text" value="' + esc(w.reason) + '" data-bind="wiz.reason"></label>' +
-          '<label>Released by<select id="emBy" data-bind="wiz.releasedBy">' + state.crew.map(function (c) {
-            return '<option value="' + c.id + '"' + (w.releasedBy === c.id ? " selected" : "") + ">" + esc(c.name) + "</option>";
-          }).join("") + "</select></label></div>";
-        html += '<label class="check"><input id="emAck" type="checkbox" data-bind="wiz.ack"' + (w.ack ? " checked" : "") + "> This is an emergency</label>";
-        html += '<div class="actions"><button class="btn danger big" data-act="wiz-em-release">Release now</button></div>';
-      }
-    }
-    if (w.error) html += '<p class="error">' + esc(w.error) + "</p>";
-    return html;
-  }
-
-  function emergencyRelease() {
-    var w = ui.wiz, t = now(), it = L.getItem(state, w.itemId), qty = Math.max(1, Number(w.qty) || 1);
-    if (!w.patientId) { w.error = "Choose the patient."; return; }
-    if (!String(w.reason || "").trim()) { w.error = "Say in a few words what is happening."; return; }
-    if (!w.ack) { w.error = "Tick \"This is an emergency\"."; return; }
-    var lot = L.pickLot(state, it, qty, t).lot || L.fefoLots(state, it).filter(function (l) { return l.qty >= qty; })[0];
-    if (!lot) { w.error = "None left. Ask the CMO for an alternative."; return; }
-    w.error = "";
-    w.qty = qty;
-    w.lotId = lot.id;
-    w.authType = "break-glass";
-    w.signedBy = [w.releasedBy];
-    w.step = "locate";
-  }
-
-  // ---------- approvals ----------
+  // ---------- approvals (CMO's screen) ----------
 
   function requestGate(r) { return r.gate || (r.tier === "3" ? "cmo+witness" : "cmo"); }
+  function approverOptions(patientId) { return state.crew.filter(function (c) { return (c.isCMO || c.isBackupCMO) && c.id !== patientId; }); }
+
+  function sigFields(path, label, options, cur, idp) {
+    cur = cur || {};
+    return '<div class="sig"><span class="sig-label">' + esc(label) + '</span><select id="' + idp + '-who" data-bind="' + path + '.crewId"><option value="">Choose…</option>' +
+      options.map(function (c) { return '<option value="' + c.id + '"' + (cur.crewId === c.id ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join("") +
+      '</select><input id="' + idp + '-pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="PIN" value="' + esc(cur.pin || "") + '" data-bind="' + path + '.pin"></div>';
+  }
 
   function requestCard(r, t) {
     var it = L.getItem(state, r.itemId), gate = requestGate(r);
     var approver = r.signatures.filter(function (s) { return s.role !== "Witness"; })[0];
-    var witness = r.signatures.filter(function (s) { return s.role === "Witness"; })[0];
-    var need = !approver ? "approver" : (gate === "cmo+witness" && !witness ? "witness" : null);
+    var need = !approver ? "approver" : "witness";
     var sf = L.safetyChecks(state, r.patientId, it, r.qty, t);
     var f = ui.appr[r.id] || {};
-    var html = '<div class="card"><div class="row-between"><div><b>' + r.qty + " × " + esc(itemLabel(it)) + "</b> " + tierBadge(it.tier, it.controlled) +
-      '</div><span class="muted small">' + ago(r.time) + "</span></div>";
-    html += "<div>For <b>" + esc(crewName(r.patientId)) + "</b>: " + esc(r.reason || "no reason given") + "</div>";
+    var html = '<div class="card"><div class="row-between"><div><b>' + r.qty + " × " + esc(itemLabel(it)) + "</b> " + tierBadge(it.tier, it.controlled) + '</div><span class="muted small">' +
+      ago(r.time) + "</span></div><div>For <b>" + esc(crewName(r.patientId)) + "</b>: " + esc(r.reason) + "</div>";
     html += '<div class="muted small">Needs ' + esc(AUTH[gate]) + ". Signed: " + (r.signatures.length ? r.signatures.map(function (s) {
       return esc(crewName(s.crewId)) + " (" + esc(s.role) + ")";
     }).join(", ") : "nobody yet") + "</div>";
-    html += '<div class="small">Safety checks: ' + resultBadge(sf.result) + " " +
-      esc(sf.checks.filter(function (c) { return c.result !== "pass"; }).map(function (c) { return c.name + ": " + c.msg; }).join("; ")) + "</div>";
-    if (!need) {
-      html += '<div class="actions"><button class="btn primary" data-act="appr-retrieve" data-id="' + r.id + '">Signed: retrieve now</button></div>';
-    } else {
-      var opts = need === "approver" ? approverOptions(r.patientId) : state.crew;
-      html += sigFields("appr." + r.id, need === "approver" ? "Approver (CMO, or backup CMO)" : "Witness (not the patient or approver)", opts, f, "ap-" + r.id);
-      if (need === "approver") {
-        if (sf.result === "block") {
-          html += '<label class="check"><input id="ack-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.ack"' + (f.ack ? " checked" : "") +
-            "> I have reviewed the blocked checks and still approve</label>";
-        }
-        var c = cmo();
-        if (c && c.id !== r.patientId) {
-          html += '<label class="check"><input id="un-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.cmoUnavailable"' + (f.cmoUnavailable ? " checked" : "") +
-            "> " + esc(c.name) + " (CMO) is unavailable</label>";
-        }
-      }
-      if (f.error) html += '<p class="error">' + esc(f.error) + "</p>";
-      html += '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-sign" data-id="' +
-        r.id + '">Sign as ' + need + "</button></div>";
+    html += '<div class="small">Checks: ' + resultBadge(sf.result) + " " + esc(sf.checks.filter(function (c) { return c.result !== "pass"; }).map(function (c) { return c.name + ": " + c.msg; }).join("; ")) + "</div>";
+    html += sigFields("appr." + r.id, need === "approver" ? "Approver (CMO or backup)" : "Witness", need === "approver" ? approverOptions(r.patientId) : state.crew, f, "ap-" + r.id);
+    if (need === "approver") {
+      if (sf.result === "block") html += '<label class="check"><input id="ack-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.ack"' + (f.ack ? " checked" : "") + "> I reviewed the blocked checks</label>";
+      var c = cmo();
+      if (c && c.id !== r.patientId) html += '<label class="check"><input id="un-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.cmoUnavailable"' + (f.cmoUnavailable ? " checked" : "") + "> " + esc(c.name) + " is unavailable</label>";
     }
-    return html + "</div>";
+    if (f.error) html += '<p class="error">' + esc(f.error) + "</p>";
+    return html + '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-sign" data-id="' + r.id + '">Sign as ' + need + "</button></div></div>";
   }
 
   function entrySummary(e) {
     var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null;
-    return "<b>" + e.qty + " × " + esc(itemLabel(it)) + "</b> for " + esc(crewName(e.patientId)) + ' <span class="muted small">' + fmtTime(e.time) +
-      (lot ? " · lot " + esc(lot.lotNumber) : "") + " · " + esc(AUTH[e.auth.type]) +
-      (e.auth.signedBy.length ? " (" + e.auth.signedBy.map(crewName).map(esc).join(", ") + ")" : "") + "</span>";
+    return "<b>" + e.qty + " × " + esc(itemLabel(it)) + "</b> for " + esc(crewName(e.patientId)) + ' <span class="muted small">' + fmtTime(e.time) + (lot ? " · lot " + esc(lot.lotNumber) : "") +
+      " · " + esc(AUTH[e.auth.type]) + (e.auth.signedBy.length ? " (" + e.auth.signedBy.map(crewName).map(esc).join(", ") + ")" : "") + "</span>" +
+      (e.override ? '<div class="error small">⚠ Given despite: ' + esc(e.override.join("; ")) + "</div>" : "");
   }
 
   function viewApprovals() {
     var t = now(), a = L.alerts(state, t);
-    var html = "<h2>Approvals and reviews</h2>";
-
-    html += "<h3>Requests waiting (" + a.pending.length + ")</h3>";
-    if (!a.pending.length) html += '<p class="muted">Nothing waiting.</p>';
-    a.pending.forEach(function (r) { html += requestCard(r, t); });
-    if (a.pending.length) html += pinHint();
-
-    html += "<h3>Emergency documentation due (" + a.docsDue.length + ")</h3>";
-    if (!a.docsDue.length) html += '<p class="muted">All emergency releases are documented.</p>';
-    a.docsDue.forEach(function (e) {
-      var late = new Date(e.docsDue) < t;
-      html += '<div class="card"><div>' + entrySummary(e) + '</div><div class="small ' + (late ? "error" : "muted") + '">Due ' + fmtTime(e.docsDue) +
-        (late ? " (overdue)" : "") + "</div><p class=\"small\">Reason given: " + esc(e.reason) + '</p><textarea id="doc-' + e.id + '" rows="3" placeholder="What happened, what was given, how the patient responded" data-bind="docs.' +
-        e.id + '">' + esc(ui.docs[e.id] || "") + '</textarea><div class="actions"><button class="btn primary" data-act="doc-save" data-id="' + e.id + '">Save documentation</button></div></div>';
-    });
-
-    html += "<h3>Count discrepancies (" + a.countIssues.length + ")</h3>";
-    if (!a.countIssues.length) html += '<p class="muted">No open discrepancies.</p>';
-    a.countIssues.forEach(function (e) {
-      html += '<div class="card"><div>' + entrySummary(e) + '</div><div class="error small">Expected ' + e.countCheck.expected + " left, counted " + e.countCheck.counted +
-        (e.countCheck.by ? " (by " + esc(crewName(e.countCheck.by)) + ")" : "") + '.</div><div class="form-row"><label class="grow">Resolution<input id="cnt-' + e.id +
-        '" type="text" placeholder="For example: recounted, one tablet found in the next slot" value="' + esc(ui.notes["cnt-" + e.id] || "") + '" data-bind="notes.cnt-' + e.id +
-        '"></label><button class="btn" data-act="count-resolve" data-id="' + e.id + '">Mark resolved</button></div></div>';
-    });
-
-    html += "<h3>Waiting for ground review (" + a.groundReview.length + ")</h3><p class=\"muted small\">Controlled and emergency releases are reviewed by flight surgeons on the ground. Answers arrive after the signal delay (" +
-      state.mission.commDelayMin + " min each way). In this prototype you can mark them reviewed.</p>";
-    a.groundReview.forEach(function (e) {
-      html += '<div class="report"><div>' + entrySummary(e) + '</div><button class="btn small" data-act="ground-done" data-id="' + e.id + '">Mark reviewed by ground</button></div>';
-    });
-
-    var closed = state.requests.filter(function (r) { return r.status === "denied" || r.status === "dispensed"; }).slice(0, 5);
-    if (closed.length) {
-      html += "<h3>Recently closed requests</h3>";
-      closed.forEach(function (r) {
-        var it = L.getItem(state, r.itemId);
-        html += '<div class="report"><div>' + r.qty + " × " + esc(itemLabel(it)) + " for " + esc(crewName(r.patientId)) + '</div><span class="tag ' +
-          (r.status === "denied" ? "bad" : "ok") + '">' + (r.status === "denied" ? "Denied" : "Dispensed") + "</span></div>";
+    var html = "<h2>Approvals</h2>";
+    if (a.urgentReports.length) {
+      html += "<h3>Urgent symptoms</h3>";
+      a.urgentReports.forEach(function (r) {
+        html += '<div class="card urgent-card"><div class="row-between"><b>' + esc(crewName(r.crewId)) + '</b><span class="muted small">' + ago(r.time) + "</span></div><div>" +
+          esc(L.redFlags(state, r).join(" · ")) + '</div><div class="actions"><button class="btn" data-act="report-seen" data-id="' + esc(r.id) + '">Seen</button></div></div>';
       });
     }
+    html += "<h3>Waiting for you (" + a.pending.length + ")</h3>";
+    if (!a.pending.length) html += '<p class="muted">Nothing waiting.</p>';
+    a.pending.forEach(function (r) { html += requestCard(r, t); });
+    if (a.pending.length) html += '<p class="hint">Demo PINs: ' + state.crew.map(function (c) { return esc(firstName(c.id)) + " " + c.pin; }).join(", ") + "</p>";
+    if (a.awaitingPickup.length) {
+      html += "<h3>Approved, waiting for pickup</h3>";
+      a.awaitingPickup.forEach(function (r) {
+        html += '<div class="report"><div>' + r.qty + " × " + esc(itemLabel(L.getItem(state, r.itemId))) + " for " + esc(crewName(r.patientId)) + '</div><span class="tag ok">Approved</span></div>';
+      });
+    }
+    if (state.plans.length) {
+      html += "<h3>Plans from Earth</h3>";
+      state.plans.forEach(function (p) {
+        html += '<div class="report"><div><b>' + esc(crewName(p.patientId)) + "</b> · " + p.items.map(function (x) {
+          var it = L.getItem(state, x.itemId);
+          return esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
+        }).join("; ") + '</div><span class="muted small">' + esc(p.code) + "</span></div>";
+      });
+    }
+    html += "<h3>Emergency notes due (" + a.docsDue.length + ")</h3>";
+    if (!a.docsDue.length) html += '<p class="muted">None.</p>';
+    a.docsDue.forEach(function (e) {
+      html += '<div class="card"><div>' + entrySummary(e) + '</div><div class="small ' + (new Date(e.docsDue) < t ? "error" : "muted") + '">Due ' + fmtTime(e.docsDue) + "</div>" +
+        '<textarea id="doc-' + e.id + '" rows="3" placeholder="What happened, what was given, how the patient responded" data-bind="docs.' + e.id + '">' + esc(ui.docs[e.id] || "") +
+        '</textarea><div class="actions"><button class="btn primary" data-act="doc-save" data-id="' + e.id + '">Save</button></div></div>';
+    });
+    html += "<h3>Count mismatches (" + a.countIssues.length + ")</h3>";
+    if (!a.countIssues.length) html += '<p class="muted">None.</p>';
+    a.countIssues.forEach(function (e) {
+      html += '<div class="card"><div>' + entrySummary(e) + '</div><div class="error small">Expected ' + e.countCheck.expected + ", counted " + e.countCheck.counted + '.</div><div class="form-row">' +
+        '<input id="cnt-' + e.id + '" type="text" placeholder="What you found" value="' + esc(ui.notes["cnt-" + e.id] || "") + '" data-bind="notes.cnt-' + e.id + '">' +
+        '<button class="btn" data-act="count-resolve" data-id="' + e.id + '">Resolved</button></div></div>';
+    });
+    html += "<h3>Ground review (" + a.groundReview.length + ')</h3><p class="muted small">Answers arrive after the signal delay (' + state.mission.commDelayMin + " min each way).</p>";
+    a.groundReview.forEach(function (e) {
+      html += '<div class="report"><div>' + entrySummary(e) + '</div><button class="btn small" data-act="ground-done" data-id="' + e.id + '">Mark reviewed</button></div>';
+    });
     return html;
   }
 
@@ -948,8 +1049,7 @@
     var role = !approver ? "approver" : "witness";
     var it = L.getItem(state, r.itemId), sf = L.safetyChecks(state, r.patientId, it, r.qty, now());
     var ctx = { patientId: r.patientId, approverId: approver ? approver.crewId : f.crewId, cmoUnavailable: !!f.cmoUnavailable };
-    var err = null;
-    if (role === "approver" && sf.result === "block" && !f.ack) err = "Review the blocked checks first (tick the box).";
+    var err = role === "approver" && sf.result === "block" && !f.ack ? "Review the blocked checks first." : null;
     err = err || L.checkSignature(state, role, f.crewId, f.pin || "", ctx);
     if (err) { f.error = err; return; }
     var c = L.getCrew(state, f.crewId);
@@ -958,186 +1058,66 @@
     if (complete) r.status = "approved";
     ui.appr[id] = {};
     save();
-    toast(complete ? "Signed. " + firstName(r.patientId) + " can retrieve it now." : "Signed. A witness signs next.");
+    toast(complete ? "Approved. " + firstName(r.patientId) + " can pick it up." : "Signed. A witness signs next.");
   }
 
-  function retrieveRequest(id) {
-    var r = findRequest(id), it = L.getItem(state, r.itemId), t = now();
-    var pick = L.pickLot(state, it, r.qty, t);
-    if (!pick.lot) { toast("No usable lot left for " + it.name); return; }
-    startWizard({
-      patientId: r.patientId, itemId: r.itemId, qty: r.qty, reason: r.reason, requestId: r.id,
-      authType: requestGate(r), signedBy: r.signatures.map(function (s) { return s.crewId; }), lotId: pick.lot.id, step: "locate"
-    });
-  }
-
-  // ---------- dose log ----------
+  // ---------- dose log (CMO) ----------
 
   function viewLog() {
-    var t = now();
     var entries = state.doseLog.filter(function (e) { return !ui.logPatient || e.patientId === ui.logPatient; });
     var html = '<div class="row-between"><h2>Dose log</h2><div class="toolbar"><select id="logPatient" aria-label="Crew member" data-bind="logPatient" data-rerender><option value="">Everyone</option>' +
       state.crew.map(function (c) { return '<option value="' + c.id + '"' + (ui.logPatient === c.id ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join("") +
-      '</select><button class="btn" data-act="export">Export JSON for ground</button></div></div>';
-    html += '<p class="hint">Every release is logged, including over-the-counter use, which is rarely recorded today. Follow-ups say whether it helped.</p>';
-    html += '<div class="table-wrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Why</th><th>Authorised</th><th>Review</th><th>Did it help?</th></tr></thead><tbody>';
-    entries.forEach(function (e) { html += logRow(e, t); });
+      '</select><button class="btn" data-act="export">Export JSON</button></div></div>';
+    html += '<div class="table-wrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Why</th><th>Authorised</th><th>Review</th><th>Helped?</th></tr></thead><tbody>';
+    entries.forEach(function (e) { html += logRow(e); });
     if (!entries.length) html += '<tr><td colspan="7" class="muted">No entries.</td></tr>';
     return html + "</tbody></table></div>";
   }
 
-  function logRow(e, t) {
-    var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null;
-    var review = "";
-    if (e.auth.type === "break-glass" && !e.documentation) review += '<span class="tag bad">Documentation due</span>';
-    if (e.countCheck && e.countCheck.counted !== e.countCheck.expected) review += '<span class="tag ' + (e.countCheck.resolved ? "muted" : "bad") + '">Count mismatch' + (e.countCheck.resolved ? " (resolved)" : "") + "</span>";
+  function logRow(e) {
+    var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null, review = "";
+    if (e.override) review += '<span class="tag bad" title="' + esc(e.override.join("; ")) + '">⚠ Given despite warning</span>';
+    if (e.auth.type === "break-glass" && !e.documentation) review += '<span class="tag bad">Note due</span>';
+    if (e.countCheck && e.countCheck.counted !== e.countCheck.expected) review += '<span class="tag ' + (e.countCheck.resolved ? "muted" : "bad") + '">Count mismatch</span>';
     if (e.scanSkipped) review += '<span class="tag warn">Scan skipped</span>';
-    if (e.groundReview === "pending") review += '<span class="tag info">Ground review pending</span>';
+    if (e.groundReview === "pending") review += '<span class="tag info">Ground review</span>';
     if (e.groundReview === "done") review += '<span class="tag ok">Ground reviewed</span>';
-    var fu;
-    if (it.kind !== "medication") fu = '<span class="muted">–</span>';
-    else if (e.followUp) {
-      fu = '<span class="tag ' + (e.followUp.effective ? "ok" : "warn") + '">' + (e.followUp.effective ? "Helped" : "Didn't help") + "</span>" +
-        (e.followUp.sideEffects ? '<div class="small">Side effects: ' + esc(e.followUp.sideEffects) + "</div>" : "");
-    } else {
-      fu = '<div class="fu"><input id="fx-' + e.id + '" type="text" placeholder="Side effects (optional)" value="' + esc(ui.notes["fx-" + e.id] || "") + '" data-bind="notes.fx-' + e.id + '">' +
-        '<button class="btn small" data-act="fu" data-id="' + e.id + '" data-eff="1">Helped</button><button class="btn small" data-act="fu" data-id="' + e.id + '" data-eff="0">Didn\'t help</button></div>';
-    }
-    return "<tr><td>" + fmtTime(e.time) + "</td><td>" + esc(crewName(e.patientId)) + "</td><td>" + e.qty + " × " + esc(itemLabel(it)) +
-      (lot ? '<div class="sub">lot ' + esc(lot.lotNumber) + "</div>" : "") + "</td><td>" + esc(e.reason) + "</td><td>" + esc(AUTH[e.auth.type]) +
-      (e.auth.signedBy.length ? '<div class="sub">' + e.auth.signedBy.map(crewName).map(esc).join(", ") + "</div>" : "") + "</td><td>" + (review || '<span class="muted">–</span>') +
-      "</td><td>" + fu + "</td></tr>";
+    var fu = it.kind !== "medication" ? '<span class="muted">–</span>' : e.followUp
+      ? '<span class="tag ' + (e.followUp.effective ? "ok" : "warn") + '">' + (e.followUp.effective ? "Yes" : "No") + "</span>" + (e.followUp.sideEffects ? '<div class="small">' + esc(e.followUp.sideEffects) + "</div>" : "")
+      : '<span class="muted">' + (e.planId ? "Plan" : "Not yet") + "</span>";
+    return "<tr><td>" + fmtTime(e.time) + "</td><td>" + esc(crewName(e.patientId)) + "</td><td>" + e.qty + " × " + esc(itemLabel(it)) + (lot ? '<div class="sub">lot ' + esc(lot.lotNumber) + "</div>" : "") +
+      "</td><td>" + esc(e.reason) + "</td><td>" + esc(AUTH[e.auth.type]) + (e.auth.signedBy.length ? '<div class="sub">' + e.auth.signedBy.map(crewName).map(esc).join(", ") + "</div>" : "") +
+      "</td><td>" + (review || '<span class="muted">–</span>') + "</td><td>" + fu + "</td></tr>";
   }
 
   function exportLog() {
     var data = {
-      type: "dose-log-export",
-      exportedAt: now().toISOString(),
-      mission: state.mission.name,
+      type: "dose-log-export", exportedAt: now().toISOString(), mission: state.mission.name,
       entries: state.doseLog.map(function (e) {
         var it = L.getItem(state, e.itemId), lot = e.lotId ? L.getLot(state, e.lotId) : null;
         return Object.assign({}, e, { patient: crewName(e.patientId), item: itemLabel(it), lot: lot ? lot.lotNumber : null });
       })
     };
-    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    var url = URL.createObjectURL(blob);
+    var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
     var a = document.createElement("a");
-    a.href = url;
-    a.download = "dose-log.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = url; a.download = "dose-log.json";
+    document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
-  // ---------- bay map ----------
-
-  function focusLoc(focus) {
-    if (!focus) return null;
-    var it = L.getItem(state, focus.itemId);
-    if (!it) return null;
-    var lot = focus.lotId ? L.getLot(state, focus.lotId) : null;
-    var loc = L.locationOf(state, it, lot);
-    return { lockerId: loc.locker.id, packId: loc.pack.id, slot: loc.slot };
-  }
-
-  function mapSvg(focus, selLocker, compact) {
-    var f = focusLoc(focus);
-    var s = '<svg class="bay' + (compact ? " compact" : "") + '" viewBox="0 0 1000 420" role="img" aria-label="Plan of the medical bay">';
-    s += '<rect class="hull" x="10" y="10" width="980" height="400" rx="40"/>';
-    s += '<rect class="hatch" x="0" y="175" width="26" height="70" rx="6"/><text class="lbl sm" x="36" y="215">Hatch</text>';
-    s += '<rect class="zone" x="620" y="250" width="330" height="130" rx="14"/><text class="lbl sm" x="785" y="320" text-anchor="middle">Restraint and treatment area</text>';
-    state.lockers.forEach(function (lk) {
-      var target = f && f.lockerId === lk.id, sel = selLocker === lk.id;
-      var packs = state.packs.filter(function (p) { return p.lockerId === lk.id; });
-      s += '<g class="locker' + (target ? " target" : "") + (sel ? " sel" : "") + '"' + (compact ? "" : ' data-act="map-locker" data-id="' + lk.id + '"') + ">";
-      s += '<rect class="lk" x="' + lk.x + '" y="' + lk.y + '" width="' + lk.w + '" height="' + lk.h + '" rx="10"/>';
-      s += '<text class="lbl big" x="' + (lk.x + 14) + '" y="' + (lk.y + 42) + '">' + esc(lk.label) + "</text>";
-      var bw = (lk.w - 28 - (packs.length - 1) * 8) / packs.length;
-      packs.forEach(function (p, i) {
-        var x = lk.x + 14 + i * (bw + 8), y = lk.y + lk.h - 44;
-        s += '<rect class="pk' + (f && f.packId === p.id ? " target" : "") + '" x="' + x + '" y="' + y + '" width="' + bw + '" height="30" rx="6" fill="' + p.hex + '"/>';
-        s += '<text class="pk-lbl" x="' + (x + bw / 2) + '" y="' + (y + 20) + '" text-anchor="middle" fill="' + textOn(p.hex) + '">' + esc(p.colour) + "</text>";
-      });
-      s += "</g>";
-    });
-    if (f) {
-      var lk = L.getLocker(state, f.lockerId);
-      s += '<text class="lbl you" x="' + (lk.x + lk.w / 2) + '" y="' + (lk.y + lk.h + 24) + '" text-anchor="middle">▲ Here</text>';
-    }
-    return s + "</svg>";
-  }
-
-  function slotGrid(pack, hlSlot) {
-    var bySlot = {};
-    state.items.filter(function (i) { return i.packId === pack.id; }).forEach(function (i) { bySlot[i.slot] = i; });
-    var rows = "ABCDEFGH".slice(0, pack.rows).split("");
-    var html = '<div class="slots-wrap"><div class="slots-title"><span class="dot" style="background:' + pack.hex + '"></span>' + esc(pack.colour) +
-      " pack · " + esc(pack.name) + '</div><div class="slots" style="grid-template-columns:22px repeat(' + pack.cols + ',minmax(0,1fr))"><span></span>';
-    for (var c = 1; c <= pack.cols; c++) html += '<span class="sh">' + c + "</span>";
-    rows.forEach(function (r) {
-      html += '<span class="sh">' + r + "</span>";
-      for (var c2 = 1; c2 <= pack.cols; c2++) {
-        var code = r + c2, it = bySlot[code];
-        html += it
-          ? '<button class="slot filled' + (hlSlot === code ? " target" : "") + '" data-act="open-item" data-id="' + it.id + '" title="' + esc(itemLabel(it)) + '"><span class="code">' +
-            code + "</span>" + esc(shortName(it)) + "</button>"
-          : '<span class="slot empty"><span class="code">' + code + "</span></span>";
-      }
-    });
-    return html + "</div></div>";
-  }
-
-  function viewMap() {
-    var f = focusLoc(ui.map.focus);
-    var html = '<h2>Medical bay</h2><p class="muted">2D plan (our layout, not NASA\'s). Click a locker, then a pack, then a slot.</p>';
-    if (f) {
-      var it = L.getItem(state, ui.map.focus.itemId);
-      html += '<div class="target-line" style="margin-bottom:12px">' + esc(itemLabel(it)) + ": " + locText(L.locationOf(state, it)) +
-        ' <button class="link" data-act="map-clear">Clear</button></div>';
-    }
-    html += '<div class="map-layout"><div>' + mapSvg(ui.map.focus, ui.map.lockerId, false) + '</div><div>';
-    if (!ui.map.lockerId) {
-      html += '<p class="muted">Select a locker.</p><ul class="legend">' + state.packs.map(function (p) {
-        return '<li><span class="dot" style="background:' + p.hex + '"></span>' + esc(p.colour) + " · " + esc(p.name) + ' <span class="muted">(locker ' +
-          esc(p.lockerId) + ", " + esc(p.source) + ")</span></li>";
-      }).join("") + "</ul>";
-    } else {
-      var lk = L.getLocker(state, ui.map.lockerId);
-      html += "<h3>Locker " + esc(lk.label) + '</h3><p class="muted">' + esc(lk.zone) + '</p><div class="pack-tabs">';
-      state.packs.filter(function (p) { return p.lockerId === lk.id; }).forEach(function (p) {
-        html += '<button class="pack-tab' + (ui.map.packId === p.id ? " sel" : "") + '" data-act="map-pack" data-id="' + p.id + '"><span class="dot" style="background:' +
-          p.hex + '"></span>' + esc(p.colour) + " · " + esc(p.name) + "</button>";
-      });
-      html += "</div>";
-      if (ui.map.packId) {
-        var p = L.getPack(state, ui.map.packId);
-        if (p && p.lockerId === lk.id) html += slotGrid(p, f && f.packId === p.id ? f.slot : null);
-      }
-    }
-    return html + "</div></div>";
-  }
-
-  // ---------- reports from health monitoring ----------
-
-  function openReport(r) {
-    startWizard({
-      patientId: r.crewId,
-      report: { symptoms: JSON.parse(JSON.stringify(r.symptoms || [])), vitals: JSON.parse(JSON.stringify(r.vitals || {})) }
-    });
-    ui.wiz.reason = symptomsText(ui.wiz);
-    runCheck();
-  }
+  // ---------- symptom reports from the symptom page ----------
 
   function receiveSymptomReport(report) {
     var err = L.validateReport(state, report);
-    if (err) { toast("Report rejected: " + err); render(); return { ok: false, error: err }; }
+    if (!err && report.crewId !== me) err = "This report is for another crew member";
+    if (err) { toast("Report not accepted: " + err); render(); return { ok: false, error: err }; }
     var r = JSON.parse(JSON.stringify(report));
+    r.id = "S" + state.seq++;
     r.time = r.time || now().toISOString();
-    r.source = r.source || "health-monitoring";
+    r.handled = false;
     state.reports.unshift(r);
     save();
-    openReport(r);
+    if (!ui.flow) { ui.view = "home"; ui.screen = "main"; }
     render();
     return { ok: true };
   }
@@ -1149,119 +1129,102 @@
     el.textContent = msg;
     el.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.hidden = true; }, 3500);
+    toastTimer = setTimeout(function () { el.hidden = true; }, 3000);
   }
 
   // ---------- actions ----------
 
   var actions = {
-    nav: function (d) { ui.view = d.view; ui.drawerItemId = null; if (d.view === "dispense" && !ui.wiz) startWizard(); },
+    nav: function (d) { ui.view = d.view; ui.drawerItemId = null; if (d.view === "home" && !ui.flow) ui.screen = "main"; },
     reset: function () { reset(); },
-    "filter-flag": function (d) { ui.filters.flag = ui.filters.flag === d.flag ? "" : d.flag; ui.view = "dashboard"; },
-    "filter-pack": function (d) { ui.filters.pack = ui.filters.pack === d.id ? "" : d.id; },
-    "clear-filters": function () { ui.filters = { q: "", pack: "", tier: "", flag: "" }; },
+    "demo-symptoms": function (d) {
+      var s = state.demoSymptoms[Number(d.idx)];
+      receiveSymptomReport({ type: "symptom-report", version: 1, crewId: me, time: now().toISOString(), symptoms: s.symptoms, vitals: s.vitals });
+    },
+    "demo-code": function () {
+      ui.view = "home"; ui.flow = null; ui.screen = "import";
+      ui.rxCode = L.encodeRx(state, me, now(), state.demoPlan);
+      ui.rxPreview = null; ui.rxError = "";
+    },
+    "go-home": function () { ui.view = "home"; ui.screen = "main"; ui.pick = null; ui.em = null; },
+    "go-request": function () { ui.view = "home"; ui.screen = "request"; ui.pick = null; },
+    "go-import": function () { ui.view = "home"; ui.screen = "import"; ui.rxError = ""; ui.rxPreview = null; },
+    pick: function (d) { ui.pick = { itemId: d.id, reportId: d.report || null }; ui.screen = "confirm"; },
+    bin: function (d) {
+      var it = L.getItem(state, d.id);
+      if (canRequest(it)) { ui.view = "home"; ui.pick = { itemId: it.id, reportId: null }; ui.screen = "confirm"; ui.lockerFocus = null; }
+      else ui.drawerItemId = it.id;
+    },
+    take: function (d) { startTake(d.id, d.report || null); },
+    ask: function (d) { askCmo(d.id, d.report || null); },
+    pickup: function (d) { pickup(d.id); },
+    seen: function (d) { findRequest(d.id).seen = true; save(); },
+    "plan-take": function (d) { planTake(d.id, Number(d.idx)); },
+    "plan-seen": function (d) { var p = state.plans.filter(function (x) { return x.id === d.id; })[0]; if (p) { p.doneSeen = true; save(); } },
+    "rx-check": function () { checkRx(); },
+    "rx-add": function () { addRx(); },
+    "qr-start": function () { qrStart(); },
+    "qr-stop": function () { qrStop(); },
+    "dismiss-report": function () { var r = activeReport(); if (r) { r.handled = true; save(); } },
+    fu: function (d) {
+      var e = findEntry(d.id);
+      e.followUp = { effective: d.eff === "1", sideEffects: "", time: now().toISOString() };
+      if (e.patientId === me) {
+        var p = player();
+        p.xp += XP.followUp; p.followUps++; p.streak++;
+        var got = [];
+        if (p.followUps >= 5) unlock(p, "good-reporter", got);
+        toast("+" + XP.followUp + " XP · 🔥 " + p.streak + (got.length ? " · New badge: " + BADGES[got[0]].label : ""));
+      }
+      save();
+    },
+    "scan-ok": function () { doScan(L.getLot(state, ui.flow.lotId).tag); },
+    "scan-wrong": function () {
+      var it = L.getItem(state, ui.flow.itemId);
+      var other = state.items.filter(function (x) { return x.shelfId === it.shelfId && x.id !== it.id; })[0] || state.items.filter(function (x) { return x.id !== it.id; })[0];
+      doScan(L.lotsOf(state, other.id)[0].tag);
+    },
+    "scan-skip": function () { ui.flow.scanSkipped = true; ui.flow.error = ""; afterScan(); },
+    "count-done": function () {
+      var f = ui.flow, lot = L.getLot(state, f.lotId);
+      if (f.count === "" || f.count == null || isNaN(Number(f.count))) { f.error = "Type a number."; return; }
+      complete({ countCheck: { expected: lot.qty - f.qty, counted: Number(f.count), by: counterOf(f) } });
+    },
+    "flow-close": function () { ui.flow = null; ui.screen = "main"; },
+    emergency: function () {
+      // Pause a normal retrieval instead of dropping it; it can be resumed afterwards
+      if (ui.flow && !ui.flow.emergency && (ui.flow.step === "locate" || ui.flow.step === "count")) ui.paused = ui.flow;
+      ui.view = "home"; ui.flow = null; ui.drawerItemId = null; ui.screen = "emergency"; ui.em = { patientId: me, itemId: null, reason: "", confirm: false };
+    },
+    resume: function () { if (ui.paused) { ui.flow = ui.paused; ui.flow.start = Date.now(); ui.flow.error = ""; ui.paused = null; ui.screen = "main"; } },
+    "drop-paused": function () { ui.paused = null; },
+    "em-who": function (d) { ui.em.patientId = d.id; ui.em.confirm = false; },
+    "em-item": function (d) { ui.em.itemId = d.id; ui.em.confirm = false; },
+    "em-release": function () { emergencyRelease(); },
+    "em-locate": function () {
+      var it = L.getItem(state, ui.em.itemId), lot = L.lotsOf(state, it.id)[0];
+      startFlow({ locateOnly: true, emergency: true, patientId: ui.em.patientId, itemId: it.id, qty: 1, lotId: lot ? lot.id : null });
+      ui.em = null;
+    },
     "open-item": function (d) { ui.drawerItemId = d.id; },
     "close-drawer": function () { ui.drawerItemId = null; },
-    "locate-item": function (d) {
-      var f = focusLoc({ itemId: d.id });
-      ui.map = { focus: { itemId: d.id }, lockerId: f.lockerId, packId: f.packId };
-      ui.view = "map";
-      ui.drawerItemId = null;
-    },
-    "map-locker": function (d) { ui.map.lockerId = d.id; var f = focusLoc(ui.map.focus); ui.map.packId = f && f.lockerId === d.id ? f.packId : null; },
-    "map-pack": function (d) { ui.map.packId = d.id; },
-    "map-clear": function () { ui.map.focus = null; },
-    "dispense-item": function (d) {
-      var it = L.getItem(state, d.id);
-      ui.drawerItemId = null;
-      if (it.tier === "4") { startWizard({ emergency: true, step: "emergency", itemId: it.id, qty: it.doseUnits || 1 }); return; }
-      startWizard({ itemId: it.id, qty: it.doseUnits || 1, preItem: true });
-    },
-    emergency: function () { ui.drawerItemId = null; startWizard({ emergency: true, step: "emergency" }); },
-    "wiz-new": function () { startWizard(); },
-    "wiz-patient": function (d) { ui.wiz.patientId = d.id; ui.wiz.error = ""; },
-    "wiz-go": function (d) { ui.wiz.step = d.step; ui.wiz.error = ""; ui.wiz.scanError = ""; },
-    "wiz-sym": function (d) {
-      var w = ui.wiz, list = w.report.symptoms, idx = -1;
-      list.forEach(function (x, i) { if (x.code === d.code) idx = i; });
-      if (idx >= 0) list.splice(idx, 1);
-      else list.push({ code: d.code, severity: 3 });
-    },
-    "wiz-check": function () { ui.wiz.reason = symptomsText(ui.wiz); runCheck(); },
-    "wiz-report": function (d) { var r = state.reports[Number(d.idx)]; if (r) openReport(r); },
-    "paste-report": function () {
-      var r;
-      try { r = JSON.parse(ui.pasteJson || ""); } catch (e) { toast("That isn't valid JSON."); return; }
-      receiveSymptomReport(r);
-    },
-    "wiz-choose": function (d) {
-      var w = ui.wiz, it = L.getItem(state, d.id);
-      w.itemId = it.id;
-      w.qty = it.doseUnits || 1;
-      w.error = "";
-      w.ack = false;
-      w.cmoUnavailable = false;
-      w.sigs = { patient: {}, approver: {}, witness: {} };
-      if (!w.reason) w.reason = w.report.symptoms.length ? symptomsText(w) : "";
-      if (it.tier === "4") { w.emergency = true; w.step = "emergency"; return; }
-      w.step = "auth";
-    },
-    "wiz-back-from-auth": function () { var w = ui.wiz; w.error = ""; w.step = w.result ? "suggest" : (w.preItem ? "start" : "pick"); },
-    "wiz-authorise": function () { authorise(); },
-    "wiz-queue": function () { queueRequest(); },
-    "wiz-scan": function () { doScan(); },
-    "wiz-sim": function (d) {
-      var w = ui.wiz, it = L.getItem(state, w.itemId);
-      if (d.kind === "right") w.scan = L.getLot(state, w.lotId).tag;
-      else {
-        var other = state.lots.filter(function (l) {
-          var o = L.getItem(state, l.itemId);
-          return l.itemId !== it.id && o.packId === it.packId;
-        })[0] || state.lots.filter(function (l) { return l.itemId !== it.id; })[0];
-        w.scan = other.tag;
-      }
-      doScan();
-    },
-    "wiz-skip-scan": function () { ui.wiz.scanSkipped = true; ui.wiz.scanError = ""; afterScan(); },
-    "wiz-count": function () {
-      var w = ui.wiz, lot = L.getLot(state, w.lotId), qty = Number(w.qty) || 1;
-      if (w.count === "" || w.count == null || isNaN(Number(w.count))) { w.error = "Type the number you counted."; return; }
-      finish({ countCheck: { expected: lot.qty - qty, counted: Number(w.count), by: counterOf(w) } });
-    },
-    "wiz-em-item": function (d) { var it = L.getItem(state, d.id); ui.wiz.itemId = it.id; ui.wiz.qty = it.doseUnits || 1; ui.wiz.error = ""; },
-    "wiz-em-locate": function () {
-      var w = ui.wiz, lot = L.lotsOf(state, w.itemId)[0];
-      w.lotId = lot ? lot.id : null;
-      w.locateOnly = true;
-      w.step = "locate";
-    },
-    "wiz-em-back": function () { ui.wiz.locateOnly = false; ui.wiz.step = "emergency"; },
-    "wiz-em-release": function () { emergencyRelease(); },
+    "locate-item": function (d) { ui.lockerFocus = d.id; ui.view = "home"; ui.drawerItemId = null; },
+    "locker-clear": function () { ui.lockerFocus = null; },
+    "filter-flag": function (d) { ui.filters.flag = ui.filters.flag === d.flag ? "" : d.flag; },
+    "clear-filters": function () { ui.filters = { q: "", pack: "", tier: "", flag: "" }; },
     "appr-sign": function (d) { signRequest(d.id); },
-    "appr-deny": function (d) { var r = findRequest(d.id); r.status = "denied"; save(); toast("Request denied"); },
-    "appr-retrieve": function (d) { retrieveRequest(d.id); },
+    "appr-deny": function (d) { findRequest(d.id).status = "denied"; save(); toast("Denied"); },
+    "report-seen": function (d) { var r = state.reports.filter(function (x) { return x.id === d.id; })[0]; if (r) r.cmoSeen = true; save(); },
     "doc-save": function (d) {
       var e = findEntry(d.id), text = String(ui.docs[d.id] || "").trim();
       if (!text) { toast("Write what happened first."); return; }
-      e.documentation = text;
-      e.documentedAt = now().toISOString();
-      delete ui.docs[d.id];
-      save();
-      toast("Documentation saved");
+      e.documentation = text; e.documentedAt = now().toISOString(); delete ui.docs[d.id]; save(); toast("Saved");
     },
     "count-resolve": function (d) {
       var e = findEntry(d.id);
-      e.countCheck.resolved = true;
-      e.countCheck.note = String(ui.notes["cnt-" + d.id] || "").trim();
-      save();
-      toast("Discrepancy marked resolved");
+      e.countCheck.resolved = true; e.countCheck.note = String(ui.notes["cnt-" + d.id] || "").trim(); save();
     },
-    "ground-done": function (d) { var e = findEntry(d.id); e.groundReview = "done"; save(); },
-    fu: function (d) {
-      var e = findEntry(d.id);
-      e.followUp = { effective: d.eff === "1", sideEffects: String(ui.notes["fx-" + d.id] || "").trim(), time: now().toISOString() };
-      save();
-    },
+    "ground-done": function (d) { findEntry(d.id).groundReview = "done"; save(); },
     "export": function () { exportLog(); }
   };
 
@@ -1275,12 +1238,7 @@
     }
     o[parts[parts.length - 1]] = value;
   }
-
-  function bindValue(t) {
-    if (t.type === "checkbox") return t.checked;
-    if (t.type === "range") return Number(t.value);
-    return t.value;
-  }
+  function bindValue(t) { return t.type === "checkbox" ? t.checked : t.value; }
 
   document.addEventListener("click", function (e) {
     var t = e.target.closest ? e.target.closest("[data-act]") : null;
@@ -1292,12 +1250,10 @@
       var a = t.attributes[i];
       if (a.name.indexOf("data-") === 0) d[a.name.slice(5)] = a.value;
     }
+    var before = ui.view + ui.screen + (ui.flow ? ui.flow.step : "");
     fn(d, t, e);
     render();
-    if (name === "nav" || name === "wiz-go" || name === "wiz-choose" || name === "wiz-check" || name === "wiz-authorise" || name === "wiz-em-release" ||
-        name === "emergency" || name === "appr-retrieve" || name === "wiz-report" || name === "locate-item" || name === "dispense-item") {
-      window.scrollTo(0, 0);
-    }
+    if (before !== ui.view + ui.screen + (ui.flow ? ui.flow.step : "")) window.scrollTo(0, 0);
   });
 
   document.addEventListener("input", function (e) {
@@ -1318,7 +1274,8 @@
     if (e.key === "Escape" && ui.drawerItemId) { ui.drawerItemId = null; render(); return; }
     if (e.key !== "Enter") return;
     var t = e.target;
-    if (t.id === "scanInput") { e.preventDefault(); setPath(ui, "wiz.scan", t.value); doScan(); render(); return; }
+    if (t.id === "countInput") { e.preventDefault(); setPath(ui, "flow.count", t.value); actions["count-done"](); render(); return; }
+    if (t.id === "rxCode") { e.preventDefault(); ui.rxCode = t.value; checkRx(); render(); return; }
     if (t.tagName === "TR" && t.getAttribute("data-act")) { e.preventDefault(); t.click(); }
   });
 
@@ -1326,13 +1283,18 @@
     if (e.data && e.data.type === "symptom-report") receiveSymptomReport(e.data);
   });
 
-  // Public API for other pieces of the team's app
+  setInterval(updateTimer, 1000);
+
+  // Public API for the other pieces of the team's app
   window.MedInventory = {
     receiveSymptomReport: receiveSymptomReport,
+    currentUser: function () { return me; },
+    makePlanCode: function (patientId, startDate, items) { return L.encodeRx(state, patientId, startDate, items); },
     getState: function () { return state; },
     reset: function () { reset(); render(); }
   };
 
   load();
+  resolveUser();
   render();
 })();
