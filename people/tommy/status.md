@@ -8,24 +8,25 @@
 
 ## Now
 
-- Last updated: 2026-11-14 12:34
-- Working on: Ready to agree responsibilities with the team.
-- Branch: tommy/onboarding
+- Last updated: 2026-11-14 13:04
+- Working on: First crew access UI is ready for Tommy to review.
+- Branch: tommy/crew-access-ui
 
 ## Done
 
-- Setup: Git, GitHub CLI signed in, Codex, and repository cloned outside iCloud.
-- Configured a repository-local GitHub noreply email for commits.
-- Prepared status.md and plan.md from the team templates.
+- Completed onboarding with a repository-local GitHub noreply email.
+- Read Tommy's supplied project concept and team logo.
+- Created the branded Start screen, Log in, two-step Sign up, and profile welcome screen in `people/tommy/crew-access/`.
+- Added a loopback-only account server with ignored local storage and sample-data demo.
+- Passed 9 automated account/server tests, including private-file exposure and session checks.
+- Verified registration, duplicate usernames, incorrect/correct login, session reload, logout, and demo in the browser; checked layouts at 390px and 1440px.
 
 ## Blocked / need from others
 
-- None.
+- Team backend and production identity integration are not yet agreed; the current implementation is a local prototype.
 
 ## Next steps
 
-<!-- Written so someone else could continue: which branch, what's half-done,
-     what to do next, what to watch out for. -->
-
-- Agree responsibilities with the team and fill in the personal plan.
-- After onboarding is merged, update `main` and start the next task on a new `tommy/<task>` branch.
+- Continue on `tommy/crew-access-ui`: review the first UI with Tommy, then choose the next screen.
+- Connect the relative `/api/` account endpoints to the team backend when agreed; see the UI README for the contract.
+- Run locally with `python3 people/tommy/crew-access/serve.py`; use sample details.
