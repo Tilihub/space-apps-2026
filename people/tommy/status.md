@@ -8,12 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — clean overview and filled presentation demo
+- Last updated: 2026-11-15 — psychometric check-in and body picking
 - Working on: Tommy requested the exact original team logo, a larger thermal body, four clean overview instruments, subtle orange task cues and a bare unnamed planet companion. Current-day presentation inputs are now populated for all five synthetic crew through existing APIs. Regional skin sensors are separately simulated with Tommy’s explicit approval; server/modules/rules remain unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Follow-up to #74: blended the unchanged supplied logo in the header, welcome and profile picker; used DM Sans consistently, moved the dark palette toward logo cyan/gold, aligned navigation rows across widths and added the quiet rounded orange outline around pending tasks.
+- Tommy confirmed the presentation-model mapping: c1/c3 female; c2/c4/c5 male. Both initial iframe source and subsequent body updates use this mapping; the canvas exposes the actual model as an accessible image label.
+- Check-in now contains only the PET-2 mood/stress/fatigue prompts, 1–10. Removed manual sleep/pulse/physical fields, Additional measurements and Measurement guide. Existing form submit handler/API is unchanged. A fresh isolated browser check saved 6/4/4; HTTP verification confirmed those answers and null physical values rather than invented sensor data. Filled presentation profiles still read physical values from their existing imported records; no new live sensor ingestion was added. The existing one-check-in-per-day restriction remains.
+- Enlarged the symptom body and added keyboard/click accessible hotspots on front and back; area names appear on selection instead of a separate body-area button list. The symptom dropdown is a small area-specific subset of existing codes, retaining relevant urgent codes. Severity is a 1–10 slider. Browser/HTTP check confirmed selected back pain at 7/10 persisted, plus rear head/neck/arms/legs selection without resetting orientation. Added a viewer initialization guard for fast tab navigation.
+- Reviewed logo blending in all placements, both body variants, front/back picking, slider and question persistence, 390px/mobile reflow and desktop navigation. Isolated QA server on 8013 stopped afterward; port 8012 presentation store preserved. Root suite: 102/102 pass; backend implementation remains unchanged.
 
 - Updated #74 with Tommy's clean-overview review. Header/login use the supplied original PNG (byte-for-byte verified); removed the improvised logo. Enlarged the anatomical viewer and added the labelled synthetic regional skin map, separate from core `temperatureC`. Kept pulse, body temperature, sleep and actual saved training count. Removed the three lower shortcuts, Report a symptom shortcut and duplicate symptom legends. Severity-colored points now pulse softly; no whole-area symptom recoloring.
 - The unnamed planet floats without a box on every crew screen and still opens the same chat. Incomplete tasks use subtle orange cues with reduced-motion support. Verified the thermal front/back, expanded body, actual source values, pet/chat, original logo and mobile layout without horizontal overflow or browser errors.

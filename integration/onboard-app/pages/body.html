@@ -323,7 +323,17 @@
       const n = new THREE.Vector3().fromArray(normal, best * 3);
       anchors[key] = { pin: new THREE.Vector3().fromArray(pos, best * 3).addScaledVector(n, 0.004), normal: n };
     }
-    meshCache[sex] = { geometry, H, W: m.max[0] - m.min[0], D: m.max[2] - m.min[2], area, anchors, adj: neighbours(index, m.verts) };
+    const rearAnchors = {};
+    for(const key of ['head','arms','legs','neck']) {
+      const [tx,ty]=targets[key];let best=-1,bestD=Infinity;
+      for(let i=0;i<area.length;i++) {
+        if(area[i]!==KEYS.indexOf(key)||normal[i*3+2]>-0.3)continue;
+        const d=(pos[i*3]-tx)**2+(pos[i*3+1]-ty)**2;
+        if(d<bestD){best=i;bestD=d;}
+      }
+      if(best>=0){const n=new THREE.Vector3().fromArray(normal,best*3);rearAnchors[key]={pin:new THREE.Vector3().fromArray(pos,best*3).addScaledVector(n,0.004),normal:n};}
+    }
+    meshCache[sex] = { geometry, H, W: m.max[0] - m.min[0], D: m.max[2] - m.min[2], area, anchors, rearAnchors, adj: neighbours(index, m.verts) };
     return meshCache[sex];
   };
 
@@ -359,7 +369,7 @@
   `;
 
   const pulseStyle = document.createElement('style');
-  pulseStyle.textContent = '@keyframes symptom-beacon{0%,100%{stroke-width:8;stroke-opacity:.35}50%{stroke-width:17;stroke-opacity:.13}}.b3d-lines circle{animation:symptom-beacon 2.8s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.b3d-lines circle{animation:none}}';
+  pulseStyle.textContent = '@keyframes symptom-beacon{0%,100%{stroke-width:8;stroke-opacity:.35}50%{stroke-width:17;stroke-opacity:.13}}.b3d-lines circle.hotspot{fill:#62DCE6;stroke:#62DCE633;cursor:pointer;animation:none}.b3d-lines circle:focus-visible{outline:2px solid #F8D66A;outline-offset:3px}.b3d-lines circle{animation:symptom-beacon 2.8s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.b3d-lines circle{animation:none}}';
   document.head.append(pulseStyle);
   const VERTEX = /* glsl */ `
     attribute vec3 aColor;
@@ -411,11 +421,12 @@
     let reduced = reduceQuery.matches;
     let disposed = false;
 
+    if(!container||!document.documentElement||!container.isConnected)return {update(){},setSelected(){},dispose(){}};
     container.classList.add('b3d');
     container.innerHTML = `
       <canvas></canvas>
       <div class="b3d-ui">
-        <svg class="b3d-lines" aria-hidden="true"></svg>
+        <svg class="b3d-lines" role="group" aria-label="Body areas"></svg>
         <div class="b3d-views" role="group" aria-label="Turn the body">
           <button type="button" data-view="0">Front</button><button type="button" data-view="${Math.PI}">Back</button>
         </div>
@@ -471,7 +482,16 @@
       label.className = `b3d-label ${LABEL_SIDE[key]}`;
       const line = document.createElementNS(svgNS, 'line');
       const dot = document.createElementNS(svgNS, 'circle');
-      dot.setAttribute('r', '4.5');
+      dot.setAttribute('r', '5');
+      dot.setAttribute('role', 'button');
+      dot.setAttribute('aria-label', 'Select ' + BODY_AREAS[key].toLowerCase());
+      const choose = event => {
+        if(opts.mode!=='report')return;
+        event.preventDefault();event.stopPropagation();
+        opts.selected=key;refresh();opts.onSelect?.(key);
+      };
+      dot.addEventListener('click',choose);
+      dot.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')choose(event);});
       linesSvg.append(line, dot);
       ui.append(label);
       tags[key] = { label, line, dot, on: false, w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false };
@@ -491,16 +511,19 @@
 
     const updateLabels = () => {
       const report = opts.mode === 'report';
+      linesSvg.setAttribute('aria-hidden',String(!report));
       for (const key of KEYS) {
         const t = tags[key];
         const r = opts.reported?.[key];
         const sel = report && opts.selected === key;
-        t.on = Boolean(r || sel);
+        t.on = Boolean(r || sel || report);
         t.label.innerHTML = r ? `${BODY_AREAS[key]}<span> · ${r.short}</span>` : BODY_AREAS[key];
+        t.dot.classList.toggle('hotspot', report&&!r);
+        t.dot.style.pointerEvents=report?'auto':'none';
         const markerColor = r?.severity >= 7 ? '#FF9A78' : r?.severity >= 4 ? '#F5BD69' : '#E8D66E';
         for (const el of [t.label, t.line, t.dot]) {
           el.style.setProperty('--symptom-color', markerColor);
-          el.style.display = t.on ? '' : 'none';
+          el.style.display = (el===t.dot?t.on:sel||(!report&&r)) ? '' : 'none';
           el.classList.toggle('sel', sel);
         }
       }
@@ -621,6 +644,8 @@
       }
       if (disposed || (opts.body === 'male' ? 'male' : 'female') !== sex) return;
       body = data;
+      canvas.setAttribute('role','img');
+      canvas.setAttribute('aria-label',sex==='male'?'Male 3D body':'Female 3D body');
       if (!mesh) { mesh = new THREE.Mesh(body.geometry, material); scene.add(mesh); } else mesh.geometry = body.geometry;
       msg.hidden = true;
       fit();
@@ -692,7 +717,7 @@
       for (const key of KEYS) {
         const t = tags[key];
         if (!t.on) continue;
-        const a = body.anchors[key];
+        const a = opts.mode==='report'&&camera.position.z<0 ? body.rearAnchors[key]??body.anchors[key] : body.anchors[key];
         v.copy(a.pin).project(camera);
         t.x = ((v.x + 1) / 2) * size.w;
         t.y = ((1 - v.y) / 2) * size.h;
@@ -714,6 +739,9 @@
           t.line.setAttribute('y2', t.y.toFixed(1));
           t.dot.setAttribute('cx', t.x.toFixed(1));
           t.dot.setAttribute('cy', t.y.toFixed(1));
+          t.dot.style.visibility=opts.mode==='report'&&t.behind?'hidden':'visible';
+          t.dot.setAttribute('tabindex',opts.mode==='report'&&!t.behind?'0':'-1');
+          t.dot.setAttribute('aria-hidden',String(opts.mode!=='report'||t.behind));
           for (const el of [t.label, t.line, t.dot]) el.classList.toggle('behind', t.behind);
         }
       }
@@ -757,7 +785,7 @@
     const onReduce = () => { reduced = reduceQuery.matches; };
     reduceQuery.addEventListener('change', onReduce);
     const themeWatch = new MutationObserver(readTheme);
-    themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+    if(document.documentElement)themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
     const sizeWatch = new ResizeObserver(fit);
     sizeWatch.observe(container);
     document.fonts?.ready.then(() => { if (!disposed) measureLabels(); });

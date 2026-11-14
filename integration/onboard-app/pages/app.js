@@ -91,10 +91,10 @@ function bodyOptions(mode) {
   for(const r of data.symptoms?.reports??[]) if(r.missionDay===clock?.missionDay) for(const s of r.symptoms) {
     const sym=SYMPTOMS.find(x=>x.code===s.code); if(sym) reported[r.note?.match(/Body area: (head|eyes|neck|chest|arms|back|stomach|legs)\./)?.[1]??map[sym.area]]={short:sym.label,severity:s.severity};
   }
-  return {mode,body:'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
+  return {mode,body:({c1:'female',c2:'male',c3:'female',c4:'male',c5:'male'})[user?.crewId]??'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
 }
 function syncBody() { const frame=$('iframe.body-frame'); frame?.contentWindow?.postMessage({type:'pulse-body-update',options:bodyOptions(page==='checkin'?'report':'view'),theme:document.documentElement.dataset.theme},location.origin); }
-const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}" title="Interactive 3D body"></iframe>`;
+const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}&body=${bodyOptions(mode).body}" title="Interactive 3D body"></iframe>`;
 function renderChrome() {
  const logged=!!user&&page!=='login';
  $('#nav').hidden=!logged;$('#topbar').hidden=!logged;$('#app-header').hidden=!logged;$('#app-footer').hidden=!logged;
@@ -403,7 +403,7 @@ async function action(el) {
   const form=$('#mind-chat-form');form.elements.message.value=prompts[el.dataset.topic];remember(form);
   return handleForm(form,form.querySelector('button'));
  }
- if(a==='area'){selectedArea=id;document.querySelectorAll('[data-action="area"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===id)));if($('#area-label'))$('#area-label').textContent=`Selected body area: ${id}`;syncBody();return;}
+ if(a==='area'){selectedArea=id;missionViews.selectArea(id);syncBody();return;}
  if(a==='add-symptom')return addSymptom();
  if(a==='remove-symptom'){stagedSymptoms.splice(Number(id),1);render();return;}
  if(a==='qr-camera')return scanQr();
@@ -440,7 +440,7 @@ async function guarded(fn,button) {
 }
 document.addEventListener('submit',e=>{e.preventDefault();remember(e.target);void guarded(()=>handleForm(e.target,e.submitter),e.submitter);});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(el){e.preventDefault();void guarded(()=>action(el),el);}});
-document.addEventListener('input',e=>{if(e.target.form)remember(e.target.form);});
+document.addEventListener('input',e=>{if(e.target.form)remember(e.target.form);if(e.target.name==='severity'&&$('#severity-value'))$('#severity-value').textContent=e.target.value;});
 document.addEventListener('change',e=>{
  if(e.target.form)remember(e.target.form);
  if(e.target.id==='patient-select'){if(busy){e.target.value=patient;return;}patient=e.target.value;drafts={};void guarded(show);}

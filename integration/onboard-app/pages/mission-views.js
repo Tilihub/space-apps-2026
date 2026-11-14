@@ -38,12 +38,29 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const advice=(Array.isArray(suggestion.advice)?suggestion.advice:[suggestion.advice]).filter(Boolean);
     return card(suggestion.redFlag?'Contact the medical officer now':'Your symptom guidance',`${advice.map(a=>`<p>${esc(a)}</p>`).join('')}${(suggestion.suggestions??[]).map(s=>`<div class="row-item"><span class="grow"><b>${esc(s.name)}</b><small>${esc(s.why)}</small></span><a class="btn ghost sm" href="#medbay">Medical bay</a></div>`).join('')}${(suggestion.blocked??[]).map(b=>`<p class="access-reason">${icon('lock')}<span>${esc(b.name)} · ${esc(b.why)}</span></p>`).join('')}`);
   }
+  const basicSymptoms = {
+    head:['headache','fever','neuro-headache'], eyes:['dry-eyes','eye-injury'],
+    neck:['sore-throat','cough','throat-swelling'], chest:['cough','chest-pain','breathing'],
+    arms:['muscle-pain','itch-rash','minor-cut'],back:['muscle-pain'],
+    stomach:['nausea','diarrhea','constipation','severe-abdominal'],legs:['muscle-pain','itch-rash','fatigue'],
+  };
+  function symptomOptions(area) {
+    const {SYMPTOMS}=state();
+    const codes=basicSymptoms[area]??['headache','muscle-pain','nausea','fatigue','cough','fever','itch-rash'];
+    return SYMPTOMS.filter(x=>codes.includes(x.code));
+  }
+  function selectArea(area) {
+    const input=document.getElementById('symptom-code');if(!input)return;
+    const options=symptomOptions(area),old=input.value;
+    input.innerHTML=options.map(s=>`<option value="${esc(s.code)}">${esc(s.label)}${s.redFlag?' · urgent':''}</option>`).join('');
+    if(options.some(s=>s.code===old))input.value=old;
+    remember(input.form);
+  }
   function checkin() {
-    const {data,drafts,MEASUREMENTS,guides,SYMPTOMS,selectedArea,stagedSymptoms}=state();
+    const {data,drafts,SYMPTOMS,selectedArea,stagedSymptoms}=state();
     const row=data.today?.checkIn, saved=!!row;
     const value=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
-    const measure=k=>field(`${MEASUREMENTS[k].label} (${MEASUREMENTS[k].unit})`,k,{type:'number',value:value(k),attrs:`min="${MEASUREMENTS[k].min}" max="${MEASUREMENTS[k].max}" step="0.1"`});
-    return `<div class="daily-grid"><div class="stack"><div class="card daily-form-card">${heading('DAILY WELLBEING','How are you feeling?',pill(saved?'Saved today':'Daily check-in',saved?'green':'quiet'))}<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset"><div class="form-grid">${measure('sleepHours')}${measure('restingHeartRateBpm')}</div>${rating('Mood','mood',value('mood'),'Low','Good',saved)}${rating('Stress','stress',value('stress'),'Calm','High',saved)}${rating('Fatigue','fatigue',value('fatigue'),'Rested','Exhausted',saved)}${disclosure('Additional measurements',`<div class="form-grid">${['spo2Pct','systolicMmHg','diastolicMmHg','temperatureC'].map(measure).join('')}</div>`)}${!saved?`<div class="form-end"><span class="subtle">Leave unavailable readings blank.</span>${submit('Save check-in')}</div>`:''}</fieldset></form></div>${disclosure('Measurement guide',guides.map(g=>`<details><summary>${esc(g.title)}</summary><ol>${g.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></details>`),'card')}${adviceCard()}</div><div class="card symptoms-card">${heading('SYMPTOMS','Anything bothering you?')}<div class="symptom-body">${bodyFrame('report')}</div><div class="body-chips">${Object.entries({head:'Head',eyes:'Eyes',neck:'Neck',chest:'Chest',arms:'Arms',back:'Back',stomach:'Stomach',legs:'Legs'}).map(([k,l])=>btn(l,'area',`data-id="${k}" aria-pressed="${selectedArea===k}"`,'ghost sm')).join('')}</div><p id="area-label" class="subtle">${selectedArea?`Selected: ${esc(selectedArea)}`:'Tap the body or choose an area.'}</p><form id="symptom-form"><div class="symptom-fields">${select('Symptom','code',SYMPTOMS.map(x=>[x.code,`${x.label}${x.redFlag?' · urgent':''}`]))}${field('Severity (1–10)','severity',{type:'number',value:5,attrs:'min="1" max="10" step="1"',required:true})}</div><div class="symptom-list">${stagedSymptoms.map((s,i)=>`<div class="status-line">${pill(`${SYMPTOMS.find(x=>x.code===s.code)?.label} · ${s.severity}/10`)}${btn('Remove','remove-symptom',`data-id="${i}"`,'ghost sm')}</div>`).join('')}</div>${note('A short note (optional)')}<div class="form-end">${btn('+ Add another symptom','add-symptom','','ghost sm')}${submit('Send symptom report')}</div></form></div></div>`;
+    return `<div class="daily-grid psychometric-layout"><div class="stack"><div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(saved?'Saved today':'Daily check-in',saved?'green':'quiet'))}<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood over the last 24 hours?','mood',value('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel over the last 24 hours?','stress',value('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel over the last 24 hours?','fatigue',value('fatigue'),'Not at all','Extremely',saved)}${!saved?`<div class="form-end">${submit('Save check-in')}</div>`:''}</fieldset></form></div>${adviceCard()}</div><div class="card symptoms-card">${heading('SYMPTOMS','Where does it bother you?')}<div class="symptom-body">${bodyFrame('report')}</div><form id="symptom-form"><label class="field"><span>Symptom</span><select class="input" id="symptom-code" name="code" required>${symptomOptions(selectedArea).map(x=>`<option value="${esc(x.code)}">${esc(x.label)}${x.redFlag?' · urgent':''}</option>`).join('')}</select></label><label class="field severity-control"><span>Severity <b><output id="severity-value" aria-label="Selected severity">${drafts['symptom-form']?.severity??5}</output> / 10</b></span><input type="range" name="severity" aria-label="Severity" min="1" max="10" step="1" value="${drafts['symptom-form']?.severity??5}"><span class="range-ends"><small>1 · Mild</small><small>10 · Severe</small></span></label><div class="symptom-list">${stagedSymptoms.map((s,i)=>`<div class="status-line">${pill(`${SYMPTOMS.find(x=>x.code===s.code)?.label} · ${s.severity}/10`)}${btn('Remove','remove-symptom',`data-id="${i}"`,'ghost sm')}</div>`).join('')}</div>${note('A short note (optional)')}<div class="form-end">${btn('+ Another symptom','add-symptom','','ghost sm')}${submit('Send symptom report')}</div></form></div></div>`;
   }
   function importCard() {
     return `<div class="card code-card">${heading('PRESCRIPTION ACCESS','Use a code or QR')}<form id="import-form">${field('Prescription code','code',{required:true,attrs:'autocomplete="off" placeholder="RX2-…"'})}${submit('Use credential')}</form><div class="scan-controls">${btn(`${icon('scan')} Scan QR`,'qr-camera','','ghost sm')}${btn('Stop camera','qr-stop','','ghost sm')}<video id="qr-video" hidden playsinline></video><p id="qr-status" class="subtle"></p></div><p class="subtle">Your code works again when the next dose is due.</p></div>`;
@@ -152,5 +169,5 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout};
+  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea};
 }
