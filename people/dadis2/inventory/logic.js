@@ -56,7 +56,7 @@
       demoSymptoms: d.demoSymptoms || [],
       rxCodes: d.rxCodes || {},
       demoPlan: d.demoPlan || [],
-      plans: [],
+      grants: [],
       symptoms: d.symptoms,
       redFlagVitals: d.redFlagVitals,
       redFlagSeverity: d.redFlagSeverity,
@@ -142,6 +142,7 @@
         qty: r.qty,
         reason: r.reason,
         tier: item.tier,
+        gate: r.gate || (item.tier === "3" || item.controlled ? "earth" : "cmo"),
         status: r.status,
         signatures: (r.signatures || []).map(function (s) {
           return { crewId: s.crewId, role: s.role, time: new Date(now.getTime() - s.minutesAgo * 60000).toISOString() };
@@ -467,7 +468,9 @@
 
   // ---------- authorisation (spec section 4) ----------
 
-  // Returns which gate applies: none | self | standing-order | cmo | cmo+witness | break-glass
+  // Returns which gate applies: none | self | standing-order | cmo | earth | break-glass
+  // (team decision 14 Nov: prescription → onboard doctor; controlled → Earth only; standing orders
+  // are grants from Earth issued before launch)
   function gateFor(state, patientId, item, qty, now, safety) {
     if (item.tier === "4") return { type: "break-glass", why: "Emergency item: release immediately, document within 2 hours" };
     if (item.tier === "3") {
@@ -476,7 +479,7 @@
         var taken = recentDoses(state, patientId, 24, now).filter(function (e) { return e.itemId === item.id; }).reduce(function (s, e) { return s + e.qty; }, 0);
         if (taken + qty <= so.maxPerDay && (!safety || safety.result !== "block")) return { type: "standing-order", why: "Standing order: " + so.maxPerDay + " per 24 h. Your PIN, then count check" };
       }
-      return { type: "cmo+witness", why: "Controlled medicine (" + (item.controlled || "controlled") + "): CMO and a witness sign, then count check" };
+      return { type: "earth", why: "Controlled medicine (" + (item.controlled || "controlled") + "): only a grant from Earth" };
     }
     if (item.tier === "2") return { type: "cmo", why: "Prescription item: CMO signs" };
     if (item.ownerCrewId && item.ownerCrewId !== patientId) return { type: "cmo", why: "Crew-specific item of another crew member: CMO signs" };
@@ -534,8 +537,9 @@
       followUp: null,
       scanSkipped: !!opts.scanSkipped,
       requestId: opts.requestId || null,
-      planId: opts.planId || null,
-      planIdx: opts.planIdx == null ? null : opts.planIdx,
+      grantId: opts.grantId || null,                          // grant this dose was collected under
+      grantIdx: opts.grantIdx == null ? null : opts.grantIdx,  // which medicine of the grant
+      slot: opts.slot || null,                                 // dose time collected, e.g. "2026-11-14@08"
       override: opts.override || null   // safety warnings the person giving it chose to override (emergency only)
     };
     state.doseLog.unshift(entry);
@@ -549,7 +553,7 @@
   // ---------- alerts ----------
 
   function alerts(state, now) {
-    var a = { expired: [], potencyRisk: [], beforeEnd: [], shortfall: [], belowReserve: [], pending: [], awaitingPickup: [], urgentReports: [], docsDue: [], groundReview: [], countIssues: [], followUps: [] };
+    var a = { expired: [], potencyRisk: [], beforeEnd: [], shortfall: [], belowReserve: [], pending: [], waitingEarth: [], urgentReports: [], docsDue: [], groundReview: [], countIssues: [], followUps: [] };
     state.items.forEach(function (it) {
       var f = itemFlags(state, it, now);
       if (f.indexOf("expired") >= 0) a.expired.push(it);
@@ -558,8 +562,8 @@
       if (f.indexOf("shortfall") >= 0) a.shortfall.push(it);
       if (f.indexOf("below-reserve") >= 0 || f.indexOf("empty") >= 0) a.belowReserve.push(it);
     });
-    a.pending = state.requests.filter(function (r) { return r.status === "pending"; });
-    a.awaitingPickup = state.requests.filter(function (r) { return r.status === "approved"; });
+    a.pending = state.requests.filter(function (r) { return r.status === "pending" && r.gate !== "earth"; });
+    a.waitingEarth = state.requests.filter(function (r) { return r.status === "pending" && r.gate === "earth"; });
     a.urgentReports = state.reports.filter(function (r) { return !r.cmoSeen && redFlags(state, r).length > 0; });
     state.doseLog.forEach(function (e) {
       if (e.auth.type === "break-glass" && !e.documentation) a.docsDue.push(e);
@@ -573,10 +577,19 @@
     return a;
   }
 
-  // ---------- plans from Earth (spec section 8a) ----------
-  // Code: RX1-<CREW>-<YYMMDD start>-<ITEM><units>X<times a day>X<days>[.<ITEM>...]-<check>
-  // Example: RX1-C4-261114-OND1X2X3.CAL2X3X5-<check>. Short enough to type; also fits in a QR code.
+  // ---------- grants: one authorisation format for the onboard doctor and Earth ----------
+  // (spec section 8a, CONTRACT.md)
+  //
+  // Code: RX2-<ISSUER>-<CREW>-<YYMMDD start>-<ITEM><units>X<times a day>X<days>[.<ITEM>...]-<check>
+  //   ISSUER is EARTH (a flight surgeon on Earth) or the onboard doctor's crew id (for example C2).
+  //   Example: RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-<check>. Short enough to type, fits in a QR code.
+  //   Older RX1 codes (no issuer) are read as EARTH.
+  // The check characters only catch typos. Who issued a grant is NOT verified yet: "simulated".
+  //
+  // Collection is dose by dose: at each dose time all of a grant's due compartments open together,
+  // and each medicine can be collected once per dose time ("slot").
 
+  var EARTH = "EARTH";
   var RX_SLOTS = { 1: [8], 2: [8, 20], 3: [8, 14, 20], 4: [8, 12, 16, 20] };
 
   function rxCheck(body) {
@@ -587,67 +600,142 @@
   }
 
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function ymdOf(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
-  function encodeRx(state, patientId, start, items) {
+  // Who may grant what (team decision, 14 Nov): self-care and prescription medicines can be granted by
+  // the onboard doctor or Earth; controlled medicines only by Earth; emergency items never (break-glass).
+  function canGrant(state, issuerId, patientId, item) {
+    if (!item || item.kind !== "medication") return "Only medicines can be granted.";
+    if (item.tier === "4") return item.name + " is an emergency medicine: use the Emergency button.";
+    if (item.ownerCrewId && item.ownerCrewId !== patientId) return item.name + " belongs to another crew member.";
+    if (issuerId === EARTH) return null;
+    var c = getCrew(state, issuerId);
+    if (!c || !(c.isCMO || c.isBackupCMO)) return "Only the onboard doctor or Earth can issue a grant.";
+    if (issuerId === patientId) return "The doctor can't grant medicine to themselves.";
+    if (item.tier === "3" || item.controlled) return item.name + " is controlled: only Earth can grant it.";
+    return null;
+  }
+
+  // g: { issuerId: "EARTH" | crew id, patientId, start: Date | "YYYY-MM-DD", items: [{ itemId, units, perDay, days }] }
+  function encodeGrant(state, g) {
     var codes = {};
     Object.keys(state.rxCodes).forEach(function (k) { codes[state.rxCodes[k]] = k; });
+    var start = parseDate(g.start);
     var ymd = String(start.getFullYear()).slice(2) + pad2(start.getMonth() + 1) + pad2(start.getDate());
-    var body = "RX1-" + patientId.toUpperCase() + "-" + ymd + "-" + items.map(function (x) {
+    var body = "RX2-" + String(g.issuerId).toUpperCase() + "-" + g.patientId.toUpperCase() + "-" + ymd + "-" + g.items.map(function (x) {
+      if (!codes[x.itemId]) throw new Error("No grant code for " + x.itemId);
       return codes[x.itemId] + x.units + "X" + x.perDay + "X" + x.days;
     }).join(".");
     return body + "-" + rxCheck(body);
   }
 
-  function decodeRx(state, raw) {
+  // Returns { grant } (a draft, not yet added) or { error }
+  function decodeGrant(state, raw) {
     var code = String(raw || "").toUpperCase().replace(/\s+/g, "");
-    var m = /^(RX1-([A-Z0-9]+)-(\d{6})-([A-Z0-9.]+))-([A-Z0-9]{2})$/.exec(code);
-    if (!m) return { error: "That isn't a plan code." };
-    if (rxCheck(m[1]) !== m[5]) return { error: "The code has a typo. Check it and try again." };
-    var patientId = m[2].toLowerCase();
+    var m2 = /^(RX2-([A-Z0-9]+)-([A-Z0-9]+)-(\d{6})-([A-Z0-9.]+))-([A-Z0-9]{2})$/.exec(code);
+    var m1 = /^(RX1-([A-Z0-9]+)-(\d{6})-([A-Z0-9.]+))-([A-Z0-9]{2})$/.exec(code);
+    var body, issuer, crew, ymd, list, check;
+    if (m2) { body = m2[1]; issuer = m2[2]; crew = m2[3]; ymd = m2[4]; list = m2[5]; check = m2[6]; }
+    else if (m1) { body = m1[1]; issuer = EARTH; crew = m1[2]; ymd = m1[3]; list = m1[4]; check = m1[5]; }
+    else return { error: "That isn't a grant code." };
+    if (rxCheck(body) !== check) return { error: "The code has a typo. Check it and try again." };
+    var issuerId = issuer === EARTH ? EARTH : issuer.toLowerCase();
+    if (issuerId !== EARTH && !getCrew(state, issuerId)) return { error: "Unknown issuer in the code." };
+    var patientId = crew.toLowerCase();
     if (!getCrew(state, patientId)) return { error: "Unknown crew member in the code." };
-    var y = 2000 + Number(m[3].slice(0, 2)), mo = Number(m[3].slice(2, 4)), da = Number(m[3].slice(4, 6));
+    var y = 2000 + Number(ymd.slice(0, 2)), mo = Number(ymd.slice(2, 4)), da = Number(ymd.slice(4, 6));
     var start = new Date(y, mo - 1, da);
     if (start.getMonth() !== mo - 1 || start.getDate() !== da) return { error: "Bad date in the code." };
-    var items = [], parts = m[4].split(".");
+    var items = [], seen = {}, parts = list.split(".");
     for (var i = 0; i < parts.length; i++) {
       var pm = /^([A-Z]{3})(\d)X(\d)X(\d{1,2})$/.exec(parts[i]);
       if (!pm) return { error: "Can't read " + parts[i] + "." };
       var it = getItem(state, state.rxCodes[pm[1]]);
       if (!it) return { error: "Unknown medicine " + pm[1] + "." };
+      if (seen[it.id]) return { error: it.name + " is listed twice." };
+      seen[it.id] = true;
       var units = Number(pm[2]), perDay = Number(pm[3]), days = Number(pm[4]);
       if (units < 1 || perDay < 1 || perDay > 4 || days < 1 || days > 30) return { error: it.name + ": dose out of range." };
       if (it.maxPerDay && units * perDay > it.maxPerDay) return { error: it.name + ": over the daily limit." };
-      if (it.ownerCrewId && it.ownerCrewId !== patientId) return { error: it.name + " belongs to another crew member." };
+      var why = canGrant(state, issuerId, patientId, it);
+      if (why) return { error: why };
       items.push({ itemId: it.id, units: units, perDay: perDay, days: days });
     }
-    return { plan: { code: code, patientId: patientId, start: y + "-" + pad2(mo) + "-" + pad2(da), items: items } };
+    return { grant: { code: code, issuerId: issuerId, patientId: patientId, start: ymdOf(start), items: items, verification: "simulated" } };
   }
 
-  // Where one medicine of a plan stands right now: not-started | due | later | done-today | finished
-  function planItemStatus(state, plan, idx, now) {
-    var x = plan.items[idx], start = parseDate(plan.start), day = daysBetween(start, now) + 1;
+  // Checks before a grant is added on a crew member's device: right person, not already added
+  function acceptGrant(state, draft, crewId) {
+    if (draft.patientId !== crewId) {
+      var c = getCrew(state, draft.patientId);
+      return "This grant is for " + (c ? c.name : draft.patientId) + ".";
+    }
+    if (state.grants.some(function (g) { return g.code === draft.code; })) return "Already added.";
+    return null;
+  }
+
+  function addGrant(state, draft, now) {
+    var g = {
+      id: "G" + state.seq++, code: draft.code, issuerId: draft.issuerId, patientId: draft.patientId, start: draft.start,
+      items: draft.items, verification: draft.verification || "simulated", addedAt: now.toISOString(),
+      status: "active", requestId: draft.requestId || null
+    };
+    state.grants.unshift(g);
+    return g;
+  }
+
+  function getGrant(state, id) { return state.grants.filter(function (g) { return g.id === id; })[0] || null; }
+
+  function slotKey(d, hour) { return ymdOf(d) + "@" + pad2(hour); }
+
+  // Stable compartment id for the app and a future hardware bridge, for example "L2-1-07"
+  function compartmentOf(state, item) {
+    var loc = locationOf(state, item);
+    return { compartmentId: item.shelfId + "-" + pad2(item.bin), lockerId: loc.locker ? loc.locker.id : null, shelfId: item.shelfId, bin: item.bin };
+  }
+
+  // Where one medicine of a grant stands now: not-started | due | later | done-today | finished
+  // A dose is due when the latest dose time today has passed and that dose time wasn't collected.
+  // Missed earlier dose times are not added up, so there's never a double dose.
+  function grantItemStatus(state, grant, idx, now) {
+    var x = grant.items[idx], start = parseDate(grant.start), day = daysBetween(start, now) + 1;
     var slots = RX_SLOTS[x.perDay];
-    var entries = state.doseLog.filter(function (e) { return e.planId === plan.id && e.planIdx === idx; });
-    var total = x.perDay * x.days, taken = entries.length;
-    var today = entries.filter(function (e) { return daysBetween(new Date(e.time), now) === 0; }).length;
-    var s = { day: day, days: x.days, total: total, taken: taken, today: today, slots: slots, nextHour: null };
+    var entries = state.doseLog.filter(function (e) { return e.grantId === grant.id && e.grantIdx === idx; });
+    var todayKeys = slots.map(function (h) { return slotKey(now, h); });
+    var s = {
+      day: day, days: x.days, total: x.perDay * x.days, taken: entries.length, slots: slots, nextHour: null, slot: null,
+      today: entries.filter(function (e) { return todayKeys.indexOf(e.slot) >= 0; }).length
+    };
     if (day < 1) { s.state = "not-started"; return s; }
-    if (day > x.days || taken >= total) { s.state = "finished"; return s; }
-    if (today >= x.perDay) { s.state = "done-today"; return s; }
-    // Due when the latest dose time today has passed and nothing was taken since then.
-    // Missed earlier doses are not added up, so there's never a double dose.
+    if (day > x.days || s.taken >= s.total) { s.state = "finished"; return s; }
     var h = now.getHours();
-    var passed = slots.filter(function (x) { return h >= x; });
-    var upcoming = slots.filter(function (x) { return x > h; });
+    var passed = slots.filter(function (sh) { return h >= sh; });
+    var upcoming = slots.filter(function (sh) { return sh > h; });
     if (passed.length) {
-      var slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), passed[passed.length - 1]);
-      var takenSince = entries.some(function (e) { return new Date(e.time) >= slotTime; });
-      if (!takenSince) { s.state = "due"; return s; }
+      var key = slotKey(now, passed[passed.length - 1]);
+      if (!entries.some(function (e) { return e.slot === key; })) { s.state = "due"; s.slot = key; return s; }
     }
     if (!upcoming.length) { s.state = "done-today"; return s; }
     s.state = "later";
     s.nextHour = upcoming[0];
     return s;
+  }
+
+  // Everything to collect now under one grant: all of its due compartments, opened together.
+  // Compartments not in the grant, or not due now, are not in the list.
+  function grantDue(state, grant, now) {
+    if (!grant || grant.status !== "active") return [];
+    var out = [];
+    grant.items.forEach(function (x, i) {
+      var s = grantItemStatus(state, grant, i, now);
+      if (s.state !== "due") return;
+      out.push(Object.assign({ grantId: grant.id, grantIdx: i, itemId: x.itemId, units: x.units, slot: s.slot }, compartmentOf(state, getItem(state, x.itemId))));
+    });
+    return out;
+  }
+
+  function grantFinished(state, grant, now) {
+    return grant.items.every(function (x, i) { return grantItemStatus(state, grant, i, now).state === "finished"; });
   }
 
   // ---------- validation of incoming reports ----------
@@ -676,6 +764,7 @@
     redFlags: redFlags, standingOrder: standingOrder, suggest: suggest,
     gateFor: gateFor, needsCountCheck: needsCountCheck, needsGroundReview: needsGroundReview, checkSignature: checkSignature,
     dispense: dispense, alerts: alerts, validateReport: validateReport,
-    encodeRx: encodeRx, decodeRx: decodeRx, planItemStatus: planItemStatus
+    EARTH: EARTH, canGrant: canGrant, encodeGrant: encodeGrant, decodeGrant: decodeGrant, acceptGrant: acceptGrant, addGrant: addGrant,
+    getGrant: getGrant, slotKey: slotKey, compartmentOf: compartmentOf, grantItemStatus: grantItemStatus, grantDue: grantDue, grantFinished: grantFinished
   };
 })(window);

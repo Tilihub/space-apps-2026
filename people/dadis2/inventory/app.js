@@ -11,7 +11,7 @@
   "use strict";
 
   var L = window.MedLogic;
-  var STORE_KEY = "medInventory.v3";
+  var STORE_KEY = "medInventory.v4";
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   var TIER = {
@@ -42,7 +42,7 @@
     "standing-order": "Standing order",
     cmo: "CMO sign-off",
     "cmo+witness": "CMO and witness sign-off",
-    "ground-plan": "Plan from Earth",
+    grant: "Grant",
     "break-glass": "Emergency"
   };
   var SHELF_SHORT = { 1: "Top", 2: "Middle", 3: "Bottom" };
@@ -144,7 +144,7 @@
     return h < 48 ? h + " h ago" : Math.round(h / 24) + " days ago";
   }
   function crewName(id) {
-    if (id === "ground") return "Flight surgeon (Earth)";
+    if (id === "ground" || id === L.EARTH) return "Flight surgeon (Earth)";
     var c = L.getCrew(state, id);
     return c ? c.name : String(id);
   }
@@ -207,7 +207,8 @@
     var qty = it.doseUnits || 1;
     var sf = L.safetyChecks(state, me, it, qty, t);
     var gate = L.gateFor(state, me, it, qty, t, sf);
-    return { item: it, qty: qty, safety: sf, gate: gate, needsCmo: gate.type === "cmo" || gate.type === "cmo+witness" };
+    // needsCmo: needs approval (from the onboard doctor, or from Earth for controlled medicines)
+    return { item: it, qty: qty, safety: sf, gate: gate, needsCmo: gate.type === "cmo" || gate.type === "earth", needsEarth: gate.type === "earth" };
   }
   function canRequest(it) { return it.kind === "medication" && it.tier !== "4" && (!it.ownerCrewId || it.ownerCrewId === me); }
   // Red tint: needs CMO approval for this user (prescription, controlled without a standing order,
@@ -288,7 +289,9 @@
     var t = now(), left, focus = null, locating = false;
     if (ui.flow) {
       left = viewFlow(ui.flow);
-      if (ui.flow.itemId) focus = { itemId: ui.flow.itemId, pulse: ui.flow.step === "locate" };
+      if (ui.flow.kind === "collect") {
+        focus = { targets: ui.flow.items.map(function (x) { return { itemId: x.itemId, done: x.done }; }), pulse: ui.flow.step === "locate" };
+      } else if (ui.flow.itemId) focus = { itemId: ui.flow.itemId, pulse: ui.flow.step === "locate" };
       locating = ui.flow.step === "locate";
     } else if (ui.screen === "request") left = viewRequest(t);
     else if (ui.screen === "confirm") { left = viewConfirm(t); focus = { itemId: ui.pick.itemId }; }
@@ -309,7 +312,7 @@
     }
     var rep = activeReport();
     if (rep) cards += reportCard(rep, t);
-    cards += planCards(t);
+    cards += grantCards(t);
     cards += myRequestCards();
     cards += followUpCards(t);
     var html = '<div class="stack">';
@@ -349,24 +352,27 @@
       '<div class="hc-actions"><button class="link" data-act="dismiss-report">OK</button></div></div>';
   }
 
-  function myPlans() { return state.plans.filter(function (p) { return p.patientId === me; }); }
+  function myGrants() { return state.grants.filter(function (g) { return g.patientId === me; }); }
+  function issuerLabel(g) { return g.issuerId === L.EARTH ? "🌍 From Earth" : "🩺 From " + firstName(g.issuerId) + " (doctor)"; }
 
-  function planCards(t) {
-    return myPlans().map(function (p) {
-      var sts = p.items.map(function (x, i) { return L.planItemStatus(state, p, i, t); });
+  // One card per grant (from Earth or the onboard doctor). At each dose time, "Collect now" opens all
+  // of its due compartments together.
+  function grantCards(t) {
+    return myGrants().map(function (p) {
+      var sts = p.items.map(function (x, i) { return L.grantItemStatus(state, p, i, t); });
       if (sts.every(function (s) { return s.state === "finished"; })) {
         if (p.doneSeen) return "";
-        return '<div class="hcard plan"><div class="hc-kicker">🌍 Plan from Earth</div><div class="hc-title">Plan complete 🏁</div>' +
-          '<div class="hc-actions"><button class="link" data-act="plan-seen" data-id="' + p.id + '">OK</button></div></div>';
+        return '<div class="hcard plan"><div class="hc-kicker">' + issuerLabel(p) + '</div><div class="hc-title">Course complete</div>' +
+          '<div class="hc-actions"><button class="link" data-act="grant-seen" data-id="' + p.id + '">OK</button></div></div>';
       }
-      var total = 0, taken = 0, maxDays = 0;
+      var total = 0, taken = 0, maxDays = 0, due = L.grantDue(state, p, t);
       sts.forEach(function (s) { total += s.total; taken += Math.min(s.taken, s.total); maxDays = Math.max(maxDays, s.days); });
       var day = sts[0].day;
-      var html = '<div class="hcard plan"><div class="hc-kicker">🌍 Plan from Earth · ' + (day < 1 ? "starts " + esc(fmtShort(p.start)) : "day " + Math.min(day, maxDays) + " of " + maxDays) +
+      var html = '<div class="hcard plan"><div class="hc-kicker">' + issuerLabel(p) + " · " + (day < 1 ? "starts " + esc(fmtShort(p.start)) : "day " + Math.min(day, maxDays) + " of " + maxDays) +
         "</div>";
       p.items.forEach(function (x, i) {
         var it = L.getItem(state, x.itemId), s = sts[i], action;
-        if (s.state === "due") action = '<button class="btn primary" data-act="plan-take" data-id="' + p.id + '" data-idx="' + i + '">Take now</button>';
+        if (s.state === "due") action = '<span class="plan-next due">Due now</span>';
         else if (s.state === "later") action = '<span class="plan-next">Next ' + pad(s.nextHour) + ":00</span>";
         else if (s.state === "done-today") action = '<span class="plan-next ok">✓ Today</span>';
         else if (s.state === "finished") action = '<span class="plan-next ok">✓ Done</span>';
@@ -375,34 +381,35 @@
           return '<i class="' + (k < s.today ? "on" : "") + '" title="' + pad(h) + ':00"></i>';
         }).join("") + "</span>";
         html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b><div class="muted small">' + esc(doseText(it, x.units)) + " · " + esc(timesADay(x.perDay)) + " · " +
-          x.days + " days</div>" + dots + "</div>" + action + "</div>";
+          x.days + (x.days === 1 ? " day" : " days") + "</div>" + dots + "</div>" + action + "</div>";
       });
       html += '<div class="bar plan-bar"><span class="ok" style="width:' + (total ? Math.round(taken / total * 100) : 0) + '%"></span></div>';
+      if (due.length) {
+        html += '<div class="hc-actions"><button class="btn primary big" data-act="collect" data-id="' + p.id + '">Collect now' +
+          (due.length > 1 ? " (" + due.length + " bins)" : "") + "</button></div>";
+      }
       return html + "</div>";
     }).join("");
   }
 
+  // Requests that are still waiting. Once granted, the grant card takes over.
   function myRequestCards() {
     return state.requests.filter(function (r) {
-      return r.patientId === me && (r.status === "pending" || r.status === "approved" || (r.status === "denied" && !r.seen));
+      return r.patientId === me && (r.status === "pending" || (r.status === "denied" && !r.seen));
     }).map(function (r) {
       var it = L.getItem(state, r.itemId);
-      if (r.status === "approved") {
-        return '<div class="hcard ok"><div class="hc-kicker">✅ Approved</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-actions">' +
-          '<button class="btn primary big" data-act="pickup" data-id="' + r.id + '">Get it</button></div></div>';
-      }
       if (r.status === "denied") {
         return '<div class="hcard"><div class="hc-kicker">Not approved</div><div class="hc-title">' + esc(it.name) + '</div><div class="hc-sub">Talk to the CMO.</div>' +
           '<div class="hc-actions"><button class="link" data-act="seen" data-id="' + r.id + '">OK</button></div></div>';
       }
-      return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for the CMO</div><div class="hc-title">' + esc(it.name) + "</div></div>";
+      return '<div class="hcard muted"><div class="hc-kicker">⏳ Waiting for ' + (r.gate === "earth" ? "Earth" : "the CMO") + '</div><div class="hc-title">' + esc(it.name) + "</div></div>";
     }).join("");
   }
 
   function followUpCards(t) {
     return state.doseLog.filter(function (e) {
       var it = L.getItem(state, e.itemId), age = t - new Date(e.time);
-      return e.patientId === me && !e.followUp && !e.planId && it && it.kind === "medication" && age > 30 * 60000 && age < 3 * L.DAY_MS;
+      return e.patientId === me && !e.followUp && !e.grantId && it && it.kind === "medication" && age > 30 * 60000 && age < 3 * L.DAY_MS;
     }).slice(0, 2).map(function (e) {
       var it = L.getItem(state, e.itemId);
       return '<div class="hcard"><div class="hc-kicker">Quick check <span class="xp-pill">+' + XP.followUp + ' XP</span></div><div class="hc-title">Did ' + esc(it.name) + " help?</div>" +
@@ -432,7 +439,8 @@
     function tile(o) {
       var use = o.item.indications.slice(0, 2).map(symLabel).join(", ") || o.item.strength;
       return '<button class="tile' + (o.needsCmo ? " rx" : "") + (o.safety.lot ? "" : " off") + '" data-act="pick" data-id="' + o.item.id + '"><span class="tile-name">' +
-        (o.needsCmo ? "🔒 " : "") + esc(o.item.name) + (o.item.ownerCrewId ? ' <span class="tag muted">Yours</span>' : "") + '</span><span class="tile-use">' + esc(use) + "</span></button>";
+        (o.needsCmo ? "🔒 " : "") + esc(o.item.name) + (o.item.ownerCrewId ? ' <span class="tag muted">Yours</span>' : "") + '</span><span class="tile-use">' + esc(use) +
+        (o.needsEarth ? " · 🌍 Earth" : "") + "</span></button>";
     }
     var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Request a medicine</h2></div>';
     html += '<input id="reqQ" class="search" type="search" placeholder="Search: headache, sleep…" aria-label="Search" value="' + esc(ui.query) + '" data-bind="query" data-live>';
@@ -451,7 +459,7 @@
     if (!sf.lot) html += '<div class="hc-sub">None left. Ask the CMO.</div>';
     else {
       html += '<div class="hc-actions"><button class="btn primary big" data-act="' + (o.needsCmo ? "ask" : "take") + '" data-id="' + it.id + '"' +
-        (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsCmo ? "Ask the CMO" : "Get it") + "</button></div>";
+        (ui.pick.reportId ? ' data-report="' + esc(ui.pick.reportId) + '"' : "") + ">" + (o.needsEarth ? "Ask Earth" : o.needsCmo ? "Ask the CMO" : "Get it") + "</button></div>";
     }
     return html + "</div>";
   }
@@ -466,7 +474,7 @@
   }
 
   function startFlow(f) {
-    ui.flow = Object.assign({ step: "locate", patientId: me, start: Date.now(), wrong: 0, error: "", requestId: null, reportId: null, planId: null, planIdx: null }, f);
+    ui.flow = Object.assign({ step: "locate", patientId: me, start: Date.now(), wrong: 0, error: "", requestId: null, reportId: null }, f);
     ui.screen = "main";
     ui.pick = null;
     ui.lockerFocus = null;
@@ -481,7 +489,7 @@
 
   function askCmo(itemId, reportId) {
     var t = now(), it = L.getItem(state, itemId), o = optionFor(it, t);
-    var gateType = o.needsCmo ? o.gate.type : (it.tier === "3" ? "cmo+witness" : "cmo");
+    var gateType = o.needsCmo ? o.gate.type : (it.tier === "3" || it.controlled ? "earth" : "cmo");
     state.requests.unshift({
       id: "R" + state.seq++, time: t.toISOString(), patientId: me, itemId: it.id, qty: o.qty, reason: reasonFrom(reportId),
       tier: it.tier, gate: gateType, status: "pending", signatures: []
@@ -490,30 +498,105 @@
     ui.screen = "main";
     ui.pick = null;
     save();
-    toast("Sent to the CMO");
+    toast(gateType === "earth" ? "Sent to Earth" : "Sent to the CMO");
   }
 
-  function pickup(requestId) {
-    var r = state.requests.filter(function (x) { return x.id === requestId; })[0];
-    var it = L.getItem(state, r.itemId), pick = L.pickLot(state, it, r.qty, now());
-    if (!pick.lot) { toast("None left. Ask the CMO."); return; }
-    startFlow({
-      itemId: it.id, qty: r.qty, lotId: pick.lot.id, authType: r.gate || (r.tier === "3" ? "cmo+witness" : "cmo"),
-      signedBy: r.signatures.map(function (s) { return s.crewId; }), reason: r.reason, requestId: r.id
+  // ---------- collecting under a grant: all due bins open together, dose by dose ----------
+
+  // Tells the main app and a future hardware bridge which compartments to open or close.
+  // Listen with window.addEventListener("medinventory", e => e.detail); also posted to a parent page.
+  function emit(detail) {
+    detail.at = now().toISOString();
+    try { window.dispatchEvent(new CustomEvent("medinventory", { detail: detail })); } catch (e) { /* old browser */ }
+    try { if (window.parent && window.parent !== window) window.parent.postMessage(detail, "*"); } catch (e) { /* not embedded */ }
+  }
+
+  function startCollect(grantId) {
+    var t = now(), g = L.getGrant(state, grantId);
+    if (!g || g.patientId !== me) { toast("This grant isn't yours."); return; }
+    var due = L.grantDue(state, g, t), items = [], blocked = [];
+    due.forEach(function (d) {
+      var it = L.getItem(state, d.itemId), sf = L.safetyChecks(state, me, it, d.units, t);
+      // Safety checks still run. Reserve is not a reason to stop a granted dose; allergies and limits are.
+      var hard = sf.checks.filter(function (c) { return c.result === "block" && c.name !== "Stock and reserve"; });
+      var lot = sf.lot || L.pickLot(state, it, d.units, t).lot;
+      if (hard.length || !lot) { blocked.push(it.name + ": " + (hard.length ? blockReason({ checks: hard }) : "none left")); return; }
+      items.push(Object.assign({ lotId: lot.id, done: false }, d));
     });
+    if (!items.length) { toast(blocked.length ? blocked.join(" · ") + ". Ask the CMO." : "Nothing to collect now."); return; }
+    startFlow({ kind: "collect", grantId: g.id, items: items, blocked: blocked });
+    emit({ type: "compartments-open", grantId: g.id, crewId: me, compartments: items.map(function (x) {
+      return { compartmentId: x.compartmentId, lockerId: x.lockerId, shelfId: x.shelfId, bin: x.bin, itemId: x.itemId, units: x.units, slot: x.slot };
+    }) });
   }
 
-  function planTake(planId, idx) {
-    var t = now(), p = state.plans.filter(function (x) { return x.id === planId; })[0], x = p.items[idx], it = L.getItem(state, x.itemId);
-    var sf = L.safetyChecks(state, me, it, x.units, t);
-    if (!sf.lot) { toast("None left. Ask the CMO."); return; }
-    if (sf.result === "block") { toast(blockReason(sf) + ". Ask the CMO first."); return; }
-    startFlow({ itemId: it.id, qty: x.units, lotId: sf.lot.id, authType: "ground-plan", signedBy: ["ground"], reason: "Plan from Earth", planId: p.id, planIdx: idx, onSchedule: true });
+  function viewCollect(f) {
+    var g = L.getGrant(state, f.grantId), left = f.items.filter(function (x) { return !x.done; }).length;
+    var html = '<div class="find"><div class="hc-kicker">' + issuerLabel(g) + " · Collect</div>" +
+      '<div class="what"><b>' + f.items.length + " bin" + (f.items.length > 1 ? "s" : "") + "</b> open together</div><div class=\"collect-list\">";
+    f.items.forEach(function (x) {
+      var it = L.getItem(state, x.itemId), loc = L.locationOf(state, it);
+      html += '<div class="collect-row' + (x.done ? " done" : "") + '"><div class="where">' + whereChips(loc) + '</div><div class="collect-what">' + (x.done ? "✓ " : "") +
+        "<b>" + x.units + " ×</b> " + esc(it.name) + "</div></div>";
+    });
+    html += "</div>";
+    if (f.blocked && f.blocked.length) html += '<div class="tag warn block">Not opened: ' + esc(f.blocked.join(" · ")) + ". Ask the CMO.</div>";
+    if (f.error) html += '<div class="find-error">' + esc(f.error) + "</div>";
+    html += '<div class="find-actions"><span class="timer" id="timer">0:00</span><button class="btn primary big" data-act="collect-scan">📷 Scan (' + left + " left)</button></div>" +
+      '<div class="demo-line"><button class="link small" data-act="collect-wrong">Demo: scan a box not in this grant</button> · <button class="link small" data-act="collect-cancel">Cancel</button></div>';
+    return html + "</div>";
+  }
+
+  // Each scanned box is checked against the open compartments and recorded once, right away.
+  function collectScan(tag) {
+    var f = ui.flow, t = now();
+    var lot = state.lots.filter(function (l) { return l.tag === tag; })[0];
+    var x = lot ? f.items.filter(function (y) { return y.itemId === lot.itemId; })[0] : null;
+    if (!x) { f.wrong++; f.error = "That box isn't part of this collection. Put it back."; return; }
+    if (x.done) { f.error = "Already collected."; return; }
+    var it = L.getItem(state, x.itemId);
+    if (L.lotStatus(state, it, lot, t) === "expired") { f.error = "That box is expired. Take the other one."; return; }
+    if (lot.qty < x.units) { f.error = "That box is nearly empty. Take the other one."; return; }
+    var g = L.getGrant(state, f.grantId);
+    x.entry = L.dispense(state, {
+      patientId: me, itemId: x.itemId, lotId: lot.id, qty: x.units, reason: g.issuerId === L.EARTH ? "Grant from Earth" : "Grant from the onboard doctor",
+      authType: "grant", signedBy: [g.issuerId], grantId: g.id, grantIdx: x.grantIdx, slot: x.slot
+    }, t);
+    x.done = true;
+    f.error = "";
+    emit({ type: "compartment-collected", grantId: g.id, crewId: me, compartmentId: x.compartmentId, itemId: x.itemId, units: x.units, slot: x.slot });
+    save();
+    if (L.needsCountCheck(it)) { f.counting = x.itemId; f.count = ""; f.step = "count"; return; }
+    collectNext();
+  }
+
+  function collectNext() {
+    var f = ui.flow;
+    f.step = "locate";
+    if (f.items.every(function (x) { return x.done; })) {
+      f.step = "done";
+      emit({ type: "collection-complete", grantId: f.grantId, crewId: me, slot: f.items[0].slot });
+    }
+  }
+
+  function viewCollectDone(f) {
+    var g = L.getGrant(state, f.grantId);
+    var html = '<div class="done"><div class="done-check">✓</div><div class="hc-title">Collected</div><ul class="gains">' + f.items.map(function (x) {
+      var it = L.getItem(state, x.itemId);
+      return "<li><span>" + x.units + " × " + esc(it.name) + "</span><b>Bin " + x.bin + "</b></li>";
+    }).join("") + "</ul>";
+    f.items.forEach(function (x) {
+      if (x.entry && x.entry.countCheck && x.entry.countCheck.counted !== x.entry.countCheck.expected) html += '<div class="tag bad block">Count doesn\'t match. The CMO will check.</div>';
+    });
+    if (g && L.grantFinished(state, g, now())) html += '<div class="hc-sub">That was the last dose of this course.</div>';
+    html += '<div class="hc-sub">Close the bins and the locker.</div><button class="btn primary big" data-act="flow-close">Back</button></div>';
+    return html;
   }
 
   // ---------- retrieval flow: locate → scan → (count) → done ----------
 
   function viewFlow(f) {
+    if (f.kind === "collect") return f.step === "done" ? viewCollectDone(f) : f.step === "count" ? viewCount(f) : viewCollect(f);
     if (f.step === "count") return viewCount(f);
     if (f.step === "done") return viewDone(f);
     return viewLocate(f);
@@ -557,10 +640,10 @@
     else complete();
   }
 
-  function counterOf(f) { return f.authType === "cmo+witness" ? (f.signedBy[1] || me) : me; }
+  function counterOf() { return me; }
 
   function viewCount(f) {
-    var it = L.getItem(state, f.itemId);
+    var it = L.getItem(state, f.counting || f.itemId);
     return '<div class="hcard"><div class="hc-kicker">Count check</div><div class="hc-title">How many are left in bin ' + esc(it.bin) + "?</div>" +
       '<div class="count-row"><input id="countInput" type="number" min="0" inputmode="numeric" aria-label="Number left" value="' + esc(f.count) + '" data-bind="flow.count">' +
       '<button class="btn primary big" data-act="count-done">Done</button></div>' + (f.error ? '<p class="error">' + esc(f.error) + "</p>" : "") + "</div>";
@@ -571,7 +654,7 @@
     try {
       f.entry = L.dispense(state, Object.assign({
         patientId: f.patientId, itemId: f.itemId, lotId: f.lotId, qty: f.qty, reason: f.reason, authType: f.authType, signedBy: f.signedBy,
-        requestId: f.requestId, scanSkipped: !!f.scanSkipped, planId: f.planId, planIdx: f.planIdx, override: f.override || null
+        requestId: f.requestId, scanSkipped: !!f.scanSkipped, override: f.override || null
       }, extra || {}), now());
     } catch (err) { f.error = err.message; return; }
     if (f.reportId) markReport(f.reportId);
@@ -583,16 +666,11 @@
       if (!f.scanSkipped && f.wrong === 0) { f.gains.push(["Right box first try", XP.firstTry]); p.firstTryScans++; }
       f.gains.push(["Found it", XP.found]);
       if (f.seconds != null && f.seconds <= FAST_SEC) f.gains.push(["Quick find: " + f.seconds + " s", XP.fast]);
-      if (f.onSchedule) f.gains.push(["On schedule", XP.onSchedule]);
       if (f.seconds != null && (p.bestTimeSec == null || f.seconds < p.bestTimeSec)) { p.bestTimeSec = f.seconds; f.newBest = true; }
       f.gains.forEach(function (g) { p.xp += g[1]; });
       unlock(p, "first-find", f.newBadges);
       if (p.firstTryScans >= 5) unlock(p, "sharp-eye", f.newBadges);
       if (f.seconds != null && f.seconds <= 20) unlock(p, "speedy", f.newBadges);
-      if (f.planId) {
-        var plan = state.plans.filter(function (x) { return x.id === f.planId; })[0], t = now();
-        if (plan && plan.items.every(function (x, i) { return L.planItemStatus(state, plan, i, t).state === "finished"; })) unlock(p, "course-complete", f.newBadges);
-      }
       f.levelUp = level(p.xp) > before;
     }
     f.step = "done";
@@ -637,24 +715,34 @@
 
   // ---------- lockers panel (front view of the three lockers) ----------
 
+  // focus: { itemId } for one item, or { targets: [{ itemId, done }] } for a grant collection
   function lockersPanel(focus, locating, t) {
-    var it = focus ? L.getItem(state, focus.itemId) : null;
-    var loc = it ? L.locationOf(state, it) : null;
+    var targets = !focus ? [] : focus.targets || [{ itemId: focus.itemId, done: false }];
+    var byShelf = {}, lockersHit = {}, firstItem = null;
+    targets.forEach(function (x) {
+      var it = L.getItem(state, x.itemId);
+      if (!it) return;
+      var loc = L.locationOf(state, it);
+      firstItem = firstItem || it;
+      (byShelf[loc.shelf.id] = byShelf[loc.shelf.id] || {})[loc.bin] = x.done ? "done" : "open";
+      lockersHit[loc.locker.id] = true;
+    });
+    var any = Object.keys(lockersHit).length > 0;
     var rx = needsCmoMap(t);
     var html = '<div class="lockers-head"><span class="lh-title">Lockers</span>';
-    if (focus && focus.clearable && it) html += '<span class="lh-focus">' + esc(it.name) + ' <button class="link small" data-act="locker-clear">Clear</button></span>';
-    html += '<span class="legend-rx"><span class="rx-swatch"></span>🔒 Needs CMO approval</span></div>';
-    if (locating && loc) {
+    if (focus && focus.clearable && firstItem) html += '<span class="lh-focus">' + esc(firstItem.name) + ' <button class="link small" data-act="locker-clear">Clear</button></span>';
+    html += '<span class="legend-rx"><span class="rx-swatch"></span>🔒 Needs approval</span></div>';
+    if (locating && any) {
       html += '<div class="bay-strip" aria-hidden="true">' + state.lockers.map(function (lk) {
-        return '<div class="mini-locker' + (lk.id === loc.locker.id ? " on" : "") + (lk.emergency ? " em" : "") + '"><span>' + esc(lk.label) + "</span></div>";
+        return '<div class="mini-locker' + (lockersHit[lk.id] ? " on" : "") + (lk.emergency ? " em" : "") + '"><span>' + esc(lk.label) + "</span></div>";
       }).join("") + "</div>";
     }
     html += '<div class="locker-row">' + state.lockers.map(function (lk) {
-      var isTarget = loc && loc.locker.id === lk.id;
+      var isTarget = !!lockersHit[lk.id];
       return lockerFront(lk, {
-        target: isTarget ? { shelfId: loc.shelf.id, bin: loc.bin } : null,
+        targets: isTarget ? byShelf : null,
         pulse: !!(focus && focus.pulse),
-        dim: !!(locating && loc && !isTarget),
+        dim: !!(locating && any && !isTarget),
         focusShelf: !!(locating && isTarget),
         clickable: !ui.flow,
         rx: rx
@@ -668,17 +756,17 @@
     var html = '<div class="locker' + (lk.emergency ? " locker-em" : "") + (o.dim ? " dim" : "") + (o.focusShelf ? " focus" : "") + '"><div class="locker-plate"><span class="locker-num">' +
       esc(lk.label) + '</span><span class="locker-name">' + esc(lk.name) + '</span></div><div class="locker-inside">';
     shelves.forEach(function (sh) {
-      var pack = L.getPack(state, sh.packId), isT = !!(o.target && o.target.shelfId === sh.id);
+      var pack = L.getPack(state, sh.packId), shelfT = o.targets ? o.targets[sh.id] : null, isT = !!shelfT;
       var byBin = {}, maxBin = 0;
       state.items.filter(function (i) { return i.shelfId === sh.id; }).forEach(function (i) { byBin[i.bin] = i; maxBin = Math.max(maxBin, i.bin); });
       var nBins = Math.max(sh.cols, Math.ceil(maxBin / sh.cols) * sh.cols);
       html += '<div class="shelf' + (isT ? " target" : "") + '" style="--zone:' + pack.hex + '"><div class="shelf-label"><span class="zone-dot"></span>' +
         esc(SHELF_SHORT[sh.level]) + " · " + esc(sh.zone) + '</div><div class="bins" style="grid-template-columns:repeat(' + sh.cols + ',minmax(0,1fr))">';
       for (var b = 1; b <= nBins; b++) {
-        var it = byBin[b], tgt = isT && o.target.bin === b;
+        var it = byBin[b], mark = shelfT ? shelfT[b] : null;
         if (it) {
           var tag = o.clickable ? "button" : "div", isRx = !!o.rx[it.id];
-          html += "<" + tag + ' class="bin' + (isRx ? " rx" : "") + (tgt ? (o.pulse ? " target" : " preview") : "") + '"' +
+          html += "<" + tag + ' class="bin' + (isRx ? " rx" : "") + (mark === "done" ? " got" : mark ? (o.pulse ? " target" : " preview") : "") + '"' +
             (o.clickable ? ' data-act="bin" data-id="' + it.id + '"' : "") + ' title="' + esc(itemLabel(it)) + (isRx ? " (needs CMO approval)" : "") +
             '"><span class="bin-num">' + b + (isRx ? " 🔒" : "") + '</span><span class="bin-name">' + esc(shortName(it)) + "</span></" + tag + ">";
         } else {
@@ -690,48 +778,50 @@
     return html + '</div><div class="locker-foot"></div></div>';
   }
 
-  // ---------- import a plan from Earth ----------
+  // ---------- import a grant (code or QR from Earth or the onboard doctor) ----------
 
   function viewImport() {
     var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Import from Earth</h2></div><div class="stack">';
-    html += '<div class="hcard"><div class="hc-kicker">A plan from your flight surgeon</div>';
+    html += '<div class="hcard"><div class="hc-kicker">A grant from your flight surgeon</div>';
     if (ui.qrActive) {
       html += '<video id="qrVideo" class="qr-video" autoplay playsinline muted></video><div class="hc-actions"><button class="btn" data-act="qr-stop">Stop camera</button></div>';
     } else {
       html += '<div class="hc-actions"><button class="btn big" data-act="qr-start">📷 Scan QR</button></div>';
     }
-    html += '<div class="or">or type the code</div><div class="code-row"><input id="rxCode" class="code-input" type="text" spellcheck="false" autocomplete="off" placeholder="RX1-…" value="' +
+    html += '<div class="or">or type the code</div><div class="code-row"><input id="rxCode" class="code-input" type="text" spellcheck="false" autocomplete="off" placeholder="RX2-…" value="' +
       esc(ui.rxCode) + '" data-bind="rxCode"><button class="btn primary" data-act="rx-check">Check</button></div>';
     if (ui.rxError) html += '<p class="error">' + esc(ui.rxError) + "</p>";
     html += "</div>";
     if (ui.rxPreview) {
       var p = ui.rxPreview;
-      html += '<div class="hcard plan"><div class="hc-kicker">🌍 From Earth · starts ' + esc(fmtShort(p.start)) + "</div>";
+      html += '<div class="hcard plan"><div class="hc-kicker">' + issuerLabel(p) + " · starts " + esc(fmtShort(p.start)) + "</div>";
       p.items.forEach(function (x) {
         var it = L.getItem(state, x.itemId);
         html += '<div class="plan-row"><div><b>' + esc(it.name) + '</b> <span class="muted">' + esc(it.strength) + '</span><div class="muted small">' + esc(doseText(it, x.units)) +
-          " · " + esc(timesADay(x.perDay)) + " · " + x.days + " days</div></div></div>";
+          " · " + esc(timesADay(x.perDay)) + " · " + x.days + (x.days === 1 ? " day" : " days") + "</div></div></div>";
       });
-      html += '<div class="hc-actions"><button class="btn primary big" data-act="rx-add">Add to my plan</button></div></div>';
+      html += '<div class="hc-sub small">Sender not verified yet (demo)</div>';
+      html += '<div class="hc-actions"><button class="btn primary big" data-act="rx-add">Add</button></div></div>';
     }
     return html + "</div>";
   }
 
   function checkRx() {
     ui.rxError = ""; ui.rxPreview = null;
-    var res = L.decodeRx(state, ui.rxCode);
+    var res = L.decodeGrant(state, ui.rxCode);
     if (res.error) { ui.rxError = res.error; return; }
-    if (res.plan.patientId !== me) { ui.rxError = "This plan is for " + firstName(res.plan.patientId) + "."; return; }
-    if (state.plans.some(function (p) { return p.code === res.plan.code; })) { ui.rxError = "Already added."; return; }
-    ui.rxPreview = res.plan;
+    var why = L.acceptGrant(state, res.grant, me);
+    if (why) { ui.rxError = why; return; }
+    ui.rxPreview = res.grant;
   }
 
   function addRx() {
-    var p = Object.assign({ id: "P" + state.seq++, importedAt: now().toISOString() }, ui.rxPreview);
-    state.plans.unshift(p);
+    var why = L.acceptGrant(state, ui.rxPreview, me);
+    if (why) { ui.rxError = why; return; }
+    L.addGrant(state, ui.rxPreview, now());
     ui.rxPreview = null; ui.rxCode = ""; ui.screen = "main";
     save();
-    toast("Plan added");
+    toast("Added");
   }
 
   function qrStart() {
@@ -803,8 +893,8 @@
     var em = ui.em;
     var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2 class="danger-text">Emergency</h2></div>';
     var kept = state.requests.filter(function (r) { return r.patientId === me && (r.status === "pending" || r.status === "approved"); }).length +
-      myPlans().length + (ui.paused ? 1 : 0);
-    if (kept) html += '<p class="kept">↩ Your requests and plans are kept. They\'re back when you leave this screen.</p>';
+      myGrants().length + (ui.paused ? 1 : 0);
+    if (kept) html += '<p class="kept">↩ Your requests and grants are kept. They\'re back when you leave this screen.</p>';
     html += '<div class="em-who"><span class="muted">Who needs help?</span>' + state.crew.map(function (c) {
       var tags = c.allergies.map(function (a) { return '<span class="who-tag">🚫 ' + esc(a) + "</span>"; }).join("") +
         c.conditions.map(function (x) { return '<span class="who-tag">⚠ ' + esc(CONDITION_SHORT[x] || x) + "</span>"; }).join("");
@@ -951,7 +1041,7 @@
 
   // ---------- approvals (CMO's screen) ----------
 
-  function requestGate(r) { return r.gate || (r.tier === "3" ? "cmo+witness" : "cmo"); }
+  function requestGate(r) { return r.gate || (r.tier === "3" ? "earth" : "cmo"); }
   function approverOptions(patientId) { return state.crew.filter(function (c) { return (c.isCMO || c.isBackupCMO) && c.id !== patientId; }); }
 
   function sigFields(path, label, options, cur, idp) {
@@ -961,26 +1051,41 @@
       '</select><input id="' + idp + '-pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="PIN" value="' + esc(cur.pin || "") + '" data-bind="' + path + '.pin"></div>';
   }
 
+  function requestHead(r, t) {
+    var it = L.getItem(state, r.itemId), sf = L.safetyChecks(state, r.patientId, it, r.qty, t);
+    return '<div class="row-between"><div><b>' + r.qty + " × " + esc(itemLabel(it)) + "</b> " + tierBadge(it.tier, it.controlled) + '</div><span class="muted small">' +
+      ago(r.time) + "</span></div><div>For <b>" + esc(crewName(r.patientId)) + "</b>: " + esc(r.reason) + "</div>" +
+      '<div class="small">Checks: ' + resultBadge(sf.result) + " " + esc(sf.checks.filter(function (c) { return c.result !== "pass"; }).map(function (c) { return c.name + ": " + c.msg; }).join("; ")) + "</div>";
+  }
+
+  // The onboard doctor answers a request by issuing a grant (same format as a grant from Earth)
   function requestCard(r, t) {
-    var it = L.getItem(state, r.itemId), gate = requestGate(r);
-    var approver = r.signatures.filter(function (s) { return s.role !== "Witness"; })[0];
-    var need = !approver ? "approver" : "witness";
-    var sf = L.safetyChecks(state, r.patientId, it, r.qty, t);
+    var it = L.getItem(state, r.itemId), sf = L.safetyChecks(state, r.patientId, it, r.qty, t);
     var f = ui.appr[r.id] || {};
-    var html = '<div class="card"><div class="row-between"><div><b>' + r.qty + " × " + esc(itemLabel(it)) + "</b> " + tierBadge(it.tier, it.controlled) + '</div><span class="muted small">' +
-      ago(r.time) + "</span></div><div>For <b>" + esc(crewName(r.patientId)) + "</b>: " + esc(r.reason) + "</div>";
-    html += '<div class="muted small">Needs ' + esc(AUTH[gate]) + ". Signed: " + (r.signatures.length ? r.signatures.map(function (s) {
-      return esc(crewName(s.crewId)) + " (" + esc(s.role) + ")";
-    }).join(", ") : "nobody yet") + "</div>";
-    html += '<div class="small">Checks: ' + resultBadge(sf.result) + " " + esc(sf.checks.filter(function (c) { return c.result !== "pass"; }).map(function (c) { return c.name + ": " + c.msg; }).join("; ")) + "</div>";
-    html += sigFields("appr." + r.id, need === "approver" ? "Approver (CMO or backup)" : "Witness", need === "approver" ? approverOptions(r.patientId) : state.crew, f, "ap-" + r.id);
-    if (need === "approver") {
-      if (sf.result === "block") html += '<label class="check"><input id="ack-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.ack"' + (f.ack ? " checked" : "") + "> I reviewed the blocked checks</label>";
-      var c = cmo();
-      if (c && c.id !== r.patientId) html += '<label class="check"><input id="un-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.cmoUnavailable"' + (f.cmoUnavailable ? " checked" : "") + "> " + esc(c.name) + " is unavailable</label>";
+    function opts(values, cur, label) {
+      return values.map(function (v) { return '<option value="' + v + '"' + (String(cur || values[0]) === String(v) ? " selected" : "") + ">" + v + " " + label + "</option>"; }).join("");
     }
+    var html = '<div class="card">' + requestHead(r, t);
+    html += '<div class="sig"><span class="sig-label">Course</span><select id="pd-' + r.id + '" aria-label="Times a day" data-bind="appr.' + r.id + '.perDay">' +
+      opts([1, 2, 3, 4], f.perDay, "× a day") + '</select><select id="dy-' + r.id + '" aria-label="Days" data-bind="appr.' + r.id + '.days">' + opts([1, 2, 3, 5, 7, 10, 14], f.days, "days") + "</select></div>";
+    html += sigFields("appr." + r.id, "Doctor (CMO or backup)", approverOptions(r.patientId), f, "ap-" + r.id);
+    if (sf.result === "block") html += '<label class="check"><input id="ack-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.ack"' + (f.ack ? " checked" : "") + "> I reviewed the blocked checks</label>";
+    var c = cmo();
+    if (c && c.id !== r.patientId) html += '<label class="check"><input id="un-' + r.id + '" type="checkbox" data-bind="appr.' + r.id + '.cmoUnavailable"' + (f.cmoUnavailable ? " checked" : "") + "> " + esc(c.name) + " is unavailable</label>";
     if (f.error) html += '<p class="error">' + esc(f.error) + "</p>";
-    return html + '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-sign" data-id="' + r.id + '">Sign as ' + need + "</button></div></div>";
+    return html + '<div class="actions"><button class="btn" data-act="appr-deny" data-id="' + r.id + '">Deny</button><button class="btn primary" data-act="appr-grant" data-id="' + r.id + '">Grant</button></div></div>';
+  }
+
+  function earthRequestCard(r, t) {
+    return '<div class="card">' + requestHead(r, t) + '<div class="muted small">Controlled medicine: only Earth can grant it. It goes with the next report to Earth.</div>' +
+      '<div class="actions"><button class="btn" data-act="earth-reply" data-id="' + r.id + '">Demo: Earth grants it</button></div></div>';
+  }
+
+  function grantRow(g) {
+    return '<div class="report"><div><b>' + esc(crewName(g.patientId)) + "</b> · " + esc(issuerLabel(g)) + " · " + g.items.map(function (x) {
+      var it = L.getItem(state, x.itemId);
+      return esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
+    }).join("; ") + '</div><span class="muted small code">' + esc(g.code) + "</span></div>";
   }
 
   function entrySummary(e) {
@@ -1004,20 +1109,14 @@
     if (!a.pending.length) html += '<p class="muted">Nothing waiting.</p>';
     a.pending.forEach(function (r) { html += requestCard(r, t); });
     if (a.pending.length) html += '<p class="hint">Demo PINs: ' + state.crew.map(function (c) { return esc(firstName(c.id)) + " " + c.pin; }).join(", ") + "</p>";
-    if (a.awaitingPickup.length) {
-      html += "<h3>Approved, waiting for pickup</h3>";
-      a.awaitingPickup.forEach(function (r) {
-        html += '<div class="report"><div>' + r.qty + " × " + esc(itemLabel(L.getItem(state, r.itemId))) + " for " + esc(crewName(r.patientId)) + '</div><span class="tag ok">Approved</span></div>';
-      });
+    if (a.waitingEarth.length) {
+      html += "<h3>Waiting for Earth (" + a.waitingEarth.length + ")</h3>";
+      a.waitingEarth.forEach(function (r) { html += earthRequestCard(r, t); });
     }
-    if (state.plans.length) {
-      html += "<h3>Plans from Earth</h3>";
-      state.plans.forEach(function (p) {
-        html += '<div class="report"><div><b>' + esc(crewName(p.patientId)) + "</b> · " + p.items.map(function (x) {
-          var it = L.getItem(state, x.itemId);
-          return esc(it.name) + " " + x.units + "×" + x.perDay + "/day, " + x.days + " d";
-        }).join("; ") + '</div><span class="muted small">' + esc(p.code) + "</span></div>";
-      });
+    var active = state.grants.filter(function (g) { return g.status === "active" && !L.grantFinished(state, g, t); });
+    if (active.length) {
+      html += "<h3>Active grants (" + active.length + ")</h3>";
+      active.forEach(function (g) { html += grantRow(g); });
     }
     html += "<h3>Emergency notes due (" + a.docsDue.length + ")</h3>";
     if (!a.docsDue.length) html += '<p class="muted">None.</p>';
@@ -1043,22 +1142,45 @@
   function findRequest(id) { return state.requests.filter(function (r) { return r.id === id; })[0]; }
   function findEntry(id) { return state.doseLog.filter(function (e) { return e.id === id; })[0]; }
 
-  function signRequest(id) {
-    var r = findRequest(id), f = ui.appr[id] || (ui.appr[id] = {}), gate = requestGate(r);
-    var approver = r.signatures.filter(function (s) { return s.role !== "Witness"; })[0];
-    var role = !approver ? "approver" : "witness";
+  // Builds a grant through the same code format as Earth (encode, then decode with all its checks)
+  function issueGrant(r, issuerId, perDay, days, verification) {
+    var t = now(), code;
+    try {
+      code = L.encodeGrant(state, { issuerId: issuerId, patientId: r.patientId, start: t, items: [{ itemId: r.itemId, units: r.qty, perDay: perDay, days: days }] });
+    } catch (e) { return { error: e.message }; }
+    var res = L.decodeGrant(state, code);
+    if (res.error) return res;
+    var why = L.acceptGrant(state, res.grant, r.patientId);
+    if (why) return { error: why };
+    res.grant.requestId = r.id;
+    res.grant.verification = verification;
+    var g = L.addGrant(state, res.grant, t);
+    r.status = "granted";
+    r.grantId = g.id;
+    return { grant: g };
+  }
+
+  function grantRequest(id) {
+    var r = findRequest(id), f = ui.appr[id] || (ui.appr[id] = {});
     var it = L.getItem(state, r.itemId), sf = L.safetyChecks(state, r.patientId, it, r.qty, now());
-    var ctx = { patientId: r.patientId, approverId: approver ? approver.crewId : f.crewId, cmoUnavailable: !!f.cmoUnavailable };
-    var err = role === "approver" && sf.result === "block" && !f.ack ? "Review the blocked checks first." : null;
-    err = err || L.checkSignature(state, role, f.crewId, f.pin || "", ctx);
+    var ctx = { patientId: r.patientId, approverId: f.crewId, cmoUnavailable: !!f.cmoUnavailable };
+    var err = sf.result === "block" && !f.ack ? "Review the blocked checks first." : null;
+    err = err || L.checkSignature(state, "approver", f.crewId, f.pin || "", ctx);
     if (err) { f.error = err; return; }
-    var c = L.getCrew(state, f.crewId);
-    r.signatures.push({ crewId: c.id, role: role === "approver" ? (c.isCMO ? "CMO" : "Backup CMO") : "Witness", time: now().toISOString() });
-    var complete = gate === "cmo" || r.signatures.some(function (s) { return s.role === "Witness"; });
-    if (complete) r.status = "approved";
+    var res = issueGrant(r, f.crewId, Number(f.perDay || 1), Number(f.days || 1), "onboard doctor PIN");
+    if (res.error) { f.error = res.error; return; }
+    r.signatures.push({ crewId: f.crewId, role: L.getCrew(state, f.crewId).isCMO ? "CMO" : "Backup CMO", time: now().toISOString() });
     ui.appr[id] = {};
     save();
-    toast(complete ? "Approved. " + firstName(r.patientId) + " can pick it up." : "Signed. A witness signs next.");
+    toast("Granted. " + firstName(r.patientId) + " can collect it now.");
+  }
+
+  // Demo stand-in for Earth answering a controlled-medicine request (DAD-2 builds the real ground side)
+  function earthReply(id) {
+    var r = findRequest(id), res = issueGrant(r, L.EARTH, 1, 1, "simulated");
+    if (res.error) { toast(res.error); return; }
+    save();
+    toast("Earth granted it (demo). " + firstName(r.patientId) + " can collect it.");
   }
 
   // ---------- dose log (CMO) ----------
@@ -1084,7 +1206,7 @@
     if (e.groundReview === "done") review += '<span class="tag ok">Ground reviewed</span>';
     var fu = it.kind !== "medication" ? '<span class="muted">–</span>' : e.followUp
       ? '<span class="tag ' + (e.followUp.effective ? "ok" : "warn") + '">' + (e.followUp.effective ? "Yes" : "No") + "</span>" + (e.followUp.sideEffects ? '<div class="small">' + esc(e.followUp.sideEffects) + "</div>" : "")
-      : '<span class="muted">' + (e.planId ? "Plan" : "Not yet") + "</span>";
+      : '<span class="muted">' + (e.grantId ? "Grant" : "Not yet") + "</span>";
     return "<tr><td>" + fmtTime(e.time) + "</td><td>" + esc(crewName(e.patientId)) + "</td><td>" + e.qty + " × " + esc(itemLabel(it)) + (lot ? '<div class="sub">lot ' + esc(lot.lotNumber) + "</div>" : "") +
       "</td><td>" + esc(e.reason) + "</td><td>" + esc(AUTH[e.auth.type]) + (e.auth.signedBy.length ? '<div class="sub">' + e.auth.signedBy.map(crewName).map(esc).join(", ") + "</div>" : "") +
       "</td><td>" + (review || '<span class="muted">–</span>') + "</td><td>" + fu + "</td></tr>";
@@ -1143,7 +1265,7 @@
     },
     "demo-code": function () {
       ui.view = "home"; ui.flow = null; ui.screen = "import";
-      ui.rxCode = L.encodeRx(state, me, now(), state.demoPlan);
+      ui.rxCode = L.encodeGrant(state, { issuerId: L.EARTH, patientId: me, start: now(), items: state.demoPlan });
       ui.rxPreview = null; ui.rxError = "";
     },
     "go-home": function () { ui.view = "home"; ui.screen = "main"; ui.pick = null; ui.em = null; },
@@ -1157,10 +1279,24 @@
     },
     take: function (d) { startTake(d.id, d.report || null); },
     ask: function (d) { askCmo(d.id, d.report || null); },
-    pickup: function (d) { pickup(d.id); },
+    collect: function (d) { startCollect(d.id); },
+    "collect-scan": function () {
+      var x = ui.flow.items.filter(function (y) { return !y.done; })[0];
+      if (x) collectScan(L.getLot(state, x.lotId).tag);
+    },
+    "collect-wrong": function () {
+      var f = ui.flow, inGrant = f.items.map(function (y) { return y.itemId; }), first = L.getItem(state, f.items[0].itemId);
+      var other = state.items.filter(function (it) { return it.shelfId === first.shelfId && inGrant.indexOf(it.id) < 0; })[0] ||
+        state.items.filter(function (it) { return inGrant.indexOf(it.id) < 0; })[0];
+      collectScan(L.lotsOf(state, other.id)[0].tag);
+    },
+    "collect-cancel": function () {
+      var f = ui.flow;
+      emit({ type: "compartments-closed", grantId: f.grantId, crewId: me, compartments: f.items.filter(function (y) { return !y.done; }).map(function (y) { return y.compartmentId; }) });
+      ui.flow = null; ui.screen = "main";
+    },
     seen: function (d) { findRequest(d.id).seen = true; save(); },
-    "plan-take": function (d) { planTake(d.id, Number(d.idx)); },
-    "plan-seen": function (d) { var p = state.plans.filter(function (x) { return x.id === d.id; })[0]; if (p) { p.doneSeen = true; save(); } },
+    "grant-seen": function (d) { var g = L.getGrant(state, d.id); if (g) { g.doneSeen = true; save(); } },
     "rx-check": function () { checkRx(); },
     "rx-add": function () { addRx(); },
     "qr-start": function () { qrStart(); },
@@ -1186,9 +1322,17 @@
     },
     "scan-skip": function () { ui.flow.scanSkipped = true; ui.flow.error = ""; afterScan(); },
     "count-done": function () {
-      var f = ui.flow, lot = L.getLot(state, f.lotId);
+      var f = ui.flow;
       if (f.count === "" || f.count == null || isNaN(Number(f.count))) { f.error = "Type a number."; return; }
-      complete({ countCheck: { expected: lot.qty - f.qty, counted: Number(f.count), by: counterOf(f) } });
+      if (f.kind === "collect") {
+        // The dose was already recorded when scanned; the count is added to that record
+        var x = f.items.filter(function (y) { return y.itemId === f.counting; })[0], cl = L.getLot(state, x.entry.lotId);
+        x.entry.countCheck = { expected: cl.qty, counted: Number(f.count), by: counterOf() };
+        f.counting = null; f.error = ""; save(); collectNext();
+        return;
+      }
+      var lot = L.getLot(state, f.lotId);
+      complete({ countCheck: { expected: lot.qty - f.qty, counted: Number(f.count), by: counterOf() } });
     },
     "flow-close": function () { ui.flow = null; ui.screen = "main"; },
     emergency: function () {
@@ -1212,7 +1356,7 @@
     "locker-clear": function () { ui.lockerFocus = null; },
     "filter-flag": function (d) { ui.filters.flag = ui.filters.flag === d.flag ? "" : d.flag; },
     "clear-filters": function () { ui.filters = { q: "", pack: "", tier: "", flag: "" }; },
-    "appr-sign": function (d) { signRequest(d.id); },
+    "appr-grant": function (d) { grantRequest(d.id); }, "earth-reply": function (d) { earthReply(d.id); },
     "appr-deny": function (d) { findRequest(d.id).status = "denied"; save(); toast("Denied"); },
     "report-seen": function (d) { var r = state.reports.filter(function (x) { return x.id === d.id; })[0]; if (r) r.cmoSeen = true; save(); },
     "doc-save": function (d) {
@@ -1289,7 +1433,19 @@
   window.MedInventory = {
     receiveSymptomReport: receiveSymptomReport,
     currentUser: function () { return me; },
-    makePlanCode: function (patientId, startDate, items) { return L.encodeRx(state, patientId, startDate, items); },
+    // Grants (see CONTRACT.md)
+    makeGrantCode: function (g) { return L.encodeGrant(state, g); },
+    importGrant: function (code) {
+      var res = L.decodeGrant(state, code);
+      if (res.error) return { ok: false, error: res.error };
+      var why = L.acceptGrant(state, res.grant, me);
+      if (why) return { ok: false, error: why };
+      var g = L.addGrant(state, res.grant, now());
+      save(); render();
+      return { ok: true, grantId: g.id };
+    },
+    grants: function () { return JSON.parse(JSON.stringify(myGrants())); },
+    dueCompartments: function (grantId) { return L.grantDue(state, L.getGrant(state, grantId), now()); },
     getState: function () { return state; },
     reset: function () { reset(); render(); }
   };
