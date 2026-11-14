@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 14:10
-- Working on: In-flight health countermeasure evidence for the prototype
+- Working on: In-flight health countermeasure handoff in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
