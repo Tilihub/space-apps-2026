@@ -27,7 +27,7 @@
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
 - Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
-  tablet/laptop. Every screen from the overview is there as labelled boxes; one tab per astronaut
+  tablet/laptop ([PR #43](https://github.com/Tilihub/space-apps-2026/pull/43)). Every screen from the overview is there as labelled boxes; one tab per astronaut
   with `?crew=1`, `?crew=2`, `?crew=3`; all fake data in one block at the top of the script
 
 ## Blocked / need from others
