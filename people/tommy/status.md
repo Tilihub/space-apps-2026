@@ -8,12 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-14 — functional demo integration
-- Working on: Tommy explicitly requested implementation of the common backend/UI connections, followed by backend testing before visual redesign. This supersedes the earlier planning-only scope for this connection.
+- Last updated: 2026-11-14 22:35 — companion and body review
+- Working on: Tommy requested restoration of the original companion appearance, Potest’s offline health-context tool, a simpler female mannequin and red symptom markers without red skin. Functional integration continues on the same branch/PR.
 - Branch: tommy/functional-demo
 - Preview: `node integration/onboard-app/start.js` (Node 24); the local review uses port 8010 with a separate temporary synthetic store.
 
 ## Done
+
+- Restored zt’s animated planet mascot, floating chat bubbles and full Mind conversation. Both chat views use the same replies; original teammate UI/source remains untouched.
+- Found Potest’s earlier OpenAI source in history and the later switch to offline scripts. Tommy explicitly chose the offline health-context tool for now. Added a connection adapter importing Potest’s original reply helpers, Angelos’s pure comparison rules and the current author’s Petros fixture, with refreshed own-today context, topic/next-turn replies and no clinical-number or journal disclosure.
+- Added three real-HTTP companion checks: context-aware support versus usual-history behavior, topic changes and Greek keywords, role/day/author privacy, reset and missing-day handling. Final root suite: 102/102 pass, none skipped. No external model or credential was used.
+- Softened the female torso into mannequin sections, reduced sheen, and removed red skin coloring for reports. Red pin/line/label and blue area selection remain. Browser verified the smoother mannequin and red forehead marker without red skin; main/floating chat share the same distinct sleep/home/next-turn replies.
+- Recorded Tommy’s choices in shared/decisions/2026-11-14-2235-offline-companion-review.md and proposed a narrow protected contract clarification for review in PR #73. Teammate approval is still required before merging that contract change.
 
 - Published the connected demo in [PR #73](https://github.com/Tilihub/space-apps-2026/pull/73), branch `tommy/functional-demo`. Ready for local testing; merging waits for coordination/review of the unchanged Potest #55 dependency and connection handoffs. No teammate PR was approved or merged by this task.
 
@@ -101,6 +107,6 @@
 ## Next steps
 
 - Continue from `tommy/functional-demo`. Run the single onboard server, use the role selector in separate tabs, and follow the end-to-end walkthrough in `integration/onboard-app/README.md`.
-- Review PR #73 with zt/Potest and continue manual demo checks. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
+- Updated work is ready in PR #73; zt/Potest should review the protected context clarification and unchanged #55 dependency before merge. Continue from Tommy’s review of the restored Mind screen and mannequin. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
 - Ask Tommy to test the joined behavior and choose backend fixes before visual UI changes. zt remains the visual design owner; use his original UI/3D as the base.
 - Handoff: health/meds are direct owner imports; training uses Petros's controller; companion imports Potest's pending #55 route; journal/environment/report glue is in this connection's `adapters/`. Do not patch someone else's personal folder. Agree shared contract changes through a separately approved PR.

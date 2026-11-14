@@ -1,11 +1,11 @@
 // Connection-owned journal storage; Potest's pending #55 companion stays imported from its owner.
 import { apiError, checkFields, resolveCrewId } from '../../../shared/contract/contract.js';
-import { companionRoute } from '../../../people/potest/crew-support/companion.js';
+import { contextualCompanionRoute, resetSupportConversation } from './companion-support.js';
 
 const mind = {
   name: 'mind', owner: 'tommy (journal connection), potest (companion route)',
-  async reset(ctx) { await ctx.store.save({ entries: [] }); },
-  routes: [companionRoute, {
+  async reset(ctx) { resetSupportConversation(); await ctx.store.save({ entries: [] }); },
+  routes: [contextualCompanionRoute, {
     method: 'POST', path: '/journal', roles: ['crew'], status: 201,
     async handler(req, ctx) {
       checkFields(req.query, []);

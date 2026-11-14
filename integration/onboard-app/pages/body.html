@@ -285,6 +285,31 @@
     return src;
   };
 
+  // A quiet mannequin silhouette, keeping the original rig-free mesh and picking areas.
+  // Project the torso onto smooth elliptical sections to remove breast/nipple and glute detail.
+  const simplifyFemaleTorso = (positions, H, eye) => {
+    const originalAreas = classify(positions, H, eye);
+    const torso = new Set(['chest', 'stomach', 'back'].map(key => KEYS.indexOf(key)));
+    const sections = [[0.44, 0.101, 0.060], [0.51, 0.101, 0.064], [0.61, 0.093, 0.059],
+      [0.72, 0.098, 0.060], [0.79, 0.103, 0.055], [0.85, 0.099, 0.050]];
+    const smooth = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+    for (let i = 0; i < positions.length / 3; i++) {
+      const y = positions[i * 3 + 1] / H;
+      if (y < 0.44 || y > 0.85 || !torso.has(originalAreas[i])) continue;
+      const index = Math.max(0, sections.findIndex(row => row[0] >= y) - 1);
+      const a = sections[index], b = sections[index + 1];
+      const t = (y - a[0]) / (b[0] - a[0]);
+      const width = H * (a[1] + (b[1] - a[1]) * t);
+      const depth = H * (a[2] + (b[2] - a[2]) * t);
+      const x = positions[i * 3], z = positions[i * 3 + 2], center = -0.008 * H;
+      const radius = Math.hypot(x / width, (z - center) / depth);
+      if (radius < 0.0001) continue;
+      const blend = 0.98 * smooth((y - 0.44) / 0.07) * smooth((0.85 - y) / 0.05);
+      positions[i * 3] += (x / radius - x) * blend;
+      positions[i * 3 + 2] += (center + (z - center) / radius - z) * blend;
+    }
+  };
+
   // ---- Body shapes: unpack the data block at the end of the file (base64 → gzip → numbers) ----
   const meshCache = {};
   const loadBodyMesh = async (sex, dataEl) => {
@@ -297,6 +322,9 @@
     const index = new Uint16Array(buf, m.verts * 6, m.tris * 3);
     const pos = new Float32Array(m.verts * 3);
     for (let i = 0; i < pos.length; i++) pos[i] = m.min[i % 3] + (q[i] / 65535) * (m.max[i % 3] - m.min[i % 3]);
+    const H = m.max[1];
+    const eye = m.eyes[0][0] > 0 ? m.eyes[0] : m.eyes[1];
+    if (sex === 'female') simplifyFemaleTorso(pos, H, eye);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geometry.setIndex(new THREE.BufferAttribute(index, 1));
@@ -304,8 +332,6 @@
     geometry.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(m.verts * 3), 3));
     geometry.setAttribute('aPulse', new THREE.BufferAttribute(new Float32Array(m.verts), 1));
     geometry.computeBoundingSphere();
-    const H = m.max[1];
-    const eye = m.eyes[0][0] > 0 ? m.eyes[0] : m.eyes[1];
     const area = classify(pos, H, eye);
     // Label anchor per area: the point of that area nearest the target, on the side that faces the target
     const normal = geometry.attributes.normal.array;
@@ -335,7 +361,7 @@
     .b3d-ui { position: absolute; inset: 0; pointer-events: none; }
     .b3d-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .b3d-lines line { stroke: var(--alert, #FF6B7D); stroke-width: 1; opacity: .7; transition: opacity .2s; }
-    .b3d-lines circle { fill: var(--alert, #FF6B7D); transition: opacity .2s; }
+    .b3d-lines circle { fill: var(--alert, #FF6B7D); stroke: color-mix(in srgb, var(--alert, #FF6B7D) 22%, transparent); stroke-width: 7; paint-order: stroke; transition: opacity .2s; }
     .b3d-lines .sel { stroke: var(--b3d-sel, #5AB0FF); opacity: 1; }
     .b3d-lines circle.sel { fill: var(--b3d-sel, #5AB0FF); stroke: none; }
     .b3d-lines .behind { opacity: .2; }
@@ -469,7 +495,7 @@
       label.className = `b3d-label ${LABEL_SIDE[key]}`;
       const line = document.createElementNS(svgNS, 'line');
       const dot = document.createElementNS(svgNS, 'circle');
-      dot.setAttribute('r', '3');
+      dot.setAttribute('r', '4.5');
       linesSvg.append(line, dot);
       ui.append(label);
       tags[key] = { label, line, dot, on: false, w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false };
@@ -506,7 +532,7 @@
         : `<span><i style="background: var(--alert, #FF6B7D)"></i>Reported symptom</span>`;
     };
 
-    // Colour the skin: calm blue, soft red where reported, blue where selected (report mode)
+    // Keep the skin calm. Reported symptoms use only the red pin, line and label.
     const recolor = () => {
       if (!body || !theme) return;
       const { geometry, area, adj, H } = body;
@@ -518,7 +544,6 @@
         for (let i = 0; i < n; i++) v[i] = want[area[i]] ? 1 : 0;
         return soften(v, adj);
       };
-      const red = pick(KEYS.map((k) => Boolean(opts.reported?.[k])));
       const sel = report ? pick(KEYS.map((k) => k === opts.selected)) : null;
       const hov = report && hover !== opts.selected ? pick(KEYS.map((k) => k === hover)) : null;
       const pos = geometry.attributes.position.array;
@@ -529,10 +554,9 @@
       for (let i = 0; i < n; i++) {
         let c = mix(bottom, top, Math.min(1, pos[i * 3 + 1] / H));
         if (hov) c = mix(c, theme.accent, hov[i] * 0.35);
-        if (red) c = mix(c, theme.alert, red[i] * 0.8);
         if (sel) c = mix(c, theme.sel, sel[i] * 0.9);
         col.set(c, i * 3);
-        pulse[i] = (red ? red[i] : 0) * (sel ? 1 - sel[i] : 1);
+        pulse[i] = 0;
       }
       geometry.attributes.aColor.needsUpdate = true;
       geometry.attributes.aPulse.needsUpdate = true;
@@ -558,7 +582,7 @@
       uniforms.uRim.value.fromArray(theme.dark ? theme.accent2 : theme.accent);
       uniforms.uAlert.value.fromArray(theme.alert);
       uniforms.uRimAmt.value = theme.dark ? 0.55 : 0.3;
-      uniforms.uSpec.value = theme.dark ? 0.06 : 0.1;
+      uniforms.uSpec.value = theme.dark ? 0.012 : 0.02;
       floorMat.color.setRGB(...theme.accent, THREE.LinearSRGBColorSpace);
       ringMat.color.setRGB(...(theme.dark ? theme.accent2 : theme.accent), THREE.LinearSRGBColorSpace);
       recolor();

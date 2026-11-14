@@ -12,6 +12,16 @@ const tag = (text, red = false) => `<span class="pill ${red?'red':'blue'}">${esc
 const btn = (label, action, attrs = '', cls = '') => `<button type="button" class="btn ${cls}" data-action="${action}" ${attrs}>${label}</button>`;
 const card = (title, content, cls = '') => `<div class="card ${cls}"><div class="card-head"><h3>${title}</h3></div>${content}</div>`;
 const qrFor = code => { try { return `<div class="credential-qr">${window.MedQR.svg(code,4).svg}</div>`; } catch { return '<p class="subtle">QR rendering unavailable; the same code can be typed.</p>'; } };
+  const mascotSvg = () => `<svg viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse class="m-ring back" cx="32" cy="34" rx="29" ry="9" transform="rotate(-18 32 34)"/>
+    <circle cx="32" cy="32" r="17" fill="url(#mascotGrad)"/>
+    <circle class="m-cheek" cx="22.5" cy="36.5" r="2.2"/><circle class="m-cheek" cx="41.5" cy="36.5" r="2.2"/>
+    <ellipse class="m-eye" cx="26.5" cy="30.5" rx="2.5" ry="3.3"/><ellipse class="m-eye" cx="37.5" cy="30.5" rx="2.5" ry="3.3"/>
+    <path class="m-smile" d="M28 37 Q32 40.5 36 37"/>
+    <path class="m-ring" d="M4.4 43 A29 9 -18 0 0 59.6 25"/>
+  </svg>`;
+
+
 const empty = text => `<p class="empty">${esc(text)}</p>`;
 const table = (headers, rows) => `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 const tr = cells => `<tr>${cells.map(c=>`<td>${c}</td>`).join('')}</tr>`;
@@ -92,15 +102,27 @@ function renderChrome() {
   $('#topbar').innerHTML=`<div><div class="eyebrow">PULSE · Mars transit · <span id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:'Connecting'}</span></div><h1 class="page-title">${titles[page]??'PULSE'}</h1></div><div class="topbar-right"><span class="small muted">${esc(user?.name??member(user?.crewId))}<br>${esc(role()?.replaceAll('_',' ')??'')}</span>${btn('Refresh','refresh','','ghost sm')}${btn('☀ / ☾','theme','','ghost sm')}${btn('Switch user','logout','','ghost sm')}</div>`;
   $('#emergency-banner').hidden=!(data.emergencies?.emergencies?.length);
   $('#emergency-banner').textContent=(data.emergencies?.emergencies??[]).map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
-  $('#orb-art').innerHTML='<span class="orb-art">✦</span>'; $('#orb-badge').hidden=true;
+  $('#orb-art').innerHTML=mascotSvg(); $('#orb-badge').hidden=true;
   renderCompanion();
 }
+function chatTranscript() {
+ return chat.length ? chat.map(m=>`<p class="msg ${m.mine?'me':'them'}">${esc(m.text)}</p>`).join('')
+  : `<p class="msg them">How are you feeling today? I’m here if you want to talk.</p>`;
+}
+function chatComposer(id,label) {
+ return `<form id="${id}" class="composer"><input class="input" name="message" aria-label="${label}" placeholder="Type a message" maxlength="2000" required autocomplete="off"><button class="btn primary" type="submit" aria-label="Send message">${icon('send')}</button></form>`;
+}
+function refreshChatViews() {
+ for(const thread of document.querySelectorAll('[data-chat-thread]')) {
+  thread.innerHTML=chatTranscript(); thread.scrollTop=thread.scrollHeight;
+ }
+}
 function renderCompanion() {
-  $('#cp').hidden=!companionOpen;
-  $('#cp-mini').textContent='✦';
-  $('#cp-body').innerHTML=`<p class="subtle">Offline scripted prototype · uses your current check-in. Private to your crew session.</p><div class="chat-log">${chat.map(m=>`<div class="chat-msg ${m.mine?'mine':''}">${esc(m.text)}</div>`).join('')||empty('Tell the companion how you are feeling.')}</div>`;
-  $('#cp-actions').innerHTML=`<form id="chat-form"><label class="field"><span>Your message</span><input class="input" name="message" maxlength="2000" required autocomplete="off"></label>${submit('Send') } <a class="more" href="#mind">Open journal</a></form>`;
-  restoreDrafts();
+ $('#cp').hidden=!companionOpen;
+ $('#cp-mini').innerHTML=mascotSvg();
+ $('#cp-body').innerHTML=`<div class="thread companion-thread" data-chat-thread aria-live="polite" aria-relevant="additions text">${chatTranscript()}</div>`;
+ $('#cp-actions').innerHTML=`${chatComposer('chat-form','Message companion')}<a class="more" href="#mind">Open your private space</a><small class="subtle">Offline · health context</small>`;
+ restoreDrafts();
 }
 function loginScreen() {
  return `<div class="login"><div class="login-card"><svg class="icon logo-lg" aria-hidden="true"><use href="#i-logo"/></svg><h1 class="display">PULSE</h1><p class="muted">Mars transit · connected team demo</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar lg">${c.name.split(' ').map(x=>x[0]).join('')}</span><b>${c.name}</b><small>${c.title}</small></button>`).join('')}</div><div class="btn-row">${btn('Medical officer · Leo','login-medical','','ghost')}${btn('Earth specialist','login-earth','','ghost')}</div><p class="subtle">Synthetic crew profiles and demo sessions. Choose a role to test its actual API permissions. Registration and face authentication are not implemented.</p></div></div>`;
@@ -157,7 +179,13 @@ function medbayScreen() {
 }
 function stockPanel() { return card('Stock watch',table(['Medicine','Usable / reserve','Next expiry'],(data.stock?.items??[]).map(i=>tr([esc(i.name),`${i.units} / ${i.reserve} ${i.belowReserve?tag('Below reserve',true):''}`,esc(i.nextExpiry)])))); }
 function mindScreen() {
- return `<div class="mind-grid">${card('Private journal',`<p class="subtle">Only you can read these entries in the current demo. Medical officer and Earth sessions are denied. Assigned psychologist access and messaging are not implemented yet.</p><form id="journal-form">${note('What is on your mind?','text',5000)}${submit('Save private entry')}</form>${(data.journal?.entries??[]).map(e=>`<div class="report-card"><small class="muted">${time(e.recordedAt)}</small><p class="saved-entry">${esc(e.text)}</p></div>`).join('')}`)}${card('Companion',`<p>The floating companion works on every crew screen.</p><p class="subtle">Connected to Potest’s current scripted route and Angelos’s own-today health client. No trained language model or external service is connected. Detailed clinical history and journal text are not sent to it.</p>${btn('Talk to companion','companion','','primary')}`)}</div>`;
+ return `<div class="mind-grid"><div class="card companion-chat-card">
+  <div class="chat-head"><span class="mascot-md">${mascotSvg()}</span><span class="grow"><h3>Talk to your companion</h3><span class="faint small">It listens and helps you find support, any time.</span></span>${tag('Offline')}</div>
+  <div class="thread mind-thread" data-chat-thread aria-live="polite" aria-relevant="additions text">${chatTranscript()}</div>
+  <div class="support-topics" aria-label="Conversation starters">${btn('Sleep & energy','support-prompt','data-topic="sleep"','ghost sm')}${btn('Stress & mood','support-prompt','data-topic="stress"','ghost sm')}${btn('Missing home','support-prompt','data-topic="home"','ghost sm')}</div>
+  ${chatComposer('mind-chat-form','Type a message')}
+  <p class="subtle context-note">Offline support demo · uses your latest check-in and synthetic mission history. You can talk here or ask for your mission behavioral health provider.</p>
+ </div><div class="stack">${card('Private journal',`<p class="subtle">Only you can read these entries in the current demo. Medical officer and Earth sessions are denied.</p><form id="journal-form">${note('What is on your mind?','text',5000)}${submit('Save private entry')}</form>${(data.journal?.entries??[]).map(e=>`<div class="report-card"><small class="muted">${time(e.recordedAt)}</small><p class="saved-entry">${esc(e.text)}</p></div>`).join('')}`)}${card('Your psychologist on Earth',`<p class="muted">Private support through the mission behavioral health channel.</p><p class="subtle">Psychologist messaging is not connected in this demo.</p>`)}</div></div>`;
 }
 function chart(history) {
  const points=history?.points??[], actual=points.filter(p=>p[1]!=null); if(actual.length<2) return empty('Not enough readings for this graph.');
@@ -282,12 +310,12 @@ async function handleForm(form,submitter) {
   delete drafts[id]; notice('Allergy profile updated.');
  } else if(id==='journal-form') {
   await api('/mind/journal',{method:'POST',body:{text:v.text}});delete drafts[id];notice('Private entry saved.');
- } else if(id==='chat-form') {
+ } else if(id==='chat-form'||id==='mind-chat-form') {
   const version=revision;
   const response=await companion.send(v.message);
   if(version!==revision)return;
-  chat.push({mine:true,text:v.message},{mine:false,text:response.reply});delete drafts[id];
-  renderCompanion();return;
+  chat.push({mine:true,text:v.message},{mine:false,text:response.reply});delete drafts[id];form.elements.message.value='';
+  renderCompanion();refreshChatViews();return;
  } else if(id==='emergency-form') {
   await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason:v.reason}});
   delete drafts[id];notice('Emergency raised. Emergency-only releases are available below.',true);
@@ -348,6 +376,11 @@ async function action(el) {
  if(a==='refresh')return show();
  if(a==='theme'){const theme=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=theme;localStorage.setItem('ui-look-theme',theme);syncBody();return;}
  if(a==='companion'){companionOpen=!companionOpen;renderCompanion();return;}
+ if(a==='support-prompt'){
+  const prompts={sleep:'I feel worn down and tired today. Can you help me think through a next step?',stress:'I feel stressed and find it hard to switch off.',home:'I miss talking with my family after dinner.'};
+  const form=$('#mind-chat-form');form.elements.message.value=prompts[el.dataset.topic];remember(form);
+  return handleForm(form,form.querySelector('button'));
+ }
  if(a==='area'){selectedArea=id;document.querySelectorAll('[data-action="area"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===id)));if($('#area-label'))$('#area-label').textContent=`Selected body area: ${id}`;syncBody();return;}
  if(a==='add-symptom')return addSymptom();
  if(a==='remove-symptom'){stagedSymptoms.splice(Number(id),1);render();return;}

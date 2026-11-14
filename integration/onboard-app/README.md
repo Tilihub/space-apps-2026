@@ -13,7 +13,7 @@ This connection now runs actual module requests instead of the UI's original fak
 | Symptoms, allergies, inventory, grants, dose schedules, dispenser batches, emergencies, stock | `people/dadis2/meds/` | Imported directly; real API calls, including Earth decisions |
 | QR rendering | dadis2's `inventory/qr.js` and vendored MIT `vendor/qrcode.js` | Served from the originals, no additional dependencies |
 | Daily training and live session controller | `people/petros_the_space_larper/demo-data/` | Imported by the browser; completed stage summaries go to health |
-| Companion | Potest's `crew-support/companion.js` and `companion-client.js`, branch `potest/crew-support-chat` at `f4bac9d` | Imported unchanged; that branch was merged into this integration branch, without approving PR #55 |
+| Companion | Potest's `companion.js` validation, `companion-client.js`, `chat.mjs` and `integration/crew-assistant/replies.mjs` | Original helpers imported unchanged; `adapters/companion-support.js` joins their support replies to Angelos's pure comparison rules and the current author's Petros fixture |
 | Private journal | `adapters/mind.js` | Connection-owned implementation of contract section 7, sharing the mind module with the imported companion route |
 | Cabin archive and alert rules | Potest's `environmental-graphs/data/series.js` and `alerts.js` | Originals read directly by `adapters/environment.js`; one deterministic server replay for all tabs |
 | Reports and Earth transport | `adapters/reports.js` | First connection implementation of section 11's outline; ownership/interface handoff still needs team review |
@@ -23,7 +23,8 @@ This connection now runs actual module requests instead of the UI's original fak
 The original teammate folders have not been edited by this connection. Owner modules and rules
 remain the source of truth. Adapters belong to the connection and can be replaced by the future
 owner modules without a second server. PR #55's unchanged files retain their original Git history.
-Do not treat this as that PR's approval or adoption of the broader-history companion experiment.
+This does not approve that PR or authorize reads of stored clinical history. The narrow offline
+fixture-context integration requested by Tommy is described below.
 
 ## Run and test
 
@@ -70,8 +71,8 @@ Python 3 on PATH for its own tests. No private database or API key is needed.
    complete the exercise, advance a minute and save with recovery. Do not wait beyond the finite
    replay if you want a recovery reading. Saved summaries survive reload; active checklists do not.
 7. Mind saves a private journal entry. Switch to another crew member or clinical role: the entry
-   is inaccessible. The floating companion fetches the current author's own latest check-in on
-   each turn. Medical officer and Earth sessions cannot call the mind routes.
+   is inaccessible. The floating companion and full Mind chat share the conversation. The client fetches the current author's own latest check-in on
+   each turn; the server may use that author's labelled synthetic history for support suggestions. Medical officer and Earth sessions cannot call the mind routes.
 8. Any crew member can raise an emergency for a crewmate and release only emergency-tier items.
    Confirm dispensing, then inspect the patient's dose log/stock and close paperwork as Leo.
 
@@ -121,9 +122,13 @@ is a connection endpoint, not an unannounced addition to dadis2's `/api/meds` mo
 
 ## Remaining limits and handoff
 
-- The current approved-context companion is scripted, not a trained LLM. Potest's separate
-  Python experiment with detailed history is preserved but not connected to crew clinical data;
-  broader assistant context remains an open product decision.
+- The companion is an offline context-aware support tool, not a trained LLM. It restores zt’s
+  animated planet mascot and full Mind conversation. Sleep, stress/mood, missing home and
+  follow-up use different responses; repeated turns progress through the source suggestions.
+  Potest's Python comparison remains preserved. His pure reply helpers use the current author's
+  canonical synthetic fixture and Angelos's pure comparison functions; historical values,
+  reference numbers and streaks stay server-side. The current check-in is refreshed each turn.
+  No stored clinical history or journal is fetched. The contract clarification awaits review.
 - Psychologist login/private messaging is not built. Journal access is author-only until its
   separate role is agreed. Journal text is not sent to the current companion route.
 - No live wearable is paired. Weekly sessions can be checked off, but without pulse samples
@@ -136,3 +141,21 @@ is a connection endpoint, not an unannounced addition to dadis2's `/api/meds` mo
 - Hardware dispensing, signed Earth credentials, account registration and production security
   are not implemented. Demo identity/approval selection is intentionally simulated.
 - Readiness scoring, crew-visible clinical trends, gamification and visual redesign are deferred.
+
+## Companion and body review update
+
+Tommy selected the offline health-context tool for now, after the older OpenAI-backed source was
+found in history and no server API key was configured. No external model calls were added.
+The original route still validates role, author, day, fields and scales. The adapter then uses
+Potest’s original comparison/support templates, Angelos’s `dailyFor`/`referenceFor` and Petros’s
+current canonical fixture. Only the current author’s fixture is selected, and historical clinical
+numbers never appear in the reply. Fixture history is frozen demo seed data, not later saved
+health history; it is not presented as a live clinical feed. Missing days stop the history signal.
+Topic counters and the last reply are bounded in memory and reset with the demo; conversation
+text is not written to disk and the journal is never read. This remains a limited offline tool.
+
+The UI restores zt’s original animated planet artwork and chat bubbles in the floating companion
+and Mind screen. Both views share replies and keep input on failed requests.
+The female mesh’s torso is softened into smooth mannequin sections, with reduced surface sheen.
+Reported symptoms affect only red pins/lines/labels; skin no longer turns red. Blue selection and
+3D body-area picking remain available. Original source meshes and credits remain unchanged.
