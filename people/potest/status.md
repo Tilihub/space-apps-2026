@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:00 (Europe/Athens)
+- Last updated: 2026-11-14 15:24 (Europe/Athens)
 - Working on: POT-1 handoff for integration review in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40)
 - Branch: potest/environment-bridge
 
@@ -21,6 +21,7 @@
 - Added looping replay, synchronized cabin readings, demo alerts, event history, and incident snapshot export. Verified both high and low alert paths and offline replay in Chrome.
 - POT-1: Added a callable snapshot and a subscription for alert transitions, feed gaps, recovery, and replay reset. Documented the versioned contract and a synthetic input/output example in the [bridge README](environmental-graphs/README.md#pot-1-integration-handoff).
 - POT-1: Verified a same-origin parent iframe can read the snapshot, distinguish archival and synthetic data, and receive one event per forward transition. Tested stale status, recovery, event deduplication, and loop reset in Chrome and checked packet mapping in Node.
+- Clarified the source-time chart window and playback speed labels. Verified in Chrome that a one-second playback step advances five recorded minutes for RR-9, and that hourly and sol-based series display their actual next source-time interval.
 
 ## Blocked / need from others
 

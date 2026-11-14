@@ -5,7 +5,7 @@ const datasets = [...archive.slice(0, 1), makeAlertExercise(), ...archive.slice(
 const ui = Object.fromEntries(
   ["dataset", "metric", "window", "chart", "chart-title", "context", "download", "latest", "min", "max",
     "count", "reading", "notes", "source", "status", "view", "playback", "speed", "play", "restart", "seek",
-    "mode-label", "replay-clock", "progress", "cabin", "cabin-metrics", "thresholds", "standard",
+    "mode-label", "replay-clock", "replay-step", "progress", "cabin", "cabin-metrics", "thresholds", "standard",
     "event-panel", "events", "events-empty", "chart-help", "snapshot"].map(id => [id, document.getElementById(id)])
 );
 const paint = ui.chart.getContext("2d");
@@ -73,6 +73,23 @@ function formatNumber(value) {
 
 function formatReading(value) {
   return `${formatNumber(value)} ${currentMetric.unit}`;
+}
+
+function describeNextStep() {
+  const nextTime = timeline[cursor + 1];
+  if (nextTime === undefined) return "Next step restarts the source timeline.";
+  const difference = nextTime - timeline[cursor];
+  if (currentDataset.timeMode === "sol") {
+    return `Next step advances ${difference} ${difference === 1 ? "sol" : "sols"} in source time.`;
+  }
+  const duration = [];
+  let remaining = difference;
+  for (const [seconds, unit] of [[86400, "d"], [3600, "h"], [60, "min"], [1, "sec"]]) {
+    const count = Math.floor(remaining / seconds);
+    if (count) duration.push(`${count} ${unit}`);
+    remaining %= seconds;
+  }
+  return `Next step advances ${duration.join(" ")} in source time.`;
 }
 
 function selectDataset() {
@@ -217,7 +234,8 @@ function render() {
   ui["mode-label"].textContent = isExercise() ? "Synthetic exercise" : (isReplay() ? "Historical replay" : "Historical archive");
   ui.seek.value = cursor;
   ui.progress.textContent = `${(cursor + 1).toLocaleString("en")} / ${timeline.length.toLocaleString("en")} · Loop ${loop}`;
-  ui["replay-clock"].textContent = formatTime(time);
+  ui["replay-clock"].textContent = `Source time · ${formatTime(time)}`;
+  ui["replay-step"].textContent = describeNextStep();
   ui.reading.setAttribute("aria-live", timer === undefined ? "polite" : "off");
   ui["chart-help"].textContent = isReplay() && timer !== undefined
     ? "Pause to inspect individual readings."

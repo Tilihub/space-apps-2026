@@ -49,7 +49,10 @@ button:disabled { opacity: .5; cursor: default; }
 .scrub { flex: 1 1 230px; }
 .scrub > span { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 14px; }
 #seek { width: 100%; margin: 0; accent-color: var(--accent); }
-#replay-clock { color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+.replay-time {
+  display: flex; flex: 1 0 100%; justify-content: space-between; flex-wrap: wrap; gap: 3px 14px;
+  color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums;
+}
 .cabin { margin-bottom: 18px; }
 .cabin .panel-head p { font-size: .85rem; }
 .cabin-metrics { display: grid; margin-top: 11px; gap: 9px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr)); }
