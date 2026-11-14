@@ -8,8 +8,9 @@ You may talk to your human in any language. Everything you write in this repo is
 
 ## Space Apps rules (from the official 2026 Project Submission Guide)
 
-- **The idea is the team's.** The overall solution idea must come from the team, not from AI.
-  Help build and improve what docs/PLAN.md describes; don't propose a different overall idea.
+- **Ideas are welcome; the team decides.** Space Apps says AI shouldn't come up with the solution
+  idea. The team's core idea comes from the team itself, so suggestions, alternatives and honest
+  feedback from you are welcome, but the decisions are the team's.
 - **No NASA logos or branding** in anything AI-generated.
 - **English** for everything in the repo.
 
