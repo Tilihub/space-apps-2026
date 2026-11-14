@@ -5,6 +5,7 @@ People use different AI tools (Claude Code, Codex, ChatGPT). Every coding tool r
 so these rules keep everyone's work safe and in sync.
 
 You may talk to your human in any language. Everything you write in this repo is in English.
+Assume everyone has some git experience.
 
 ## Space Apps rules (from the official 2026 Project Submission Guide)
 
@@ -32,22 +33,16 @@ Do this when your human asks for onboarding, or when they don't have a file in `
    first name or nickname, and share only what they're fine with being public.
 2. Find out yourself, without asking: their GitHub username (`gh api user --jq .login`),
    their operating system, and which AI tool you are.
-3. Ask them these questions, all in one message:
-   1. What name should we use for you here? (first name or nickname, lowercase, no spaces.
-      It names your status file and your branches)
-   2. Git experience: none, some, or comfortable?
-   3. Coding experience: which languages (Arduino, C, Python, MATLAB… all count), or none?
-   4. What would you like to work on: app, hardware, research, submission, or anything?
-   5. Any hardware you can bring (boards, sensors, tools), or none?
-   6. When will you be at the event? (Saturday from–to, Sunday from–to)
+3. Ask them one question: what name should we use for you here? (first name or nickname,
+   lowercase, no spaces. It names your status file and your branches)
 4. Check git's identity in this repo with `git config user.name` and `git config user.email`.
    If the email is missing or is a personal address, offer to use their private GitHub address
    instead, so it isn't published in this public repo. Get their id with `gh api user --jq .id`
    and their login with `gh api user --jq .login`, then, only if they agree, run
    `git config user.email "<id>+<login>@users.noreply.github.com"`.
-   If `user.name` is missing, set it to the name from question 1.
-5. Create `docs/status/<name>.md` from `docs/status/TEMPLATE.md`, filled in with what you
-   found and their answers.
+   If `user.name` is missing, set it to the name from step 3.
+5. Create `docs/status/<name>.md` from `docs/status/TEMPLATE.md`, filled in with their name
+   and what you found.
 6. Publish it on the branch `<name>/onboarding`, following "Saving and sharing work" below,
    and merge the pull request yourself.
 7. Tell your human it's done, with the link to their file on GitHub.
