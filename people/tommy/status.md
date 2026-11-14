@@ -14,6 +14,8 @@
 
 ## Done
 
+- Opened PR #48 for the lean inventory scope comparison; only Tommy’s planning/status files changed. The proposed nine-item scope still needs product/owner acceptance.
+
 - Compared the supplied inventory brief with DAD-1 and zt’s current input screen. Prepared inventory-scope-proposal.md: nine-item demo fixture, reuse/simplification boundaries, input ownership, multi-day QR versus single-use transaction, and one active multi-item batch. No new zt input implementation was found beyond ef10b7f; latest zt update was status/team-jobs.
 - Recorded Tommy’s scope correction: simulate quantity-limited dispensing; physical/microgravity engineering and extreme misuse scenarios are outside application-demo scope. Retain basic authorization, due-dose and stock-update correctness. No teammate code or folder changed.
 
