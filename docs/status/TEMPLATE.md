@@ -5,11 +5,6 @@
 - GitHub: <username>
 - AI tool: <Claude Code / Codex / other>
 - Operating system: <Windows / macOS / Linux>
-- Git experience: <none / some / comfortable>
-- Coding experience: <languages, or none>
-- Would like to work on: <app / hardware / research / submission / anything>
-- Hardware I can bring: <list, or none>
-- At the event: Saturday <from–to>, Sunday <from–to>
 
 ## Now
 
