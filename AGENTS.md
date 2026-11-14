@@ -139,8 +139,8 @@ with a line on how.
 - Push to main directly, force-push, or rebase a branch that is already pushed
 - Push to someone else's branch, or delete or rename someone else's files or branches
 - Commit passwords, API keys, tokens or `.env` files
-- Commit large files: videos, audio and big photo sets go in the team's shared drive
-- Put links to the shared drive or any private link in this repo (it's public)
+- Commit files over 50 MB: GitHub refuses anything over 100 MB, so compress big videos and photos first
+- Put private links in this repo (it's public)
 
 ## Recording a decision
 
