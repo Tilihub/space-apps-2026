@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:00
-- Working on: Physical and mental health evidence handoff in [PR #31](https://github.com/Tilihub/space-apps-2026/pull/31)
+- Last updated: 2026-11-14 14:10
+- Working on: In-flight health countermeasure evidence for the prototype
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -26,6 +26,8 @@
 - Documented [current NASA collection practices](astronaut-inflight-data.md#how-nasa-collects-astronaut-data-today) with documented ISS and Artemis II examples, including the Bio-Monitor, Mobil-o-Graph, wrist actigraphy, and personal dosimetry.
 - Merged and verified the NASA data collection notes in [PR #29](https://github.com/Tilihub/space-apps-2026/pull/29).
 - Added [physical and mental health research notes](astronaut-physical-and-mental-health.md), with proposed check-in fields, evidence from flight, and physical indicators beyond the five vital signs.
+- Merged and verified the physical and mental health notes in [PR #31](https://github.com/Tilihub/space-apps-2026/pull/31).
+- Added [mission countermeasures](astronaut-physical-and-mental-health.md#countermeasures-during-missions), with operational practice, flight and ground-analog studies, and proposed prototype support.
 
 ## Blocked / need from others
 
@@ -40,3 +42,4 @@
 - For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
 - Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.
 - Review the proposed well-being fields alongside the existing daily check-in. Use synthetic self-reports in the public demo.
+- Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
