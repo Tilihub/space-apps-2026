@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-14 17:57
-- Working on: grant safety fixes in the prototype, pushed on `dadis2/grant-safety` (no PR yet).
-  DAD-1 and DAD-2 are merged into main (#34, #44, #53).
+- Working on: grant safety fixes merged into main (PR #58). DAD-1 and DAD-2 are merged too
+  (#34, #44, #53). Next: the `meds` module.
 - Branch: dadis2/grant-safety
 
 ## Done
@@ -37,7 +37,7 @@
   - Contract updated: `inventory/CONTRACT.md` (sections 2a and 2b). Checks: `inventory/tests.html`,
     28 of 28 pass. Tested end to end in a browser.
 
-- **Grant safety fixes** (branch `dadis2/grant-safety`), my decisions of 14 Nov, evening:
+- **Grant safety fixes** (PR #58, merged), my decisions of 14 Nov, evening:
   - No double doses: one course per medicine per crew member. A newer grant (doctor or Earth)
     replaces the running course, ingredients are added up across grants (daily limits), and two
     NSAIDs at once are refused. A due dose that a safety check holds back shows why on the card.
@@ -75,10 +75,8 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Branch `dadis2/grant-safety` (pushed, no PR yet): grant safety, Earth's final say and the Emergency
-  escape. Open a PR and merge it (it only touches my folder). Then open
-  `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth tool) and `tests.html`
-  (37 checks). The demo script is in `inventory/README.md`.
+- Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
+  tool) and `tests.html` (37 checks). The demo script is in `inventory/README.md`.
 - Start the `meds` module (`people/dadis2/meds/`, Node.js) from `shared/contract/example/`, wave 1,
   before we leave Saturday. Reuse the rules in `inventory/logic.js`.
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:
