@@ -9,9 +9,9 @@
 ## Now
 
 - Last updated: 2026-11-14 18:52
-- Working on: the contract's `meds` module, wave 1 done on `dadis2/meds-wave1` (pushed, no PR yet).
-  `npm test`: 61 of 61 pass (18 are meds). Next: wave 2 (emergencies, stock) by Sunday 11:00.
-- Branch: dadis2/meds-wave1
+- Working on: the contract's `meds` module. Wave 1 is merged into main (PR #66). `npm test`:
+  69 of 69 pass (18 are meds). Next: wave 2 (emergencies, stock) by Sunday 11:00.
+- Branch: dadis2/meds-wave1 (merged)
 
 ## Done
 
@@ -61,7 +61,7 @@
     gauze, gloves, splint), for whoever needs help, no reason needed, warnings with "Give anyway".
     Every override now goes to Earth's review.
   - Checks: 43 of 43 pass. Tested in the browser. Demo steps 7 and 8 in `inventory/README.md`.
-- **meds module, wave 1** (`people/dadis2/meds/`, branch `dadis2/meds-wave1`), built to
+- **meds module, wave 1** (`people/dadis2/meds/`, PR #66, merged), built to
   `shared/contract/` section 8:
   - All 14 wave 1 routes: symptom reports and suggestions, profile and allergies, lockers,
     collections, requests and decisions, grants and import, doses and "Did it help?".
@@ -75,8 +75,8 @@
   - Contract data: crew `c1`–`c5`, Tomas (`c4`) with the NSAID allergy, Leo the only medical officer
     (his own requests go to Earth), UTC mission time from `ctx.now()`, severity 1–10.
   - Codes from the prototype's `earth.html` work in the module.
-  - Tests: 18, starting with the contract's wave 1 walk-through (§12 steps 3–6). `npm test`: 61 of
-    61 pass.
+  - Tests: 18, starting with the contract's wave 1 walk-through (§12 steps 3–6). `npm test` with
+    main merged in: 69 of 69 pass.
 
 ## Blocked / need from others
 
@@ -109,8 +109,8 @@
   so the demo starts fresh once.
 - "Also used in emergencies" is a proof-of-concept sample (`emergencyUse` in `inventory/data.js`);
   medical accuracy isn't the point.
-- `meds` module: branch `dadis2/meds-wave1` → open a PR and merge it (only my folder). Then wave 2
-  by Sunday 11:00, built to the contract (emergency items only):
+- `meds` module: wave 1 is on main (PR #66). Wave 2 on a new branch, by Sunday 11:00, built to the
+  contract (emergency items only):
   - `POST /emergencies`, `GET /emergencies`, `POST /emergencies/:id/paperwork`
   - the emergency release in `POST /collections` (`emergencyId`, `overrideAllergy`, `skipScan`)
   - `GET /stock`: epinephrine starts at its reserve (4), so one release puts it below
