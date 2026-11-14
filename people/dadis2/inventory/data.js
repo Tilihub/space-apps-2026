@@ -159,6 +159,7 @@ window.INVENTORY_DATA = {
 
   // tier: "S" supply, "1" self-care, "2" prescription, "3" controlled, "4" emergency
   // kind: medication | supply | equipment
+  // emergencyUse: what it is for on the Emergency screen ("Also used in emergencies"). Sample choices.
   items: [
     // White: Convenience Medication
     { id: "acetaminophen-325", name: "Acetaminophen", strength: "325 mg", form: "tablet", packId: "white", kind: "medication", tier: "1",
@@ -172,7 +173,7 @@ window.INVENTORY_DATA = {
     { id: "aspirin-325", name: "Aspirin", strength: "325 mg", form: "tablet", packId: "white", kind: "medication", tier: "1",
       ingredients: [{ name: "aspirin", mg: 325 }], doseUnits: 1, maxPerDay: 8, classes: ["NSAID", "analgesic"],
       indications: ["headache", "muscle-pain"], contraindications: ["gi-bleed-risk"], stability: "moderate", reserve: 12, plannedUsePer30d: 2,
-      notes: "Reserve kept for suspected heart attack (CMO use).",
+      notes: "Reserve kept for suspected heart attack.", emergencyUse: "Chest pain (suspected heart attack): chew 1",
       lots: [["ASA-2406", 36, "2027-06-30"]] },
     { id: "loratadine-10", name: "Loratadine", strength: "10 mg", form: "tablet", packId: "white", kind: "medication", tier: "1",
       ingredients: [{ name: "loratadine", mg: 10 }], doseUnits: 1, maxPerDay: 1, classes: ["antihistamine"],
@@ -180,12 +181,12 @@ window.INVENTORY_DATA = {
       lots: [["LOR-2409", 30, "2027-03-31"], ["LOR-2505", 60, "2028-06-30"]] },
     { id: "diphenhydramine-25", name: "Diphenhydramine", strength: "25 mg", form: "capsule", packId: "white", kind: "medication", tier: "1",
       ingredients: [{ name: "diphenhydramine", mg: 25 }], doseUnits: 1, maxPerDay: 8, classes: ["antihistamine"], sedating: true,
-      indications: ["itch-rash", "runny-nose", "insomnia"], stability: "stable", reserve: 10, plannedUsePer30d: 4,
+      indications: ["itch-rash", "runny-nose", "insomnia"], stability: "stable", reserve: 10, plannedUsePer30d: 4, emergencyUse: "Mild allergic reaction (hives, itching)",
       lots: [["DPH-2410", 40, "2027-10-31"], ["DPH-2503", 40, "2028-09-30"]] },
     { id: "pseudoephedrine-30", name: "Pseudoephedrine", strength: "30 mg", form: "tablet", packId: "white", kind: "medication", tier: "1",
       ingredients: [{ name: "pseudoephedrine", mg: 30 }], doseUnits: 2, maxPerDay: 8, classes: ["decongestant"],
       indications: ["nasal-congestion"], contraindications: ["hypertension"], stability: "stable", reserve: 12, plannedUsePer30d: 14,
-      lots: [["PSE-2405", 10, "2027-05-31"]] },
+      lots: [["PSE-2405", 10, "2027-05-31"], ["PSE-2506", 40, "2028-06-30"]] },
     { id: "oxymetazoline", name: "Oxymetazoline nasal spray", strength: "0.05%, 15 mL", form: "spray bottle", packId: "white", kind: "medication", tier: "1",
       ingredients: [{ name: "oxymetazoline", mg: 0 }], doseUnits: 1, maxPerDay: 1, classes: ["decongestant"],
       indications: ["nasal-congestion"], stability: "sensitive", reserve: 1, plannedUsePer30d: 0.3,
@@ -372,7 +373,7 @@ window.INVENTORY_DATA = {
 
     // Green: Medical Supply
     { id: "gauze-4x4", name: "Gauze pads 4x4 in", strength: "", form: "pad", packId: "green", kind: "supply", tier: "S",
-      indications: ["minor-cut"], stability: "stable", reserve: 60, plannedUsePer30d: 6, lots: [["GZ-2405", 200, "2029-05-31"]] },
+      indications: ["minor-cut"], stability: "stable", reserve: 60, plannedUsePer30d: 6, emergencyUse: "Bleeding: press firmly", lots: [["GZ-2405", 200, "2029-05-31"]] },
     { id: "adhesive-bandages", name: "Adhesive bandages", strength: "", form: "bandage", packId: "green", kind: "supply", tier: "S",
       indications: ["minor-cut"], stability: "stable", reserve: 30, plannedUsePer30d: 8, doseUnits: 1, lots: [["BND-2406", 150, "2029-06-30"]] },
     { id: "skin-closure-strips", name: "Skin closure strips", strength: "", form: "strip", packId: "green", kind: "supply", tier: "S",
@@ -380,14 +381,14 @@ window.INVENTORY_DATA = {
     { id: "alcohol-pads", name: "Alcohol prep pads", strength: "", form: "pad", packId: "green", kind: "supply", tier: "S",
       indications: ["minor-cut"], stability: "stable", reserve: 60, plannedUsePer30d: 15, lots: [["ALC-2406", 300, "2028-06-30"]] },
     { id: "nitrile-gloves", name: "Nitrile gloves (pair)", strength: "M/L", form: "pair", packId: "green", kind: "supply", tier: "S",
-      stability: "stable", reserve: 60, plannedUsePer30d: 20, lots: [["GLV-2405", 300, "2029-05-31"], ["GLV-2503", 120, "2029-12-31"]] },
+      stability: "stable", reserve: 60, plannedUsePer30d: 20, emergencyUse: "Gloves on first", lots: [["GLV-2405", 300, "2029-05-31"], ["GLV-2503", 120, "2029-12-31"]] },
     { id: "syringe-3ml", name: "Syringe 3 mL", strength: "", form: "syringe", packId: "green", kind: "supply", tier: "S",
       stability: "stable", reserve: 20, plannedUsePer30d: 1, lots: [["SYR-2406", 60, "2029-06-30"]] },
     { id: "iv-catheter-18g", name: "IV catheter 18G", strength: "", form: "catheter", packId: "green", kind: "supply", tier: "S",
       stability: "stable", reserve: 6, plannedUsePer30d: 0.1, lots: [["IVC-2407", 12, "2029-07-31"]] },
     { id: "medical-tape", name: "Medical tape", strength: "1 in roll", form: "roll", packId: "green", kind: "supply", tier: "S",
       stability: "stable", reserve: 3, plannedUsePer30d: 0.5, lots: [["TAP-2406", 10, "2029-06-30"]] },
-    { id: "sam-splint", name: "Moldable splint", strength: "36 in", form: "splint", packId: "green", kind: "equipment", tier: "S",
+    { id: "sam-splint", name: "Moldable splint", strength: "36 in", form: "splint", packId: "green", kind: "equipment", tier: "S", emergencyUse: "Suspected broken bone",
       lots: [["SPL-2401", 2, null]] },
     { id: "sutures-4-0", name: "Sutures 4-0", strength: "", form: "pack", packId: "green", kind: "supply", tier: "2",
       stability: "stable", reserve: 6, plannedUsePer30d: 0.1, lots: [["SUT-2408", 12, "2028-08-31"]] }

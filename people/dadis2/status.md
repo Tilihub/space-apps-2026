@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:57
-- Working on: grant safety fixes merged into main (PR #58). DAD-1 and DAD-2 are merged too
-  (#34, #44, #53). Next: the `meds` module.
-- Branch: dadis2/grant-safety
+- Last updated: 2026-11-14 18:32
+- Working on: approval review merged into main (PR #62), after grant safety (PR #58).
+  Next: the `meds` module.
+- Branch: dadis2/approval-review
 
 ## Done
 
@@ -49,6 +49,18 @@
     approval. It needs a reason, is logged (`approvalBypassed: true`), has paperwork due in 2 hours
     and goes to Earth's review. It closes the open request.
   - Checks: `inventory/tests.html`, 37 of 37 pass. Tested in the browser.
+- **Approval review** (PR #62, merged), my decisions of 14 Nov, evening:
+  - Pseudoephedrine was locked for everyone: 10 in stock, reserve 12. Added a sample lot (now 50).
+  - Per person, for self-care:
+    - reserve or a condition → the CMO decides, and the grant isn't held back by it (before, it was
+      a dead end: granted but never collectable)
+    - daily limit → wait
+    - allergy → nobody grants it (any tier); only Emergency's "Give anyway"
+  - Bins: 🔒 red = needs approval, with who and why on hover. Dimmed = not for you now.
+  - Emergency screen: "Also used in emergencies" (aspirin for chest pain, diphenhydramine tablets,
+    gauze, gloves, splint), for whoever needs help, no reason needed, warnings with "Give anyway".
+    Every override now goes to Earth's review.
+  - Checks: 43 of 43 pass. Tested in the browser. Demo steps 7 and 8 in `inventory/README.md`.
 
 ## Blocked / need from others
 
@@ -76,7 +88,10 @@
      what to do next, what to watch out for. -->
 
 - Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
-  tool) and `tests.html` (37 checks). The demo script is in `inventory/README.md`.
+  tool) and `tests.html` (43 checks). The demo script is in `inventory/README.md`. The save key is now `medInventory.v5`,
+  so the demo starts fresh once.
+- Which medicines count as "Also used in emergencies" is a sample choice (`emergencyUse` in
+  `inventory/data.js`). The team or a clinician should confirm it.
 - Start the `meds` module (`people/dadis2/meds/`, Node.js) from `shared/contract/example/`, wave 1,
   before we leave Saturday. Reuse the rules in `inventory/logic.js`.
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:

@@ -26,6 +26,11 @@ the **onboard doctor** or from a **flight surgeon on Earth**.
 
 - **A doctor never grants to themselves.** When the CMO is the patient, the backup doctor decides
   (prototype) or Earth (the shared contract has no backup).
+- **Nobody grants a medicine the person is allergic to** (by class or ingredient). The code is
+  refused. In an emergency, only the Emergency screen's two-tap "Give anyway" can release it.
+- **Self-care can need the doctor:** when only the reserve is left, or when it isn't safe with the
+  person's condition. A grant from the doctor or Earth is then not held back by the reserve or the
+  condition. The full table is in `spec.md` §4.
 - **Requests:** prescription requests go to the onboard doctor. Controlled requests go to Earth,
   shown as "Waiting for Earth"; a reply takes about 24 minutes. Both show "Can't wait? Emergency".
 - **Emergency without approval:**
@@ -49,9 +54,13 @@ the **onboard doctor** or from a **flight surgeon on Earth**.
   same time are refused.
 - **At collection time, the 24-hour limits still count every source:** grants, self-care and
   standing orders. A due dose that would break a limit or clash with an allergy shows its reason
-  instead of "Due now", and doesn't open. The stock reserve never holds back a granted dose.
-- **Functions:** `grantConflicts(state, draft, now)` returns `{ replaces, error }`. `acceptGrant`
-  refuses on `error`, and `addGrant` applies `replaces`.
+  instead of "Due now", and doesn't open. The stock reserve and the person's conditions never hold
+  back a granted dose: whoever granted it weighed them.
+- **Functions:**
+  - `grantConflicts(state, draft, now)` returns `{ replaces, error }`. `acceptGrant` refuses on
+    `error`, and `addGrant` applies `replaces`.
+  - `grantHold(state, crewId, item, units, now)` returns `{ checks, lot }`: the checks that still
+    hold a granted dose back, and the box to take it from.
 
 ## 2. The code
 
@@ -76,6 +85,7 @@ RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW
   - the same medicine listed twice
   - a dose over the daily limit
   - someone else's personal medicine
+  - a medicine the crew member is allergic to
   - an issuer who isn't allowed that category
   - a grant for another crew member (on this device)
   - a grant already added
@@ -207,9 +217,11 @@ when the box is scanned.
 
 ## 7. Checks
 
-Open `tests.html` in a browser: 37 checks, all passing (14 Nov 2026). They cover:
+Open `tests.html` in a browser: 43 checks, all passing (14 Nov 2026). They cover:
 - who may grant what: controlled medicines by Earth only, no self-grants, and an emergency release
   without approval being logged for review
+- each person's situation: allergy (no grant), condition and reserve (the doctor decides, and the grant
+  isn't held back), daily limit (wait), and no self-care locked by the sample stock
 - one course per medicine (replacing), adding up ingredients across grants, and two NSAIDs
 - the code format
 - binding to the right person, once
