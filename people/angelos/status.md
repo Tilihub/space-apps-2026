@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:51 (Asia/Nicosia)
-- Working on: ANG-1 app-facing health module implemented to the approved Node contract; preparing the handoff to zt.
+- Last updated: 2026-11-14 17:56 (Asia/Nicosia)
+- Working on: ANG-1 health module published in PR #57; ready for zt's core/form integration.
 - Branch: angelos/health-module
 
 ## Done
@@ -107,6 +107,9 @@
   not start because npm is unavailable. No user SQLite database was opened.
 - User assigned companion responses (step 3) to Potest. Recorded that handoff
   here and in my own plan; no teammate's folder or shared owner table was changed.
+- Published angelos/health-module and opened
+  https://github.com/Tilihub/space-apps-2026/pull/57 with the module interface,
+  checks and explicit core/data dependencies. Only people/angelos/ is changed.
 
 ## Blocked / need from others
 
