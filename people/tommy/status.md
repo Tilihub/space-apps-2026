@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #45 for the ecosystem review and return-from-break handoff; only Tommy’s planning/status files changed.
+- Published the ecosystem review and return-from-break handoff through merged PR #45; only Tommy’s planning/status files changed.
 
 - Prepared ecosystem-review.md against zt b760d8f, angelos dc56e60, dadis2 832efca, potest e9c7079 and petros f05971a. Opened the original three browser prototypes from isolated public-source copies; verified synthetic two-bin selection and environmental gap/alert history. No camera/hardware or complete collection was tested.
 - Re-ran 51 latest health checks in temporary stores: 50 passed, optional Node client check skipped (Node unavailable). Exported synthetic health examples for Tommy’s review. No private data or session tokens used/published.
@@ -48,7 +48,7 @@
 ## Next steps
 
 - Review ecosystem-review.md with Tommy one decision at a time. Start with the proposed journey and role/report boundaries, then agree IDs, mission clock, 1–10 transition and integration/transport ownership with zt and module owners.
-- PR #45 is open for this own-folder review; verify its allowed files and merge when ready. The frozen visual review is a local artifact, not an adopted UI.
+- The review is on main via PR #45; use it for Tommy’s next discussion and owner coordination. The frozen visual review is a local artifact, not an adopted UI.
 
 - Continue from `tommy/concepts-plan`; use `plan.md` for requirements and `implementation-tasks.md` for the task proposals Tommy can relay.
 - The canonical teammate/coding-tool brief is published on main at `people/tommy/implementation-tasks.md`. Give this link to the team; requested tasks remain distinct from owner acceptance and common-plan decisions.
