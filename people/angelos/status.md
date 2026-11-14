@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:20 (Asia/Nicosia)
-- Working on: ANG-1 adapter and JavaScript client ready; zt contract acceptance and UI wiring pending.
+- Last updated: 2026-11-14 15:24 (Asia/Nicosia)
+- Working on: ANG-1 adapter/client published in PR #25; zt contract acceptance and UI wiring pending.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -66,6 +66,8 @@
 - Verified all 51 checks, including the real JavaScript client against the HTTP
   API, persisted reloads, missing values, identity isolation and contract examples.
   Checks use temporary data only; existing CLI/weekly/reset checks still pass.
+- Pushed ANG-1 at 8a9ed2e and rewrote PR #25's title/description around the final
+  app API, separate crew histories, existing monitoring features and pending owner agreements.
 
 ## Blocked / need from others
 
