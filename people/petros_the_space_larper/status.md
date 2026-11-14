@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:35
-- Working on: International in-flight data research handoff
+- Last updated: 2026-11-14 13:43
+- Working on: Vital-sign sensor and data capture handoff
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -20,6 +20,8 @@
 - Added the [in-flight data inventory and NASA priorities](astronaut-inflight-data.md), including published ISS and historical flight measurements, verified Inspiration4 crew microbiome data, and an Artemis II environment CSV.
 - Added the [prototype vital-sign CSV](astronaut-inflight-vitals.csv) with published in-flight human measurements, source references and blank unavailable values.
 - Added 13 ISS cardiovascular summaries from CSA, JAXA, IBMP and Danish research. Documented additional international data downloads and archive access in the [in-flight inventory](astronaut-inflight-data.md#international-experiments-and-archives).
+- Merged the international inventory and CSV updates into main in [PR #27](https://github.com/Tilihub/space-apps-2026/pull/27) and verified the 47 CSV rows on GitHub.
+- Documented [how to capture the five vital signs](astronaut-health-research.md#five-vital-signs-from-a-smart-vest-and-separate-sensors), including sensor placement, units, estimates and missing readings.
 
 ## Blocked / need from others
 
@@ -31,3 +33,4 @@
      what to do next, what to watch out for. -->
 
 - Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries, cohort means and cohort medians. PhysioNet and RadLab can provide time-series replay inputs with documented provenance.
+- For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
