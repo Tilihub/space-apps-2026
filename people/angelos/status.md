@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:24 (Asia/Nicosia)
-- Working on: ANG-1 adapter/client published in PR #25; zt contract acceptance and UI wiring pending.
-- Branch: angelos/interactive-check-in
+- Last updated: 2026-11-14 17:11 (Asia/Nicosia)
+- Working on: External baseline import ready, with a runnable JSON example and saved source/scale metadata.
+- Branch: angelos/external-baseline
 
 ## Done
 
@@ -68,6 +68,21 @@
   Checks use temporary data only; existing CLI/weekly/reset checks still pass.
 - Pushed ANG-1 at 8a9ed2e and rewrote PR #25's title/description around the final
   app API, separate crew histories, existing monitoring features and pending owner agreements.
+- Confirmed PR #25 is merged. Started angelos/external-baseline for the user's
+  requested independent file reader, without waiting for the selected dataset.
+- Added personal-history-v1 JSON input, examples/baseline_input.json and
+  BASELINE_IMPORT.md. --baseline-file and --import-only initialize a separate
+  session from file values, without generating observations or adding demo recent rows.
+- Stored the original import packet/source/units/scale in SQLite. References stay
+  fixed; reset and later entries work without the original file. Different inputs
+  cannot overwrite an existing reference. Empty recent histories report explicit gaps.
+- Passed 60 checks, including actual CLI import/entry, changed file values,
+  per-measure gaps, source/units/identity validation, immutable references and reset.
+  Verification uses temporary databases; no existing user session was replaced.
+- Read Tommy's new visibility/1–10 updates and zt's pending Node module proposal
+  on zt/app-contract (PR #49). Imported 1–10 scales are explicit and enforced;
+  legacy 0–10 data are retained without conversion. Personal-history imports are
+  local-only and are not exposed by the old synthetic HTTP prototype.
 
 ## Blocked / need from others
 
@@ -77,6 +92,10 @@
 - ANG-1 handoff still needs zt's acceptance: health-v1 packet, crew ID mapping,
   per-crew store choice, mission clock, browser origin and session integration.
   In particular, the skeleton's Sleep 0–10 is not sleep duration in hours.
+- The pending Node.js contract supersedes the old HTTP adapter as the integration
+  target if approved: c1–c5, camelCase, one clock and a new module boundary. Align
+  that and the new doctor-only detailed analysis policy before final UI integration.
+  This local reader's input is not silently treated as the proposed health.json.
 - GitHub CLI works at C:/Program Files/GitHub CLI/gh.exe with network permission.
 
 ## Next steps
@@ -84,8 +103,12 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Continue from angelos/interactive-check-in. From the repository root run
+- Continue from angelos/external-baseline. From the repository root run
   python people/angelos/health_monitor/check_in.py and use synthetic values.
+- Follow BASELINE_IMPORT.md to run --baseline-file examples/baseline_input.json
+  --import-only (using repository-root paths). Continue with --database pointing
+  to local_data/imported.sqlite3. Supply a selected external file in the same
+  schema and a new destination database when the data is ready.
 - The first proposed mission date is 2026-11-14; later runs advance from saved
   history. The ignored SQLite database uses a frozen reference copied on first run.
 - Use python people/angelos/health_monitor/check_in.py --reset when a fresh demo
