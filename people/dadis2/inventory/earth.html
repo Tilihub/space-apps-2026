@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Earth grant tool</title>
+  <meta name="description" content="Prototype: a flight surgeon on Earth makes a medicine grant code and QR for a crew member. Sample data, sender verification simulated.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .earth-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; max-width: 1100px; margin: 0 auto; align-items: start; }
+    @media (min-width: 900px) { .earth-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+    .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+    .field select, .field input { font-size: 15px; color: var(--text); }
+    .row2 { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row2 .field { flex: 1; min-width: 150px; }
+    .med-row { display: grid; grid-template-columns: minmax(160px, 2fr) repeat(3, minmax(70px, 1fr)) auto; gap: 8px; align-items: end; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+    @media (max-width: 640px) { .med-row { grid-template-columns: 1fr 1fr 1fr; } .med-row .field:first-child { grid-column: 1 / -1; } }
+    .out-code { font-family: ui-monospace, Consolas, monospace; font-size: 18px; font-weight: 700; letter-spacing: .03em; overflow-wrap: anywhere; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+    .out-qr { background: #fff; border-radius: 12px; padding: 10px; width: min(280px, 100%); border: 1px solid var(--line); margin: 12px 0; }
+    .out-qr svg { display: block; width: 100%; height: auto; }
+    .sim { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
+    .out-list { margin: 10px 0; padding-left: 18px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🌍 Earth grant tool</div>
+    <div class="me"><span class="muted small">Flight surgeon · demo</span></div>
+  </header>
+  <main id="main"></main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <footer>
+    <div>Prototype with sample data. Not medical advice. Not affiliated with NASA. Who sent a grant is not verified yet (simulated).</div>
+  </footer>
+  <script src="data.js"></script>
+  <script src="logic.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="qr.js"></script>
+  <script src="ground.js"></script>
+  <script src="earth.js"></script>
+</body>
+</html>
