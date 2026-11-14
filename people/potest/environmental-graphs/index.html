@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission Environment Monitor</title>
+  <link rel="stylesheet" href="monitor.css">
+  <script src="data/series.js" defer></script>
+  <script src="monitor.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="page-head">
+      <div>
+        <h1>Mission Environment</h1>
+        <p>Explore archived spacecraft and Mars surface measurements.</p>
+      </div>
+      <span class="offline"><span></span>Offline replay</span>
+    </header>
+
+    <div class="controls" aria-label="Chart controls">
+      <label>Dataset <select id="dataset"></select></label>
+      <label>Measurement <select id="metric"></select></label>
+      <label>Time window <select id="window"></select></label>
+    </div>
+
+    <section class="panel" aria-labelledby="chart-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="chart-title">Environmental measurements</h2>
+          <p id="context"></p>
+        </div>
+        <button id="download" type="button">Export CSV</button>
+      </div>
+      <div class="stats" aria-label="Measurements in the selected window">
+        <div><span>Latest in window</span><strong id="latest">—</strong></div>
+        <div><span>Minimum</span><strong id="min">—</strong></div>
+        <div><span>Maximum</span><strong id="max">—</strong></div>
+        <div><span>Recorded samples</span><strong id="count">—</strong></div>
+      </div>
+      <figure aria-labelledby="chart-title">
+        <div class="plot">
+          <canvas id="chart" tabindex="0" aria-describedby="chart-help" aria-label="Interactive time series"></canvas>
+        </div>
+        <figcaption>
+          <output id="reading" for="dataset metric window" aria-live="polite"></output>
+          <span id="chart-help">Hover, tap, or use the arrow keys to inspect readings.</span>
+        </figcaption>
+      </figure>
+      <p id="notes" class="notes"></p>
+    </section>
+
+    <aside class="sources" aria-label="Data sources">
+      <div><strong>Dataset</strong> <a id="source" target="_blank" rel="noopener noreferrer"></a></div>
+      <div><strong>Why monitor the environment?</strong> <a href="https://www.nasa.gov/hrp/hazards/" target="_blank" rel="noopener noreferrer">NASA HRP · 5 Hazards of Human Spaceflight</a></div>
+      <p>NASA identifies hostile and closed environments and space radiation as hazards for crews. An incident summary can include the cabin readings around a reported symptom for crew review.</p>
+    </aside>
+    <noscript>Enable JavaScript to view the offline graphs.</noscript>
+    <p role="status" id="status"></p>
+  </main>
+</body>
+</html>
