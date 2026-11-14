@@ -9,7 +9,7 @@
 ## Now
 
 - Last updated: 2026-11-14 15:00 (Europe/Athens)
-- Working on: POT-1 environmental snapshot and alert bridge
+- Working on: POT-1 handoff for integration review in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40)
 - Branch: potest/environment-bridge
 
 ## Done
