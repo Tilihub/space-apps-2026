@@ -2,11 +2,37 @@
 
 Reviewed 2026-11-14 against `zt/app-contract` at `fb0c20f` and Tommy's latest answers. Tommy explicitly asked for review/approval, then chose **correction before approval** after the history-access conflict was explained. This file is Tommy's review/handoff, not a change to zt's protected contract or another member's implementation.
 
-## Review result
+## Latest dadis2 review
+
+See [dadis-grant-review.md](dadis-grant-review.md) for merged #58: 37 supplied checks passed, but targeted probes reproduced duplicate-slot availability after course replacement and premature stopping by a future-start replacement. Its widened Emergency access also differs from the adopted contract.
+
+## Adoption check — main fa5346d
+
+At Tommy’s next request to inspect the new app contract, refreshed main and confirmed #49 is **merged** (merge commit `177f97b`). The contract README/shared helpers are byte-for-byte unchanged from reviewed head `76b2e09`; there is no additional unseen contract revision in this snapshot. Existing test results still describe that same code, so no unchanged suite was repeated. The common contract is now the implementation reference; old prototypes remain inputs to the module adaptation, not an already joined product.
+
+New coordination gap: potest published Crew Support in #55 at `b445dec`, a standalone Mind-support chat prototype with its own server/routes and scripted/live modes. The adopted contract still assigns mind/companion to Angelos, requires one core server and uses `/api/mind/*`. Reuse the work only after zt, Angelos and potest agree module ownership/adaptation and the private-context boundary; this is not a second accepted app server. The online mode also requires an explicit demo choice because the common contract describes local-only data. No live API call or new tests of #55 were performed in this check. Its `server.test.mjs` is not covered by the root `**/*.test.js` command; module integration needs contract-compatible tests.
+
+Still carry forward repeated QR/code resolution and per-item dispenser wording, fixture alignment to the chosen stage cases, and confirmation of report-transport ownership. Extra Home indicators remain deferred by Tommy; no new decision or PR approval is inferred.
+
+## Current outcome — approved at Tommy’s explicit instruction
+
+Tommy subsequently instructed “approve Zisis soon”. Submitted and verified an **APPROVED** review on PR #49 at `76b2e09` on 2026-11-14. This supersedes the earlier wait-for-corrections instruction. The privacy blocker was corrected; QR/repeated-code and dispenser wording remains a documented implementation follow-up, not a reason to keep claiming approval is pending. This chat did not merge #49.
+
+Tommy deferred the extra Home-indicator question (“we will see later”). Keep the conservative Today output and do not infer a new visibility decision. The narrative/data alignment and proposed report-transport ownership still need coordination.
+
+## Follow-up review of 76b2e09
+
+zt updated #49 during this review. Re-read its changed contract/helper/event list and stage instructions; the updated `npm test` still passes **7/7**. The detailed-analysis privacy conflict is now corrected: crew use a separate `Today` response; daily comparisons/history/weekly are care-only, including after a check-in. Profile/allergy endpoints and normal allergy blocking are explicit, and the stage Mind history graph moved to the doctor view.
+
+At that review round, approval was pending two medication-flow clarifications posted with ready-to-copy wording; Tommy later instructed approval now, as recorded above. The follow-ups are: resolve repeated QR/manual entry to the same existing course grant at later due times (no 15-minute lifetime), and explicitly permit per-item app confirmation for a simulated dispenser while preserving batch and prescribed/self-service quantity semantics. The existing /import already_done and mandatory-box-scan/collection-is-dose wording otherwise remains misleading.
+
+The updated contract chooses the #52 stage values as the proposed target and assigns workout pages/records to zt/Angelos in wave 2, with Petros supplying replay data. Points remain conditional/deferred. If this contract is approved, PET-1 #51 must be revised to those values and its expected outcomes updated together; the currently verified package still represents the earlier cases. Reports/transport remain only proposed for potest and need acceptance.
+
+## Initial review at fb0c20f
 
 The proposed architecture supplies useful common instructions: one onboard Node.js 24 server, JavaScript modules in owner folders, server-side permissions/storage, five canonical crew IDs, one mission clock, new synthetic 1–10 histories, explicit measurement units/nulls, routes and an example test context. These address earlier connection gaps.
 
-**Approval is pending corrections.** The health route table currently permits `crew` to read `/history` and `/weekly` (contract README lines 219 and 221). Tommy excluded detailed history/weekly analysis from astronaut views. Restrict those routes to relevant clinical roles and enforce it on the server; keep the basic daily Home/check-in result separate. Update the general role wording and demo instructions consistently. Earth receives authorized reports, not blanket access to raw private histories; journal permissions do not change.
+**Initial finding, corrected at 76b2e09:** the health route table permitted `crew` to read `/history` and `/weekly` (contract README lines 219 and 221). Tommy excluded detailed history/weekly analysis from astronaut views. Restrict those routes to relevant clinical roles and enforce it on the server; keep the basic daily Home/check-in result separate. Update the general role wording and demo instructions consistently. Earth receives authorized reports, not blanket access to raw private histories; journal permissions do not change.
 
 Validation: ran the PR's actual `npm test` in an isolated public-source copy on checksum-verified official Node **v24.22.3**. **7 tests passed, 0 failed, 0 skipped.** These exercise the example/shared helper flow, not implemented health/meds/env modules or the joined app. No permanent Node install, npm install or teammate data was used.
 
@@ -80,4 +106,4 @@ There are substantial usable instructions, but they are proposed until the contr
 
 ## Next action
 
-A request-changes review has been posted on PR #49 asking zt for these corrections. Re-read the actual updated head and re-run relevant checks before approval. Tommy's latest instruction is to correct first, so no approval or merge should be represented as completed yet.
+PR #49 is approved at 76b2e09 by Tommy’s explicit latest instruction; its author can proceed through the normal merge process. Carry the remaining credential/dispenser wording into implementation, align the stage fixtures, confirm transport ownership, and defer extra Home indicators until Tommy returns to that question. No merge of #49 was performed by this chat.

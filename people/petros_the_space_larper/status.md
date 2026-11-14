@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:30
-- Working on: Mars-transit prototype scope and offline behavior in [PR #36](https://github.com/Tilihub/space-apps-2026/pull/36)
+- Last updated: 2026-11-14 17:20 (Europe/Athens)
+- Working on: PET-1 demo data handoff and PET-2 wellbeing form proposal in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51)
 - Branch: petros_the_space_larper/astronaut-health-research
 
 ## Done
@@ -31,10 +31,14 @@
 - Merged and verified the general countermeasure notes in [PR #32](https://github.com/Tilihub/space-apps-2026/pull/32).
 - Added [deep-space countermeasure notes](astronaut-deep-space-countermeasures.md) covering lunar flight evidence, Mars analogs, robotic radiation measurements, and proposed Mars-transit app workflows.
 - Added a [Mars-transit prototype proposal](mars-transit-prototype.md) with mental and physical health fields, offline procedures, report delivery states, and demo checks.
+- PET-1: Published a [data package and field mapping](demo-data/README.md) aligned with the proposed ZT contract (PR #49). It contains 65 synthetic observations for c1–c5, four measurement guides, and day-42 inputs for usual values, missing data, and the Tomas incident.
+- PET-1: Checked the fixture against the ZT contract constants and ran all five exports through Angelos's external baseline reader (PR #50). Verified the three expected scenario results, including five changes for three consecutive days and preservation of missing values. Imported Tomas into a fresh temporary SQLite store.
+- PET-2: Drafted the [exact wellbeing prompts and anchors](demo-data/wellbeing-form.md) and aligned the Mars scope with Tommy's 1–10 scale, journal permissions and doctor-only clinical report access.
 
 ## Blocked / need from others
 
 - Public direct downloads for continuous astronaut wearable recordings remain unverified. The notes link to published values, test data, and research access routes.
+- zt and Angelos should confirm adoption of the proposed crew IDs, clock and new scale before joining the fixture. Environment event mapping, visible Home fields, and app enforcement of the journal and clinical permissions remain integration decisions.
 
 ## Next steps
 
@@ -48,3 +52,4 @@
 - Review where the prototype can support private contact, schedule adjustments, and mission-approved follow-up. Use the countermeasure notes to distinguish operational practice from experimental evidence.
 - Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
+- Use `demo-data/health.json` at reset. Replay the [day-42 cases](demo-data/scenarios.json) from fresh resets after the health module is connected, then check the clinical and journal role boundaries.

@@ -4,6 +4,13 @@ Status: runnable proposed `health-v1` interface for zt to review. Owner: angelos
 This is the health-side handoff, not an accepted team-wide ID/authentication/clock
 contract or a claim that zt's UI has already been connected. ANG-2 is separate.
 
+Integration refresh: Tommy's later visibility and 1–10 requirements, and zt's
+proposed Node.js module contract in PR #49, supersede this prototype as the final
+application target. The legacy crew-token history/report paths below are not the
+approved clinical-role boundary. Do not join them into a final app without that
+alignment. External history import is documented separately in BASELINE_IMPORT.md;
+non-synthetic imported histories are refused by this old HTTP demo adapter.
+
 ## Run and check
 
 From the repository root, start the health API:

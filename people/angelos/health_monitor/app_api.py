@@ -84,6 +84,9 @@ class HealthService:
         baseline, history = store.state()
         if not baseline or any(row.get("astronaut_id") != subject for row in [*baseline, *history]):
             raise ApiError(500, "store_mismatch", "The saved store does not match its crew identity.")
+        source = store.source_info()
+        if source is not None and source["kind"] != "synthetic":
+            raise ApiError(403, "local_only", "Individual-history imports are local-only; this HTTP adapter is a synthetic demo.")
         return baseline, history
 
     @contextmanager
@@ -95,9 +98,12 @@ class HealthService:
             yield subject, store
 
     @staticmethod
-    def envelope(subject, data):
-        return {"api_version": API_VERSION, "data_kind": "synthetic",
-                "astronaut_id": subject, "data": data}
+    def envelope(subject, data, source=None):
+        result = {"api_version": API_VERSION, "data_kind": "synthetic",
+                  "astronaut_id": subject, "data": data}
+        if source is not None:
+            result["source"] = source
+        return result
 
     def history(self, token):
         with self._store(token) as (subject, store):
@@ -105,7 +111,7 @@ class HealthService:
             latest = max([*baseline, *history], key=recorded_time)
             next_day = recorded_time(latest).date() + timedelta(days=1)
             return self.envelope(subject, {"baseline": baseline, "check_ins": history,
-                                           "next_mission_date": next_day.isoformat()})
+                                           "next_mission_date": next_day.isoformat()}, store.source_info())
 
     def daily(self, token):
         with self._store(token) as (subject, store):
@@ -114,11 +120,11 @@ class HealthService:
                 raise ApiError(404, "no_check_ins", "No saved check-ins are available.")
             ordered = sorted(history, key=recorded_time)
             return self.envelope(subject, analyze({"baseline": baseline,
-                                                  "recent": ordered[:-1], "current": ordered[-1]}))
+                                                  "recent": ordered[:-1], "current": ordered[-1]}), store.source_info())
 
     def report(self, token):
         with self._store(token) as (subject, store):
-            return self.envelope(subject, store.weekly_report())
+            return self.envelope(subject, store.weekly_report(), store.source_info())
 
     def submit(self, token, payload):
         subject = self.identify(token)
@@ -133,7 +139,8 @@ class HealthService:
                **{metric: payload.get(metric) for metric in DEMO_FLOORS}}
         with self._store(token, write=True) as (_, store):
             result = store.submit(row)
-        return self.envelope(subject, {"saved_check_in": row, "daily": result})
+            source = store.source_info()
+        return self.envelope(subject, {"saved_check_in": row, "daily": result}, source)
 
 
 def handler_for(service, allowed_origins=()):

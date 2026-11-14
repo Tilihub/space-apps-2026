@@ -4,21 +4,30 @@ My own planning. Only I edit this. The team's common plan is [shared/PLAN.md](..
 
 ## My part
 
-Prototype the personal comparison and companion logic described by angelos.
-Sensor collection and input data are provided by other team members. The common
-plan and integration contract still need team agreement.
+Build the personal comparison and app-facing health module. Sensor collection
+and input data are provided by other team members. Follow the approved shared
+Node.js module contract. Angelos assigned step 3 (companion responses) to Potest
+in this chat; this is a user handoff to reconcile with zt's older owner table,
+not an edit to the protected team contract.
 
 ## Tasks
 
 - [x] Build a runnable Python core with synthetic daily records and frozen personal references.
 - [x] Explain deviations, persistence, and missing data in structured output.
-- [ ] Agree input fields, units, self-report scales, and daily aggregation with the other members.
+- [x] Adopt the approved shared crew IDs, UTC clock, daily fields/units and 1-10 self-report scales.
 - [x] Add a terminal form and local storage without changing the frozen baseline.
 - [x] Add weekly medians, measured-day coverage, and comparisons to the previous week and fixed baseline.
 - [x] Add an explicit session reset with automatic backup and a retained personal baseline.
 - [x] ANG-1: build an app-facing API adapter and JavaScript client with isolated demo crew stores.
-- [ ] ANG-1: agree the proposed health-v1 packet/IDs/clock/units and connect zt's UI.
-- [ ] Connect history and structured findings to a companion UI and conversation.
+- [x] Read external personal-history JSON and persist its fixed baseline/source/scale with a runnable synthetic example.
+- [x] ANG-1: port the comparison into the shared Node module interface, using c1-c5, UTC mission time and 1-10 integer self-reports.
+- [x] Receive app check-ins and enforce own-entry versus medical-analysis access on the server.
+- [x] Verify Petros's published PET-1 health/scenario files through the app contract, retain source fingerprints, and document differences from the newer stage cases.
+- [x] Store/retrieve workouts separately, preserving resting references and supporting missing recovery, duplicate protection, reset and old sessions.
+- [x] Deliver a browser adapter and approved current-entry companion context with a real HTTP integration check and a single handoff for zt/Potest.
+- [ ] ANG-1: zt imports the module into the core and connects the form; verify the joined save/reload path.
+- [ ] Petros publishes the updated canonical fixture matching the accepted demo cases; reset a fresh demo and verify the exact scenario.
+- [x] Document Potest's approved health-context hook and the remaining shared companion-ownership/context decision; keep chat implementation outside health.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.
 
 ## Ideas for the team

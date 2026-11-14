@@ -6,6 +6,15 @@ with a frozen personal reference and returns evidence for a future companion UI.
 All bundled records are synthetic. No external accounts, API keys or third-party
 Python packages are required. The application adapter uses local loopback networking.
 
+## Import a baseline from a file
+
+The initial reference can now come from an external personal-history JSON file.
+Use [BASELINE_IMPORT.md](BASELINE_IMPORT.md) for run commands and the exact format.
+The runnable [example file](examples/baseline_input.json) lets you test now, before
+the selected data arrives. Its values are synthetic, its scale is explicitly 1–10,
+and it contains no recent check-ins. Imported sessions keep their source and
+initial history in SQLite and do not replace the original demo session.
+
 ## ANG-1 application connection
 
 The core can now be used without terminal measurement entry through a local JSON
@@ -185,6 +194,7 @@ they do not establish their cause or whether someone is healthy.
 | `demo_data.json` | Synthetic initial reference, recent seed records, and standalone scenarios |
 | `check_in.py` | Entry point, terminal form, SQLite storage, weekly-report command, and backed-up reset |
 | `monitor.py` | Validation, fixed reference statistics, and daily comparisons |
+| `history_input.py` | External personal-history JSON reader, provenance, units and scale validation |
 | `weekly_report.py` | Weekly medians, coverage, comparisons, and report formatting |
 | `app_api.py` | Token-bound app-facing service and local JSON HTTP endpoints |
 | `health_client.mjs` | JavaScript client for zt to connect his app |
@@ -194,6 +204,7 @@ they do not establish their cause or whether someone is healthy.
 | `test_check_in.py` | Input, persistence, read-only reporting, backup, and reset checks |
 | `test_weekly_report.py` | Weekly windows, medians, missing-data, and baseline-isolation checks |
 | `test_app_api.py` | Crew isolation, persistence, HTTP contract and JavaScript client checks |
+| `test_history_input.py` | External import, fixed-reference persistence, source/scale and reset checks |
 
 Execution: `check_in.py` reads history, collects the new values, calls `monitor.py`,
 saves the valid record, and calls `weekly_report.py` to summarize the saved history.

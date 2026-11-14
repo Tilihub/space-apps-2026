@@ -1,0 +1,46 @@
+[
+  {
+    "id": "resting-heart-rate",
+    "title": "Resting heart rate",
+    "measures": ["restingHeartRateBpm"],
+    "steps": [
+      "Rest quietly for at least 10 minutes before measuring.",
+      "Use two fingers to find your pulse on the thumb side of your wrist.",
+      "Count beats for one full minute and enter the result in beats per minute. Leave the field blank if the reading is unavailable."
+    ],
+    "sources": ["https://medlineplus.gov/ency/article/003399.htm"]
+  },
+  {
+    "id": "blood-pressure",
+    "title": "Blood pressure",
+    "measures": ["systolicMmHg", "diastolicMmHg"],
+    "steps": [
+      "Use the approved upper-arm monitor with the correct cuff size on a bare arm.",
+      "Rest quietly for five minutes. Support the arm with the cuff at heart level and stay still and quiet during the reading.",
+      "Enter the upper and lower readings from the same cuff cycle in mmHg. Leave both fields blank if the measurement fails."
+    ],
+    "sources": ["https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings/monitoring-your-blood-pressure-at-home"]
+  },
+  {
+    "id": "blood-oxygen",
+    "title": "Blood oxygen",
+    "measures": ["spo2Pct"],
+    "steps": [
+      "Use the approved fingertip pulse oximeter on a warm, relaxed hand as directed by the device.",
+      "Keep still and wait for the oxygen saturation reading to settle.",
+      "Enter SpO₂ in percent. Leave it blank if there is no stable reading."
+    ],
+    "sources": ["https://www.fda.gov/medical-devices/products-and-medical-procedures/pulse-oximeters"]
+  },
+  {
+    "id": "temperature",
+    "title": "Body temperature",
+    "measures": ["temperatureC"],
+    "steps": [
+      "Use the approved digital oral thermometer and place the probe under the tongue.",
+      "Close your mouth and wait for the device to signal that the reading is ready.",
+      "Enter the oral reading in degrees Celsius. Leave it blank if it is unavailable."
+    ],
+    "sources": ["https://medlineplus.gov/ency/article/003400.htm"]
+  }
+]
