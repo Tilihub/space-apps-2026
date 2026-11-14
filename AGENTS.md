@@ -67,12 +67,27 @@ Do this when your human asks for onboarding, or when they don't have a folder in
 - `integration/<connection>/`: only a connection your human is working on. To start one, create
   its folder with a short `README.md`: what it joins, which people's work it uses, how to run it,
   and whether it works yet.
-- `shared/PLAN.md`, `final/` and the rules files (`AGENTS.md`, `CLAUDE.md`, `SETUP.md`,
-  `README.md`, `.github/`): only through a pull request that another teammate approves.
-  See "Changes that need approval".
+- `shared/PLAN.md`, `shared/contract/`, `final/`, `package.json` and the rules files
+  (`AGENTS.md`, `CLAUDE.md`, `SETUP.md`, `README.md`, `.github/`): only through a pull request
+  that another teammate approves. See "Changes that need approval".
 
 Never edit someone else's `people/` folder. To use their work, copy what you need into your
-human's folder or into `integration/`.
+human's folder or into `integration/`. The one exception is an app module (see "Building a piece
+of the app"): the app imports it from its owner's folder without copying it.
+
+## Building a piece of the app
+
+The app is one onboard server (Node.js 24, JavaScript, no npm packages) with one module per
+piece, and browser pages that draw everything. [shared/contract/README.md](shared/contract/README.md)
+says exactly what each module must provide: its folder, its paths, the data it sends and
+receives, and who may call it. If your human builds a piece of the app:
+
+- Read the contract first, and build to it exactly, so joining the pieces is only the final link.
+  Start from the example module in `shared/contract/example/`.
+- Your module lives in the folder the contract names for your human. Only your human edits it.
+- Run `npm test` from the repo root before every push. It must pass.
+- If the contract doesn't fit what you need, don't work around it: tell your human to ask zt, and
+  change the contract through a pull request a teammate approves.
 
 ## Saving and sharing work
 
@@ -97,8 +112,8 @@ human's folder or into `integration/`.
 
 ## Changes that need approval
 
-`shared/PLAN.md`, `final/` and the rules files are protected: GitHub merges a change to them only
-after someone other than its author approves it. The owners are listed in `.github/CODEOWNERS`.
+`shared/PLAN.md`, `shared/contract/`, `final/`, `package.json` and the rules files are protected:
+GitHub merges a change to them only after someone other than its author approves it. The owners are listed in `.github/CODEOWNERS`.
 
 1. Make the change on your branch and open a pull request. GitHub asks the rest of the team
    to review it.
