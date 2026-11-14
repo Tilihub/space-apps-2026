@@ -9,10 +9,13 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Checked the adopted app contract on main fa5346d; same reviewed 76b2e09 content, #49 merged. Flagged new #55 Mind/companion coordination overlap.
+- Working on: Reviewed dadis2’s merged grant-safety #58 (75a7377); documented two reproduced replacement problems and the Emergency contract mismatch. No teammate implementation edited.
 - Branch: tommy/concepts-plan
 
 ## Done
+
+- Reviewed dadis2 #58 at d1f6f52 / main 75a7377. Re-ran 37/37 existing pure-logic checks in isolated tracked-source copies. Additional probes reproduced (1) an already collected dose slot offered again under a replacement, with no ordinary safety block in the synthetic case, and (2) future-start replacement disabling the active course immediately.
+- Wrote dadis-grant-review.md with reproducible inputs/results, source locations, expected transition behavior and the widened Emergency-versus-contract mismatch. Confirmed the common meds module and earlier QR/dispenser adjustments remain pending. No clinical policy, protected file or dadis2 source was changed.
 
 - Refreshed main and re-read the adopted app contract/rules at Tommy’s request. #49 is merged; contract files are unchanged from tested 76b2e09. Reviewed new Crew Support #55 documentation/status: standalone server/routes overlap with Angelos’s assigned mind module and need an agreed adaptation, not parallel app servers. No live API call or repeated unchanged tests performed.
 
@@ -77,6 +80,8 @@
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- Relay dadis-grant-review.md to dadis2/zt: fix replacement ledger/effective-time behavior before module reuse, agree Emergency scope/course policy, then prioritize the shared meds module.
 
 - PR #49 is merged; follow shared/contract/README.md for new module work. Keep the recorded product follow-ups visible rather than the historical request-changes timing.
 - Follow contract-review.md (updated via #56) and the adopted shared contract for module work. Preserve identical QR/manual-code behavior, reusable due-dose credentials, batch/per-item dispenser confirmation and normal allergy blocking. The remaining wording is an implementation follow-up.

@@ -2,6 +2,10 @@
 
 Reviewed 2026-11-14 against `zt/app-contract` at `fb0c20f` and Tommy's latest answers. Tommy explicitly asked for review/approval, then chose **correction before approval** after the history-access conflict was explained. This file is Tommy's review/handoff, not a change to zt's protected contract or another member's implementation.
 
+## Latest dadis2 review
+
+See [dadis-grant-review.md](dadis-grant-review.md) for merged #58: 37 supplied checks passed, but targeted probes reproduced duplicate-slot availability after course replacement and premature stopping by a future-start replacement. Its widened Emergency access also differs from the adopted contract.
+
 ## Adoption check — main fa5346d
 
 At Tommy’s next request to inspect the new app contract, refreshed main and confirmed #49 is **merged** (merge commit `177f97b`). The contract README/shared helpers are byte-for-byte unchanged from reviewed head `76b2e09`; there is no additional unseen contract revision in this snapshot. Existing test results still describe that same code, so no unchanged suite was repeated. The common contract is now the implementation reference; old prototypes remain inputs to the module adaptation, not an already joined product.
