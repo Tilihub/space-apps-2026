@@ -14,7 +14,7 @@
 
 ## Done
 
-- Opened PR #59 publishing the dadis2 #58 review and current handoff; only Tommy’s review/status files changed.
+- Published the dadis2 #58 review and current handoff through merged PR #59; only Tommy’s review/status files changed.
 
 - Reviewed dadis2 #58 at d1f6f52 / main 75a7377. Re-ran 37/37 existing pure-logic checks in isolated tracked-source copies. Additional probes reproduced (1) an already collected dose slot offered again under a replacement, with no ordinary safety block in the synthetic case, and (2) future-start replacement disabling the active course immediately.
 - Wrote dadis-grant-review.md with reproducible inputs/results, source locations, expected transition behavior and the widened Emergency-versus-contract mismatch. Confirmed the common meds module and earlier QR/dispenser adjustments remain pending. No clinical policy, protected file or dadis2 source was changed.
