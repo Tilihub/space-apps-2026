@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:20 (Europe/Athens)
-- Working on: PET-1 demo data handoff and PET-2 wellbeing form proposal in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51)
-- Branch: petros_the_space_larper/astronaut-health-research
+- Last updated: 2026-11-14 18:37 (Europe/Athens)
+- Working on: Workout plan, page controller and stage replay handoff to the UI team.
+- Branch: petros_the_space_larper/workout-program
 
 ## Done
 
@@ -34,11 +34,14 @@
 - PET-1: Published a [data package and field mapping](demo-data/README.md) aligned with the proposed ZT contract (PR #49). It contains 65 synthetic observations for c1–c5, four measurement guides, and day-42 inputs for usual values, missing data, and the Tomas incident.
 - PET-1: Checked the fixture against the ZT contract constants and ran all five exports through Angelos's external baseline reader (PR #50). Verified the three expected scenario results, including five changes for three consecutive days and preservation of missing values. Imported Tomas into a fresh temporary SQLite store.
 - PET-2: Drafted the [exact wellbeing prompts and anchors](demo-data/wellbeing-form.md) and aligned the Mars scope with Tommy's 1–10 scale, journal permissions and doctor-only clinical report access.
+- PET-1 and PET-2 handoff merged in [PR #51](https://github.com/Tilihub/space-apps-2026/pull/51).
+- Added the [workout handoff](demo-data/WORKOUT.md), including the published SPRINT week, an ISS-style seven-day plan, a controller for step-by-step workouts and a synthetic stage pulse replay. Verified the controller against Angelos's workout endpoint.
 
 ## Blocked / need from others
 
 - Public direct downloads for continuous astronaut wearable recordings remain unverified. The notes link to published values, test data, and research access routes.
 - zt and Angelos should confirm adoption of the proposed crew IDs, clock and new scale before joining the fixture. Environment event mapping, visible Home fields, and app enforcement of the journal and clinical permissions remain integration decisions.
+- The final workout screen must import the controller. Live workout pulse needs a device adapter for the wearable chosen by the team.
 
 ## Next steps
 
@@ -53,3 +56,4 @@
 - Use the deep-space notes to review private onboard support, delayed Earth contact, and offline access to mission procedures for the Mars-transit scenario.
 - Review the proposed offline demo with the check-in, environment, and inventory owners. Confirm the authorization categories and recipients before implementing report routing.
 - Use `demo-data/health.json` at reset. Replay the [day-42 cases](demo-data/scenarios.json) from fresh resets after the health module is connected, then check the clinical and journal role boundaries.
+- In the workout screen, import `/demo-data/workout-session.js`, pass the mission clock and the logged-in health client, then map the buttons and current step as shown in [WORKOUT.md](demo-data/WORKOUT.md). Run the scene B push-up replay to confirm the saved summary and the synthetic source label.

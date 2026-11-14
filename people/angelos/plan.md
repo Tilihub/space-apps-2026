@@ -27,6 +27,7 @@ not an edit to the protected team contract.
 - [x] Deliver a browser adapter and approved current-entry companion context with a real HTTP integration check and a single handoff for zt/Potest.
 - [ ] ANG-1: zt imports the module into the core and connects the form; verify the joined save/reload path.
 - [ ] Petros publishes the updated canonical fixture matching the accepted demo cases; reset a fresh demo and verify the exact scenario.
+- [x] Independently verify Petros's aligned PR #64 through the module, including c4's 6.8 h reference, c3's six-day mood streak and role/reset checks. Source merge and actual core adoption remain with Petros/zt.
 - [x] Document Potest's approved health-context hook and the remaining shared companion-ownership/context decision; keep chat implementation outside health.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.
 
