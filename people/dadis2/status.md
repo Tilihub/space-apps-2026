@@ -21,8 +21,7 @@
   - One page per crew member's device: medicine panel plus the three lockers from the front.
   - Automatic suggestions from symptoms, red 🔒 tint for medicines that need approval.
   - Emergency flow with allergy warnings and a logged two-tap override.
-- **DAD-1: prescription grants** (branch `dadis2/prescription-grants`), with decisions agreed with my
-  team-mate's tool on 14 Nov:
+- **DAD-1: prescription grants** (branch `dadis2/prescription-grants`), with my decisions of 14 Nov:
   - One grant format for the onboard doctor and Earth (code `RX2-<issuer>-<crew>-<date>-<items>-<check>`,
     typed or QR). Older RX1 codes still work.
   - Who grants what: self-care and prescription → onboard doctor or Earth; controlled → Earth only;
