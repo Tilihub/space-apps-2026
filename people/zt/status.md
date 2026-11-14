@@ -11,7 +11,7 @@
 - Last updated: 2026-11-14 16:36
 - Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
   so every teammate can build their piece to it alone and joining them is only the final link.
-  Waiting for a teammate's approval on its pull request.
+  Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
 - Branch: zt/app-contract
 
 ## Done
