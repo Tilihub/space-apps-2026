@@ -8,12 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-14 22:35 — companion and body review
-- Working on: Tommy requested restoration of the original companion appearance, Potest’s offline health-context tool, a simpler female mannequin and red symptom markers without red skin. Functional integration continues on the same branch/PR.
-- Branch: tommy/functional-demo
-- Preview: `node integration/onboard-app/start.js` (Node 24); the local review uses port 8010 with a separate temporary synthetic store.
+- Last updated: 2026-11-15 — frontend appearance review
+- Working on: Tommy requested a simpler astronaut-facing demo combining his supplied visual brief with zt's 3D UI. This task changes presentation and browser interactions only. All server/adapters, owner modules, stored-data formats, permissions and medical/workout/companion rules remain unchanged from `0cd3911` on `tommy/functional-demo`.
+- Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Share as a UI-only pull request against that branch; its underlying integration still needs the existing team review.
+- Preview: `node integration/onboard-app/start.js` (Node 24), port 8010 for the existing local demo. Browser writes for this UI review used a separate synthetic store on port 8011; the existing demo was not reset.
 
 ## Done
+
+- Applied the midnight/cyan/gold visual brief: stable header/navigation/footer, four overview instruments around zt's 3D body, a calmer check-in with the agreed 1–10 choices, selectable environment charts, a compact training view and progressive disclosure of supporting details.
+- Added a dimensional 3×3 cabinet view with pagination over every actual backend compartment, item details and quantity/actions. Selection and genuine open-for-collection state remain distinct. Existing approval requests, reusable QR/code courses, per-item confirmation, allergy blocks, follow-ups, emergency access and medical stock watch remain available.
+- Kept the animated planet companion in the sidebar/mobile launcher and full Wellbeing conversation. Journal, chat, workout, collection and clinical forms retain their existing handlers. The welcome screen uses Tommy's supplied team logo blended into the background; access remains explicitly labelled demo profiles.
+- Verified new UI flows against the unchanged backend with an isolated synthetic store: check-in/reload, headache guidance/allergy display, self-care collection and stock update, two-item prescription confirmation, training/recovery save, contextual companion response and journal save. Reviewed medical/Earth screens, help, light/dark themes and responsive layouts at 390px and 1024px, plus the native preview panel. No horizontal workspace overflow or browser errors observed; camera hardware was not tested.
+- Root `npm test`: 102/102 pass, none skipped. Syntax/diff checks pass. Compared all tracked changes with `0cd3911` and checked the existing login/logout, collection, form-submit, QR and initialization handlers: only frontend paths changed and those handlers remain identical. No backend or teammate source changed in this visual task.
 
 - Restored zt’s animated planet mascot, floating chat bubbles and full Mind conversation. Both chat views use the same replies; original teammate UI/source remains untouched.
 - Found Potest’s earlier OpenAI source in history and the later switch to offline scripts. Tommy explicitly chose the offline health-context tool for now. Added a connection adapter importing Potest’s original reply helpers, Angelos’s pure comparison rules and the current author’s Petros fixture, with refreshed own-today context, topic/next-turn replies and no clinical-number or journal disclosure.
@@ -106,7 +112,7 @@
 
 ## Next steps
 
-- Continue from `tommy/functional-demo`. Run the single onboard server, use the role selector in separate tabs, and follow the end-to-end walkthrough in `integration/onboard-app/README.md`.
-- Updated work is ready in PR #73; zt/Potest should review the protected context clarification and unchanged #55 dependency before merge. Continue from Tommy’s review of the restored Mind screen and mannequin. Keep an explicit list of what is real module behavior versus simulated hardware, credentials, Earth transport and scripted conversation.
-- Ask Tommy to test the joined behavior and choose backend fixes before visual UI changes. zt remains the visual design owner; use his original UI/3D as the base.
-- Handoff: health/meds are direct owner imports; training uses Petros's controller; companion imports Potest's pending #55 route; journal/environment/report glue is in this connection's `adapters/`. Do not patch someone else's personal folder. Agree shared contract changes through a separately approved PR.
+- Continue from `tommy/frontend-polish`. Review the running port-8010 demo with Tommy and zt, then refine the visuals here. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
+- PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.
+- The single onboard server and role walkthrough remain in `integration/onboard-app/README.md`. Keep the distinction between actual module behavior and simulated cabinet hardware, credentials, Earth transport and offline scripted conversation clear.

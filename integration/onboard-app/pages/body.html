@@ -143,7 +143,7 @@
   [hidden] { display: none !important; }
   @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
 </style>
-<style>html,body{overflow:hidden}body{padding:0;margin:0;background:transparent}body>.topbar,main>aside,.card-head,.hint{display:none}main{display:block;padding:0;margin:0}.body-card{border:0;background:transparent;box-shadow:none;padding:0;height:100vh;min-height:0}.figure-wrap{height:100vh;min-height:0;flex:none}main .card{padding:0}</style></head>
+<style>html,body{overflow:hidden}body{padding:0;margin:0;background:transparent}body>.topbar,main>aside,.card-head,.hint{display:none}main{display:block;padding:0;margin:0}.body-card{border:0;background:transparent;box-shadow:none;padding:0;height:100vh;min-height:0}.figure-wrap{height:100vh;min-height:0;flex:none}main .card{padding:0}</style><style>:root:not([data-theme="light"]),[data-theme="dark"]{--bg:#101E2D;--surface:#101E2D;--surface-3:#162737;--text:#EDF5F8;--text-2:#A3B8C8;--text-3:#8099AC;--border-strong:#365267;--accent:#78E0E8;--accent-2:#78E0E8;--fig-top:#7195AA;--fig-bottom:#3B596D;--grid-dot:rgba(120,224,232,.07)}.b3d-views button{font-size:10px;min-height:28px;padding:0 11px;border-radius:8px}.b3d-legend{font-size:10px}.b3d-label{font-size:10px;padding:4px 7px}.b3d-label.L{left:2px}.b3d-label.R{right:2px}</style></head>
 <body>
   <header class="topbar">
     <div>
@@ -597,8 +597,8 @@
       camera.updateProjectionMatrix();
       measureLabels();
       if (!body) return;
-      const top = 52, bottom = 34;
-      const labelRoom = Math.min(130, size.w * 0.2);
+      const top = 42, bottom = 22;
+      const labelRoom = Math.min(110, size.w * 0.14);
       const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       const dH = (body.H / 2) / (tanV * (size.h - top - bottom) / size.h);
       const dW = (body.W / 2) / (tanV * camera.aspect * Math.max(0.3, (size.w - 2 * labelRoom) / size.w));

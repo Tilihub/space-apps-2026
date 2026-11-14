@@ -1,3 +1,4 @@
+import { createMissionViews } from '/mission-views.js';
 import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
 import { createCompanionClient } from '/people/potest/crew-support/companion-client.js';
@@ -44,7 +45,12 @@ async function api(path, { method='GET', body, publicRequest=false }={}) {
   if(!res.ok || !result.ok) throw Object.assign(new Error(result.error?.message ?? 'The request failed.'),{code:result.error?.code});
   return result.data;
 }
-function notice(message,error=false) { $('#notice').hidden=false; $('#notice').className=`notice ${error?'error':''}`; $('#notice').textContent=message; }
+let noticeTimer;
+function notice(message,error=false) {
+ const copy={'Today’s check-in was saved to the health module.':'Check-in saved.','Symptom report saved. Medicine guidance is shown below.':'Symptom report saved.','Decision saved by the medicine module.':'Decision saved.','Workout summary saved in the health module.':'Workout saved.','Collection complete. Doses and stock were updated.':'Collection complete.','Collection opened. Confirm each dispensed item once.':'Ready to collect. Confirm each item.'};
+ clearTimeout(noticeTimer);$('#notice').hidden=false;$('#notice').className=`notice ${error?'error':''}`;$('#notice').textContent=copy[message]??message;
+ if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
+}
 function clearNotice() { $('#notice').hidden=true; }
 function resetLocal() { sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
@@ -89,21 +95,26 @@ function bodyOptions(mode) {
 function syncBody() { const frame=$('iframe.body-frame'); frame?.contentWindow?.postMessage({type:'pulse-body-update',options:bodyOptions(page==='checkin'?'report':'view'),theme:document.documentElement.dataset.theme},location.origin); }
 const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}" title="Interactive 3D body"></iframe>`;
 function renderChrome() {
-  const logged=!!user;
-  $('#nav').hidden=!logged; $('#topbar').hidden=!logged;
-  $('#floating-companion').hidden=!logged||role()!=='crew';
-  $('#nav-crew').href=role()==='earth'?'#earth':'#crew'; $('#nav-crew span').textContent=role()==='earth'?'Earth':'Crew';
-  for(const a of document.querySelectorAll('[data-nav]')) {
-    const showCrew=role()==='crew'; a.hidden=!showCrew&&a.id!=='nav-crew'&&!['habitat','medbay'].includes(a.dataset.nav);
-    a.toggleAttribute('aria-current',a.dataset.nav===page||a.id==='nav-crew'&&['crew','earth'].includes(page));
-  }
-   $('#nav-crew').hidden=role()==='crew';
- const titles={home:'Your day in orbit',checkin:'Daily check-in',fitness:'Fitness',habitat:'Habitat',medbay:'Med bay',mind:'Your private space',crew:'Medical officer',earth:'Earth console'};
-  $('#topbar').innerHTML=`<div><div class="eyebrow">PULSE · Mars transit · <span id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:'Connecting'}</span></div><h1 class="page-title">${titles[page]??'PULSE'}</h1></div><div class="topbar-right"><span class="small muted">${esc(user?.name??member(user?.crewId))}<br>${esc(role()?.replaceAll('_',' ')??'')}</span>${btn('Refresh','refresh','','ghost sm')}${btn('☀ / ☾','theme','','ghost sm')}${btn('Switch user','logout','','ghost sm')}</div>`;
-  $('#emergency-banner').hidden=!(data.emergencies?.emergencies?.length);
-  $('#emergency-banner').textContent=(data.emergencies?.emergencies??[]).map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
-  $('#orb-art').innerHTML=mascotSvg(); $('#orb-badge').hidden=true;
-  renderCompanion();
+ const logged=!!user&&page!=='login';
+ $('#nav').hidden=!logged;$('#topbar').hidden=!logged;$('#app-header').hidden=!logged;$('#app-footer').hidden=!logged;
+ document.body.classList.toggle('signed-out',!logged);
+ $('#floating-companion').hidden=!logged||role()!=='crew';
+ $('#nav-crew').href=role()==='earth'?'#earth':'#crew';$('#nav-crew span').textContent=role()==='earth'?'Earth console':'Clinical review';
+ for(const a of document.querySelectorAll('[data-nav]')){
+  a.hidden=role()!=='crew'&&a.id!=='nav-crew'&&!['habitat','medbay'].includes(a.dataset.nav);
+  if(a.dataset.nav===page||a.id==='nav-crew'&&['crew','earth'].includes(page))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+ }
+ $('#nav-crew').hidden=role()==='crew';
+ $('.rail-companion').hidden=role()!=='crew';$('#rail-pet').innerHTML=mascotSvg();
+ const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
+ $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><span>${icon('logo')}</span><div><b>PULSE <i>/</i> CREW HEALTH</b><small>May the Pulse Be With You</small></div></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
+ const titles={home:['YOUR DAY IN ORBIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Clinical review'],earth:['GROUND SUPPORT','Earth console']};
+ const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
+ $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;
+ $('#emergency-banner').hidden=!(data.emergencies?.emergencies?.length);
+ $('#emergency-banner').textContent=(data.emergencies?.emergencies??[]).map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
+ $('#orb-art').innerHTML=mascotSvg();$('#orb-badge').hidden=true;
+ renderCompanion();
 }
 function chatTranscript() {
  return chat.length ? chat.map(m=>`<p class="msg ${m.mine?'me':'them'}">${esc(m.text)}</p>`).join('')
@@ -211,9 +222,7 @@ function fitnessScreen() {
  const step=s.currentStep;
  return `<div class="fit-grid"><div class="stack">${card(esc(s.day.label),`<div class="toolbar"><label>Program <select class="input" id="workout-mode" ${s.status==='active'||['pending','failed','saving'].includes(s.saveStatus)?'disabled':''}><option value="weekly" ${workoutMode==='weekly'?'selected':''}>Weekly Mars transit plan</option><option value="stage" ${workoutMode==='stage'?'selected':''}>Stage demonstration · synthetic pulse</option></select></label></div><p class="subtle">${workoutMode==='stage'?'Petros’s synthetic 90-second exercise trace and one-minute recovery. Use the mission-clock controls below to run it quickly.':'Petros’s compact flywheel program. No wearable is paired: the checklist works, but a pulse summary cannot be saved without exercise readings. Use the stage demonstration to test the complete recording flow.'}</p>${s.day.sessions.map(session=>`<details open><summary>${esc(session.label)}</summary>${session.preparation?`<p>${esc(session.preparation)}</p>`:''}${session.recommendedMinutesAfterResistance?`<p class="subtle">Schedule 4–6 hours after resistance.</p>`:''}<ol>${session.steps.map(st=>`<li><b>${esc(st.label)}</b> · ${st.sets?`${st.sets} × ${st.repsPerSet}`:st.durationSeconds?(st.durationSeconds<60?`${st.durationSeconds} sec`:`${Math.round(st.durationSeconds/60*10)/10} min`):''}<p class="subtle">${esc(st.equipment)} · ${esc(st.instruction)}</p></li>`).join('')}</ol>${['ready','completed','stopped'].includes(s.status)&&!['pending','failed','saving'].includes(s.saveStatus)&&!s.outcomes.some(o=>o.sessionId===session.id)?btn('Start session','workout-start',`data-id="${session.id}"`,'primary'):''}</details>`).join('')||empty('Rest day.')}`)}${card('Saved workout summaries',(data.workouts?.workouts??[]).map(w=>`<div class="report-card"><b>${esc(w.kind)}</b><p>${time(w.startedAt)} → ${time(w.endedAt)}<br>${w.reps} total reps · average ${w.avgHeartRateBpm} bpm · peak ${w.peakHeartRateBpm} bpm${w.recoveryHeartRateBpm!=null?` · recovery ${w.recoveryHeartRateBpm} bpm`:''}</p><small class="muted">${esc(w.heartRateSource)}</small></div>`).join('')||empty('No saved workouts.'))}</div><div class="stack">${card('Current session',`<div id="workout-live">${workoutLive(s)}</div>${step?`<h3>${esc(step.label)}</h3><p>${esc(step.instruction)}</p><form id="workout-step" data-step="${step.id}">${step.kind==='resistance'?field('Actual total repetitions','reps',{type:'number',value:step.sets?step.sets*step.repsPerSet:25,attrs:'min="0" max="1000000" step="1"',required:true}):''}${submit('Mark this exercise done')}</form>${btn('Stop early','workout-stop','','ghost compact')}`:''}${['pending','failed'].includes(s.saveStatus)?`<p class="subtle">Save now, or wait one mission minute for the recovery reading.</p><div class="btn-row">${btn('Save summary now','workout-save','','primary')}${btn('Save with 1-min recovery','workout-recovery','','ghost')}${btn('Dismiss unsaved session','workout-skip','','ghost')}</div>`:''}`)}${demoClockPanel()}</div></div>`;
 }
-function workoutLive(s) {
- return `<div class="status-line">${tag(s.status)}${tag(`Save: ${s.saveStatus}`)}</div><div class="progress-track"><span style="width:${s.totalSteps?s.completed.length/s.totalSteps*100:0}%"></span></div><p>${s.completed.length} / ${s.totalSteps} exercises · ${s.elapsedSeconds} sec elapsed${s.stepElapsedSeconds!=null?` · step ${s.stepElapsedSeconds} sec`:''}</p><div class="metric-val">${s.heartRate.bpm??'—'}<small>bpm</small></div><p class="subtle">${esc(s.heartRate.source??'Heart rate unavailable · no source paired')}</p>${s.interval?`<p>Round ${s.interval.round} · ${esc(s.interval.phase)} · ${s.interval.remainingSeconds} sec remaining</p>`:''}${s.currentStep?.targetHeartRateBpm?`<p>Assigned late-interval reference: ${s.currentStep.targetHeartRateBpm.join('–')} bpm</p>`:''}${s.recoveryReady?tag('Recovery minute complete'):''}`;
-}
+function workoutLive(s) { return missionViews.workoutReadout(s); }
 function demoClockPanel() {
  return card('Demo mission clock',`<p class="subtle">Shared by all sessions. Advancing time changes dose eligibility, training timers and Earth delivery.</p><div class="btn-row">${[1,12,720].map(m=>btn(`+${m===720?'12 h':`${m} min`}`,'advance',`data-minutes="${m}"`,'ghost sm')).join('')}</div><details class="compact"><summary>Reset demo data</summary><p class="subtle">This clears all local demo check-ins, medicines, journal entries, reports and workout records, for all five crew members.</p>${btn('Reset all demo data','reset-demo','','ghost sm')}</details>`);
 }
@@ -236,11 +245,22 @@ function earthScreen() {
  return `<div class="two"><div class="stack">${reportsPanel()}${requestsPanel()}</div><div class="stack">${card('Generate a demo prescription credential',`<p class="subtle">Uses dadis2’s original RX2 encoder. Code contents and QR payload are identical. Patient, allergy, stock and due-dose checks run when it is used on board. This code is a simulation, not a signed medical prescription.</p><form id="earth-code-form">${crewSelect('crewId','c4')}${[0,1].map(i=>`<details ${i===0?'open':''}><summary>Medicine ${i+1}${i===1?' (optional)':''}</summary>${select('Medicine',`item${i}`,[['','Choose medicine'],...catalogue.map(x=>[x.itemId,x.label])])}<div class="form-grid">${field('Units per dose',`units${i}`,{type:'number',value:1,attrs:'min="1" max="9"'})}${field('Doses per day',`perDay${i}`,{type:'number',value:1,attrs:'min="1" max="6"'})}${field('Course days',`days${i}`,{type:'number',value:3,attrs:'min="1" max="30"'})}</div></details>`).join('')}${submit('Generate credential')}</form>${generatedCode?`<label class="field compact"><span>Code / exact QR payload</span><textarea class="input" readonly rows="4">${esc(generatedCode)}</textarea></label><p class="subtle">Copy to a specialist reply or enter in the patient’s Med bay.</p>${qrFor(generatedCode)}`:''}`)}${demoClockPanel()}</div></div>`;
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:habitatScreen,fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
+const missionViews=createMissionViews({
+ state:()=>({user,role:role(),clock,data,page,drafts,collection,suggestion,workout,workoutMode,replay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
+ helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
+ legacy:{suggestionsPanel,profilePanel,grantsPanel,requestsPanel,dosesPanel,emergencyPanel,stockPanel,patientPicker,demoClockPanel},
+ redraw:()=>render(),remember,
+});
+Object.assign(screens,missionViews.screens);
 function render() {
- const expanded = Array.from(document.querySelectorAll(`#${page} details`)).map(d=>d.open);
+ const detailKeys = elements => {
+  const counts=new Map();
+  return elements.map(d=>{const label=d.querySelector(':scope > summary')?.textContent.trim()??'';const n=counts.get(label)??0;counts.set(label,n+1);return [`${label}:${n}`,d];});
+ };
+ const expanded = new Map(detailKeys(Array.from(document.querySelectorAll(`#${page} details`))).map(([key,d])=>[key,d.open]));
  document.querySelectorAll('.screen').forEach(s=>{s.hidden=s.id!==page; if(s.hidden)s.replaceChildren();});
  $(`#${page}`).innerHTML=screens[page]();
- document.querySelectorAll(`#${page} details`).forEach((d,i)=>{if(expanded[i]!==undefined)d.open=expanded[i];});
+ for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
 }
 async function show() {
@@ -252,7 +272,7 @@ async function show() {
  const jobs={ clock:get('/clock') };
  if(role()!=='earth') jobs.emergencies=get('/meds/emergencies?status=open');
  if(role()==='crew') {
-  if(['home','checkin'].includes(page)) {jobs.today=health.getToday();jobs.symptoms=get('/meds/symptom-reports');}
+  if(['home','checkin','fitness'].includes(page)) {jobs.today=health.getToday();jobs.symptoms=get('/meds/symptom-reports');}
   if(['home','fitness'].includes(page)) jobs.workouts=health.getWorkouts();
   if(['home','medbay'].includes(page)) {jobs.doses=get('/meds/doses');jobs.grants=get('/meds/grants');}
   if(page==='medbay') {jobs.profile=get('/meds/profile');jobs.lockers=get('/meds/lockers');jobs.requests=get('/meds/requests');}
@@ -369,6 +389,7 @@ async function scanQr() {
 }
 async function action(el) {
  const a=el.dataset.action,id=el.dataset.id;
+ if(a.startsWith('ui-'))return missionViews.action(el);
  if(a==='login')return login(id);
  if(a==='login-medical')return login('c2','medical');
  if(a==='login-earth')return login(null,'earth');
@@ -429,8 +450,9 @@ window.addEventListener('message',e=>{
  if(e.data?.type==='pulse-body-ready')syncBody();
  if(e.data?.type==='pulse-body-selection'&&page==='checkin')void action({dataset:{action:'area',id:e.data.area}});
 });
-window.addEventListener('hashchange',()=>{stopCamera();void show().then(()=>window.scrollTo(0,0)).catch(e=>notice(e.message,true));});
+window.addEventListener('hashchange',()=>{stopCamera();void show().then(()=>{window.scrollTo(0,0);document.querySelector('.content').scrollTop=0;}).catch(e=>notice(e.message,true));});
 window.addEventListener('pagehide',stopCamera);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('help-panel').hidden=true;});
 let pollCount=0;
 async function poll() {
  if(!token||busy)return;
