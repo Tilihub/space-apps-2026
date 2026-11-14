@@ -33,6 +33,11 @@ structure and shows judges the whole challenge.
 **Said on stage:** the crew and their health records are invented. The cabin readings are real
 ISS data, replayed.
 
+**Who sees the analyses** (Tommy, PR #47): the astronaut never sees their own analysis (today
+against their normal, their history). So every comparison with a crew member's normal appears in
+E's scene, not in theirs. The readiness colours wait for the readiness decision (Q16), and B's
+points for Tommy, who deferred points and gamification.
+
 ## Shared setup
 
 ### Cabin air: a real ISS CO₂ rise (potest)
@@ -73,8 +78,8 @@ fits the headache case. The contract asks for a real excursion if the archive ha
 **What it shows:** the app sees what A doesn't feel, links it to the cabin, and remembers the allergy.
 
 1. **Login → Home.** The readiness score is amber and the head point on the body figure is red.
-2. **Head point.** "Headache since waking. Slept 4.6 h; your normal is 6.8 h. Third short night."
-   Before any pill, it asks: "Any blurred vision, weakness or confusion?" A says no. A yes would be
+2. **Head point.** "Headache since waking." The comparison (4.6 h against a normal of 6.8 h, the
+   third short night) is not shown to A; E sees it in scene 5. Before any pill, it asks: "Any blurred vision, weakness or confusion?" A says no. A yes would be
    a red flag: straight to the medical officer, no suggestions.
 3. **Check-in and symptom report.** A rates mood 6, stress 4, fatigue 4, close to normal, and
    says "I'm fine". Head → headache → 5, marked "Shared with your medical officer". People
@@ -92,9 +97,8 @@ fits the headache case. The contract asks for a real excursion if the archive ha
 | meds (dadis2) | Allergy: NSAIDs. Headache reports on days 40 (3) and 41 (4), live on day 42 (5). Vital signs today: heart rate 63, blood oxygen 98%, 36.8 °C. Acetaminophen 2 × 325 mg on day 41. Optional: a spacewalk on day 43 | Simulated |
 | env (potest) | CO₂ as in the shared table | Real (ISS) |
 
-**Note:** the contract's wave-1 test uses sleep 5.5 h, mood 4, stress 7 and fatigue 7. That works
-too, as long as sleep is at least 1.5 h under the normal. The "I'm fine" version above is the
-better story for the stage.
+**Note:** the contract's wave-1 test uses these same "I'm fine" values (sleep 4.6 h, mood 6,
+stress 4, fatigue 4).
 
 **Missing:**
 - an NSAID allergy for `c4` in the meds data
@@ -127,16 +131,16 @@ so before a judge does.
 | Workout heart rate | Replayed from a file: rest, then a climb during the push-ups, then recovery after Stop | Best: a real exercise recording from the PhysioNet Wearable Device Dataset (made on Earth, labelled so; petros listed it, not downloaded). Fallback: a simulated curve shaped by real in-flight exercise on Apollo-Soyuz (average 66–94, peaks 90–140 bpm, in petros's vitals CSV) |
 | Measurement guide | Resting heart rate steps | petros's `measurement-guides.json` |
 
-**Minimum workout build** (not in the contract yet, no owner):
+**Minimum workout build** (contract wave 2: the screen in zt's pages, the record in angelos's
+health module, the heart-rate file from petros):
 - **The screen:** opened from Today's tasks. Start, a big timer, the heart rate as a number and a
   line, and a rep counter.
 - **Heart rate:** replayed from the file. It climbs while the workout runs and falls after Stop.
 - **Rep counter:** the presenter presses a key for each push-up. As a stretch goal, the laptop
   camera could count them itself (pose detection in the browser). That looks great but can fail
   under stage lighting, so only do it with the key as a backup.
-- **Stop:** the summary card, the task tick, and points.
-- **Size:** one screen, a few hours. It can live in the pages alone, or the health module can take
-  a "workout done" record. The contract needs one line on this.
+- **Stop:** the summary card and the task tick. Points only if Tommy agrees.
+- **Size:** one screen, a few hours, plus the workout record (`POST /api/health/workouts`).
 
 ## 3. C (`c5`): allergic reaction, an emergency
 
@@ -178,13 +182,14 @@ recorded for the medical officer and Earth.
 
 ## 4. D (`c3`): mood sliding for a week
 
-**What it shows:** a slow, lasting change that no single day would flag. Plus the private side of
-the app, kept apart from what the medical officer sees.
+**What it shows:** a slow, lasting change that no single day would flag, which E sees in scene 5.
+Plus the private side of the app, kept apart from what the medical officer sees.
 
 1. **Login → Home.** The readiness score is a little lower. Nothing is red on the body figure.
-2. **Check-in.** Mood 4, stress 5. The mascot pops up: "Your mood has been below your normal for
-   6 days. Want to write about it, or talk to someone?"
-3. **Mind.** The check-in history graph shows the week sliding out of D's normal band.
+2. **Check-in.** Mood 4, stress 5. The mascot pops up: "How has this week been? Want to write
+   about it, or talk to someone?" It doesn't mention the trend (whether it may is open).
+3. **Mind.** Journal and support. D's own check-in history graph isn't shown to D; E sees the
+   week sliding out of D's normal band in scene 5.
 4. **Journal.** D writes one line, marked "Private: never shared".
 5. **Support.** D asks for a session with the psychologist on Earth. With 24 minutes there and
    back it can't be live, so it's video letters or messages.
@@ -207,8 +212,9 @@ of it in front of them, and Earth gets the same picture.
 
 1. **Login on the astronaut app.** E's own home for 5 seconds: E is crew too, and green.
 2. **Medical officer platform → Crew view,** sorted by urgency: C red (emergency, epinephrine given,
-   paperwork due), A amber (headache, short sleep, CO₂, acetaminophen, ibuprofen blocked), D (mood
-   below normal for 6 days), B green (workout done, tasks 3 of 4).
+   paperwork due), A amber (headache, sleep under normal 3 nights in a row, CO₂, acetaminophen,
+   ibuprofen blocked), D (mood below normal for 6 days, with the check-in history graph sliding out
+   of D's normal band), B green (workout done, tasks 3 of 4).
 3. **C's case summary.** E writes the paperwork and confirms the new allergy.
 4. **A's case summary** on one card: health change, symptom, cabin, doses. E decides, for example
    to move A's spacewalk and ask the crew to check the CO₂ scrubber, and answers the sleeping-pill
@@ -227,7 +233,7 @@ of it in front of them, and Earth gets the same picture.
 - **Wave 2:**
   - stock (dadis2)
   - the emergency event (dadis2)
-  - reports and the Earth link, which have no owner yet
+  - reports and the Earth link (potest proposed, to confirm)
 
 ## Every screen appears
 
@@ -240,14 +246,14 @@ of it in front of them, and Earth gets the same picture.
 | Symptom report | A | wave 1, meds |
 | Guided measurements | B | petros's guides |
 | Today's tasks, points | B | placeholder (Q16) |
-| Workout | B | **not in the contract** |
+| Workout | B | wave 2, pages and health workout records |
 | Habitat | A (radiation in the intro) | wave 1, env; radiation in wave 2 |
 | Med bay: allowed or blocked, locker, scan | A | wave 1, meds |
 | Emergency | C | wave 2, meds (Q15) |
-| Mind: history, journal, support | D | wave 2, mind; support later (Q11) |
+| Mind: journal, support | D | wave 2, mind; support later (Q11). The history graph is on E's platform |
 | Companion | D | wave 2, mind |
 | Crew view, approvals | E | wave 1, health and meds |
-| Case summary, send to Earth | E | wave 2, no owner yet |
+| Case summary, send to Earth | E | wave 2, reports (potest proposed) |
 | Stock | E | wave 2, meds |
 
 ## Still open

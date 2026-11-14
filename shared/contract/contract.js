@@ -177,6 +177,7 @@ export const MED_TIERS = Object.freeze({
  */
 export const EVENTS = Object.freeze([
   'health.check-in-saved',
+  'health.workout-saved',
   'meds.symptom-reported',
   'meds.request-created',
   'meds.request-decided',
@@ -184,6 +185,9 @@ export const EVENTS = Object.freeze([
   'meds.collection-opened',
   'meds.dose-collected',
   'meds.collection-closed',
+  'meds.allergy-changed',
+  'meds.emergency-raised', // every open page shows the alarm
+  'meds.emergency-updated',
   'env.alert-opened',
   'env.alert-recovered',
   'clock.advanced',

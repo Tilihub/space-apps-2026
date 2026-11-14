@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:24
+- Last updated: 2026-11-14 17:33
 - Working on: the onboard app contract ([shared/contract/README.md](../../shared/contract/README.md)),
   so every teammate can build their piece to it alone and joining them is only the final link.
   Waiting for a teammate's approval on [PR #49](https://github.com/Tilihub/space-apps-2026/pull/49).
@@ -39,6 +39,10 @@
   medical officer last, one NASA hazard each. Each case has its story, screens, records per piece,
   real versus simulated values and what is still missing. Cabin CO₂ uses a real three-day rise
   from potest's ISS RR-9 replay ([PR #52](https://github.com/Tilihub/space-apps-2026/pull/52))
+- Updated the contract (PR #49) for Tommy's PR #47 and the demo cases: health analyses are for the
+  medical officer only, enforced by the server; crew stories, values and CO₂ timing match the demo
+  cases; new allergies, blocked items, emergency release, stock, workout records and radiation;
+  wave 2 is the rest of the live demo. The demo cases now show every comparison in E's scene
 
 ## Blocked / need from others
 
@@ -49,6 +53,9 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
+- Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
+  the workout give points? Ask potest to take reports and the Earth link. Record the answers in
+  the contract's "Still open".
 - Contract (branch `zt/app-contract`): go through it with the team, fix what they change, get one
   approval and merge. Then each owner builds their module to it (wave 1 before leaving Saturday).
 - Build the core and the pages in `integration/onboard-app/` to the contract (section 5): server,
