@@ -8,8 +8,8 @@
 
 ## Now
 
-- Last updated: 2026-11-14 13:30 (Asia/Nicosia)
-- Working on: Interactive daily check-in complete; PR #25 is open.
+- Last updated: 2026-11-14 14:12 (Asia/Nicosia)
+- Working on: Agreed fixed-baseline and weekly-report version complete; updating PR #25.
 - Branch: angelos/interactive-check-in
 
 ## Done
@@ -30,11 +30,20 @@
   duplicate rejection, and an unchanged frozen baseline. Test storage is temporary.
 - Published branch angelos/interactive-check-in and opened
   https://github.com/Tilihub/space-apps-2026/pull/25 (only people/angelos/).
+- Added weekly_report.py with medians for two adjacent seven-calendar-day windows,
+  per-measure coverage, complete-week comparisons, and fixed-baseline differences.
+- Kept the original baseline fixed. Partial summaries are labelled and do not
+  produce week-to-week claims. New records never replace the reference.
+- Added automatic summaries after check-ins and read-only --report / --report --json modes.
+- Passed all 31 automated checks. Verified the report against the existing local
+  synthetic history and confirmed the database SHA-256 was unchanged afterward.
+- Synced origin/main without rebase and retained the user's demo-data edit and saved history.
 
 ## Blocked / need from others
 
 - No local implementation blocker. The input contract still needs agreement with
   the members providing sensor summaries and psychological self-reports.
+- Align the existing 0–10 self-report scales with Tommy's proposed app fields before integration.
 - GitHub CLI works at C:/Program Files/GitHub CLI/gh.exe with network permission.
 
 ## Next steps
@@ -46,6 +55,11 @@
   python people/angelos/health_monitor/check_in.py and use synthetic values.
 - The first proposed mission date is 2026-11-14; later runs advance from saved
   history. The ignored SQLite database uses a frozen reference copied on first run.
+- Use python people/angelos/health_monitor/check_in.py --report to inspect the
+  latest weekly summary without adding data. Complete week-to-week comparisons
+  require seven measured days in each period; the current history is partial.
+- Walk through the code slowly with angelos when requested. He wants to understand
+  each part and may later rebuild a simpler version himself; avoid unsolicited code changes.
 - Agree the daily input fields, units, scales, and timezone with the app/sensor owners.
 - Add an API adapter, then connect the structured findings to a UI
   and companion conversation. No language model or live sensor integration exists yet.

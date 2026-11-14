@@ -86,11 +86,9 @@ def validate(payload):
     return baseline, recent, current
 
 
-def analyze(payload):
-    """Return structured evidence; never change the supplied frozen reference."""
-    baseline, recent, current = validate(payload)
-    references, findings, gaps = {}, [], []
-    ordered = sorted([*recent, current], key=recorded_time, reverse=True)
+def baseline_statistics(baseline):
+    """Calculate the fixed reference using only validated baseline records."""
+    references, gaps = {}, []
     for metric, floor in DEMO_FLOORS.items():
         values = [row[metric] for row in baseline if row.get(metric) is not None]
         if len(values) < MIN_REFERENCE_DAYS:
@@ -102,6 +100,18 @@ def analyze(payload):
         references[metric] = {
             "median": center, "demo_threshold": threshold, "sample_days": len(values)
         }
+    return references, gaps
+
+
+def analyze(payload):
+    """Return structured evidence; never change the supplied frozen reference."""
+    baseline, recent, current = validate(payload)
+    references, gaps = baseline_statistics(baseline)
+    findings = []
+    ordered = sorted([*recent, current], key=recorded_time, reverse=True)
+    for metric, reference in references.items():
+        center = reference["median"]
+        threshold = reference["demo_threshold"]
         value = current.get(metric)
         if value is None:
             gaps.append(f"{metric}: current measurement is missing.")

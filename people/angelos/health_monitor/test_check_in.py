@@ -1,12 +1,15 @@
 import copy
+import io
+import json
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from contextlib import redirect_stdout
 
-from check_in import CheckInStore, collect_check_in
+from check_in import CheckInStore, collect_check_in, main
 
 
 HERE = Path(__file__).resolve().parent
@@ -73,6 +76,7 @@ class CheckInTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn(f"Saved check-in for {day}", result.stdout)
+            self.assertIn("WEEKLY SUMMARY", result.stdout)
         self.assertIn("4 consecutive check-in day(s)", result.stdout)
         self.assertEqual(len(self.store.state()[1]), 4)
 
@@ -85,6 +89,40 @@ class CheckInTests(unittest.TestCase):
         self.assertEqual(result.returncode, 130)
         self.assertIn("No new check-in was saved", result.stdout)
         self.assertEqual(self.store.state(), before)
+
+    def test_report_only_cli_is_read_only_and_valid_json(self):
+        self.store.submit(self.row())
+        before = self.path.read_bytes()
+        result = subprocess.run(
+            [sys.executable, str(HERE / "check_in.py"), "--database", str(self.path),
+             "--report", "--json"], text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["current_period"]["recorded_days"], 3)
+        self.assertEqual(report["metrics"]["sleep_hours"]["baseline"]["median"], 7.8)
+        self.assertEqual(self.path.read_bytes(), before)
+
+    def test_report_does_not_create_a_missing_database(self):
+        missing = Path(self.temp.name) / "absent" / "new.sqlite3"
+        result = subprocess.run(
+            [sys.executable, str(HERE / "check_in.py"), "--database", str(missing), "--report"],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("No saved database", result.stderr)
+        self.assertFalse(missing.parent.exists())
+
+    def test_interruption_after_commit_reports_that_record_was_saved(self):
+        output = io.StringIO()
+        with patch("sys.argv", ["check_in.py", "--database", str(self.path)]), \
+                patch("builtins.input", side_effect=["", "77", "5.5", "4", "7", "7"]), \
+                patch("check_in.CheckInStore.weekly_report", side_effect=KeyboardInterrupt), \
+                redirect_stdout(output):
+            self.assertEqual(main(), 130)
+        self.assertIn("check-in was already saved", output.getvalue())
+        self.assertNotIn("No new check-in was saved", output.getvalue())
+        self.assertEqual(len(self.store.state()[1]), 3)
 
 
 if __name__ == "__main__":

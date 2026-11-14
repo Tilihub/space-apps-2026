@@ -8,6 +8,7 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from monitor import analyze, print_result, recorded_time, validate, validate_measurement
+from weekly_report import build_weekly_report, print_weekly_report
 
 
 HERE = Path(__file__).resolve().parent
@@ -23,8 +24,11 @@ PROMPTS = {
 class CheckInStore:
     """One synthetic astronaut per database; a frozen reference and daily records."""
 
-    def __init__(self, path):
+    def __init__(self, path, read_only=False):
         path = Path(path)
+        if read_only:
+            self.connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+            return
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path)
         try:
@@ -67,6 +71,10 @@ class CheckInStore:
         self.connection.execute("INSERT INTO check_ins VALUES (?, ?)", (
             recorded_time(row).date().isoformat(), json.dumps(row, allow_nan=False)
         ))
+
+    def weekly_report(self):
+        baseline, history = self.state()
+        return build_weekly_report(baseline, history)
 
     def submit(self, row):
         # Lock before reading history so concurrent writers cannot lose a check-in.
@@ -116,25 +124,49 @@ def main():
     parser.add_argument("--database", type=Path,
                         default=HERE / "local_data" / "check_ins.sqlite3",
                         help="Local SQLite file (default: ignored local_data directory)")
+    parser.add_argument("--report", action="store_true",
+                        help="Read the weekly report without adding a check-in")
+    parser.add_argument("--json", action="store_true",
+                        help="Print structured output (requires --report)")
     args = parser.parse_args()
+    if args.json and not args.report:
+        parser.error("--json requires --report")
     store = None
+    saved = False
     try:
-        store = CheckInStore(args.database)
-        baseline, recent = store.state()
-        row = collect_check_in(baseline, recent)
-        result = store.submit(row)
+        if args.report and not args.database.is_file():
+            raise ValueError("No saved database found. Enter a check-in before requesting a report.")
+        store = CheckInStore(args.database, read_only=args.report)
+        if not args.report:
+            baseline, recent = store.state()
+            row = collect_check_in(baseline, recent)
+            result = store.submit(row)
+            saved = True
+        report = store.weekly_report()
     except (EOFError, KeyboardInterrupt):
-        print("\nCancelled. No new check-in was saved.")
+        if saved:
+            print("\nThe check-in was already saved. Run --report to view its weekly summary.")
+        else:
+            print("\nCancelled. No new check-in was saved.")
         return 130
     except (OSError, ValueError, TypeError, KeyError, sqlite3.Error) as exc:
         print(f"Check-in error: {exc}", file=sys.stderr)
+        if saved:
+            print("The check-in was saved, but its weekly summary could not be completed.",
+                  file=sys.stderr)
         return 2
     finally:
         if store is not None:
             store.close()
-    print()
-    print_result(result)
-    print(f"Saved check-in for {row['recorded_at'][:10]} to {args.database.resolve()}")
+    if args.json:
+        print(json.dumps(report, indent=2, allow_nan=False))
+    else:
+        if not args.report:
+            print()
+            print_result(result)
+            print(f"Saved check-in for {row['recorded_at'][:10]} to {args.database.resolve()}")
+            print()
+        print_weekly_report(report)
     return 0
 
 

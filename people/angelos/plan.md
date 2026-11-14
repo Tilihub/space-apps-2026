@@ -14,6 +14,7 @@ plan and integration contract still need team agreement.
 - [x] Explain deviations, persistence, and missing data in structured output.
 - [ ] Agree input fields, units, self-report scales, and daily aggregation with the other members.
 - [x] Add a terminal form and local storage without changing the frozen baseline.
+- [x] Add weekly medians, measured-day coverage, and comparisons to the previous week and fixed baseline.
 - [ ] Add an API adapter for the app.
 - [ ] Connect history and structured findings to a companion UI and conversation.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.
@@ -24,3 +25,5 @@ plan and integration contract still need team agreement.
 
 - Keep numeric analysis separate from conversational phrasing.
 - Provide supportive explanations and transparent uncertainty; no medical diagnosis.
+- Keep the original baseline fixed. Weekly summaries describe trends without
+  replacing it; compare complete weeks and label partial data explicitly.
