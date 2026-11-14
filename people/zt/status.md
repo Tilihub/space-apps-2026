@@ -12,6 +12,8 @@
 - Working on: status check of the team ([team-jobs.md](team-jobs.md)). The app contract is merged
   (PR #49); a first UI look is on branch `zt/ui-look`, no PR yet.
 - Branch: zt/status-check-1900
+- Med bay plan: a draft, not yet discussed with zt, is in [medbay-plan.md](medbay-plan.md) (branch
+  `zt/medbay-plan`, no PR). Next: answer its five open questions, then update the plan.
 
 ## Done
 
