@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:52
-- Working on: the contract's `meds` module. Wave 1 is merged into main (PR #66). `npm test`:
-  69 of 69 pass (18 are meds). Next: wave 2 (emergencies, stock) by Sunday 11:00.
-- Branch: dadis2/meds-wave1 (merged)
+- Last updated: 2026-11-14 19:01
+- Working on: the contract's `meds` module. Waves 1 and 2 are merged into main (PRs #66, #70).
+  `npm test`: 78 of 78 pass (26 are meds). Waiting for zt's core server to join it.
+- Branch: dadis2/meds-wave2 (merged)
 
 ## Done
 
@@ -77,6 +77,14 @@
   - Codes from the prototype's `earth.html` work in the module.
   - Tests: 18, starting with the contract's wave 1 walk-through (§12 steps 3–6). `npm test` with
     main merged in: 69 of 69 pass.
+- **meds module, wave 2** (PR #70, merged), to the contract (emergency items only):
+  - `POST /emergencies` (any crew member, for anyone), `GET /emergencies` (crew see only who and
+    when; Leo sees everything), `POST /emergencies/:id/paperwork` (Leo only, due in 2 hours).
+  - Emergency release through `POST /collections` (`emergencyId`, `itemId`, `overrideAllergy`):
+    no approval, no reserve check, scan may be skipped, logged on the emergency and as Kai's dose.
+    An allergy blocks unless "give anyway" (`overrideAllergy: true`), which is logged.
+  - `GET /stock` (Leo only): epinephrine goes below its reserve after scene C's release.
+  - Tests follow scenes C and E. `npm test` with main merged in: 78 of 78 pass (26 are meds).
 
 ## Blocked / need from others
 
@@ -89,9 +97,13 @@
     ingredient totals across grants) to the contract.
 
   Either change to the contract needs a pull request a teammate approves.
-- **zt:** `meds` wave 1 is ready to link into the core. Where it differs from the contract's
-  wording (code re-entry returns the grant, a few extra fields, error codes) is listed in
-  `meds/README.md`, "For zt". Nothing can be tried joined until the core server exists.
+- **zt:** `meds` waves 1 and 2 are ready to link into the core. Where it differs from the
+  contract's wording (code re-entry returns the grant, a few extra fields, error codes, the
+  `emergency` source) is listed in `meds/README.md`, "For zt". Nothing can be tried joined until
+  the core server exists.
+- **zt and Tommy:** scene E has Leo "answer the sleeping-pill request". If that's zolpidem, it's
+  controlled, so the contract sends it to Earth and Leo can't approve it. Pick a prescription
+  medicine for the scene, or show it waiting for Earth.
 
 - zt: confirm the grant contract (`inventory/CONTRACT.md`) and the placeholders it uses for now:
   crew ids `c1`–`c4`, device local time as mission time, symptom report format (`spec.md` §8).
@@ -109,12 +121,10 @@
   so the demo starts fresh once.
 - "Also used in emergencies" is a proof-of-concept sample (`emergencyUse` in `inventory/data.js`);
   medical accuracy isn't the point.
-- `meds` module: wave 1 is on main (PR #66). Wave 2 on a new branch, by Sunday 11:00, built to the
-  contract (emergency items only):
-  - `POST /emergencies`, `GET /emergencies`, `POST /emergencies/:id/paperwork`
-  - the emergency release in `POST /collections` (`emergencyId`, `overrideAllergy`, `skipScan`)
-  - `GET /stock`: epinephrine starts at its reserve (4), so one release puts it below
-  Run `npm test` from the repo root first (Node.js is installed: v26).
+- `meds` module: waves 1 and 2 are on main (PRs #66, #70). Left: `POST /grants/code` for the Earth
+  console ("later"; port
+  `inventory/ground.js`), and joining with zt's core once it exists. Run `npm test` from the repo
+  root before every push (Node.js v26 is installed).
 - Test QR camera scanning on an Android phone (Chrome, page over HTTPS). Quick check without the app:
   point a phone camera at the QR in `earth.html`; it should show exactly the code.
 - Optional later: real sender verification (Earth signs, devices check with Earth's public key), see

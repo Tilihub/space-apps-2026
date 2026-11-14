@@ -6,8 +6,8 @@ requests and approvals, grants and the dose log. It is built to the onboard app 
 
 > Proof of concept with sample medicines and limits. Not medical advice. Not affiliated with NASA.
 
-**Status (14 Nov 2026):** wave 1 is done, and `npm test` passes (18 meds tests). Wave 2
-(emergencies, stock) and `POST /grants/code` are not built yet.
+**Status (14 Nov 2026):** waves 1 and 2 are done, and `npm test` passes (26 meds tests). Only
+`POST /grants/code` ("later" in the contract) is not built yet.
 
 ## Files
 
@@ -36,7 +36,7 @@ Run the tests from the repo root with `npm test`, or only these with `node --tes
 | Self-care | None |
 | Prescription | The medical officer (Earth when Leo is the patient) |
 | Controlled | Earth |
-| Emergency | The Emergency button (wave 2) |
+| Emergency | The Emergency button |
 
 - **Self-care can change with the person:**
   - only the reserve is left, or a condition makes it unsafe → the medical officer decides
@@ -55,6 +55,18 @@ Run the tests from the repo root with `npm test`, or only these with `node --tes
   - ingredients are added up across courses, and two NSAIDs at once are refused
 - **Grant codes** use the prototype's format (`RX2-…`), so codes from `../inventory/earth.html` work.
   The same code typed or scanned again finds the same grant, ready for its next dose.
+- **Emergencies** (wave 2, contract rules):
+  - `POST /emergencies`: any crew member, for anyone, with a reason. Pressing again for the same
+    person finds the open emergency.
+  - The release is `POST /collections` with `emergencyId` and `itemId`. Only emergency medicines come
+    out, with no approval and no reserve check.
+  - An allergy blocks unless `overrideAllergy: true` (the "give anyway" step), which is logged.
+  - The scan may be skipped (`skipScan: true`). Every release is logged on the emergency and in
+    the dose log for the patient.
+  - Paperwork is due 2 hours after it was raised. Only the medical officer closes it.
+  - Crew see only who has an open emergency and when; the medical officer sees everything.
+- **Stock** (medical officer only): usable units, reserve, below reserve, next expiry. Epinephrine
+  starts at its reserve (4), so scene C's release puts it below for scene E.
 
 ## For zt: where this differs from the contract's wording
 
@@ -75,3 +87,15 @@ None of these change a contract field; some add one. To agree or fold into the c
 5. **Error codes:** a reached daily limit is `not_due`; an allergy or a needed approval is
    `needs_approval`.
 6. **One course per medicine** and its timing rule (above) aren't in the contract yet.
+7. **Emergencies:**
+   - `collection.source` and `dose.source` can also be `emergency`
+   - collections have `patientId` and `emergencyId`: the collector may be a crewmate, and the dose
+     is logged for the patient
+   - `POST /emergencies` returns `alreadyOpen`
+   - each `released` entry also has `name` and `releasedBy`
+   - `reason` is required
+   - closing the paperwork cancels a release still in progress
+8. **Stock** also has `expiredUnits`.
+9. **Scene E, step 4:** "answers the sleeping-pill request in Approvals". If that pill is zolpidem,
+   it's controlled, so it waits for Earth and Leo gets `needs_earth` (`MED_TIERS`). Either the demo
+   uses a prescription medicine, or Leo only sees it waiting for Earth.

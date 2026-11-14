@@ -11,11 +11,11 @@
  */
 import { readFile } from 'node:fs/promises';
 import {
-  MEASUREMENTS, MEDICAL_OFFICER_ID, SCALES, SYMPTOMS, apiError, checkFields, resolveCrewId,
+  MEASUREMENTS, MEDICAL_OFFICER_ID, SCALES, SYMPTOMS, apiError, checkFields, isCrewId, resolveCrewId,
 } from '../../../shared/contract/contract.js';
 import {
-  EARTH, addGrant, approvalFor, canGrant, checkCourse, compartmentOf, decodeGrant, encodeGrant, grantConflicts,
-  grantEnd, grantHold, importStartAt, itemOf, itemState, labelOf, ms, profileOf, suggest, usableUnits,
+  EARTH, addGrant, allergiesTo, approvalFor, canGrant, checkCourse, compartmentOf, decodeGrant, encodeGrant, grantConflicts,
+  grantEnd, grantHold, importStartAt, isoOf, itemOf, itemState, labelOf, ms, pickLot, profileOf, suggest, usableLots, usableUnits,
 } from './rules.js';
 
 /** The static catalogue: medicines, lockers, limits, and the demo start data. */
@@ -35,10 +35,16 @@ export function startState() {
     requests: [],
     grants: [],
     collections: [],
+    emergencies: [],
   };
 }
 
-const load = async (ctx) => (await ctx.store.load()) ?? startState();
+const load = async (ctx) => {
+  const state = (await ctx.store.load()) ?? startState();
+  state.emergencies ??= []; // stores saved before wave 2
+  return state;
+};
+const PAPERWORK_HOURS = 2;
 const mustItem = (itemId) => {
   if (typeof itemId !== 'string') throw apiError('invalid_field', 'itemId must be a medicine id.');
   const item = itemOf(CAT, itemId);
@@ -163,19 +169,54 @@ function grantCollection(state, crewId, grantId, now) {
   return { source: 'grant', grantId: g.id, slot: compartments[0].slot, reportId: null, compartments };
 }
 
+/**
+ * Emergency release (wave 2, Tommy's Q15): anyone, for whoever needs help, no approval. Only emergency
+ * items. An allergy blocks unless overrideAllergy is true (the "give anyway" step), which is logged.
+ * The reserve never holds it back.
+ */
+function emergencyCollection(state, body, now) {
+  const e = state.emergencies.find((x) => x.id === body.emergencyId);
+  if (!e) throw apiError('not_found', 'That emergency does not exist.');
+  if (e.status !== 'open') throw apiError('already_done', 'This emergency is closed.');
+  const item = mustItem(body.itemId);
+  if (item.tier !== 'emergency') {
+    throw apiError('needs_approval', `Only emergency medicines are released in an emergency. ${item.name} needs the usual approval.`);
+  }
+  const units = body.units ?? item.doseUnits;
+  if (!wholeIn(units, 1, 9)) throw apiError('invalid_field', 'units must be a whole number from 1 to 9.');
+  if (body.overrideAllergy != null && typeof body.overrideAllergy !== 'boolean') throw apiError('invalid_field', 'overrideAllergy must be true or false.');
+  const allergic = allergiesTo(state, e.patientId, item);
+  if (allergic.length && body.overrideAllergy !== true) {
+    throw apiError('needs_approval', `Allergy: ${allergic.join(', ')}. Give it anyway only if there is no other option (overrideAllergy).`);
+  }
+  if (!pickLot(state, item.id, units, now)) throw apiError('needs_approval', `No ${item.name} left. Use another emergency medicine.`);
+  return {
+    source: 'emergency', grantId: null, slot: null, reportId: null, emergencyId: e.id, patientId: e.patientId,
+    allergyOverridden: allergic.length > 0,
+    compartments: [{ compartmentId: compartmentOf(item), itemId: item.id, units, scanned: false, grantIdx: null, slot: null }],
+  };
+}
+
 function collectionView(c) {
   return {
     id: c.id, crewId: c.crewId, source: c.source, grantId: c.grantId, slot: c.slot, status: c.status,
+    emergencyId: c.emergencyId ?? null, patientId: c.patientId ?? c.crewId,
     openedAt: c.openedAt, closedAt: c.closedAt,
     compartments: c.compartments.map((x) => ({ compartmentId: x.compartmentId, itemId: x.itemId, units: x.units, scanned: x.scanned })),
   };
 }
 
 /** Confirms one dispensed item: takes it from stock (earliest expiry first) and logs the dose once. */
-function confirmItem(state, c, part, now, ctx) {
+function confirmItem(state, c, part, now, ctx, scanSkipped) {
   const item = itemOf(CAT, part.itemId);
+  const patientId = c.patientId ?? c.crewId;
   let lot;
-  if (c.source === 'grant') {
+  let emergency = null;
+  if (c.source === 'emergency') {
+    emergency = state.emergencies.find((x) => x.id === c.emergencyId);
+    if (!emergency || emergency.status !== 'open') throw apiError('already_done', 'This emergency is closed.');
+    lot = pickLot(state, item.id, part.units, now);
+  } else if (c.source === 'grant') {
     const g = state.grants.find((x) => x.id === c.grantId);
     const st = itemState(state, g, part.grantIdx, now);
     if (st.state !== 'due' || st.slot !== part.slot) throw apiError('already_done', 'This dose was already collected.');
@@ -190,14 +231,41 @@ function confirmItem(state, c, part, now, ctx) {
   if (!lot) throw apiError('needs_approval', `No ${item.name} left. Tell the medical officer.`);
   lot.qty -= part.units;
   part.scanned = true;
+  part.scanSkipped = !!scanSkipped;
   const dose = {
-    id: newId('dose'), crewId: c.crewId, itemId: item.id, name: labelOf(item), units: part.units, collectedAt: now,
+    id: newId('dose'), crewId: patientId, itemId: item.id, name: labelOf(item), units: part.units, collectedAt: now,
     source: c.source, grantId: c.grantId, grantIdx: part.grantIdx, slot: part.slot, reportId: c.reportId, lot: lot.lot,
-    collectionId: c.id, helped: null,
+    collectionId: c.id, emergencyId: c.emergencyId ?? null, collectedBy: c.crewId, helped: null,
   };
   state.doses.push(dose);
-  ctx.emit('meds.dose-collected', c.crewId);
+  ctx.emit('meds.dose-collected', patientId);
+  if (emergency) {
+    emergency.released.push({ itemId: item.id, units: part.units, at: now, scanSkipped: !!scanSkipped, allergyOverridden: !!c.allergyOverridden, releasedBy: c.crewId });
+    ctx.emit('meds.emergency-updated', emergency.patientId);
+  }
   return dose;
+}
+
+/** Crew see only who has an open emergency; the medical officer sees everything. */
+function emergencyView(e, role) {
+  if (role !== 'medical_officer') return { id: e.id, patientId: e.patientId, raisedAt: e.raisedAt, status: e.status };
+  return {
+    id: e.id, patientId: e.patientId, raisedBy: e.raisedBy, raisedAt: e.raisedAt, reason: e.reason, vitals: e.vitals,
+    status: e.status, paperworkDueAt: e.paperworkDueAt, paperworkNote: e.paperworkNote, closedAt: e.closedAt,
+    released: e.released.map((r) => ({ ...r, name: labelOf(itemOf(CAT, r.itemId)) })),
+  };
+}
+
+function stockView(state, now) {
+  return CAT.items.map((it) => {
+    const units = usableUnits(state, it.id, now);
+    const lots = usableLots(state, it.id, now);
+    return {
+      itemId: it.id, name: labelOf(it), tier: it.tier, units, reserve: it.reserve, belowReserve: units < it.reserve,
+      nextExpiry: lots[0]?.expiry ?? null,
+      expiredUnits: state.lots.filter((l) => l.itemId === it.id && l.qty > 0 && !lots.includes(l)).reduce((s, l) => s + l.qty, 0),
+    };
+  });
 }
 
 const doseView = (d) => ({
@@ -352,15 +420,18 @@ export default {
     {
       method: 'POST', path: '/collections', roles: ['crew'], status: 201,
       handler: async (req, ctx) => {
-        const body = checkFields(req.body, ['itemId', 'units', 'reportId', 'grantId']);
+        const body = checkFields(req.body, ['itemId', 'units', 'reportId', 'grantId', 'emergencyId', 'overrideAllergy']);
         const crewId = resolveCrewId(req.user);
         const state = await load(ctx);
         const now = ctx.now();
-        if (body.grantId != null && body.itemId != null) throw apiError('invalid_field', 'Send either itemId or grantId, not both.');
-        if (body.grantId == null && body.itemId == null) throw apiError('invalid_field', 'Send itemId (self-care) or grantId (a grant).');
+        const emergency = body.emergencyId != null;
+        if (body.grantId != null && (body.itemId != null || emergency)) throw apiError('invalid_field', 'Send grantId alone, itemId (self-care), or emergencyId with itemId.');
+        if (body.grantId == null && body.itemId == null) throw apiError('invalid_field', 'Send itemId (self-care), grantId (a grant), or emergencyId with itemId.');
+        if (!emergency && body.overrideAllergy != null) throw apiError('invalid_field', 'overrideAllergy is only for an emergency release.');
         const open = state.collections.find((c) => c.crewId === crewId && c.status === 'open');
         if (open && body.grantId != null && open.grantId === body.grantId) return { collection: collectionView(open) };
-        const plan = body.grantId != null ? grantCollection(state, crewId, body.grantId, now) : selfCareCollection(state, crewId, body, now);
+        const plan = emergency ? emergencyCollection(state, body, now)
+          : body.grantId != null ? grantCollection(state, crewId, body.grantId, now) : selfCareCollection(state, crewId, body, now);
         closeOpenCollection(state, crewId, now, ctx);
         const collection = { id: newId('col'), crewId, status: 'open', openedAt: now, closedAt: null, ...plan };
         state.collections.push(collection);
@@ -373,17 +444,18 @@ export default {
       method: 'POST', path: '/collections/:id/scan', roles: ['crew'],
       handler: async (req, ctx) => {
         const body = checkFields(req.body, ['compartmentId', 'skipScan'], ['compartmentId']);
-        if (body.skipScan === true) throw apiError('invalid_field', 'Skipping the scan is only for emergencies.');
+        if (body.skipScan != null && typeof body.skipScan !== 'boolean') throw apiError('invalid_field', 'skipScan must be true or false.');
         const state = await load(ctx);
         const now = ctx.now();
         const c = state.collections.find((x) => x.id === req.params.id);
         if (!c) throw apiError('not_found', 'That collection does not exist.');
         resolveCrewId(req.user, c.crewId);
+        if (body.skipScan === true && c.source !== 'emergency') throw apiError('invalid_field', 'Skipping the scan is only for emergencies.');
         if (c.status !== 'open') throw apiError('already_done', `This collection is ${c.status}.`);
         const part = c.compartments.find((x) => x.compartmentId === body.compartmentId);
         if (!part) throw apiError('invalid_field', "That compartment isn't part of this collection.");
         if (part.scanned) throw apiError('already_done', 'This item was already confirmed.');
-        confirmItem(state, c, part, now, ctx);
+        confirmItem(state, c, part, now, ctx, body.skipScan === true);
         if (c.compartments.every((x) => x.scanned)) {
           c.status = 'complete';
           c.closedAt = now;
@@ -532,6 +604,73 @@ export default {
         await ctx.store.save(state);
         return { grant: grantView(state, added.grant, now), alreadyImported: false };
       },
+    },
+
+    // ---- emergencies (wave 2) ----
+    {
+      method: 'POST', path: '/emergencies', roles: ['crew'], status: 201,
+      handler: async (req, ctx) => {
+        const body = checkFields(req.body, ['patientId', 'reason', 'vitals'], ['patientId', 'reason']);
+        resolveCrewId(req.user); // any crew member, for anyone
+        if (!isCrewId(body.patientId)) throw apiError('invalid_field', `Unknown crew member: ${String(body.patientId)}.`);
+        if (typeof body.reason !== 'string' || !body.reason.trim() || body.reason.length > 500) {
+          throw apiError('invalid_field', 'reason must say what happened, up to 500 characters.');
+        }
+        const vitals = checkVitals(body.vitals);
+        const state = await load(ctx);
+        const now = ctx.now();
+        // One open emergency per person: pressing again (or a crewmate pressing too) finds the same one
+        const open = state.emergencies.find((e) => e.patientId === body.patientId && e.status === 'open');
+        if (open) return { emergency: emergencyView(open, req.user.role), alreadyOpen: true };
+        const e = {
+          id: newId('emg'), patientId: body.patientId, raisedBy: req.user.crewId, raisedAt: now, reason: body.reason.trim(), vitals,
+          status: 'open', paperworkDueAt: isoOf(ms(now) + PAPERWORK_HOURS * 3_600_000), paperworkNote: null, closedAt: null, released: [],
+        };
+        state.emergencies.push(e);
+        await ctx.store.save(state);
+        ctx.emit('meds.emergency-raised', e.patientId);
+        return { emergency: emergencyView(e, req.user.role), alreadyOpen: false };
+      },
+    },
+    {
+      method: 'GET', path: '/emergencies', roles: ['crew', 'medical_officer'],
+      handler: async (req, ctx) => {
+        const status = req.query.status || null;
+        if (status && !['open', 'closed'].includes(status)) throw apiError('invalid_field', 'status must be open or closed.');
+        const state = await load(ctx);
+        const list = state.emergencies.filter((e) => !status || e.status === status).sort((a, b) => b.raisedAt.localeCompare(a.raisedAt));
+        return { emergencies: list.map((e) => emergencyView(e, req.user.role)) };
+      },
+    },
+    {
+      method: 'POST', path: '/emergencies/:id/paperwork', roles: ['medical_officer'],
+      handler: async (req, ctx) => {
+        const body = checkFields(req.body, ['note'], ['note']);
+        if (typeof body.note !== 'string' || !body.note.trim() || body.note.length > 4000) {
+          throw apiError('invalid_field', 'note must say what happened and what was given, up to 4,000 characters.');
+        }
+        const state = await load(ctx);
+        const e = state.emergencies.find((x) => x.id === req.params.id);
+        if (!e) throw apiError('not_found', 'That emergency does not exist.');
+        if (e.status !== 'open') throw apiError('already_done', 'The paperwork for this emergency is already done.');
+        const now = ctx.now();
+        e.status = 'closed';
+        e.paperworkNote = body.note.trim();
+        e.closedAt = now;
+        // Release still in progress for this emergency: nothing more comes out
+        for (const c of state.collections) {
+          if (c.emergencyId === e.id && c.status === 'open') { c.status = 'cancelled'; c.closedAt = now; ctx.emit('meds.collection-closed', c.crewId); }
+        }
+        await ctx.store.save(state);
+        ctx.emit('meds.emergency-updated', e.patientId);
+        return { emergency: emergencyView(e, req.user.role) };
+      },
+    },
+
+    // ---- stock (wave 2) ----
+    {
+      method: 'GET', path: '/stock', roles: ['medical_officer'],
+      handler: async (req, ctx) => ({ items: stockView(await load(ctx), ctx.now()) }),
     },
 
     // ---- dose log ----

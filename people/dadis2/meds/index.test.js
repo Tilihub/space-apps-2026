@@ -247,7 +247,9 @@ test('Unknown or out-of-range fields are refused', async () => {
   fails(await call(ctx, tomas, 'POST', '/symptom-reports', { symptoms: [{ code: 'headache', severity: 11 }] }), 'invalid_field');
   fails(await call(ctx, tomas, 'POST', '/symptom-reports', { symptoms: [{ code: 'sneezing', severity: 3 }] }), 'invalid_field');
   fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 0 }), 'invalid_field');
-  fails(await call(ctx, tomas, 'POST', '/collections/col_x/scan', { compartmentId: 'L1-1-01', skipScan: true }), 'invalid_field');
+  const col = ok(await call(ctx, tomas, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 1 })).collection;
+  fails(await call(ctx, tomas, 'POST', `/collections/${col.id}/scan`, { compartmentId: 'L1-1-01', skipScan: true }), 'invalid_field');
+  fails(await call(ctx, tomas, 'POST', '/collections/col_x/scan', { compartmentId: 'L1-1-01' }), 'not_found');
   fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'epinephrine-auto', units: 1 }), 'needs_approval');
 });
 
@@ -256,4 +258,105 @@ test('Self-care quantity is the crew member\'s choice, within the daily limit', 
   // Tomas took 2 acetaminophen last night; the limit is 8 a day
   fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 7 }), 'not_due');
   ok(await call(ctx, tomas, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 1 }));
+});
+
+// ---- wave 2: emergencies and stock (scene C, then E) ------------------------------------------------
+
+async function raise(ctx, by = mara, patientId = 'c5') {
+  return ok(await call(ctx, by, 'POST', '/emergencies', { patientId, reason: 'Lips swelling after a new food', vitals: { restingHeartRateBpm: 125, spo2Pct: 91 } }));
+}
+async function release(ctx, by, emergencyId, itemId, overrideAllergy = false) {
+  const col = ok(await call(ctx, by, 'POST', '/collections', { emergencyId, itemId, units: 1, overrideAllergy })).collection;
+  return ok(await call(ctx, by, 'POST', `/collections/${col.id}/scan`, { compartmentId: col.compartments[0].compartmentId, skipScan: true })).collection;
+}
+const stockOf = async (ctx, itemId) => ok(await call(ctx, medicalOfficer(), 'GET', '/stock')).items.find((i) => i.itemId === itemId);
+
+test('Scene C: a crewmate raises an emergency for Kai; every page hears it; crew see only who and when', async () => {
+  const ctx = await setup();
+  const { emergency } = await raise(ctx);
+  assert.deepEqual(ctx.events.at(-1), { type: 'meds.emergency-raised', crewId: 'c5' });
+  assert.deepEqual(Object.keys(emergency).sort(), ['id', 'patientId', 'raisedAt', 'status']);
+  const forCrew = ok(await call(ctx, tomas, 'GET', '/emergencies', null, { status: 'open' })).emergencies;
+  assert.deepEqual(forCrew.map((e) => [e.patientId, e.status]), [['c5', 'open']]);
+  assert.equal(forCrew[0].reason, undefined);
+  const forLeo = ok(await call(ctx, medicalOfficer(), 'GET', '/emergencies', null, { status: 'open' })).emergencies[0];
+  assert.equal(forLeo.reason, 'Lips swelling after a new food');
+  assert.equal(forLeo.vitals.spo2Pct, 91);
+  assert.equal(Date.parse(forLeo.paperworkDueAt) - Date.parse(forLeo.raisedAt), 2 * 3_600_000);
+  // Pressing again finds the same emergency
+  const again = await raise(ctx, kai);
+  assert.deepEqual([again.emergency.id, again.alreadyOpen], [emergency.id, true]);
+});
+
+test('Scene C: epinephrine is released at once, no sign-off, scan skipped, and the dose is logged for Kai', async () => {
+  const ctx = await setup();
+  const { emergency } = await raise(ctx);
+  const done = await release(ctx, mara, emergency.id, 'epinephrine-auto');
+  assert.deepEqual([done.status, done.source, done.patientId, done.compartments[0].compartmentId], ['complete', 'emergency', 'c5', 'L3-1-01']);
+  const e = ok(await call(ctx, medicalOfficer(), 'GET', '/emergencies')).emergencies[0];
+  assert.deepEqual(e.released.map((r) => [r.itemId, r.units, r.scanSkipped, r.allergyOverridden]), [['epinephrine-auto', 1, true, false]]);
+  const doses = ok(await call(ctx, medicalOfficer(), 'GET', '/doses', null, { crewId: 'c5' })).doses;
+  assert.deepEqual(doses.map((d) => [d.itemId, d.source]), [['epinephrine-auto', 'emergency']]);
+  assert.ok(ctx.events.some((ev) => ev.type === 'meds.emergency-updated' && ev.crewId === 'c5'));
+});
+
+test('Scene E: after the release, epinephrine is below its reserve', async () => {
+  const ctx = await setup();
+  assert.equal((await stockOf(ctx, 'epinephrine-auto')).belowReserve, false);
+  const { emergency } = await raise(ctx);
+  await release(ctx, kai, emergency.id, 'epinephrine-auto');
+  const epi = await stockOf(ctx, 'epinephrine-auto');
+  assert.deepEqual([epi.units, epi.reserve, epi.belowReserve, epi.tier], [3, 4, true, 'emergency']);
+  assert.equal(epi.nextExpiry, '2028-04-30');
+  fails(await call(ctx, tomas, 'GET', '/stock'), 'wrong_role');
+});
+
+test('In an emergency only emergency medicines come out, and only while it is open', async () => {
+  const ctx = await setup();
+  const { emergency } = await raise(ctx);
+  fails(await call(ctx, mara, 'POST', '/collections', { emergencyId: emergency.id, itemId: 'ondansetron-4', units: 1, overrideAllergy: false }), 'needs_approval');
+  fails(await call(ctx, mara, 'POST', '/collections', { emergencyId: 'emg_nope', itemId: 'epinephrine-auto', units: 1 }), 'not_found');
+  ok(await call(ctx, medicalOfficer(), 'POST', `/emergencies/${emergency.id}/paperwork`, { note: 'Anaphylaxis to a new food. Epinephrine 0.3 mg.' }));
+  fails(await call(ctx, mara, 'POST', '/collections', { emergencyId: emergency.id, itemId: 'epinephrine-auto', units: 1 }), 'already_done');
+});
+
+test('An allergy blocks an emergency medicine unless "give anyway" is confirmed, which is logged', async () => {
+  const ctx = await setup();
+  ok(await call(ctx, medicalOfficer(), 'POST', '/allergies', { crewId: 'c5', substance: 'antihistamine', status: 'confirmed', note: null }));
+  const { emergency } = await raise(ctx);
+  fails(await call(ctx, mara, 'POST', '/collections', { emergencyId: emergency.id, itemId: 'diphenhydramine-inj', units: 1, overrideAllergy: false }), 'needs_approval');
+  await release(ctx, mara, emergency.id, 'diphenhydramine-inj', true);
+  const e = ok(await call(ctx, medicalOfficer(), 'GET', '/emergencies')).emergencies[0];
+  assert.equal(e.released[0].allergyOverridden, true);
+});
+
+test('Only the medical officer closes the paperwork, once', async () => {
+  const ctx = await setup();
+  const { emergency } = await raise(ctx);
+  fails(await call(ctx, kai, 'POST', `/emergencies/${emergency.id}/paperwork`, { note: 'I am fine' }), 'wrong_role');
+  fails(await call(ctx, medicalOfficer(), 'POST', `/emergencies/${emergency.id}/paperwork`, { note: '' }), 'invalid_field');
+  const closed = ok(await call(ctx, medicalOfficer(), 'POST', `/emergencies/${emergency.id}/paperwork`, { note: 'Done' })).emergency;
+  assert.deepEqual([closed.status, closed.paperworkNote], ['closed', 'Done']);
+  fails(await call(ctx, medicalOfficer(), 'POST', `/emergencies/${emergency.id}/paperwork`, { note: 'Again' }), 'already_done');
+  assert.equal(ok(await call(ctx, tomas, 'GET', '/emergencies', null, { status: 'open' })).emergencies.length, 0);
+});
+
+test('Scene C, step 6: the new allergy goes on Kai\'s profile as suspected; Leo confirms it in scene E', async () => {
+  const ctx = await setup();
+  ok(await call(ctx, kai, 'POST', '/allergies', { crewId: 'c5', substance: 'New food item (freeze-dried)', status: 'suspected', note: 'Lips swelled after eating it' }));
+  const p = ok(await call(ctx, medicalOfficer(), 'POST', '/allergies', { crewId: 'c5', substance: 'New food item (freeze-dried)', status: 'confirmed', note: null })).profile;
+  assert.deepEqual(p.allergies.map((a) => a.status), ['confirmed']);
+});
+
+test('Emergency inputs are checked; Earth can\'t raise one', async () => {
+  const ctx = await setup();
+  fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c9', reason: 'x' }), 'invalid_field');
+  fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5', reason: '' }), 'invalid_field');
+  fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5', reason: 'x', vitals: { spo2Pct: 140 } }), 'invalid_field');
+  fails(await call(ctx, earthUser(), 'POST', '/emergencies', { patientId: 'c5', reason: 'x' }), 'wrong_role');
+  fails(await call(ctx, mara, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 1, overrideAllergy: true }), 'invalid_field');
+  // reset clears emergencies
+  await raise(ctx);
+  await meds.reset(ctx);
+  assert.equal(ok(await call(ctx, medicalOfficer(), 'GET', '/emergencies')).emergencies.length, 0);
 });
