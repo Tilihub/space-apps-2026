@@ -1,0 +1,12 @@
+{
+  "name": "space-apps-2026",
+  "private": true,
+  "description": "Onboard health app for the 2026 NASA Space Apps Challenge. No npm packages: Node built-ins only.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"**/*.test.js\""
+  }
+}
