@@ -1,0 +1,11 @@
+# Files and folders that change only with a teammate's approval.
+# GitHub asks these people to review any pull request that touches them,
+# and main accepts the change only after one of them (not the author) approves.
+
+/shared/PLAN.md   @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/final/           @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/AGENTS.md        @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/CLAUDE.md        @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/SETUP.md         @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/README.md        @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30
+/.github/         @Tilihub @tommy2002t @Potest04 @petrosmpidis @dadis2 @AngelosAth30

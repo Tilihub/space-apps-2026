@@ -64,7 +64,7 @@ Start your AI tool inside the `space-apps-2026` folder (`claude` or `codex` in t
 
 > Read AGENTS.md and do the onboarding.
 
-It asks for your name, creates your own folder with your status file, and publishes it. You're done when your folder appears at https://github.com/Tilihub/space-apps-2026/tree/main/people
+It asks for your name, creates your own folder with your status file and personal plan, and publishes it. You're done when your folder appears at https://github.com/Tilihub/space-apps-2026/tree/main/people
 
 Your AI tool asks permission before running commands. That's normal: read what it wants to do, then approve.
 
