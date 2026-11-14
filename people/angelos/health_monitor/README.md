@@ -21,6 +21,50 @@ Requires Python 3.10 or later. Tested with the installed Python 3.15.2.
 The default scenario shows three consecutive days of changes. `usual` shows no
 demo threshold crossings; `missing` shows an incomplete comparison.
 
+## Enter a new check-in
+
+Run this command from the repository root:
+
+```powershell
+python people/angelos/health_monitor/check_in.py
+```
+
+The form asks for a mission date and the five measurements. Press Enter to accept
+the proposed date. For a missing measurement, leave its answer blank. Both `7.5`
+and `7,5` are accepted as numeric input. Invalid values prompt a retry; Ctrl+C
+cancels without saving a new check-in. Use synthetic values only.
+
+For a first trial, accept the date and enter `62`, `7.8`, `7`, `3`, and `3` in
+order. This should produce `no_demo_deviation` with the bundled reference.
+The comparison uses unvalidated demo rules as described below.
+
+On the first run, a SQLite database is initialized from the bundled baseline and
+the two recent synthetic days (12 and 13 November 2026). The bundled `current`
+record is not saved: the form supplies that day's values. The proposed first date
+is 14 November 2026; subsequent runs propose the day after the latest saved record.
+These are simulated mission dates, not the computer's current date. Each check-in
+uses 08:00 in the seed's fixed mission timezone.
+
+The database is `local_data/check_ins.sqlite3` beside the scripts. It is excluded
+from Git by this folder's `.gitignore`. It is local plaintext storage, not an
+encrypted or production medical record system. Do not enter real health data.
+The baseline is copied once when the database is created and is never updated by
+new check-ins. Editing `demo_data.json` later does not change an existing database.
+
+Previously saved entries are used in subsequent comparisons. Duplicate dates,
+backdated entries, and different astronaut IDs are rejected without overwriting
+history. This demo supports one synthetic astronaut per database. To start a
+separate practice session without changing the existing one, use a new filename:
+
+```powershell
+python people/angelos/health_monitor/check_in.py --database people/angelos/health_monitor/local_data/practice.sqlite3
+```
+
+The entry form and result message are not a chatbot; open-ended conversation is
+a later step.
+
+## Checks
+
 Run checks from the repository root:
 
 ```powershell
@@ -96,7 +140,7 @@ The helper text makes no diagnosis, causal claim, or treatment recommendation.
 ## Next pieces
 
 1. Agree the input fields and scales with the sensor/app owners.
-2. Add local storage and an API adapter using this analysis function.
+2. Add an API adapter using the analysis function and the local storage prototype.
 3. Add a UI with history, evidence, and the companion conversation.
 4. Add a language model for phrasing and conversation using structured evidence.
 5. Evaluate a learned anomaly detector against a simple comparison approach once suitable data exist.

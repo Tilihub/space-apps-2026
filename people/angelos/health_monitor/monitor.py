@@ -20,6 +20,21 @@ DEMO_FLOORS = {
 MIN_REFERENCE_DAYS = 5  # Engineering demo minimum; not a validated baseline duration.
 
 
+def validate_measurement(metric, value):
+    if value is None:
+        return
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{metric} must be a number or null.")
+    if not math.isfinite(value):
+        raise ValueError(f"{metric} must be finite.")
+    if metric == "resting_heart_rate_bpm" and value <= 0:
+        raise ValueError("resting_heart_rate_bpm must be positive.")
+    if metric == "sleep_hours" and not 0 <= value <= 24:
+        raise ValueError("sleep_hours must be between 0 and 24.")
+    if metric in ("mood", "stress", "fatigue") and not 0 <= value <= 10:
+        raise ValueError(f"{metric} must be between 0 and 10.")
+
+
 def recorded_time(row):
     try:
         stamp = datetime.fromisoformat(row["recorded_at"])
@@ -65,19 +80,7 @@ def validate(payload):
             elif group_name == "recent":
                 recent_times.append(stamp)
             for metric in DEMO_FLOORS:
-                value = row.get(metric)
-                if value is None:
-                    continue
-                if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise ValueError(f"{metric} must be a number or null.")
-                if not math.isfinite(value):
-                    raise ValueError(f"{metric} must be finite.")
-                if metric == "resting_heart_rate_bpm" and value <= 0:
-                    raise ValueError("resting_heart_rate_bpm must be positive.")
-                if metric == "sleep_hours" and not 0 <= value <= 24:
-                    raise ValueError("sleep_hours must be between 0 and 24.")
-                if metric in ("mood", "stress", "fatigue") and not 0 <= value <= 10:
-                    raise ValueError(f"{metric} must be between 0 and 10.")
+                validate_measurement(metric, row.get(metric))
     if baseline_times and recent_times and max(baseline_times) >= min(recent_times):
         raise ValueError("The frozen baseline must precede the recent period.")
     return baseline, recent, current
@@ -155,6 +158,18 @@ def analyze(payload):
     }
 
 
+def print_result(result):
+    print("PERSONAL MONITORING DEMO - NOT A MEDICAL ASSESSMENT")
+    print(f"Status: {result['status']} | Data: {result['data_completeness']}")
+    print(result["assistant_message"])
+    for finding in result["findings"]:
+        print(f"- {finding['metric']}: {finding['current']} vs reference "
+              f"{finding['reference_median']}; delta {finding['delta']:+g}; "
+              f"{finding['consecutive_flagged_days']} consecutive check-in day(s)")
+    for gap in result["data_gaps"]:
+        print(f"- Data gap: {gap}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scenario", choices=["usual", "changes", "missing"],
@@ -174,15 +189,7 @@ def main():
     if args.json:
         print(json.dumps(result, indent=2, allow_nan=False))
     else:
-        print("PERSONAL MONITORING DEMO - NOT A MEDICAL ASSESSMENT")
-        print(f"Status: {result['status']} | Data: {result['data_completeness']}")
-        print(result["assistant_message"])
-        for finding in result["findings"]:
-            print(f"- {finding['metric']}: {finding['current']} vs reference "
-                  f"{finding['reference_median']}; delta {finding['delta']:+g}; "
-                  f"{finding['consecutive_flagged_days']} consecutive check-in day(s)")
-        for gap in result["data_gaps"]:
-            print(f"- Data gap: {gap}")
+        print_result(result)
     return 0
 
 

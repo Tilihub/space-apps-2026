@@ -13,7 +13,8 @@ plan and integration contract still need team agreement.
 - [x] Build a runnable Python core with synthetic daily records and frozen personal references.
 - [x] Explain deviations, persistence, and missing data in structured output.
 - [ ] Agree input fields, units, self-report scales, and daily aggregation with the other members.
-- [ ] Add storage and an API adapter for the app.
+- [x] Add a terminal form and local storage without changing the frozen baseline.
+- [ ] Add an API adapter for the app.
 - [ ] Connect history and structured findings to a companion UI and conversation.
 - [ ] Evaluate the analysis with suitable data before making any health-related claims.
 
