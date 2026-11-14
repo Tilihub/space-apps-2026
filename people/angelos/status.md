@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 17:14 (Asia/Nicosia)
-- Working on: External baseline import published in PR #50, with a runnable JSON example and saved source/scale metadata.
-- Branch: angelos/external-baseline
+- Last updated: 2026-11-14 17:51 (Asia/Nicosia)
+- Working on: ANG-1 app-facing health module implemented to the approved Node contract; preparing the handoff to zt.
+- Branch: angelos/health-module
 
 ## Done
 
@@ -86,55 +86,64 @@
 - Pushed angelos/external-baseline and opened
   https://github.com/Tilihub/space-apps-2026/pull/50 after merging the latest main.
   Only personal files differ from main; existing user databases were not replaced.
+- Merged the completed external-baseline PR #50 (own folder only), then merged
+  current main into angelos/health-module without rebase. PR #49's approved
+  shared Node contract arrived during this step; the implementation follows its
+  corrected /today and medical-officer-only /daily interface.
+- Added people/angelos/health/index.js and analysis.js: app JSON check-ins, five
+  isolated personal histories through ctx.store, a frozen median/MAD reference,
+  missing-day handling, weekly summaries and a repeatable fixture reset.
+- The POST response returns {checkIn, today}, never the analysis. Crew get only
+  their own current entry; c2 in the medical_officer role gets the detailed daily,
+  history, weekly and crew views. No private journal data enters this module.
+- Reset reads Petros's canonical demo-data/health.json when it exists, otherwise
+  a labelled bundled copy of his published PET-1 example at 12c840e. Tests pin
+  the example explicitly. New data never replaces a stored reference implicitly.
+- Added module checks for session isolation, server-owned identity/time, missing
+  values, 1-10 scales, permission enforcement, concurrent and duplicate writes,
+  reloads, save failures, fixed references, streaks and weekly coverage.
+- Passed all 27 root JavaScript checks (20 health + 7 shared example) using the
+  exact package test script, node --test "**/*.test.js". npm test itself could
+  not start because npm is unavailable. No user SQLite database was opened.
+- User assigned companion responses (step 3) to Potest. Recorded that handoff
+  here and in my own plan; no teammate's folder or shared owner table was changed.
 
 ## Blocked / need from others
 
-- No local implementation blocker. The input contract still needs agreement with
-  the members providing sensor summaries and psychological self-reports.
-- Align the existing 0–10 self-report scales with Tommy's proposed app fields before integration.
-- ANG-1 handoff still needs zt's acceptance: health-v1 packet, crew ID mapping,
-  per-crew store choice, mission clock, browser origin and session integration.
-  In particular, the skeleton's Sleep 0–10 is not sleep duration in hours.
-- The pending Node.js contract supersedes the old HTTP adapter as the integration
-  target if approved: c1–c5, camelCase, one clock and a new module boundary. Align
-  that and the new doctor-only detailed analysis policy before final UI integration.
-  This local reader's input is not silently treated as the proposed health.json.
-- GitHub CLI works at C:/Program Files/GitHub CLI/gh.exe with network permission.
+- zt owns the joined server and pages; neither is on main yet. The module boundary
+  is tested, but an actual browser form save/reload has not been verified.
+- Petros's bundled example predates the approved demo cases (c4 reference sleep
+  7.8 h instead of 6.8 h). Petros must publish the updated canonical health.json.
+  Do not call the exact live-demo scenario accepted with the old example.
+- The shared owner table still names angelos for mind. Coordinate the user's
+  Potest handoff with zt rather than changing the protected contract implicitly.
+- npm is not installed/on PATH here. Run its exact root test script directly with
+  node --test "**/*.test.js". Node.js 24 is available; no packages are needed.
 
 ## Next steps
 
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Continue from angelos/external-baseline. From the repository root run
-  python people/angelos/health_monitor/check_in.py and use synthetic values.
-- Follow BASELINE_IMPORT.md to run --baseline-file examples/baseline_input.json
-  --import-only (using repository-root paths). Continue with --database pointing
-  to local_data/imported.sqlite3. Supply a selected external file in the same
-  schema and a new destination database when the data is ready.
-- The first proposed mission date is 2026-11-14; later runs advance from saved
-  history. The ignored SQLite database uses a frozen reference copied on first run.
-- Use python people/angelos/health_monitor/check_in.py --reset when a fresh demo
-  session is wanted. It creates a backup under local_data/backups and restores the
-  two initial check-in days without changing the baseline, then exits.
-- Use python people/angelos/health_monitor/check_in.py --report to inspect the
-  latest weekly summary without adding data. Complete week-to-week comparisons
-  require seven measured days in each period; the current history is partial.
+- Continue from angelos/health-module. Read health/README.md and run npm test
+  (or the identical node --test "**/*.test.js" if npm is absent) from repo root.
+- zt imports health/index.js as the single health module instance, mounts
+  /api/health, and supplies session identity, UTC clock and durable module storage.
+  The form POSTs measurements to /check-ins, receives {checkIn, today}, and reloads
+  /today. Medical analysis is fetched separately by c2's medical session.
+- Verify the joined save/reload path with two users, role refusals and reset after
+  the core/pages land. This module does not contain another server or login.
+- When Petros's updated data lands, explicitly reset a fresh demo store, then check
+  c4's day-42 input against 6.8 h baseline and three consecutive short nights.
+- The Python CLI, external-baseline reader and old HTTP prototype remain separate
+  in health_monitor/ for study. Their SQLite files and 0-10 histories are unchanged;
+  they are not silently converted or exposed by the new five-person app module.
+- Follow health_monitor/BASELINE_IMPORT.md for an external personal-history file.
+  Use a new destination database for a different reference. That local file format
+  is not the app's health.json contract.
 - Walk through the code slowly with angelos when requested. He wants to understand
   each part and may later rebuild a simpler version himself; avoid unsolicited code changes.
-- Hand API_CONTRACT.md, api_example.json and health_client.mjs to zt for review.
-  The adapter runs with python people/angelos/health_monitor/app_api.py and an
-  explicit --allow-origin matching the HTTP-served frontend. Tokens are generated
-  at startup for a developer demo, not a production login or role system.
-- ANG-1 UI wiring belongs to zt: save a check-in, reload that person's history,
-  display daily/weekly data and verify a second identity stays isolated. The UI
-  itself has not been edited or connected here. Do not rebuild completed analysis.
-  Shared decisions remain team coordination; proposed IDs/units are not silently adopted.
-- Start ANG-2 after ANG-1 is connected. Keep journal context restricted to the
-  author, their psychologist and their authorized assistant; exclude it and private
-  derived details from ordinary reports to other roles.
-- Agree the daily input fields, units, scales, and timezone with the app/sensor owners.
-- Add an API adapter, then connect the structured findings to a UI
-  and companion conversation. No language model or live sensor integration exists yet.
+- Do not start ANG-2 here: the user assigned step 3 to Potest. Coordinate that
+  handoff with zt, preserving the shared contract's private mind boundaries.
 - Demo thresholds and baseline sample count are arbitrary, unvalidated engineering
   settings. Do not describe the output as a diagnosis or medical clearance.
