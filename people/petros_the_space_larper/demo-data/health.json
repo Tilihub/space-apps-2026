@@ -3,21 +3,21 @@
   "kind": "synthetic",
   "crew": {
     "c1": {
-      "story": "Usual readings and complete check-ins.",
+      "story": "Usual readings and complete check-ins for the healthy workout case.",
       "checkIns": [
-        {"missionDay":29, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":61, "mood":8, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
-        {"missionDay":30, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":62, "mood":9, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":31, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":60, "mood":8, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
-        {"missionDay":32, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":61, "mood":8, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
-        {"missionDay":33, "time":"07:30", "sleepHours":8, "restingHeartRateBpm":63, "mood":9, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":34, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":60, "mood":8, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
-        {"missionDay":35, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":61, "mood":8, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
-        {"missionDay":36, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":62, "mood":9, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":37, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":61, "mood":8, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
-        {"missionDay":38, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":60, "mood":8, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
-        {"missionDay":39, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":62, "mood":9, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":40, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":61, "mood":8, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
-        {"missionDay":41, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":60, "mood":8, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6}
+        {"missionDay":29, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":54, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
+        {"missionDay":30, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":55, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":31, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":53, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
+        {"missionDay":32, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":54, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
+        {"missionDay":33, "time":"07:30", "sleepHours":7, "restingHeartRateBpm":55, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":34, "time":"07:30", "sleepHours":6.6, "restingHeartRateBpm":52, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
+        {"missionDay":35, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":54, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
+        {"missionDay":36, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":55, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":37, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":54, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
+        {"missionDay":38, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":53, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6},
+        {"missionDay":39, "time":"07:30", "sleepHours":7, "restingHeartRateBpm":55, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":40, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":54, "mood":8, "stress":2, "fatigue":2, "spo2Pct":98, "systolicMmHg":116, "diastolicMmHg":74, "temperatureC":36.6},
+        {"missionDay":41, "time":"07:30", "sleepHours":6.6, "restingHeartRateBpm":52, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":115, "diastolicMmHg":73, "temperatureC":36.6}
       ]
     },
     "c2": {
@@ -39,39 +39,39 @@
       ]
     },
     "c3": {
-      "story": "Some recent readings are unavailable. The baseline remains intact.",
+      "story": "Mood declines across six recent days while resting pulse is unavailable on days 39 and 41.",
       "checkIns": [
-        {"missionDay":29, "time":"07:30", "sleepHours":7.5, "restingHeartRateBpm":65, "mood":7, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
-        {"missionDay":30, "time":"07:30", "sleepHours":7.6, "restingHeartRateBpm":66, "mood":8, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":118, "diastolicMmHg":77, "temperatureC":36.6},
-        {"missionDay":31, "time":"07:30", "sleepHours":7.4, "restingHeartRateBpm":64, "mood":7, "stress":4, "fatigue":4, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":32, "time":"07:30", "sleepHours":7.5, "restingHeartRateBpm":65, "mood":7, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
-        {"missionDay":33, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":67, "mood":8, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":119, "diastolicMmHg":78, "temperatureC":36.7},
-        {"missionDay":34, "time":"07:30", "sleepHours":7.4, "restingHeartRateBpm":64, "mood":7, "stress":4, "fatigue":4, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":35, "time":"07:30", "sleepHours":7.5, "restingHeartRateBpm":65, "mood":7, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
-        {"missionDay":36, "time":"07:30", "sleepHours":7.6, "restingHeartRateBpm":66, "mood":8, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":118, "diastolicMmHg":77, "temperatureC":36.6},
-        {"missionDay":37, "time":"07:30", "sleepHours":7.5, "restingHeartRateBpm":65, "mood":7, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
-        {"missionDay":38, "time":"07:30", "sleepHours":7.4, "restingHeartRateBpm":64, "mood":7, "stress":4, "fatigue":4, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
-        {"missionDay":39, "time":"07:30", "sleepHours":7.6, "restingHeartRateBpm":66, "mood":8, "stress":3, "fatigue":3, "spo2Pct":null, "systolicMmHg":null, "diastolicMmHg":null, "temperatureC":36.6},
-        {"missionDay":40, "time":"07:30", "sleepHours":7.5, "restingHeartRateBpm":65, "mood":7, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
-        {"missionDay":41, "time":"07:30", "sleepHours":7.4, "restingHeartRateBpm":null, "mood":7, "stress":4, "fatigue":null, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":null}
+        {"missionDay":29, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":65, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
+        {"missionDay":30, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":66, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":118, "diastolicMmHg":77, "temperatureC":36.6},
+        {"missionDay":31, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":64, "mood":7, "stress":3, "fatigue":3, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":32, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":65, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
+        {"missionDay":33, "time":"07:30", "sleepHours":7, "restingHeartRateBpm":67, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":119, "diastolicMmHg":78, "temperatureC":36.7},
+        {"missionDay":34, "time":"07:30", "sleepHours":6.6, "restingHeartRateBpm":64, "mood":7, "stress":3, "fatigue":3, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":35, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":65, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
+        {"missionDay":36, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":66, "mood":6, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":118, "diastolicMmHg":77, "temperatureC":36.6},
+        {"missionDay":37, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":65, "mood":5, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
+        {"missionDay":38, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":64, "mood":5, "stress":4, "fatigue":3, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6},
+        {"missionDay":39, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":null, "mood":5, "stress":4, "fatigue":3, "spo2Pct":97, "systolicMmHg":118, "diastolicMmHg":77, "temperatureC":36.6},
+        {"missionDay":40, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":65, "mood":4, "stress":5, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":76, "temperatureC":36.6},
+        {"missionDay":41, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":null, "mood":4, "stress":5, "fatigue":3, "spo2Pct":96, "systolicMmHg":116, "diastolicMmHg":75, "temperatureC":36.6}
       ]
     },
     "c4": {
-      "story": "Sleep, mood, stress and fatigue change on days 40–41 and again at the live check-in on day 42. Tomas reports a headache after a synthetic overnight cabin CO₂ alert.",
+      "story": "Sleep shortens on days 40–41 and again at the live day-42 check-in; other compared measures stay near reference. Cabin CO₂ comes from Potest's separate ISS RR-9 replay.",
       "checkIns": [
-        {"missionDay":29, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":62, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":30, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":63, "mood":8, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
-        {"missionDay":31, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":61, "mood":7, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
-        {"missionDay":32, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":62, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":33, "time":"07:30", "sleepHours":8, "restingHeartRateBpm":64, "mood":8, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":120, "diastolicMmHg":78, "temperatureC":36.8},
-        {"missionDay":34, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":61, "mood":7, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
-        {"missionDay":35, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":62, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":36, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":63, "mood":8, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
-        {"missionDay":37, "time":"07:30", "sleepHours":7.8, "restingHeartRateBpm":62, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":38, "time":"07:30", "sleepHours":7.7, "restingHeartRateBpm":61, "mood":7, "stress":3, "fatigue":4, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
-        {"missionDay":39, "time":"07:30", "sleepHours":7.9, "restingHeartRateBpm":63, "mood":8, "stress":2, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
-        {"missionDay":40, "time":"07:30", "sleepHours":5.9, "restingHeartRateBpm":73, "mood":5, "stress":6, "fatigue":6, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
-        {"missionDay":41, "time":"07:30", "sleepHours":5.6, "restingHeartRateBpm":75, "mood":4, "stress":7, "fatigue":7, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7}
+        {"missionDay":29, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":58, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":30, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":59, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
+        {"missionDay":31, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":57, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
+        {"missionDay":32, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":58, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":33, "time":"07:30", "sleepHours":7.1, "restingHeartRateBpm":60, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":120, "diastolicMmHg":78, "temperatureC":36.8},
+        {"missionDay":34, "time":"07:30", "sleepHours":6.5, "restingHeartRateBpm":56, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
+        {"missionDay":35, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":58, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":36, "time":"07:30", "sleepHours":6.9, "restingHeartRateBpm":59, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
+        {"missionDay":37, "time":"07:30", "sleepHours":6.8, "restingHeartRateBpm":58, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":38, "time":"07:30", "sleepHours":6.7, "restingHeartRateBpm":57, "mood":7, "stress":3, "fatigue":3, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7},
+        {"missionDay":39, "time":"07:30", "sleepHours":7.1, "restingHeartRateBpm":60, "mood":7, "stress":3, "fatigue":3, "spo2Pct":98, "systolicMmHg":119, "diastolicMmHg":77, "temperatureC":36.7},
+        {"missionDay":40, "time":"07:30", "sleepHours":5, "restingHeartRateBpm":61, "mood":6, "stress":4, "fatigue":4, "spo2Pct":98, "systolicMmHg":118, "diastolicMmHg":76, "temperatureC":36.7},
+        {"missionDay":41, "time":"07:30", "sleepHours":4.8, "restingHeartRateBpm":62, "mood":6, "stress":4, "fatigue":4, "spo2Pct":97, "systolicMmHg":117, "diastolicMmHg":75, "temperatureC":36.7}
       ]
     },
     "c5": {
