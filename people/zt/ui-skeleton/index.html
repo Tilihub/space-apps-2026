@@ -1,0 +1,285 @@
+<!doctype html>
+<!--
+  UI skeleton: what goes where, nothing else. No styling on purpose; the real look comes later.
+  The only CSS is layout (columns, rows) and thin box outlines so you can see where each part sits.
+  Made for landscape tablet / laptop.
+
+  Open this file in a browser. One tab per astronaut:
+    index.html?crew=1   Astronaut A (demo case: slept badly, headache)
+    index.html?crew=2   Astronaut B (demo case: healthy, workout)
+    index.html?crew=3   Astronaut C (medical officer, demo case still open)
+  All numbers are fake and live in the data block at the top of the script.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI skeleton</title>
+<style>
+  /* Layout only */
+  header { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid; }
+  .app { display: grid; grid-template-columns: 180px 1fr; }
+  .app:has(nav[hidden]) { display: block; }
+  nav { display: flex; flex-direction: column; gap: 8px; padding: 8px; border-right: 1px solid; min-height: 90vh; }
+  main { padding: 0 16px; }
+  .row { display: flex; gap: 16px; }
+  .row > * { flex: 1; }
+  .box { display: block; border: 1px solid; padding: 8px; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <span>Crew member: <b data-f="name"></b> (<span data-f="role"></span>)</span>
+  <span>Mission day <span data-f="day"></span>, <span data-f="time"></span></span>
+  <a href="#login">Switch crew member</a>
+</header>
+
+<div class="app">
+  <nav id="nav">
+    <a href="#home">Home</a>
+    <a href="#checkin">Check-in</a>
+    <a href="#habitat">Habitat</a>
+    <a href="#medbay">Med bay</a>
+    <a href="#mind">Mind</a>
+    <a href="#companion">Companion</a>
+    <a href="#crew" id="nav-crew">Crew view</a>
+  </nav>
+
+  <main>
+
+    <!-- LOGIN (built last for real) -->
+    <section id="login">
+      <h2>Login</h2>
+      <div class="box">Camera view with face scan animation (placeholder)</div>
+      <a class="box" href="#home">Start face scan</a>
+      <div class="box">
+        Demo fallback, pick a crew member:
+        <a href="?crew=1#home">Astronaut A</a> ·
+        <a href="?crew=2#home">Astronaut B</a> ·
+        <a href="?crew=3#home">Astronaut C</a>
+      </div>
+      <p>Builds on: Tommy's entry brief</p>
+    </section>
+
+    <!-- HOME -->
+    <section id="home">
+      <h2>Home</h2>
+      <div class="row">
+        <div>
+          <a class="box" href="#readiness">Readiness score: <b data-f="readiness"></b> (tap for details)</a>
+          <a class="box" href="#tasks">Task score: <b data-f="tasks"></b> (tap for task list)</a>
+        </div>
+        <div class="box">
+          Body figure (drawing comes later). Measurement points, tap one:
+          <ul id="points"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- READINESS DETAILS -->
+    <section id="readiness">
+      <h2>Readiness: what's right and wrong today</h2>
+      <p>Each compared with this astronaut's own normal.</p>
+      <div class="box">Sleep: today — / your normal —</div>
+      <div class="box">Resting heart rate: today — / your normal —</div>
+      <div class="box">Mood: today — / your normal —</div>
+      <div class="box">Stress: today — / your normal —</div>
+      <div class="box">Fatigue: today — / your normal —</div>
+      <div class="box">Symptoms: —</div>
+      <p>Builds on: angelos's comparison core</p>
+      <a href="#home">Back to home</a>
+    </section>
+
+    <!-- TASK LIST -->
+    <section id="tasks">
+      <h2>Today's tasks</h2>
+      <a class="box" href="#checkin">[ ] Daily check-in</a>
+      <div class="box">[ ] Workout</div>
+      <a class="box" href="#checkin">[ ] Measurements</a>
+      <a class="box" href="#medbay">[ ] Dose follow-up: did it help?</a>
+      <a href="#home">Back to home</a>
+    </section>
+
+    <!-- BODY POINT DETAILS (filled in by the script) -->
+    <section id="point">
+      <h2 id="point-title"></h2>
+      <div class="box" id="point-text"></div>
+      <div class="box">What's wrong, or a question for the astronaut (exactly how is still open)</div>
+      <a class="box" href="#checkin">Report a symptom here</a>
+      <a href="#home">Back to home</a>
+    </section>
+
+    <!-- CHECK-IN -->
+    <section id="checkin">
+      <h2>Check-in</h2>
+      <div class="row">
+        <div class="box">
+          Daily check-in (0–10)
+          <p>Sleep <input type="range" min="0" max="10"></p>
+          <p>Mood <input type="range" min="0" max="10"></p>
+          <p>Stress <input type="range" min="0" max="10"></p>
+          <p>Fatigue <input type="range" min="0" max="10"></p>
+          <a href="#home">Save check-in</a>
+        </div>
+        <div class="box">
+          Symptom report
+          <p>Body area <select><option>Head</option><option>Eyes</option><option>Heart</option><option>Lungs</option><option>Gut</option><option>Muscles and bones</option></select></p>
+          <p>Symptom <input type="text"></p>
+          <p>Severity <input type="range" min="0" max="10"></p>
+          <p>"Shared with your medical officer" (open point)</p>
+          <a href="#medbay">Send report</a>
+        </div>
+        <div class="box">
+          Guided measurements, step-by-step instructions
+          <p>Resting heart rate</p>
+          <p>Blood pressure</p>
+          <p>Blood oxygen</p>
+          <p>Temperature</p>
+        </div>
+      </div>
+      <p>Builds on: angelos's daily input, dadis2's symptom report format</p>
+    </section>
+
+    <!-- HABITAT -->
+    <section id="habitat">
+      <h2>Habitat</h2>
+      <div class="row">
+        <div class="box">CO₂: —</div>
+        <div class="box">Temperature: —</div>
+        <div class="box">Humidity: —</div>
+        <div class="box">Radiation: —</div>
+      </div>
+      <div class="box">CO₂ history graph (placeholder)</div>
+      <div class="box">Linked to symptoms, for example: high CO₂ is a known headache trigger</div>
+      <p>Builds on: potest's environment monitor</p>
+    </section>
+
+    <!-- MED BAY -->
+    <section id="medbay">
+      <h2>Med bay</h2>
+      <div class="row">
+        <div class="box">Medicine suggestions after a symptom</div>
+        <div class="box">Dispense <button>Dispense</button></div>
+      </div>
+      <div class="box">Dose log. Last dose: — · Did it help? <button>Yes</button> <button>No</button></div>
+      <p>Builds on: dadis2's medical inventory</p>
+    </section>
+
+    <!-- MIND -->
+    <section id="mind">
+      <h2>Mind</h2>
+      <div class="row">
+        <div class="box">Check-in history (graph placeholder)</div>
+        <div class="box">Journal <textarea rows="4"></textarea></div>
+        <div class="box">Support</div>
+      </div>
+      <p>Builds on: to be assigned</p>
+    </section>
+
+    <!-- COMPANION -->
+    <section id="companion">
+      <h2>Companion</h2>
+      <div class="row">
+        <div class="box">Points: —</div>
+        <div class="box">Mascot (placeholder)</div>
+      </div>
+      <p>Where and how it fits is still open. Builds on: Tommy's concepts</p>
+    </section>
+
+    <!-- CREW VIEW (medical officer only) -->
+    <section id="crew">
+      <h2>Crew view (medical officer)</h2>
+      <table border="1">
+        <thead><tr><th>Crew member</th><th>Readiness</th><th>Points to look at</th><th>Case summary</th></tr></thead>
+        <tbody id="crew-rows"></tbody>
+      </table>
+      <div class="box">Approvals waiting (placeholder)</div>
+      <p>Builds on: dadis2's approvals</p>
+    </section>
+
+    <!-- CASE SUMMARY (not visible to the astronaut) -->
+    <section id="case">
+      <h2 id="case-title"></h2>
+      <p>Created automatically when an astronaut reports a problem. For the medical officer and Earth. Where it lives is still open.</p>
+      <div class="row">
+        <div class="box">Health change</div>
+        <div class="box">Symptom</div>
+        <div class="box">Cabin conditions</div>
+        <div class="box">Doses</div>
+      </div>
+      <a href="#crew">Back to crew view</a>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // ---- Fake data: swap this block for the real pieces later ----
+  const mission = { day: 42, time: '07:30' }; // one mission clock for everyone (still to agree)
+
+  const bodyPoints = { head: 'Head', eyes: 'Eyes', heart: 'Heart', lungs: 'Lungs', gut: 'Gut', muscles: 'Muscles and bones' };
+
+  const crew = [
+    // readiness 0–100 is a placeholder scale, not agreed yet.
+    // alerts: body points that are red, with what's wrong. Every other point is blue.
+    { id: 1, name: 'Astronaut A', role: 'astronaut', readiness: 58, tasksDone: 1, tasksTotal: 4,
+      alerts: { head: 'Headache since waking up. Slept 4 h. Cabin CO₂ was high overnight.' } },
+    { id: 2, name: 'Astronaut B', role: 'astronaut', readiness: 86, tasksDone: 3, tasksTotal: 4,
+      alerts: {} },
+    { id: 3, name: 'Astronaut C', role: 'medical officer', readiness: 74, tasksDone: 2, tasksTotal: 4,
+      alerts: {} },
+  ];
+  // ---- End of fake data ----
+
+  const me = crew.find((c) => c.id === Number(new URLSearchParams(location.search).get('crew'))) ?? crew[0];
+
+  const setField = (name, value) => {
+    document.querySelectorAll(`[data-f="${name}"]`).forEach((el) => { el.textContent = value; });
+  };
+
+  const fillOnce = () => {
+    setField('name', me.name);
+    setField('role', me.role);
+    setField('day', mission.day);
+    setField('time', mission.time);
+    setField('readiness', me.readiness);
+    setField('tasks', `${me.tasksDone} of ${me.tasksTotal} done`);
+    document.getElementById('nav-crew').hidden = me.role !== 'medical officer';
+
+    document.getElementById('points').innerHTML = Object.entries(bodyPoints)
+      .map(([key, label]) => `<li><a href="#point:${key}">${label}: ${me.alerts[key] ? 'red (look at this)' : 'blue (fine)'}</a></li>`)
+      .join('');
+
+    document.getElementById('crew-rows').innerHTML = crew
+      .map((c) => {
+        const red = Object.keys(c.alerts);
+        const names = red.map((k) => bodyPoints[k]).join(', ') || 'none';
+        const caseLink = red.length ? `<a href="#case:${c.id}">Open</a>` : '—';
+        return `<tr><td>${c.name}</td><td>${c.readiness}</td><td>${names}</td><td>${caseLink}</td></tr>`;
+      })
+      .join('');
+  };
+
+  const show = () => {
+    const [screen, arg] = (location.hash.slice(1) || 'home').split(':');
+    document.querySelectorAll('section').forEach((s) => { s.hidden = s.id !== screen; });
+    document.getElementById('topbar').hidden = screen === 'login';
+    document.getElementById('nav').hidden = screen === 'login';
+
+    if (screen === 'point') {
+      document.getElementById('point-title').textContent = bodyPoints[arg];
+      document.getElementById('point-text').textContent = me.alerts[arg] ?? 'Blue: all fine. Today vs your normal: —';
+    }
+    if (screen === 'case') {
+      const c = crew.find((x) => x.id === Number(arg));
+      document.getElementById('case-title').textContent = `Case summary: ${c.name}`;
+    }
+  };
+
+  fillOnce();
+  show();
+  window.addEventListener('hashchange', show);
+</script>
+</body>
+</html>

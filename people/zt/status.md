@@ -8,9 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-14 14:32
-- Working on: the app overview in my [plan](plan.md), for Tommy to read; integration with Tommy
-- Branch: zt/app-overview-plan
+- Last updated: 2026-11-14 15:54
+- Working on: a clickable UI skeleton ([ui-skeleton/index.html](ui-skeleton/index.html)) so the
+  team can agree what goes where before any styling or real data
+- Branch: zt/ui-skeleton
 
 ## Done
 
@@ -22,9 +23,12 @@
   status update after every finished step (PR #23)
 - Added Gemini research reports on astronaut health monitoring (PRs #11, #12)
 - Checked everyone's status and started [team-jobs.md](team-jobs.md): who does what, worked out
-  from each person's actual work
+  from each person's actual work. Last refreshed 2026-11-14 15:54
 - Wrote a draft app overview in my [plan](plan.md): a quiet home page (readiness score, task score,
   clickable body figure), the sections behind it, the demo format and open points
+- Built a clickable UI skeleton from that overview: one plain HTML file, no styling, landscape
+  tablet/laptop ([PR #43](https://github.com/Tilihub/space-apps-2026/pull/43)). Every screen from the overview is there as labelled boxes; one tab per astronaut
+  with `?crew=1`, `?crew=2`, `?crew=3`; all fake data in one block at the top of the script
 
 ## Blocked / need from others
 
@@ -35,6 +39,9 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
+- UI skeleton (branch `zt/ui-skeleton`): agree with the team what goes where, then move boxes
+  around in [ui-skeleton/index.html](ui-skeleton/index.html). Keep it unstyled until the layout
+  is agreed. Astronaut C as medical officer and readiness on 0–100 are placeholders, not decisions.
 - Go through the app overview in [plan.md](plan.md) with Tommy. It's a draft, open to change.
 - Integration (with Tommy): plan how the pieces join, starting with one crew list, the same field
   names, 0–10 scales and one mission clock.

@@ -70,8 +70,8 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 - Routine information can be sent every few days; the exact interval remains to be chosen. This brief does not claim a standard clinical reporting cadence.
 - A change requiring review or a user-entered symptom requiring analysis can trigger an earlier report. The criteria for these triggers are still to be agreed.
 - Provide a Create report action that assembles a detailed account of the situation from reported symptoms and the recent days' health data, allowing the clinician on Earth to understand the context.
-- The user can manually send a report at any time. The system can also send one automatically when the agreed conditions are met.
-- The recent-history window, exact report fields, report preview/editing, transmission feedback, and the implementation owner for report assembly need more detail.
+- Only the onboard doctor/medical officer can manually send the clinical report to Earth. The astronaut does not see its content. The system can also send reports automatically when the agreed conditions are met; see Q13 above for the updated authority.
+- The recent-history window, exact report fields, doctor-side preview/editing and transmission feedback need detail. Astronaut access to report content is explicitly excluded by the latest Q13 answer.
 - Journal permissions apply to report content as well: ordinary medical reports must not expose private thoughts to people outside the explicitly permitted journal audience.
 
 ### Private thoughts and specialist access
@@ -101,6 +101,23 @@ Points, cosmetic customization, and gamification are deferred until the core exp
 - Q11 resolved: the astronaut's psychologist is the permitted human specialist for private thoughts.
 - Q12 resolved: the user's chatbot can use those private thoughts for supportive conversation; other human roles do not inherit that access.
 - Remaining product details include the daily summary fields, check-in scale/recall period, report preview/visibility and time window, category-specific approval rules, and the definition of any proposed readiness/task score. See the review and proposed task ownership in [implementation-tasks.md](implementation-tasks.md).
+
+## Latest answers Q13–Q17 — authoritative update for this brief
+
+These answers supersede older open alternatives in this personal brief and task handoff. Implementation remains with the module owners and zt; no other member's source was changed here.
+
+- **Q13 — clinical reports:** only the onboard doctor/medical officer can manually create/send the clinical case report to Earth when they decide a specialist review is needed. The astronaut does not see its content. Existing periodic/event-triggered transmission remains intended; exact triggers, recipient permissions, and whether a simple sent/status notice is shown still need coordination. This is not permission to include private journal material in ordinary clinical reports.
+- **Q14 — repeat prescription QR/code:** collect only the currently authorized dose(s), not the whole multi-day supply. Reuse the same prescription code/QR on subsequent prescribed days/occasions until the course expires. Enforce the prescribed frequency, quantity, timing and course end; rescanning repeatedly must not release extra doses. Activate together only the currently eligible prescribed compartments. Track individual dose collection separately from actual consumption/follow-up. Reuse of the prescription is allowed; duplicate redemption of an already collected dose is not. Coordination must cover persistent/shared counters and simultaneous requests so another tab/device or restart cannot reset the allowance.
+- **Q15 — emergency access:** all crew members may invoke the exceptional emergency path, including if the onboard doctor is incapacitated. It is not routine access or a general workaround for Earth-required approval. Exact qualifying conditions, confirmation, logging, notifications and review must be agreed with the inventory/medical-workflow owners; this brief does not supply a validated clinical emergency protocol.
+- **Q16 — readiness score:** remains undecided until Tommy discusses it with zt. Current placeholder values are not an agreed calculation or medical clearance.
+- **Q17 — daily self-report scale:** use **1–10** for mood, stress and fatigue. Earlier proposals/examples using 1–5 or 0–10 do not define the new-entry contract. Keep direction/anchors explicit; sleep duration remains hours, not a 1–10 score. Symptom severity and any established questionnaire retain their own separately agreed scales. Existing 0–10 history/baselines must not be silently relabelled or shifted: agree an explicit version/migration/recollection strategy before comparing incompatible scales; zero in older data is not automatically missing.
+
+### New published progress checked with this update
+
+- Potest's `potest/environment-bridge` branch adds `environmentMonitor.getSnapshot()` and event subscription in PR #40; POT-1 is delivered for integration review rather than work to start from scratch. Mission-clock mapping remains to be agreed.
+- zt's `zt/ui-skeleton` branch now contains a clickable HTML layout with labelled fake data. It is not yet joined to the real modules. Its check-in controls use placeholder 0–10 ranges, including sleep; align mood/stress/fatigue with 1–10 and sleep with hours when wiring real inputs. The hidden case-summary content now matches Q13; manual send permissions still need implementation.
+- Angelos's latest published status says he read Tommy's handoff and identifies ANG-1 as the next proposed implementation. His current data contract still uses 0–10, so Q17 needs agreement before integration. Acknowledgement is not completion of the adapter.
+- Post-publication review found `dadis2/prescription-grants`: the owner has now published dose-by-dose batch collection, RX2 grant codes and an integration contract. The source uses due slots and logged collections, and the contract reports 19 passing owner checks. Review QR reuse/routing, shared persistent quotas and the still-simulated issuer verification with zt. Do not rebuild the earlier missing batch feature from scratch. Collection is currently entered directly in the dose log; actual consumption versus collection remains a later semantic detail if the app needs both.
 
 ## First brief: entry and account flow
 
@@ -144,7 +161,7 @@ The application is intended for long-duration, long-distance crewed missions. To
 - Pair the digital highlight with a physical indicator, such as a green LED; show locked or unavailable compartments distinctly.
 - Tommy proposes separate access paths for everyday supplies and prescription-controlled medicines. The precise access policy is not decided by these notes.
 - The onboard doctor authorizes some categories; specified other categories require Earth approval through a code/QR. The category list is still open.
-- One code/QR opens only the prescribed/authorized compartments together, with the same compartments indicated in the app for collection.
+- One code/QR opens only the currently due prescribed compartments together, with the same compartments indicated in the app. Reuse it for later authorized doses until expiry, enforcing Q14 dose/frequency limits.
 - A symptom flow could point to an authorized compartment, subject to the team's agreed clinical and hardware access rules.
 
 ### Mental wellbeing and professional support
@@ -198,3 +215,28 @@ Tommy places this work after the core first-demo features.
 ## How to continue
 
 Read this plan and Tommy's status first. Ask Tommy which concept he wants to refine, update these notes in English, and publish only his own planning/status documents. Do not resume the withdrawn UI prototype. Update the status and commit/push before Tommy takes a break.
+
+## Whole-application review
+
+The proposed assembly, module snapshot, visual-review findings and return-from-break tasks are in [ecosystem-review.md](ecosystem-review.md). This remains Tommy’s planning brief until the relevant owners accept the contracts and the team adopts the common plan.
+
+## Follow-up: analysis visibility and proposed pill dispenser
+
+- Tommy rejected astronaut access to the detailed personal-history/weekly-analysis view as well as the hidden clinical report. Assigned healthcare professionals may access relevant analyses within their care role. This does not grant all crew access or override the author/psychologist-only journal boundary. The previously requested basic daily Home summary remains distinct; exact visible Home fields still need agreement.
+- The existing astronaut-token `/v1/me/report` and any detailed history view need role/API changes, not merely removal of a UI button. zt and Angelos must agree the clinician-facing access contract.
+- Tommy asked whether pills could be dispensed in the prescribed quantities instead of exposing a whole package. **This is an option under investigation, not an adopted hardware requirement or a claim of flight-qualified equipment.**
+- Proposed engineering concept: keep bulk stock or sealed unit-dose cartridges inaccessible; authenticate the patient and grant; reserve the current dose; mechanically present exactly the authorized quantity in a retained/closed collection interface; confirm delivery and record it. One dose may contain more than one tablet. A second scan must not produce another allowance.
+- In microgravity, the mechanism must not depend on pills falling under gravity. Positive mechanical transfer and containment, protective packaging, drug/form-factor compatibility, jam/double-feed detection, power-loss recovery and controlled maintenance/emergency access all require engineering verification. Unknown delivery after a fault must remain unresolved for review rather than trigger an automatic extra dose. Delivered/collected does not prove swallowed. This proposal reduces direct access to stock; it cannot guarantee prevention of hoarding or all abuse.
+- If adopted, the earlier batch-bin concept needs a pill-specific refinement: authorize all due items together, but expose only their metered dose outlets/collection compartments; do not unlock the full pill-stock cartridge. Other supplies retain their separately agreed access mechanism. First demo could simulate delivery events; no physical dispenser exists in this repo.
+
+Research checked 2026-11-14:
+
+- [NASA presentation: Packaging for Improved Pharmaceutical Protection in Space (2024)](https://ntrs.nasa.gov/citations/20240004002): protective blister development includes individual-dose access. It supports packaging relevance, not proof of an operational automatic dispenser.
+- [NASA presentation: Pilot Study of Medications Exposed to Vacuum (2024), p. 5](https://ntrs.nasa.gov/api/citations/20240004440/downloads/AsMA%20Medications%20in%20a%20vacuum%20STRIVES.pdf?attachment=true): describes most ISS oral medications being repackaged into resealable bags at that time; exploration packaging remained undetermined.
+- [NASA Human Research Roadmap: medication risk](https://humanresearchroadmap.nasa.gov/risks/risk.aspx?i=177): identifies optimal packaging/storage balancing stability, mass, volume and power as an open research gap. No operational microgravity pill dispenser was verified in this review. Mechanical options above are engineering proposals/inferences, not NASA recommendations.
+
+## Lean inventory follow-up — latest direction
+
+Tommy clarified that mechanical dispenser design, microgravity engineering and extreme misuse cases are outside the application-demo scope. Keep simulated quantity-limited dispensing and ordinary patient/authorization/due-dose/stock consistency. Earlier hardware research is background, not a prerequisite or a build assignment.
+
+Tommy and zt want to reduce the broad inventory prototype. His supplied alternative specification is comparison material, not an instruction for this chat to implement UI. See [inventory-scope-proposal.md](inventory-scope-proposal.md) for the proposed nine-item configuration, existing DAD-1 reuse, zt input mapping, and conflicts resolved against earlier decisions. The specific lean configuration remains proposed until accepted; multi-day reusable prescription QR and all eligible due items in one batch remain the previous direction.
