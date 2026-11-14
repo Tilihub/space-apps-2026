@@ -9,14 +9,14 @@
 ## Now
 
 - Last updated: 2026-11-14 — ecosystem review
-- Working on: Reviewing PR #49 against Tommy’s confirmed requirements. Tommy selected corrections before approval; request-changes review posted; refreshing owner instructions against #50/#51/#52. Planning/review only.
+- Working on: Reviewing PR #49 against Tommy’s confirmed requirements. Tommy selected corrections before approval; request-changes review posted; refreshed instructions for #50–#53 published on main. Planning/review only.
 - Branch: tommy/concepts-plan
 
 ## Done
 
 - Re-fetched again while publishing: main 854c361 now includes zt’s #52 demo-case draft and dadis2’s DAD-2 #53. Reviewed the new code/QR/validity/revocation contract, opened the Earth tool and ran its browser regression page: 28/28 passed. Saved a screenshot for Tommy; phone-camera decoding and real issuer verification not tested. Updated handoff so DAD-2 is not reassigned from scratch.
 
-- Opened PR #54 publishing the confirmed inventory decisions, #49 request-changes review and refreshed #50/#51/#52 handoffs; only Tommy’s planning/status files changed.
+- Published the confirmed inventory decisions, #49 request-changes review and refreshed #50–#53 handoffs through merged PR #54; only Tommy’s planning/status files changed.
 
 - Re-fetched at Tommy’s request. Main b5f98a5 includes health/environment/inventory prototype merges; reviewed new external importer #50 (928dc4e), PET-1/PET-2 #51 (12c840e) and zt’s five demo cases #52 (2ec9cd5).
 - Latest health suite passed 60/60 with temporary stores and Node available. Independently verified 65 PET-1 rows, five fresh SQLite imports and three expected day-42 scenarios. Updated handoff to avoid reassigning completed PET work.
@@ -69,6 +69,8 @@
 - Integrating modules, journal/companion behavior, report delivery and submission material still need the proposed work; existing stand-alone prototypes do not establish a joined application.
 
 ## Next steps
+
+- Latest common review is published on main in contract-review.md via #54. PR #49 remains pending corrections; its author has the review and refreshed handoff link. Choose one #51/#52 case/fixture version before owners change their modules.
 
 - The PR #49 request-changes review is posted. Re-read the updated head and check the requested corrections before any approval. Use contract-review.md as the latest owner compatibility handoff; do not implement or edit other owners’ modules.
 
