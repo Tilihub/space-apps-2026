@@ -114,8 +114,19 @@ Rules:
 - **CMO as patient.** The approver must never be the patient. If the CMO is the patient, the backup CMO signs.
 - **Grants (team decision, 14 Nov).** The onboard doctor and Earth authorise with the same grant
   format, collected dose by dose. Details are in [CONTRACT.md](CONTRACT.md).
-- **Reserve.** Every item has a reserve kept for the conditions it's carried for. A self-care
-  dispense that would dip into the reserve becomes a CMO decision.
+- **The person's situation changes self-care** (dadis2, 14 Nov, evening). The tier says who usually
+  decides; the safety checks for that person can change it:
+
+| Situation | What happens | Bin |
+|---|---|---|
+| Only the reserve is left | The CMO decides (a grant may use the reserve) | 🔒 red |
+| Not safe with their condition (for example Tomas's bleeding risk and NSAIDs) | The CMO decides. A grant from the CMO or Earth isn't held back by it, because they weighed it | 🔒 red |
+| Daily limit reached, or another NSAID in the last 24 hours | Wait, no request | Dimmed |
+| None left | Tell the CMO | Dimmed |
+| Allergy (any tier) | Nobody grants it (a grant code is refused). In an emergency, only "Give anyway" | Dimmed ⚠ |
+| Another crew member's own medicine | Not for them | Dimmed |
+
+- **Reserve.** Every item has a reserve kept for the conditions it's carried for (see the table).
 - **Crew-specific items.** Only their owner can self-release them.
 - **Requests** (dadis2, 14 Nov, evening):
   - Prescription requests go to the CMO's Approvals screen, on the CMO's own device. The doctor
@@ -197,7 +208,7 @@ All ids are strings. Dates are ISO 8601.
 - **CrewMember:** `id, name, role, isCMO, isBackupCMO, allergies[], conditions[], standingOrders[{itemId, maxPerDay}], nextEVA, pin` (demo only)
 - **Locker:** `id, label, zone, x, y, w, h` (position on the bay map)
 - **Pack:** `id, name, colour, lockerId, rows, cols`
-- **Item:** `id, name, form, strength, packId, kind (medication | supply | equipment), tier (S|1|2|3|4), controlled (C-II…C-IV | null), ingredients[{name, mg}], doseUnits, classes[], indications[], contraindications[], sedating, stability (stable | moderate | sensitive), reserve, plannedUsePer30d, ownerCrewId`
+- **Item:** `id, name, form, strength, packId, kind (medication | supply | equipment), tier (S|1|2|3|4), controlled (C-II…C-IV | null), ingredients[{name, mg}], doseUnits, classes[], indications[], contraindications[], sedating, stability (stable | moderate | sensitive), reserve, plannedUsePer30d, ownerCrewId, emergencyUse`
 - **Lot:** `id, itemId, lotNumber, qty, expiry, slot, tag`
 - **Symptom:** `code, label, redFlag`
 - **ApprovalRequest:** `id, time, patientId, itemId, qty, reason, tier, status (pending | approved | denied | dispensed), signatures[{crewId, role, time}]`
@@ -260,11 +271,19 @@ card → "Collect now" at each dose time.
 **Red flags:** card "Call the CMO now" with an Emergency button. The report also appears as
 "Urgent symptoms" on the CMO's Approvals screen.
 
-**Own choice:** "Request a medicine" → tiles grouped "You can take" and "Ask the CMO" → item →
-"Get it" or "Ask the CMO".
+**Own choice:** "Request a medicine" → tiles grouped "You can take", "Needs approval" and "Not for
+you now" (with the reason) → item → "Get it", "Ask the CMO" or "Ask Earth".
 
 **Emergency:** Emergency button → who needs help (defaults to me) → item → Release now → find it →
 Scan or Skip → logged. The CMO writes the note within 2 hours. No points are given in emergencies.
+
+- **What's on the screen:**
+  - the emergency items
+  - **"Also used in emergencies":** a few self-care medicines and supplies marked `emergencyUse` in
+    the data, each with what it's for. Sample choices: aspirin (chest pain), diphenhydramine tablets
+    (mild allergic reaction), gauze, gloves, splint. Medicines go to whoever needs help, with no
+    reason needed; supplies only light up their bin.
+  - **"Can't wait for approval?":** prescription and controlled medicines, with a reason required
 
 - **Nothing is lost.** Requests and plans are kept; the screen says so. A retrieval in progress is
   paused and shows as "⏸ Paused · Resume" afterwards.
@@ -277,7 +296,8 @@ Scan or Skip → logged. The CMO writes the note within 2 hours. No points are g
 - **"Give anyway".** "Release now" becomes "Give anyway" and needs a second deliberate tap ("Tap
   again to give anyway").
 - **Overrides are logged.** The release records which warnings were overridden. They show on the done
-  screen, on the CMO's emergency note and ground review cards, and in the dose log.
+  screen, on the CMO's emergency note and ground review cards, and in the dose log. Every override
+  goes to Earth's review, whatever the medicine's tier.
 
 ## 10. Screens
 
@@ -291,8 +311,9 @@ Everyone sees one page (the CMO also has tabs):
    - The left panel also shows Request, Import, Emergency and Find it. On Find it it shows
      "Locker · Shelf · Bin" in large type, a timer and a Scan button.
 2. **Right: the three lockers from the front.**
-   - **Red tint and 🔒:** the medicine needs CMO approval for this user (prescription, controlled
-     without a standing order, or blocked by a safety check).
+   - **Red tint and 🔒:** the medicine needs approval for this user: the CMO (prescription, reserve,
+     condition) or Earth (controlled without a standing order). Hovering a bin says which and why.
+   - **Dimmed:** not for this user right now (allergy ⚠, daily limit, none left, someone else's).
    - **Tap a bin** to pick that medicine.
    - **Picking an item** outlines its bin.
    - **Finding an item:** the other lockers dim, the target shelf is outlined and the bin pulses yellow.
