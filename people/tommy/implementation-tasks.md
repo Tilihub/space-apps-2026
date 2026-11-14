@@ -1,6 +1,33 @@
-# Proposed next implementation tasks for Tommy to assign
+# Tommy's implementation handoff to the team
 
-Prepared 2026-11-14 from the published work listed below, including zt's new app overview. This is Tommy's personal handoff proposal, not an agreed team split or an edit to shared/PLAN.md. No messages were sent to teammates and no other member's files were changed.
+Prepared 2026-11-14 from the published work listed below, including zt's new app overview. Tommy requested publication of this handoff so each teammate and their coding tool can read the corresponding task and know what to deliver. These are Tommy's requested next tasks; acceptance by other owners and changes to shared/PLAN.md remain team coordination. No messages were sent to teammates and no other member's files were changed.
+
+## Start here: teammates and coding tools
+
+1. Read `AGENTS.md`, the current shared plan, everyone's current status, and [Tommy's product requirements](plan.md). Follow the repository's ownership, branch, approval, and publishing rules.
+2. Find your folder name in the index below. Inspect your latest branch, working tree, and status before editing. This is a handoff, not an instruction to discard unfinished work.
+3. Start with your **first task**. If it is already delivered, cite the branch/PR and check its acceptance conditions against the current requirements before moving to the follow-up task. Do not rebuild completed work from an old review snapshot.
+4. Confirm the relevant connection format with zt and the affected module owner. While that is unresolved, provide a concrete input/output example and name the missing decision in your own status; do not silently establish incompatible IDs, units, permission rules or clocks.
+5. Deliver the smallest working connection described in your task, a short input/output contract, run/check instructions and the relevant verification result. Stay in your own folder or an integration connection you own. This document grants no permission to edit another person's folder, approve their PR, or bypass protected-file review.
+6. Update your own `status.md` after every finished step and include it in the same push. Record the task ID, result, branch/PR, dependencies, and the next action in its existing sections so both teammates and coding tools can follow progress.
+
+### Task index
+
+| Owner folder | First task | Follow-up after the first task is connected | Handoff goes to |
+|---|---|---|---|
+| `people/zt/` | **ZT-1:** agree minimal module contracts and build one joined demo path | Resolve the explicitly listed product decisions with Tommy while finishing app composition | Tommy and all module owners |
+| `people/angelos/` | **ANG-1:** expose check-in/history/comparison/report data to the app, with separate crew histories | **ANG-2:** basic companion and authorized journal context | zt |
+| `people/dadis2/` | **DAD-1:** one prescription grant activates all and only its authorized bins together | **DAD-2:** ground-side code/QR output and authorization contract | zt; symptom/report owner |
+| `people/potest/` | **POT-1:** programmatic environmental snapshot and new-alert/recovery bridge | **POT-2:** persistent report-delivery queue, if that ownership is accepted and not already covered | zt; report assembler |
+| `people/petros_the_space_larper/` | **PET-1:** selected, source-labelled demo fixtures and field mapping | **PET-2:** exact wellbeing-form brief and alignment of the older scope proposal | angelos and zt |
+
+Each task's deliverable and acceptance conditions are in the matching owner section below. The follow-up column is a sequence, not a request to start everything at once. Technical choices listed as open still need agreement; Tommy's requirements are not evidence that a feature has already been built.
+
+### Copy/paste prompt for a teammate's coding tool
+
+Replace `<my-folder-name>` with `zt`, `angelos`, `dadis2`, `potest`, or `petros_the_space_larper`.
+
+> Read AGENTS.md, the current shared/PLAN.md, the team statuses, people/tommy/plan.md, and people/tommy/implementation-tasks.md. My folder is people/<my-folder-name>/. Find my first task in the task index and read my full owner section. Inspect my latest working tree and branch before making changes; preserve my existing work. Work on that first task under AGENTS.md's ownership rules, reusing what is already complete. Provide the documented input/output example, a runnable handoff, appropriate checks and an updated status in the same push. Keep open contract/product decisions explicit and coordinate them with the named owners. Do not start unrelated features or treat this brief as permission to edit other members' files or override their instructions.
 
 ## Review snapshot and verification
 
@@ -12,7 +39,9 @@ Prepared 2026-11-14 from the published work listed below, including zt's new app
 | petros | `f05971a`, PR #36 open at review | Extensive measurement/dataset/evidence notes, published vitals CSV, proposed wellbeing fields and offline Mars workflow | Needs a selected integration-ready data package and final field mapping; journal-to-assistant exclusion in his proposal predates Tommy's Q12 answer |
 | zt | `3d2bcec`, overview merged in PR #37 | Draft dashboard, sections, demo format, integration role and open questions | Overview is a proposal; no joined app under integration/ or finished application under final/ at review |
 
-Reviewed current statuses, readmes, proposed interfaces, and relevant source paths. Ran Angelos's existing 31 tests against an isolated temporary copy of his latest branch: all passed. No teammate database was used. Frontend conclusions are from source review; camera QR scanning and real locks were not tested. The research papers were not independently re-audited in this pass.
+Reviewed current statuses, readmes, proposed interfaces, and relevant source paths. Ran Angelos's existing 31 tests against an isolated temporary copy at `35a3f60`: all passed. No teammate database was used. Frontend conclusions are from source review; camera QR scanning and real locks were not tested. The research papers were not independently re-audited in this pass.
+
+Publication refresh: Angelos subsequently published reset/backup behavior at `80d86db`. His latest status reports 38 passing checks; those newer checks were not re-run in this handoff pass. Reset is existing work, not a new task here. Owners must compare this snapshot with their newest work before acting.
 
 ## First shared action: agree the connection format
 
@@ -28,13 +57,13 @@ Expected output: a small versioned example packet and short connection contract 
 
 ## Angelos: connect the working health core, then the basic companion
 
-### Do next
+### ANG-1 — Do next
 
 Expose the existing history, daily comparison, check-in submission, and weekly report to zt through an agreed callable/API adapter. Reuse the existing functions; do not rebuild weekly medians or change the fixed baseline as a new task. Support at least two demo crew identities without their histories or references mixing; separate stores per demo identity are acceptable if agreed.
 
 Acceptance: zt can save a check-in from the app, reload the same user's history, and request the existing report as structured data. A second demo identity cannot read or change the first one's history/reference. Existing checks still pass. Handle missing values explicitly.
 
-### Then, once that connection works
+### ANG-2 — After ANG-1 is connected
 
 Prepare the minimum companion behavior using the authorized user's health findings, history, and journal context: explaining available changes, helping enter a symptom, pointing to the right section, and offering the user a path to their psychologist. Preserve context across the agreed local session/history and show unavailable information honestly. It must not issue prescriptions, grant medicine access, or send private journal details to another role.
 
@@ -42,13 +71,13 @@ Add the journal persistence/context interface needed by that behavior, coordinat
 
 ## dadis2: finish the prescription-to-compartments flow
 
-### Do next
+### DAD-1 — Do next
 
 Extend the current multi-medicine Earth plan into one authorized collection operation: a single code/QR selects and highlights all and only the prescribed compartments together. Return their locker/shelf/bin IDs for the main app and any future hardware bridge. Track collection per compartment/item without confusing retrieval with logging every dose of a multi-day prescription as already taken.
 
 Acceptance: a sample prescription covering two bins activates both in one operation; an unrelated third bin remains unavailable. The correct user can collect the authorized items and each collection is recorded once. A wrong-user/invalid/reimported grant is handled clearly, preserving existing checks. Clarify what counts as collected versus later consumed with Tommy and zt.
 
-### Then, once batch collection works
+### DAD-2 — After DAD-1 works
 
 Provide the ground-side prescription code and QR-image output, plus a short contract zt can use on the Earth clinician screen. Separate the existing typo checksum from verification of an authorized clinician. Define grant identity, recipient, scope, validity/reuse behavior and verification; if issuer verification remains simulated, label it explicitly. Keep test credentials/data synthetic.
 
@@ -56,13 +85,13 @@ Publish regression checks for batch scope and patient binding. Camera scanning n
 
 ## Potest: make environment context usable by the app
 
-### Do next
+### POT-1 — Do next
 
 Expose the existing snapshot as a callable/event/message output rather than only downloading JSON. Provide a new-alert/recovery signal for the report assembler, not a repeated report on every render or replay tick. Agree the event identity and clock with zt.
 
 Acceptance: a parent app can obtain source, data type, source time, mission/replay time mapping, values, units, availability and alert state. Two readings confirming an excursion produce one logical event; recovery, stale readings and replay restarts have explicit behavior. Historical and synthetic data remain distinguishable.
 
-### If the environment bridge is covered
+### POT-2 — If POT-1 is covered and transport ownership is accepted
 
 Take the otherwise unowned report-delivery queue, coordinated with zt: persist an authorized report while the simulated Earth link is down, send it after reconnection, track receipt, and avoid duplicate delivery using a stable report ID. This component transports reports; it does not define clinical content or choose who may see journals.
 
@@ -70,7 +99,7 @@ Acceptance: offline -> queued -> sent -> receipt confirmed are distinct states; 
 
 ## Petros: turn the existing research into a bounded demo package
 
-### Do next
+### PET-1 — Do next
 
 Select the fields and data the first demo actually uses, with a short mapping file/table: field name, unit or response anchors, collection method, timestamp/cadence, missing-value meaning, source, and real/historical/synthetic status. Include concrete scenario fixtures using the agreed crew IDs and mission clock for the cases Tommy and zt choose.
 
@@ -78,7 +107,7 @@ Reuse the research and offline proposal already written. Do not add another broa
 
 Acceptance: Angelos and zt can load the selected package and identify every field's meaning/provenance; no missing readings become zeros, and no historical group mean is presented as a live individual reading.
 
-### Then, where support is still unowned
+### PET-2 — After PET-1, where support is still unowned
 
 Turn the existing wellbeing-field proposals into an implementation brief for the daily form: exact wording, recall period, anchors/direction, required versus optional, and a private note field. Confirm scales with Tommy and Angelos. This is a product check-in, not a newly validated psychometric test. If an established questionnaire is chosen, preserve its stated wording/scoring/recall constraints and source it.
 
@@ -86,7 +115,7 @@ Update the PR #36 proposal to reflect Tommy's Q11–Q12 clarification: the autho
 
 ## Zisis (zt): build one joined path from the new overview
 
-### Do next
+### ZT-1 — Do next
 
 Use the overview already written to choose the implementation boundary and agree the small module contracts above. Start a working integration connection with its README, compose existing modules, and build the daily home summary plus persistent clickable companion. This chat supplies concepts only; it is not a second UI implementation.
 

@@ -17,7 +17,7 @@ My personal concept notes and requirements for May the Pulse Be With You. Only T
 - The earlier UI prototype PR #20 was closed without merging, and its remote branch `tommy/crew-access-ui` was deleted.
 - This handoff contains planning documents only. There is no active UI implementation from Tommy for zt to integrate.
 - First brief for zt: branded entry screen, login, registration, and a basic health profile.
-- Proposed next work for each contributor, based on the latest published modules and zt's new overview, is in [implementation-tasks.md](implementation-tasks.md). These are suggestions for Tommy to assign, not team-approved assignments.
+- Tommy's requested next work for each contributor is published in [implementation-tasks.md](implementation-tasks.md), with task IDs, an owner index, deliverables, acceptance checks, dependencies, and a copy/paste prompt for each teammate's coding tool. Owner acceptance and any change to the shared plan still need team coordination.
 
 ## Tommy's clarified requirements — 2026-11-14, questions 1–4
 
