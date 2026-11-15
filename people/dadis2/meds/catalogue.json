@@ -13,9 +13,13 @@
       { "id": "L2-1", "level": 1, "zone": "Prescription and controlled" } ] },
     { "id": "L3", "name": "Locker 3 · Emergency", "shelves": [
       { "id": "L3-1", "level": 1, "zone": "Emergency medicines" },
-      { "id": "L3-3", "level": 3, "zone": "Supplies" } ] }
+      { "id": "L3-3", "level": 3, "zone": "Supplies" },
+      { "id": "L3-4", "level": 4, "zone": "Emergency equipment" } ] }
   ],
   "items": [
+    { "id": "aed", "code": null, "name": "Defibrillator (AED)", "strength": "", "tier": "emergency", "kind": "equipment",
+      "classes": [], "ingredients": [], "doseUnits": 1, "maxPerDay": null, "indications": [], "contraindications": [],
+      "reserve": 1, "place": ["L3-4", 1], "lots": [["AED-SN4471", 1, null]] },
     { "id": "acetaminophen-325", "code": "APA", "name": "Acetaminophen", "strength": "325 mg", "tier": "self-care", "kind": "medication",
       "classes": ["analgesic"], "ingredients": [{ "name": "acetaminophen", "mg": 325 }], "doseUnits": 2, "maxPerDay": 8,
       "indications": ["headache", "muscle-pain", "fever", "sore-throat"], "contraindications": [], "reserve": 20, "place": ["L1-1", 1],

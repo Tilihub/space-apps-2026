@@ -8,6 +8,13 @@
 
 ## Now
 
+- Published the current initial seven-minute script idea for team iteration in presentation/README.md (v1), on tommy/presentation-script / PR #79. Five fictional crew stories, Greek spoken delivery, no speaker assignment yet. Clearly separates the working branch AED from the still-unimplemented complete reset presets. No app changes or merge in this publication step.
+
+- AED and seven-minute update on tommy/presentation-script / PR #79: Tommy confirmed dadis2 agrees to the addition in people/dadis2/meds/catalogue.json. Added one emergency-tier equipment device in L3-4-01, rendered as the existing three-column lower shelf with the ordinary Emergency/collection flow. Fresh local preview: localhost:8024; previous servers/stores preserved. Kai's presentation story is now fictional sudden cardiac arrest, AED retrieval and narrated successful resuscitation. Seven-minute schedule: presentation/seven-minute-run.md.
+
+- Latest presentation direction: five candidate stories first, with no presenter assignment yet. Greek spoken delivery confirmed. Read presentation/five-scenarios.md; earlier six-owner lineup is only a superseded proposal. Complete scenario initialization on presentation reset is still a design requirement, not an implemented feature.
+
+- Presentation planning on tommy/presentation-script. Tommy confirmed six Greek-speaking presenters, one minute each, and requested deterministic complete scenario initialization after every presentation reset before writing the final live scripts. Draft: presentation/live-demo-plan.md. This is a proposal; no reset/app code is changed. The newer dadis2 review remains on hold as Tommy requested.
 - Release delivered: Tommy explicitly authorized both merges. PR #74 (approved by dadis2 and Angelos) and PR #75 (approved by Angelos) are MERGED into main. Final app commit: b0f968c156927a52cf2607a2d548ce4cd078b862. The exact merged main passes 117/117 tests, none skipped. All runtime and contract files match the approved Pulsars snapshot ba2c0ee. All previous pending-merge notes below are historical.
 
 - Published Pulsars in [PR #75](https://github.com/Tilihub/space-apps-2026/pull/75), stacked on #74. GitHub confirms all five teammates are requested reviewers. All 117 checks pass; no approval or merge performed. The user-facing new feature preview is localhost:8020 (local-only copy), with the original 8018 process/store preserved.
@@ -32,6 +39,13 @@
 
 ## Done
 
+- Published the functional AED and exact seven-minute outline in updated PR #79; owner agreement is recorded in shared/decisions/2026-11-15-1240-emergency-aed-demo.md. Requesting dadis2/zt review; no merge performed.
+
+- Added only the explicitly authorized five-line catalogue change in dadis2's folder; no owner logic/policy file edited. Emergency-only AED uses one equipment unit and its existing stock/patient/audit mechanisms; checkout is not an ingestion or patient-recovery assertion. Large shelf reads the actual API bin and turns green/open with normal confirmation. An older server lacking the entry keeps a truthful unavailable fallback.
+- Added a real-HTTP AED regression: no ordinary collection, quantity/author checks, one successful patient-linked emergency checkout, no duplicate/second release, persisted depletion, logged operator and reset restoring one device/no incidents. Root suite passes 118/118. Browser confirmed the full Kai/AED flow and persisted zero stock, then reset/reseeded only the disposable 8024 preview, leaving one AED available and no old emergency banner. Screenshot: presentation/review/aed-open.jpg.
+- Updated scene 3 to sudden cardiac arrest and a scripted successful resuscitation, separating equipment access from clinical outcome. Read the Local Event's 7-minute guide and created an exact 420-second run (intro, five stories, close, transitions/reserve). The full automatic presentation initializer remains a separate unimplemented planning item.
+
+- Read zt's original seven-minute narrative, submission checklist, current app/Pulsars boundaries and Angelos's newly merged technical report. Proposed six distinct owner-aligned minutes with prepared state/live payoff, an earned 700 → 1000 Pulsars exercise/PR/accessory fixture, global deterministic reset criteria and rehearsal fallbacks. Asked Tommy to choose the primary one-minute medical story: Earth credential or Kai emergency. Actual sixty-second Greek speech is the next step after scene/reset agreement.
 - Merged #74 into main as bbf3d31, retargeted #75 to main without changing its approved head, confirmed its approval remained, then merged #75 as b0f968c. Pulled main with --ff-only and passed the full 117-test suite on that merged revision. Verified no runtime/owner-module/contract difference from the approved complete snapshot. Nothing omitted, including the planned L3 AED shelf, full UI, Pulsars, PRs and shop. No server restart or local-data reset was performed during release.
 
 - Built the separate Pulsars module with server-priced/de-duplicated credits and purchases, saved appearance and 24 catalogue choices including defaults. Rewards: 100/200/300 from streak days 1/4/6, per main assigned exercise and once per wellbeing day. Rest preserves but does not increase the training streak. Full main program extends the exercise streak; partial days retain coins. No points for warm-up/cool-down or stage preview.
@@ -238,6 +252,10 @@
 
 ## Next steps
 
+- Review updated #79 with dadis2/zt, including the explicitly authorized catalogue addition and 118 checks. Test Emergency -> AED -> Kai -> required reason -> Collect item -> Confirm collection at localhost:8024. Existing stores need an intentional demo reset to initialize new catalogue stock; do not reset original stores silently. No actual AED/shock/medical outcome is simulated by collection alone.
+- Use presentation/seven-minute-run.md for the seven-minute timing; finish selecting speakers and exact Greek lines, then implement deterministic full presentation initialization after agreement. Other new dadis2 branch policy changes remain unadopted.
+
+- Agree the speaker order and medical focus with Tommy using presentation/live-demo-plan.md. Then write six individual Greek timed cue cards and the English repository master. Implement presentation-mode reset/scenario seeding only after agreement, preserving role boundaries, current main and original data. Do not silently adopt the new dadis2 branch while planning the presentation.
 - Team can now pull main (--ff-only after preserving local work) to get the complete current app, including Pulsars. Run npm test, then follow current-app-handoff.md / pulsars/README.md. Local data are separate from Git; preserve existing stores or seed a fresh day-42 presentation store with the existing script. Further feature edits belong on a new personal branch. The exact release app has already merged; this branch only records the post-merge status.
 
 - Continue from `tommy/pulsars`. Read people/tommy/pulsars/README.md and shared/contract/pulsars.md; test the complete shop at localhost:8020/#shop. Review the separate feature PR over #74; do not merge until teammate review and explicit merge authorization. Preserve AED and all existing features. No initial bonus coins or unearned leaderboard history is seeded.

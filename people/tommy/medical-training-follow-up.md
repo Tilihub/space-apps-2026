@@ -59,3 +59,8 @@ Tommy wants two ordinary approval categories: onboard-doctor approval through th
 The current owner module **does enforce** that exception (`people/dadis2/meds/rules.js`, `approvalFor` / `officerFor`), and the protected contract describes it. This UI-only pass does not change those files or bypass access checks. dadis2 and zt need to reconcile the desired rule and contract through the existing teammate-review process before the exception can actually disappear.
 
 The selected-item panel now shows one short Access value: Onboard doctor approval, Earth prescription · code / QR, Self-care, Crew supply, or Emergency access. Earth-only cases retain the actual authority from the current API. Repetitive routing prose is hidden, including the doctor-as-patient sentence. Actionable allergy/stock/dose-limit safety reasons remain visible. Existing request/import/collection endpoints and permissions are unchanged.
+
+
+## AED activation — 2026-11-15
+
+Tommy now requested a functional Emergency AED and confirmed dadis2's agreement for the catalogue addition. The branch adds aed as emergency equipment, one device, no medicine code/ingredients, shelf L3-4-01. Its existing three-column shelf now reads the real API bin and uses the normal emergency/confirmation/stock/audit path. Stock represents equipment checkout, not device destruction or drug ingestion. Existing stores initialize the new unit on their next intentional demo reset; no live user store was reset here. Fresh preview: localhost:8024. All 118 tests pass. This supersedes the earlier AED-draft decision once this PR is adopted; load/PR are already connected through Pulsars, and real psychologist transport remains pending.
