@@ -24,4 +24,4 @@ The original supplied team logo is byte-for-byte unchanged in `pages/assets/team
 
 ### Overview appearance review
 
-Tommy removed the historical pulse loop from Overview after visual review. Resting pulse remains the profile's original health value. The 16 isolated appearance studies and comparison screenshots live in `people/tommy/overview-designs/`; no study palette has been applied to the functional app.
+Tommy removed the historical pulse loop from Overview after visual review. Resting pulse remains the profile's original health value. The 16 isolated appearance studies and comparison screenshots live in `people/tommy/overview-designs/`; Tommy selected MC02 Soft Panels, now applied to the frontend. Global font comparisons T01–T08 are documented in `people/tommy/overview-designs/typography/`; the original-reference T01 is the default pending a final font choice.

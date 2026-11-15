@@ -100,7 +100,7 @@ function bodyOptions(mode) {
   return {mode,body:({c1:'female',c2:'male',c3:'female',c4:'male',c5:'male'})[user?.crewId]??'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
 }
 function syncBody() { const frame=$('iframe.body-frame'); frame?.contentWindow?.postMessage({type:'pulse-body-update',options:bodyOptions(page==='checkin'?'report':'view'),theme:document.documentElement.dataset.theme},location.origin); }
-const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}&body=${bodyOptions(mode).body}" title="Interactive 3D body"></iframe>`;
+const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}&body=${bodyOptions(mode).body}&typeface=${document.documentElement.dataset.typeface}" title="Interactive 3D body"></iframe>`;
 function renderChrome() {
  const logged=!!user&&page!=='login';
  $('#nav').hidden=!logged;$('#topbar').hidden=!logged;$('#app-header').hidden=!logged;$('#app-footer').hidden=!logged;

@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Tommy's selected Soft Panels appearance. Presentation only; no API/controller changes. */
+:root:not([data-theme="light"]),[data-theme="dark"]{--bg:#111315;--surface:#202326;--card-bg:linear-gradient(140deg,#282c2e,#1c2023);--surface-2:#171b1e;--surface-3:#292f32;--border:#393e42;--border-strong:#535b60;--text:#f4f2e8;--text-2:#bfc4c2;--text-3:#a7afac;--accent:#e9bd64;--accent-2:#e9bd64;--gold:#e9bd64;--fine-soft:#3c3423;--track:#343a3b;--shadow:inset 0 1px #ffffff06,0 12px 28px #0000001c;--r-lg:13px}
+[data-theme="light"]{--bg:#eeefeb;--surface:#fffef9;--card-bg:#fffef9;--surface-2:#f4f2e9;--surface-3:#eae7dc;--border:#d2d3c9;--border-strong:#a9afa5;--text:#26312d;--text-2:#4c5b53;--text-3:#637268;--accent:#855b19;--accent-2:#855b19;--gold:#855b19;--fine-soft:#eee2c6;--track:#d5d9ce;--r-lg:13px}
+.card,.gauge-card,.cp,.help-panel{border-radius:13px}.card,.gauge-card{border-top-color:color-mix(in srgb,var(--accent) 30%,var(--border))}#home .gauge-value,#home .gauge-track{stroke-dasharray:5 5;stroke-width:5.5;stroke-linecap:butt}.rail a[data-nav]{border-radius:11px}.rail a[data-nav][aria-current="page"],.rail a[data-nav].active{box-shadow:inset 2px 0 var(--accent)}
+body,button,input,select,textarea{font-family:var(--font-ui)}
+h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-weight:700}
+.gauge-center b,.pulse-value,.training-status-bar b,.step-time,.rep-counter b,.exercise-prescription b,.habitat-reading b,.num-xl,.num-md,.num-sm{font-family:var(--font-number);font-variant-numeric:tabular-nums}
+.eyebrow,.gauge-label,.mission-clock,.mission-chart text,.chart-live text{font-family:var(--font-label);font-weight:600}
+.btn,.rail a[data-nav] span,.crew-btn b,.rating-title b{font-family:var(--font-ui);font-weight:650}
+.subtle,.muted,small,.field>span,.status-pill,.rating-anchors{font-weight:600}
+.header-team-logo,.login-team-logo,.team-logo{mix-blend-mode:lighten}.mission-header{background:#111315;color:#f4f2e8}.mission-header .header-profile small,.mission-header .mission-clock{color:#bfc4c2}.mission-header .btn{color:#f4f2e8;border-color:#535b60}.mission-header .avatar{background:#292f32;color:#e9bd64;border-color:#535b60}
+.mission-welcome{background:radial-gradient(ellipse at 50% 35%,#50432644,transparent 60%),#111315}.welcome-button{box-shadow:0 0 26px #e9bd6415}.mission-login{background:radial-gradient(ellipse at 50% 10%,#50432622,transparent 65%),var(--bg)}
+/* Body geometry, thermal scale, symptoms and picking retain their existing colors/behavior. */
+.b3d-views button,.b3d-label,.b3d-legend,.b3d-msg{font-family:var(--font-ui)}
+:root[data-body-frame]{--accent:#78e0e8;--accent-2:#78e0e8}
+.mission-welcome .welcome-button{background:#e9bd64;border-color:#e9bd64;color:#202018;font-weight:750}
+[data-theme="light"] .mission-login .login-identity{background:#111315;border-radius:13px;padding:10px 14px}
+[data-theme="light"] .mission-login .login-identity .eyebrow{color:#e9bd64}
+.mission-header .btn.ghost{background:transparent}.mission-header .btn.ghost:hover{background:#292f32}

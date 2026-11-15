@@ -8,12 +8,16 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — Mission Control appearance refinements
-- Working on: Tommy chose Mission Control (03), its carbon/amber palette and dashed instrument rings. Eight isolated family options (MC01–MC08), with two comparison sheets, are ready in overview-designs/mission-control/. Awaiting the preferred refinement; the functional app/backend/owner modules are unchanged by this follow-up.
+- Last updated: 2026-11-15 — Soft Panels and application-wide typography
+- Working on: Tommy chose MC02 Soft Panels and clarified that fonts cover the whole app. The shared frontend font layer supports T01–T08 across shell, forms, crew/clinical/Earth pages and body controls. T01 remains the reference pending his final font choice. Eight component boards in Soft Panels plus eight in Alloy and two paired sheets are ready. Alloy is comparison only; backend/owner modules/contracts are unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Applied Tommy's selected MC02 Soft Panels presentation across the frontend, with carbon/amber, soft card edges and dashed Overview rings. Added a common eight-recipe font layer and propagated its whitelisted ID into the body frame. All control handlers, API calls, permissions, data and workout logic are unchanged; workout progress arcs and body/symptom colors remain scoped/preserved.
+- Clarified that original Alloy and Soft Panels use the same IBM font pairing. Captured each of eight font recipes in both surfaces using whole-app component boards, plus two paired comparison sheets. T01 is the temporary original-reference font; no final alternative is assumed. Captured actual T03 crew, clinical and Earth screens from an isolated seeded store.
+- Browser checked all crew sections, form/control fonts, body-frame typography, clinical tables and Earth controls with no desktop overflow or browser errors; light/dark reviewed. Static boards verified each font's heading/input/button/number family and absence of component overflow. Only frontend/own review files changed. Root npm test passed 102/102, none skipped; syntax/diff checks passed. Both temporary QA/capture servers were stopped afterward; original stores and the user’s other preview were untouched.
 
 - Recorded Tommy's Mission Control preference: preserve carbon/amber and visibly segmented rings. Added an unchanged reference plus seven static refinements: softer panels, blackout contrast, lighter alloy, bold condensed type, fine precision ticks, quiet amber and centered anatomy. All use the same content, values, original logo and body reference. No application or backend file changed in this follow-up.
 - Captured eight full-size browser screenshots and two comparison sheets, inspected the results, checked segment styles and card bounds, and widened the visible gaps in the rounded variants so the rings remain dashed. Original sixteen concepts remain available; specific refinement selection is still pending. Root tests passed 102/102, none skipped; syntax/diff checks passed. The temporary capture server was stopped afterward.
@@ -144,7 +148,7 @@
 
 ## Next steps
 
-- Continue from `tommy/frontend-polish`. Tommy selected Mission Control: now ask him to choose refinement IDs MC01–MC08 from people/tommy/overview-designs/mission-control/, or combine their panel/type/segment treatments. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Continue from `tommy/frontend-polish`. Tommy selected MC02 Soft Panels: now choose a global typography recipe T01–T08 from people/tommy/overview-designs/typography/. Alloy remains a comparison. Apply his final font choice as the shared default, not per-page overrides. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.
