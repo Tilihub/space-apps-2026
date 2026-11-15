@@ -9,14 +9,12 @@ import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, emergencyEnabled:false,medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, emergencyEnabled:false,medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0,
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
   const disclosure = (label,content,cls='') => `<details class="disclosure ${cls}"><summary>${label}</summary><div class="disclosure-body">${content}</div></details>`;
-  const metricNames={co2:'Carbon dioxide',temperature:'Temperature',humidity:'Humidity',radiation:'Radiation'};
   const binsOf = locker => locker?.shelves.flatMap(s=>s.bins.map(b=>({...b,shelf:s.id}))) ?? [];
-  const toneOf = reading => ({normal:'green',warning:'yellow',danger:'red','no-reading':'quiet'}[reading.state]??'quiet');
   const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null,compact=false}={}) => {
     const missing=value===null||value===undefined||value==='—';
     const arc=435.6,amount=missing?0:Math.max(0,Math.min(1,fraction));
@@ -182,12 +180,6 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const endTint=scaleTint((valid.at(-1)[1]-min)/(max-min));
     return `<svg class="mission-chart" viewBox="0 0 680 202" role="img" aria-label="${esc(unit)} measurements"><defs><linearGradient id="${colorId}" gradientUnits="userSpaceOnUse" x1="0" y1="165" x2="0" y2="33"><stop offset="0" style="stop-color:var(--graph-base)"/><stop offset="1" style="stop-color:var(--graph-warm)"/></linearGradient></defs><g>${[0,1,2,3].map(i=>{const v=min+(max-min)*i/3;return `<line x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text x="38" y="${y(v)+4}" text-anchor="end">${v>=100?Math.round(v):v.toFixed(1)}</text>`;}).join('')}</g>${thresholds.map(([l,v])=>`<line class="chart-threshold" x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text class="threshold-caption" x="54" y="${y(v)-6}">${l} ${v}</text>`).join('')}<path d="${d}" style="stroke:url(#${colorId})"/><circle style="fill:${endTint}" class="chart-endpoint" cx="${x(valueTime(valid.at(-1)))}" cy="${y(valid.at(-1)[1])}" r="4"/>${[xs[0],xs.at(-1)].map((t,i)=>`<text x="${i?646:48}" y="194" text-anchor="${i?'end':'start'}">${label(t)}${!elapsed?' UTC':''}</text>`).join('')}</svg>`;
   }
-  function habitat() {
-    const {data}=state();
-    const readings=data.env?.readings??[],selected=readings.find(r=>r.metric===ui.metric)??readings[0];
-    const history=data.histories?.[selected?.metric],alerts=data.alerts?.alerts??[];
-    return `<div class="habitat-metrics">${readings.map(r=>`<button class="habitat-reading ${r.metric===ui.metric?'selected':''}" data-action="ui-metric" data-id="${r.metric}" aria-pressed="${r.metric===ui.metric}"><span>${metricNames[r.metric]}</span><b>${r.value==null?'—':Number(r.value).toFixed(r.metric==='co2'?0:1)}<small>${esc(r.unit)}</small></b>${pill(r.state==='no-reading'?'No reading':r.state,toneOf(r))}</button>`).join('')}</div><div class="habitat-workspace"><div class="card habitat-plot">${heading('CABIN ENVIRONMENT',metricNames[selected?.metric]??'Readings',pill('Historical replay','quiet'))}<div class="plot-caption"><span>Last 24 mission hours</span><span>${esc(selected?.unit??'')}</span></div>${drawChart(history?.points??[],{unit:history?.unit,limits:history?.limits})}<div class="plot-footer"><span>${esc(history?.source?.label??'Source unavailable')}</span>${disclosure('Source details',`<p>Source time: ${esc(selected?.source?.sourceTime)}</p><p>Measured: ${time(selected?.measuredAt)}</p><p>Data gaps remain empty. Cabin thresholds are illustrative.</p>`)}</div></div><div class="card alert-card">${heading('RECENT EVENTS','Cabin alerts',pill(data.env?.openAlerts?.length?`${data.env.openAlerts.length} open`:'No open alerts',data.env?.openAlerts?.length?'yellow':'green'))}${alerts.map(a=>`<div class="alert-item"><div>${icon('wind')}<span><b>${metricNames[a.metric]}</b><small>${a.recoveredAt?'Recovered '+time(a.recoveredAt):'Opened '+time(a.openedAt)}</small></span>${pill(a.recoveredAt?'Recovered':a.level,a.recoveredAt?'green':'yellow')}</div>${disclosure('Event details',`<dl class="item-facts"><div><dt>Opened</dt><dd>${time(a.openedAt)}</dd></div><div><dt>Peak</dt><dd>${Number(a.peak).toFixed(0)} · ${esc(a.peakLevel??a.level)}</dd></div></dl>`)}</div>`).join('')||empty('Nothing to review in this period.')}</div></div>`;
-  }
   function workoutReadout(s) {
     if(!s.sessionId)return `<div class="training-idle">${icon('activity')}<h3>Ready when you are.</h3><p>Start training to view your session.</p></div>`;
     const trace=trainingTrace(s,state().exerciseReplay);
@@ -307,11 +299,10 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     if(name==='ui-locker'){ui.lockerId=id;ui.cabinetPage=0;ui.binId=null;}
     if(name==='ui-bin')ui.binId=id;
     if(name==='ui-cabinet-page'){ui.cabinetPage+=Number(el.dataset.step);ui.binId=null;}
-    if(name==='ui-metric')ui.metric=id;
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea,tick,
+  return {screens:{login,home,checkin,medbay,fitness,mind},action,workoutReadout,selectArea,tick,
     psychMessage,emergencyEnabled:()=>ui.emergencyEnabled,
     resetSession:()=>{ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
   };

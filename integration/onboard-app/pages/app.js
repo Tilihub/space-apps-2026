@@ -8,6 +8,7 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
+import { createHabitatView, loadHabitat } from '/demo-data/habitat/habitat-view.js';
 import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
 import { createCompanionClient } from '/people/potest/crew-support/companion-client.js';
@@ -34,6 +35,7 @@ const select = (label,name,options,value='') => `<label class="field"><span>${la
 const note = (label='Notes', name='note', max=2000) => `<label class="field"><span>${label}</span><textarea class="input" name="${name}" rows="3" maxlength="${max}"></textarea></label>`;
 const submit = label => `<button class="btn primary" type="submit">${label}</button>`;
 let token = sessionStorage.getItem('pulse-token'), user = null, clock = null, data = {}, page = 'login';
+let habitatView=null, habitatRefreshPending=false;
 let revision=0, loading=0, patient='c4', eventsAfter=0, busy=false, collection=null, suggestion=null;
 let drafts={}, selectedArea=null, stagedSymptoms=[], chat=[], companionOpen=false, workout=null, workoutMode='weekly', workoutDay=null;
 let replay=null, exerciseReplay=null, guides=[], generatedCode='', workoutAutoBusy=false, workoutRetryAt=0;
@@ -84,7 +86,7 @@ function notice(message,error=false) {
  if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
 }
 function clearNotice() { $('#notice').hidden=true; }
-function resetLocal() { rewardTimers.forEach(clearTimeout);rewardTimers=[];$('#pulsars-rewards').replaceChildren();pulsarsShop.reset();displayClock.clear();missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; exerciseReplay=null; workoutRetryAt=0; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
+function resetLocal() { rewardTimers.forEach(clearTimeout);rewardTimers=[];$('#pulsars-rewards').replaceChildren();pulsarsShop.reset();displayClock.clear();missionViews.resetSession(); habitatView=null; for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; exerciseReplay=null; workoutRetryAt=0; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
   const old=token;
   // Revoke only this tab's old session. Other tabs keep their own tokens.
@@ -243,16 +245,6 @@ function mindScreen() {
   <p class="subtle context-note">Offline support demo · uses your latest check-in and synthetic mission history. You can talk here or ask for your mission behavioral health provider.</p>
  </div><div class="stack">${card('Private journal',`<p class="subtle">Only you can read these entries in the current demo. Medical officer and Earth sessions are denied.</p><form id="journal-form">${note('What is on your mind?','text',5000)}${submit('Save private entry')}</form>${(data.journal?.entries??[]).map(e=>`<div class="report-card"><small class="muted">${time(e.recordedAt)}</small><p class="saved-entry">${esc(e.text)}</p></div>`).join('')}`)}${card('Your psychologist on Earth',`<p class="muted">Private support through the mission behavioral health channel.</p><p class="subtle">Psychologist messaging is not connected in this demo.</p>`)}</div></div>`;
 }
-function chart(history) {
- const points=history?.points??[], actual=points.filter(p=>p[1]!=null); if(actual.length<2) return empty('Not enough readings for this graph.');
- const values=actual.map(p=>p[1]), lo=Math.min(...values), hi=Math.max(...values), span=hi-lo||1;
- const start=Date.parse(points[0][0]), end=Date.parse(points.at(-1)[0]), x=t=>50+(Date.parse(t)-start)/(end-start||1)*600, y=v=>160-(v-lo)/span*125;
- let pen=false,d=''; for(const [t,v] of points) {if(v==null){pen=false;continue;}d+=`${pen?'L':'M'}${x(t).toFixed(1)},${y(v).toFixed(1)} `;pen=true;}
- return `<svg class="chart-live" viewBox="0 0 680 200" role="img" aria-label="${esc(history.metric)} historical replay"><line x1="50" y1="165" x2="650" y2="165"/><path d="${d}"/><text x="0" y="40">${hi.toFixed(1)}</text><text x="0" y="163">${lo.toFixed(1)}</text><text x="50" y="190">${points[0][0].slice(11,16)}</text><text x="560" y="190">${points.at(-1)[0].slice(11,16)} UTC</text></svg>`;
-}
-function habitatScreen() {
- return `<div class="metric-grid">${(data.env?.readings??[]).map(r=>card(esc(r.metric),`<div class="metric-val">${r.value==null?'—':Number(r.value).toFixed(r.metric==='co2'?0:1)}<small>${esc(r.unit)}</small></div>${tag(r.state,['warning','danger'].includes(r.state))}<p class="subtle">${esc(r.source.label)}<br>Historical replay · source ${esc(r.source.sourceTime)}<br>Measured ${time(r.measuredAt)}</p>`)).join('')}</div><div class="habitat-grid"><div class="stack">${Object.values(data.histories??{}).map(h=>card(`${esc(h.metric)} · last 24 mission hours`,`${chart(h)}<p class="subtle">${esc(h.source.label)} · gaps remain empty</p>`)).join('')}</div>${card('Cabin alert history',`<p class="subtle">Potest’s two-consecutive-reading rules and illustrative thresholds. These are replayed environmental events.</p>${(data.alerts?.alerts??[]).map(a=>`<div class="report-card"><b>${esc(a.metric)}</b> ${tag(a.level,!a.recoveredAt)}<p>Opened ${time(a.openedAt)}<br>${a.recoveredAt?`Recovered ${time(a.recoveredAt)}`:'Recovery not confirmed'}<br>Observed peak ${Number(a.peak).toFixed(1)} · peak state ${esc(a.peakLevel??a.level)}</p></div>`).join('')||empty('No alert transitions in this period.')}`)}</div>`;
-}
 async function ensureWorkout() {
  if(!clock||role()!=='crew') return;
  if(workout && workoutDay!==clock.missionDay) {
@@ -303,7 +295,7 @@ function earthScreen() {
  const catalogue=data.catalogue??[];
  return `<div class="two"><div class="stack">${reportsPanel()}${requestsPanel()}</div><div class="stack">${card('Generate a demo prescription credential',`<p class="subtle">Uses dadis2’s original RX2 encoder. Code contents and QR payload are identical. Patient, allergy, stock and due-dose checks run when it is used on board. This code is a simulation, not a signed medical prescription.</p><form id="earth-code-form">${crewSelect('crewId','c4')}${[0,1].map(i=>`<details ${i===0?'open':''}><summary>Medicine ${i+1}${i===1?' (optional)':''}</summary>${select('Medicine',`item${i}`,[['','Choose medicine'],...catalogue.map(x=>[x.itemId,x.label])])}<div class="form-grid">${field('Units per dose',`units${i}`,{type:'number',value:1,attrs:'min="1" max="9"'})}${field('Doses per day',`perDay${i}`,{type:'number',value:1,attrs:'min="1" max="6"'})}${field('Course days',`days${i}`,{type:'number',value:3,attrs:'min="1" max="30"'})}</div></details>`).join('')}${submit('Generate credential')}</form>${generatedCode?`<label class="field compact"><span>Code / exact QR payload</span><textarea class="input" readonly rows="4">${esc(generatedCode)}</textarea></label><p class="subtle">Copy to a specialist reply or enter in the patient’s Med bay.</p>${qrFor(generatedCode)}`:''}`)}${demoClockPanel()}</div></div>`;
 }
-const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:habitatScreen,fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
+const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:()=>'<div class="falcon-habitat"></div>',fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
 const missionViews=createMissionViews({
  state:()=>({user,role:role(),clock:displayClock.get()??clock,data,page,drafts,collection,suggestion,workout,workoutMode,trainingEndedToday:data.pulsars?.wallet?.trainingDone??!!sessionStorage.getItem(trainingEndKey()),wellbeingCompletedToday:data.pulsars?.wallet?.wellbeingDone??!!sessionStorage.getItem(wellbeingFinishKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
  helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
@@ -320,7 +312,17 @@ function render() {
  };
  const expanded = new Map(detailKeys(Array.from(document.querySelectorAll(`#${page} details`))).map(([key,d])=>[key,d.open]));
  document.querySelectorAll('.screen').forEach(s=>{s.hidden=s.id!==page; if(s.hidden)s.replaceChildren();});
- $(`#${page}`).innerHTML=screens[page]();
+ const screen=$(`#${page}`);
+ if(page==='habitat'){
+  if(!habitatView){
+   screen.innerHTML=screens.habitat();
+   habitatView=createHabitatView(screen.firstElementChild);
+  }
+  habitatView.update(data.habitat);
+ }else{
+  habitatView=null;
+  screen.innerHTML=screens[page]();
+ }
  for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
 }
@@ -340,7 +342,7 @@ async function show() {
   if(page==='medbay') {jobs.profile=get('/meds/profile');jobs.lockers=get('/meds/lockers');jobs.requests=get('/meds/requests');}
   if(page==='mind') jobs.journal=get('/mind/journal');
  }
- if(page==='habitat') {jobs.env=get('/env/now');jobs.alerts=get('/env/alerts'); jobs.histories=Promise.all(['co2','temperature','humidity','radiation'].map(async m=>[m,await get(`/env/history?metric=${m}`)])).then(Object.fromEntries);}
+ if(page==='habitat')jobs.habitat=loadHabitat(get);
  if(role()==='medical_officer'&&['crew','medbay'].includes(page)) {
   const q=personQuery();jobs.daily=health.getDaily({crewId:patient});jobs.history=health.getHistory({crewId:patient});jobs.weekly=health.getWeekly({crewId:patient});jobs.workouts=health.getWorkouts({crewId:patient});
   jobs.symptoms=get(`/meds/symptom-reports${q}`);jobs.profile=get(`/meds/profile${q}`);jobs.doses=get(`/meds/doses${q}`);jobs.grants=get(`/meds/grants${q}`);jobs.lockers=get(`/meds/lockers${q}`);jobs.requests=get('/meds/requests');jobs.stock=get('/meds/stock');
@@ -578,7 +580,17 @@ async function poll() {
   const clinicalRefresh=++pollCount%5===0&&((role()==='earth'&&page==='earth')||(role()==='medical_officer'&&page==='crew'));
   const medicationRefresh=pollCount%5===0&&page==='medbay';
   const relevant=events.events.some(e=>!e.type.startsWith('clock.')&&(!e.crewId||e.crewId===user.crewId||role()==='medical_officer'));
-  if((relevant||clinicalRefresh||medicationRefresh)&&!document.activeElement?.closest('form'))await show();
+  if((relevant||clinicalRefresh||medicationRefresh)&&!document.activeElement?.closest('form')){await show();return;}
+  if(page==='habitat'&&habitatView&&!habitatRefreshPending){
+   const task=loading;
+   habitatRefreshPending=true;
+   try{
+    const habitat=await loadHabitat(api);
+    if(version!==revision||task!==loading||page!=='habitat')return;
+    data.habitat=habitat;
+    habitatView.update(habitat);
+   }finally{habitatRefreshPending=false;}
+  }
  } catch(e){if(version===revision)notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);}
 }
 async function init() {

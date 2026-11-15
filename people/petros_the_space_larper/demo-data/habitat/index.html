@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0b0e14">
   <title>PULSE · Habitat preview</title>
   <link rel="stylesheet" href="./habitat.css">
+  <link rel="stylesheet" href="./habitat-view.css">
   <script type="module" src="./habitat.js"></script>
 </head>
 <body>
@@ -27,63 +28,7 @@
       <a class="back-link" href="/#habitat">Open PULSE <span aria-hidden="true">↗</span></a>
     </header>
 
-    <div class="workspace">
-      <section class="panel map-panel" aria-labelledby="map-heading">
-        <div class="panel-heading">
-          <h2 id="map-heading">Millennium Falcon</h2>
-          <span class="technical">Dorsal view</span>
-        </div>
-        <div class="map-stage" id="map-stage">
-          <svg class="falcon" viewBox="0 0 1536 1024" role="img" aria-label="Millennium Falcon thermal map, from cooler forward compartments to warmer aft engineering">
-            <defs>
-              <mask id="falcon-hull" maskUnits="userSpaceOnUse" x="0" y="0" width="1536" height="1024" style="mask-type: alpha">
-                <image href="./millennium-falcon.png" width="1536" height="1024"/>
-              </mask>
-              <filter id="falcon-edge" x="-5%" y="-8%" width="110%" height="116%">
-                <feComponentTransfer in="SourceAlpha" result="silhouette">
-                  <feFuncA type="discrete" tableValues="0 0 1 1"/>
-                </feComponentTransfer>
-                <feMorphology in="silhouette" operator="dilate" radius="3" result="expanded"/>
-                <feMorphology in="silhouette" operator="erode" radius="1" result="inset"/>
-                <feComposite in="expanded" in2="inset" operator="out" result="edge"/>
-                <feFlood class="falcon-blue"/>
-                <feComposite in2="edge" operator="in" result="blue-edge"/>
-                <feGaussianBlur in="blue-edge" stdDeviation="6" result="glow"/>
-                <feMerge><feMergeNode in="glow"/><feMergeNode in="blue-edge"/></feMerge>
-              </filter>
-            </defs>
-            <image id="falcon-heatmap" class="falcon-heatmap" width="1536" height="1024" mask="url(#falcon-hull)"/>
-            <image class="falcon-interior" href="./millennium-falcon.png" width="1536" height="1024"/>
-            <image class="falcon-outline" href="./millennium-falcon.png" width="1536" height="1024" filter="url(#falcon-edge)"/>
-          </svg>
-          <svg class="sensor-wires" id="sensor-wires" viewBox="0 0 1000 680" preserveAspectRatio="none" aria-hidden="true"></svg>
-          <div role="group" aria-label="Environmental readings" id="sensors"></div>
-        </div>
-        <div class="map-note">
-          <div id="thermal-key"></div>
-          <dl class="thermal-zones" id="thermal-zones" aria-label="Simulated temperatures by zone"></dl>
-          <p>Hover, focus or tap a sensor to inspect its trend.</p>
-        </div>
-      </section>
-
-      <div class="details">
-        <section class="panel trend-panel" id="trend-panel" aria-labelledby="trend-heading">
-          <div class="panel-heading">
-            <h2 id="trend-heading">Sensor trend</h2>
-            <span class="technical" id="trend-window">24 mission hours</span>
-          </div>
-          <div class="trend-content" id="trend"></div>
-        </section>
-
-        <section class="panel alerts-panel" aria-labelledby="alerts-heading">
-          <div class="panel-heading">
-            <h2 id="alerts-heading">Cabin alerts</h2>
-            <span class="alert-count" id="alert-count">—</span>
-          </div>
-          <div id="alerts" class="alerts">Waiting for replay data.</div>
-        </section>
-      </div>
-    </div>
+    <div class="falcon-habitat" id="habitat-preview"></div>
   </main>
 </body>
 </html>

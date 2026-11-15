@@ -8,12 +8,6 @@
   --muted: #a0afc1;
   --dim: #8595a8;
   --accent: #83dbbf;
-  --falcon-blue: #5ab0ff;
-  --co2: #83e8aa;
-  --humidity: #63ddf5;
-  --temperature: #a0afc1;
-  --radiation: #ddaaff;
-  --warning: #ffc47e;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -21,11 +15,6 @@ body { margin: 0; min-width: 280px; background: var(--page); color: var(--ink); 
 a { color: inherit; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 h1, h2, p { margin: 0; }
-[data-metric="co2"] { --metric: var(--co2); }
-[data-metric="humidity"] { --metric: var(--humidity); }
-[data-metric="temperature"] { --metric: var(--temperature); }
-[data-metric="radiation"] { --metric: var(--radiation); }
-
 .topbar {
   min-height: 62px;
   padding: 10px max(28px, calc((100% - 1376px) / 2));
@@ -37,7 +26,7 @@ h1, h2, p { margin: 0; }
 }
 .brand { margin-right: auto; display: flex; align-items: center; gap: 11px; font-size: 13px; font-weight: 800; letter-spacing: .23em; text-decoration: none; }
 .brand svg { width: 26px; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-.connection, .mission-clock, .technical { color: var(--muted); font-size: 11px; }
+.connection, .mission-clock { color: var(--muted); font-size: 11px; }
 .connection { display: flex; align-items: center; gap: 7px; }
 .connection i { width: 7px; height: 7px; border-radius: 50%; background: #ffc47e; }
 .connection[data-state="connected"] i { background: var(--accent); box-shadow: 0 0 9px #83dbbf65; }
@@ -50,92 +39,6 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
 .back-link { display: inline-flex; align-items: center; gap: 8px; flex: none; padding: 9px 12px; border: 1px solid var(--edge); border-radius: 8px; color: var(--muted); font-size: 12px; text-decoration: none; }
 .back-link:hover { color: var(--ink); border-color: var(--dim); }
 .back-link span { color: var(--accent); }
-.workspace { display: grid; grid-template-columns: minmax(0, 1.78fr) minmax(325px, 1fr); gap: 16px; align-items: start; }
-.panel { min-width: 0; border: 1px solid var(--edge); border-radius: 13px; background: var(--panel); }
-.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 15px 19px; border-bottom: 1px solid var(--edge); }
-.panel-heading h2 { font-size: 14px; font-weight: 640; }
-.technical { letter-spacing: .09em; text-transform: uppercase; }
-.map-stage {
-  position: relative;
-  isolation: isolate;
-  aspect-ratio: 1000 / 680;
-  overflow: hidden;
-  background-color: #0b131d;
-  background-image: linear-gradient(#33485e34 1px, transparent 1px), linear-gradient(90deg, #33485e34 1px, transparent 1px), radial-gradient(ellipse at center, #183140, #0c1622 64%, #0b131d);
-  background-size: 26px 26px, 26px 26px, auto;
-  background-position: center;
-}
-.falcon { position: absolute; width: 83%; height: auto; top: 50%; left: 50%; translate: -50% -50%; overflow: visible; pointer-events: none; }
-.falcon-heatmap { opacity: .83; }
-.falcon-interior { filter: blur(2px); opacity: .35; mix-blend-mode: multiply; }
-.falcon-blue { flood-color: var(--falcon-blue); }
-.falcon-outline { opacity: .8; animation: falcon-pulse 2.8s ease-in-out infinite; }
-@keyframes falcon-pulse { 0%, 100% { opacity: .34; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .falcon-outline { animation: none; } }
-.sensor-wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.sensor-wire { color: var(--metric); opacity: .72; }
-.sensor-wire.active { opacity: 1; }
-.sensor-wire path, .sensor-wire circle { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; stroke-width: 1.15; }
-.sensor-wire circle:last-child { fill: currentColor; }
-.sensor-wire.active circle:first-of-type { fill: color-mix(in srgb, currentColor 25%, transparent); }
-.sensor {
-  position: absolute;
-  top: var(--y);
-  translate: 0 -50%;
-  width: clamp(105px, 21%, 160px);
-  padding: 10px 10px 9px;
-  color: var(--ink);
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid color-mix(in srgb, var(--metric) 40%, var(--edge));
-  border-radius: 8px;
-  background: #0d1621f5;
-  box-shadow: 0 3px 16px #0005;
-}
-.sensor[data-side="left"] { left: 3%; }
-.sensor[data-side="right"] { right: 3%; }
-.sensor:hover, .sensor.active { z-index: 1; border-color: var(--metric); background: color-mix(in srgb, var(--metric) 9%, #0d1621); }
-.sensor-name { display: flex; align-items: center; gap: 5px; color: var(--metric); font-size: 11px; font-weight: 650; }
-.sensor-name::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
-.sensor-number { display: block; margin: 4px 0 3px; color: var(--metric); font-size: clamp(16px, 2.15vw, 27px); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.04em; white-space: nowrap; }
-.sensor-number small { color: var(--muted); margin-left: 4px; font-size: 10px; letter-spacing: 0; font-weight: 500; }
-.sensor-location { display: block; color: var(--muted); font-size: 10px; }
-.map-note { padding: 12px 19px; border-top: 1px solid var(--edge); color: var(--muted); font-size: 11px; }
-.map-note .heat-scale { margin: 0; }
-.thermal-zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px 13px; margin: 12px 0; }
-.thermal-zones > div { display: flex; justify-content: space-between; gap: 4px 7px; flex-wrap: wrap; padding: 5px 0; border-bottom: 1px solid var(--edge); }
-.thermal-zones dd { margin: 0; color: var(--zone-color, var(--muted)); font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
-
-.details { display: grid; gap: 14px; }
-.trend-content { padding: 16px 19px 15px; }
-.trend-top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-.trend-name { color: var(--metric); font-weight: 650; font-size: 14px; }
-.trend-zone { margin-top: 4px; color: var(--muted); font-size: 11px; }
-.trend-value { display: flex; align-items: baseline; gap: 7px; margin-top: 9px; color: var(--metric); font-size: 35px; line-height: 1.1; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.045em; }
-.trend-value small { color: var(--muted); font-size: 12px; font-weight: 450; letter-spacing: 0; }
-.reading-state, .alert-count { border-radius: 20px; border: 1px solid var(--edge); padding: 4px 8px; color: var(--muted); font-size: 10px; white-space: nowrap; }
-.reading-state[data-state="normal"] { color: var(--co2); }
-.reading-state[data-state="warning"], .alert-count[data-open="true"] { color: var(--warning); }
-.reading-state[data-state="danger"] { color: #ff9caa; }
-.trend-chart { display: block; width: 100%; height: auto; margin-top: 10px; overflow: visible; }
-.trend-chart line { stroke: var(--edge); }
-.trend-chart path { fill: none; stroke: var(--trace, var(--metric)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.trend-chart circle { fill: var(--metric); stroke: var(--panel); stroke-width: 1.1; }
-.trend-chart text { fill: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
-.chart-empty { display: grid; min-height: 132px; place-items: center; margin: 12px 0; padding: 12px; border: 1px dashed var(--edge); border-radius: 6px; text-align: center; color: var(--muted); font-size: 12px; }
-.trend-source { border-top: 1px solid var(--edge); margin-top: 8px; padding-top: 10px; color: var(--muted); font-size: 10px; line-height: 1.5; }
-.trend-source p + p { margin-top: 3px; }
-.heat-scale { margin: 13px 0 4px; }
-.heat-scale figcaption { margin-bottom: 6px; color: var(--muted); font-size: 10px; }
-.heat-scale-bar { height: 5px; border-radius: 10px; }
-.heat-scale-labels { display: flex; justify-content: space-between; margin-top: 5px; color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
-.alerts { color: var(--muted); font-size: 12px; padding: 13px 19px; }
-.alert { display: flex; gap: 8px; justify-content: space-between; align-items: center; }
-.alert + .alert { border-top: 1px solid var(--edge); margin-top: 10px; padding-top: 10px; }
-.alert b { color: var(--metric); font-weight: 600; }
-.alert small { display: block; margin-top: 3px; font-size: 10px; }
-
 @media (min-width: 671px) and (max-height: 760px) {
   .topbar { min-height: 48px; }
   main { padding-top: 18px; }
@@ -146,18 +49,6 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
 
 @media (min-width: 671px) and (max-width: 900px) {
   main { padding-right: 18px; padding-left: 18px; }
-  .workspace { grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); gap: 12px; }
-  .panel-heading, .trend-content, .alerts { padding-right: 12px; padding-left: 12px; }
-  .sensor { width: max(25%, 90px); padding: 6px; }
-  .sensor-location { font-size: 9px; }
-  .thermal-zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: 670px) {
-  .workspace { grid-template-columns: minmax(0, 1fr); }
-  .map-panel { width: 100%; }
-  .map-stage { max-height: 590px; }
-  .details { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; }
 }
 
 @media (max-width: 570px) {
@@ -166,18 +57,6 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
   .intro p { font-size: 12px; }
   .brand { font-size: 11px; }
   .brand svg { width: 21px; }
-  .connection, .mission-clock, .technical { font-size: 9px; }
+  .connection, .mission-clock { font-size: 9px; }
   main { padding: 19px 12px 24px; }
-  .panel-heading { padding: 12px; }
-  .map-stage { aspect-ratio: 1 / .88; }
-  .falcon { width: 96%; }
-  .sensor { min-height: 50px; width: max(24%, 84px); padding: 5px 6px; }
-  .sensor-number { font-size: 16px; }
-  .sensor-number small { margin-left: 2px; font-size: 9px; }
-  .sensor-location { display: none; }
-  .sensor[data-metric="temperature"] .sensor-location { display: block; }
-  .sensor-name { font-size: 10px; }
-  .map-note { padding: 9px 12px; }
-  .thermal-zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .details { grid-template-columns: minmax(0, 1fr); }
 }
