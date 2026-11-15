@@ -8,12 +8,16 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — gym workflow and crew UI cleanup
-- Working on: Latest UI cleanup is ready for Tommy: one selected body-location readout, rotation-aware pins, filled severity slider, compact archive pulse, per-set exercise controls, read-only crew allergies and upcoming dose counts. Backend implementation and owner modules are unchanged.
+- Last updated: 2026-11-15 — sixteen Overview visual studies
+- Working on: Tommy removed the Overview BPM archive panel. Sixteen isolated static Overview studies and four screenshot comparison sheets are ready in overview-designs/. Awaiting his visual choice; no study theme is applied to the app. Backend, owner modules, data and actions are unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Removed the historical BPM replay from the real Overview, including its unused module/render/tick and CSS. Kept the current profile's original resting-pulse instrument. This supersedes the previous archive-panel entry below.
+- Created 16 static appearance studies in people/tommy/overview-designs/: original navy/cyan/gold, white/blue, amber control room, monochrome graphite, mint glass, cobalt, copper habitat, titanium lab, violet, sage clinic, blueprint, warm sand, horizontal instruments, centered anatomy, editorial numerals and signal yellow. Four contact sheets and 16 full-size browser JPEGs are included. Same fictional profile/values and unchanged original logo; no proposal is selected or wired into the app.
+- Captured the existing thermal body as a reference image to keep model appearance identical across studies. The review pages are presentation-only and have no API/session/backend connection; frozen data and noninteractive drawn controls are explicit. Inspected all comparison sheets and corrected a clipped fourth card in the compact horizontal layout. The temporary review server is stopped after capture; screenshots remain usable offline. Root npm test passed 102/102 (none skipped); syntax/diff checks passed. Only the archive presentation and own design-review files changed; backend and owner modules remain untouched.
 
 - Latest #74 cleanup: Check-in shows the selected location once below the model, without arrow labels; camera-facing filtering and a 20px projected separation rule suppress overlapping pins. Removed the recall sentence and made the severity fill track its thumb. Overview instruments no longer repeat recorded/check-in captions.
 - Added a small Apollo–Soyuz archive panel from Petros's original CSV (five valid Table 3-I exercise averages, NASA SP-411). These are discrete historical observations across subjects/days, looped for presentation, not continuous telemetry or this crew member's live pulse. Source disclosure remains visible and explains the distinction; no values feed health or workout rules.
@@ -137,7 +141,7 @@
 
 ## Next steps
 
-- Continue from `tommy/frontend-polish`. Review the filled port-8012 demo with Tommy and zt, then refine the visuals here. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Continue from `tommy/frontend-polish`. First ask Tommy to choose visual study IDs (01–16), or combine a palette, typeface and arrangement from people/tommy/overview-designs/. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.

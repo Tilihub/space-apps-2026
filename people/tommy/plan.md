@@ -15,10 +15,16 @@ Tommy explicitly authorized implementation in the existing `integration/onboard-
 - Wellbeing: ten-question **product draft**, nine 1–10 items plus one yes/no support preference, organized into Today/Focus/Crew/Support. See [the exact proposal and sources](wellbeing-questionnaire-proposal.md). No validated psychological score or diagnosis is produced.
 - Persistence boundary: existing mood/stress/fatigue are saved through the health API; the seven new questions are explicitly labelled session drafts and clear on sign-out/profile switch. Tommy asked to build/review this here first. Full backend storage needs a separate agreed schema/privacy review; do not claim these additional answers are backend-saved.
 
+### Overview appearance selection
+
+- Tommy removed the historical BPM graph from Overview; retain the original personal resting-pulse instrument.
+- Review the 16 static recipes and screenshot comparisons in [overview-designs/README.md](overview-designs/README.md). They vary palette, type, edge/shadow treatment and visual arrangement while retaining the same content. None is a selected design or a new application implementation.
+- Tommy will choose IDs or a combination. Only then transfer the chosen presentation to the real frontend, keeping backend, permissions, sources, data, controls and connected behavior unchanged.
+
 ### Follow-up crew workflow cleanup
 
 - Check-in: one selected-location readout below the body, no arrow callouts; suppress overlapping/back-facing hotspots on rotation. Severity fill follows the 1–10 thumb. Remove the visible 24-hour recall sentence.
-- Overview: remove recorded/check-in captions. A compact, separately labelled historical pulse replay may use Petros's published flight averages; never present them as current personal telemetry.
+- Overview: remove recorded/check-in captions. The historical pulse replay was later removed by Tommy during the appearance review.
 - Exercise: no body model; prescribed sets use individual completion ticks and rest feedback. Retain Petros's original program/controller and explicit no-sensor state. Stage repetitions use increment controls.
 - Medical bay: crew allergies are already on file and read-only; replace crew Activity with next dose and remaining scheduled doses. Keep clinical editing/history and all existing authorization rules.
 

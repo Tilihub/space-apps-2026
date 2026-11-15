@@ -1,4 +1,3 @@
-import {missionPulse} from '/mission-pulse.js';
 import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
@@ -6,7 +5,7 @@ import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { setChecks:{},stageReps:{},pulseStart:performance.now(),wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { setChecks:{},stageReps:{},wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
@@ -30,15 +29,9 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const pending=[];
     if(!row)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily check-in</a>');
     if(!workouts.length&&getDailyWorkout(clock.missionDay).sessions.length)pending.push('<a class="task-cue" href="#fitness"><i></i>Training open</a>');
-    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div id="mission-pulse">${archivePulse()}</div><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false})}${gauge('Training',workouts.length,workouts.length===1?'session':'sessions',{color:workouts.length?'mint':'cyan',fraction:workouts.length?1:0,link:'#fitness',caption:false})}</div></div></div>`;
+    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false})}${gauge('Training',workouts.length,workouts.length===1?'session':'sessions',{color:workouts.length?'mint':'cyan',fraction:workouts.length?1:0,link:'#fitness',caption:false})}</div></div></div>`;
   }
 
-  function archivePulse(){
-    const index=Math.floor((performance.now()-ui.pulseStart)/5000)%missionPulse.rows.length,row=missionPulse.rows[index];
-    const values=missionPulse.rows.map(r=>r.bpm),lo=Math.min(...values)-5,hi=Math.max(...values)+5;
-    const pts=values.map((v,i)=>`${6+i*33},${39-(v-lo)/(hi-lo)*30}`).join(' ');
-    return `<div class="archive-pulse"><div><b>Apollo–Soyuz <span>Archive replay</span></b><small>Exercise averages · day ${row.missionDay}</small></div><svg viewBox="0 0 145 45" role="img" aria-label="Published exercise heart-rate averages"><polyline points="${pts}"/><circle cx="${6+index*33}" cy="${39-(row.bpm-lo)/(hi-lo)*30}" r="3"/></svg><strong>${row.bpm}<small>bpm</small></strong>${disclosure('Source',`<p>${esc(row.subject)} · day ${row.missionDay}. Discrete exercise averages, replayed in a loop. This is not the current crew member's pulse.</p><a href="${missionPulse.source}" target="_blank" rel="noreferrer">Mission report · ${missionPulse.locator}</a>`)}</div>`;
-  }
   function rating(label,name,value,lo,hi,disabled) {
     return `<div class="rating-group" data-rating="${name}"><div class="rating-title"><b>${label}</b><span>${value!==''&&value!=null?`${esc(value)} / 10`:'Choose 1–10'}</span></div><input type="hidden" name="${name}" value="${esc(value??'')}"><div class="rating-options" role="group" aria-label="${label}">${Array.from({length:10},(_,i)=>`<button type="button" data-action="ui-rating" data-value="${i+1}" aria-pressed="${Number(value)===i+1}" ${disabled?'disabled':''}>${i+1}</button>`).join('')}</div><div class="rating-anchors"><span>${lo}</span><span>${hi}</span></div></div>`;
   }
@@ -199,7 +192,6 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     return remaining?`Rest · ${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}`:'Ready for the next set';
   }
   function tick(){
-    const archive=document.getElementById('mission-pulse');if(archive){const opened=archive.querySelector('details')?.open;archive.innerHTML=archivePulse();if(opened)archive.querySelector('details').open=true;}
     const rest=document.getElementById('set-rest');if(rest)rest.textContent=restLabel();
     const timer=document.querySelector('.step-time b'),snapshot=state().workout?.snapshot(state().clock.now);
     if(timer&&snapshot?.currentStep)timer.textContent=`${Math.floor(snapshot.stepElapsedSeconds/60)}:${String(snapshot.stepElapsedSeconds%60).padStart(2,'0')}`;
