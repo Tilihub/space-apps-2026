@@ -24,6 +24,9 @@
 
 ## Done
 
+- Complete publication verified: PR #74 now targets main directly with the whole functional + current UI snapshot; all five teammates are requested reviewers. Added a pointer on #73 to prevent reviewing/merging the older functional-only app as the current release. No PR was approved or merged. All current runtime files remain identical to reviewed UI commit 5990f26.
+- Exported HEAD with git archive into an isolated temporary folder containing tracked files only; all 106 root checks passed there, none skipped. This proves the testable app does not rely on uncommitted local code/data. Reproduction instructions and all visible draft features, including the full-width AED shelf, remain in current-app-handoff.md.
+
 - Audited the current snapshot and both PR file lists: all runtime UI, logo, body scene, six instruments, daily tasks/questionnaire, cabinet/AED, exercise, companion, private journal, psychologist preview and clinical/Earth connections are included. Added current-app-handoff.md with exact checkout/run/seed instructions and explicit draft boundaries; existing local stores are preserved.
 
 - Replaced supportWanted yes/no with mentalRest, a tenth 1–10 item. Recovery replaces the questionnaire Support section; private support remains on Wellbeing. Completion validation requires all ten numeric scales; legacy support answers cannot substitute for mental refreshment. First three fields still use the existing API, seven extras remain labelled session drafts.
