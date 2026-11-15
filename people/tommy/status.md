@@ -8,6 +8,8 @@
 
 ## Now
 
+- Reviewing dadis2's `mo-console` at 2dc9a6e (includes earth-qr), not adopting it. Branch: tommy/review-dadis-demo. Exact unchanged source runs in a temporary archive on loopback localhost:8022 with fresh synthetic fixtures and three pending test requests. Original complete Pulsars app remains at 8020/main. See dadis-review/README.md for findings and screenshots; awaiting Tommy's doctor-access/emergency-reason choices.
+
 - Published Pulsars in [PR #75](https://github.com/Tilihub/space-apps-2026/pull/75), stacked on #74. GitHub confirms all five teammates are requested reviewers. All 117 checks pass; no approval or merge performed. The user-facing new feature preview is localhost:8020 (local-only copy), with the original 8018 process/store preserved.
 
 - Pulsars: new branch `tommy/pulsars`, based on current app `tommy/frontend-polish` at 823874a / PR #74. Tommy authorized the separate complete backend/contract. New private wallet/PR/questionnaire module, per-main-exercise rewards, independent streaks, saved shop purchases/equipped cosmetics and gold-cart UI. Local preview: http://localhost:8020/#shop, loopback only, separate copy of the demo store; original 8018 remains running. Protected contract proposal needs teammate review; no merge is authorized.
@@ -29,6 +31,9 @@
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Opened dadis2's four-tab medical console and Earth QR screen for review. All 111 tests on his exact archive pass; no teammate source/main code changed, request approved, medicine collected or camera permission requested. Added only synthetic pending requests in the isolated review store.
+- Flagged policy differences: unrestricted doctor collection also skips usual daily-dose/reserve/grant eligibility; emergency reason becomes optional; ordinary request reason becomes mandatory; doctor-as-patient prescription can go onboard. Confirmed standalone jsQR fallback is not wired into the joined app (its asset route is 404). Two explicit product-choice questions are pending. No adoption assumed.
 
 - Built the separate Pulsars module with server-priced/de-duplicated credits and purchases, saved appearance and 24 catalogue choices including defaults. Rewards: 100/200/300 from streak days 1/4/6, per main assigned exercise and once per wellbeing day. Rest preserves but does not increase the training streak. Full main program extends the exercise streak; partial days retain coins. No points for warm-up/cool-down or stage preview.
 - Positive per-exercise kilogram PRs persist with prescribed sets/repetitions. First record establishes a baseline; later higher loads add 100. PR is shown beside the active load and in the exercise list. Existing owner program/controller/health/medicine modules are unchanged.
@@ -233,6 +238,8 @@
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
+
+- Review localhost:8022 with Tommy, starting with Medical officer → Approvals / Inventory; Earth console is accessible after sign-out. Read dadis-review/README.md. Wait for the doctor-access and emergency-reason decisions before proposing integration. Preserve Pulsars/current main and coordinate dadis2/zt for owned medicine files and protected contract changes.
 
 - Continue from `tommy/pulsars`. Read people/tommy/pulsars/README.md and shared/contract/pulsars.md; test the complete shop at localhost:8020/#shop. Review the separate feature PR over #74; do not merge until teammate review and explicit merge authorization. Preserve AED and all existing features. No initial bonus coins or unearned leaderboard history is seeded.
 
