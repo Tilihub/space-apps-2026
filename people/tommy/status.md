@@ -8,6 +8,8 @@
 
 ## Now
 
+- Published Pulsars in [PR #75](https://github.com/Tilihub/space-apps-2026/pull/75), stacked on #74. GitHub confirms all five teammates are requested reviewers. All 117 checks pass; no approval or merge performed. The user-facing new feature preview is localhost:8020 (local-only copy), with the original 8018 process/store preserved.
+
 - Pulsars: new branch `tommy/pulsars`, based on current app `tommy/frontend-polish` at 823874a / PR #74. Tommy authorized the separate complete backend/contract. New private wallet/PR/questionnaire module, per-main-exercise rewards, independent streaks, saved shop purchases/equipped cosmetics and gold-cart UI. Local preview: http://localhost:8020/#shop, loopback only, separate copy of the demo store; original 8018 remains running. Protected contract proposal needs teammate review; no merge is authorized.
 
 - Latest visual refinement: smaller, medium-bold Overview numeric values only; ring geometry and titles unchanged. Overview body viewer fills the card height with tighter view-only framing, preserving reporting-mode fit and backend behavior.

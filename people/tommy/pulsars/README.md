@@ -1,6 +1,6 @@
 # Pulsars — personal progress and companion wardrobe
 
-Tommy's 15 November 2026 feature. New owner module and UI, separately reviewed over `tommy/frontend-polish` (full app PR #74). Read the proposed [contract](../../../shared/contract/pulsars.md) for exact APIs, privacy, thresholds and retry rules. Do not merge protected changes until a teammate approves.
+Tommy's 15 November 2026 feature. New owner module and UI in [PR #75](https://github.com/Tilihub/space-apps-2026/pull/75), separately reviewed over `tommy/frontend-polish` (full app PR #74). Read the proposed [contract](../../../shared/contract/pulsars.md) for exact APIs, privacy, thresholds and retry rules. Do not merge protected changes until a teammate approves.
 
 ## Run
 
@@ -30,3 +30,5 @@ The local review runs on 127.0.0.1:8020 with a separate local copy of the previo
 Completion is a validated self-report for the known program, not verified movement sensing. A stage preview earns no coins. PRs do not imply a recommended load. Active workout checklists remain in the original in-memory controller; a reload loses checklist position, but saved main-exercise rewards are deduplicated. A stale outbox completion cannot be claimed as today's work. No leaderboard, daily coin decay, diagnosis-based rewards, money checkout or clinical permission changes are added.
 
 The AED shelf, existing cabinet, private journal, Habitat and clinical/Earth workflows are retained. This feature does not connect the AED hardware or real psychologist transport.
+
+Validation: 117/117 root checks pass, including ten module/schema cases and real-HTTP serialized credits/purchases, restart/role separation and public catalogue-only serving. Browser proof includes wellbeing and per-exercise rewards, close-X, a real 500-Pulsars ring purchase and reload persistence, and free cosmetic try-ons. All five teammates are requested reviewers on #75; no approval or merge was performed.
