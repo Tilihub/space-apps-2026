@@ -74,6 +74,7 @@
   Earth's reply card, one error message and one test. 131 of 131 tests pass; checked in the browser
 - Crew rename merged ([PR #99](https://github.com/Tilihub/space-apps-2026/pull/99), approved by Tommy):
   Mara has no surname now. Deployed on Render from main at `0a71561`
+- Start screen lists the crew in the demo's running order: Diamandis, Petros, Chris, Mara, Aggelos
 
 ## Blocked / need from others
 
