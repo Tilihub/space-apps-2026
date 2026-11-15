@@ -14,13 +14,20 @@ PRs #74 and #75 merged on 15 November 2026. It resolves stale planning labels ag
 the merged code and GitHub PR state. It does not claim that scripts are a trained model,
 synthetic crew observations are real astronaut records, or the prototype is clinically validated.
 
-The 42-page PDF was visually checked throughout, with embedded fonts, working reference
+The 41-page PDF was visually checked throughout, with embedded fonts, working reference
 links, a clickable table of contents and no clipped text or unsupported glyphs.
 
 The document organization follows the public
 [NASA Publications Guide for Authors](https://ntrs.nasa.gov/citations/20150013303).
 The existing team logo is reproduced unchanged; no agency logo or agency publication
-identifier is used. Text, diagrams and build code were prepared with Codex assistance.
+identifier is used. Section 8 briefly discloses AI assistance and identifies the application
+pipeline as the team's own design and implementation, without listing tools per contributor.
+
+Version 1.1 shortens section 8 to two paragraphs and retains the original application snapshot.
+Version 1.2 adds the team organization paragraph, uses the confirmed first names and explains
+the purpose of each member's main component. GitHub profiles and Git commit author names were
+cross-checked; the team-confirmed roster supplies names absent from public profiles. The
+contributor table retains the exact GitHub handles for traceability.
 
 ## Rebuild
 

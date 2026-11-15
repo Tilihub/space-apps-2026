@@ -28,7 +28,7 @@ The team's core idea and product decisions came from the human contributors. AI 
 
 ### 2 1 From separate experiments to one onboard system
 
-We began with complementary components: Angelos's Python personal comparison and history tools, Dadis2's browser inventory and prescription prototype, Potest's offline environment graphs, and Petros's research and demonstration data. Tommy recorded the intended user journeys; zt planned the shared interface and server. The problem was not simply displaying these experiments next to each other. Their identifiers, scales, clocks, storage and permission assumptions had to agree before a single application could rely on them.
+We began with complementary components: Angelos's Python personal comparison and history tools, Diamantis's browser inventory and prescription prototype, Christos's offline environment graphs, and Petros's research and demonstration data. Thomas recorded the intended user journeys; Zisis planned the shared interface and server. The problem was not simply displaying these experiments next to each other. Their identifiers, scales, clocks, storage and permission assumptions had to agree before a single application could rely on them.
 
 The shared contract established one Node.js 24 server, JavaScript modules, five crew IDs, UTC mission time, strict JSON fields and module-owned storage. Existing prototypes stayed available as experiments. The application imports completed owner modules directly and uses connection adapters where a shared-server implementation was missing. This avoided duplicating health or medicine rules in the browser. Sources: [R02], [R08], [R09].
 
@@ -68,7 +68,7 @@ The seven-minute demonstration was designed as a sequence of five crew stories. 
 
 We collected source inventories, research summaries, transcribed published vital signs, processed environmental chart data, synthetic crew fixtures, measurement guides, a training program and sample medicine rules. These materials serve different purposes. A paper table can justify a field or illustrate a mission-phase observation without becoming a personal reference. A terrestrial waveform can test a parser without representing an astronaut. A spacecraft area detector can support habitat context without becoming a person's dose measurement.
 
-The implemented health demonstration loads Petros's synthetic `health.json`. The connected environment adapter reads Potest's historical RR-9 cabin series and Curiosity cruise detector B. The standalone environment monitor exposes a larger archive of 33 dataset groups. The medicine module reads its sample catalogue. The companion uses the author's current check-in and a narrow selection from the synthetic history. No biomedical dataset is used to train model weights. Sources: [R02], [R17], [R18], [R19].
+The implemented health demonstration loads Petros's synthetic `health.json`. The connected environment adapter reads Christos's historical RR-9 cabin series and Curiosity cruise detector B. The standalone environment monitor exposes a larger archive of 33 dataset groups. The medicine module reads its sample catalogue. The companion uses the author's current check-in and a narrow selection from the synthetic history. No biomedical dataset is used to train model weights. Sources: [R02], [R17], [R18], [R19].
 
 ### 4 2 Research method and evidence quality
 
@@ -138,7 +138,7 @@ The connected habitat uses two selected replays. RR-9 provides cabin CO2, temper
 
 ### 6 2 Transformation pipeline
 
-Potest's standard-library Python builder reads archived JSON and CSV/TXT products. It parses numeric values, rejects missing/nonfinite values and large sentinels, removes impossible ISS humidity values, groups observations by time and averages the valid values in each bucket. Stored triples are timestamp, value and valid source-sample count. Metrics retain a bucket duration and gap threshold.
+Christos's standard-library Python builder reads archived JSON and CSV/TXT products. It parses numeric values, rejects missing/nonfinite values and large sentinels, removes impossible ISS humidity values, groups observations by time and averages the valid values in each bucket. Stored triples are timestamp, value and valid source-sample count. Metrics retain a bucket duration and gap threshold.
 
 RR-9 cabin data retain the fine archive cadence; other ISS cabin series use hourly buckets. Artemis II logger times are converted from CDT UTC−05:00 to UTC, clipped to the flight window and averaged into five-minute buckets. Radiation products retain instrument-specific quantities and units. The MEDA humidity channel for the selected sol is empty, so it does not become a fabricated humidity graph. Empty or all-null archive responses do not produce charts.
 
@@ -184,27 +184,11 @@ Weekly analysis compares the latest seven calendar days with the preceding seven
 
 The health module persists a SHA-256 fingerprint of its loaded fixture source. An updated file does not overwrite a running store's reference. The earlier Python tool also supports a separately versioned personal-history JSON importer, preserves source, units and scales in SQLite, and provides a backup before reset. That importer and the app's `health.json` are different formats; neither silently migrates the other's history. Sources: [R09], [R32], [R33].
 
-## 8 AI use and what we mean by training
+## 8 AI use
 
-### 8 1 AI used to build the project
+Our team designed and built PULSE's application pipeline, including data ingestion, personal baseline comparisons, module integration and role-based workflows. We used AI tools to assist research, coding, testing and documentation. The team defined the concept, selected the sources and methods, made the design decisions and reviewed the results. Sources: [R02], [R05], [R09].
 
-The contributor profiles record Codex for Angelos, Petros, Potest and Tommy, and Claude Code for Dadis2 and zt. Two Gemini research reports were added as unverified discovery material. AI assistance supported research organization, implementation, tests, synthetic examples, interface exploration and documentation. Humans supplied the concept, answered product questions, selected scope and designs and reviewed shared changes.
-
-The repository does not contain a custom-model training pipeline, trained checkpoint, dataset split, optimization configuration or evaluation of a newly trained model. We therefore cannot describe the collected NASA or crew data as a training corpus. Preparing response text and application rules is configuration and implementation, not training model weights. This report was itself prepared with Codex assistance from the public project record. Sources: [R03], [R06], [R07], [R12].
-
-### 8 2 What the current companion does
-
-The browser reloads the authenticated author's current mission-day check-in before each message. The server validates role, author, day, accepted fields, scales and message length. The connection adapter recognizes topics with keyword rules, including selected Greek terms, and chooses authored response templates for sleep, stress, mood, missing home, relaxation and follow-up. Urgent phrases route toward onboard human help; medication or diagnostic questions route toward the medical workflow.
-
-Potest's response helpers provide the conversation text. Angelos's pure comparison functions and Petros's synthetic fixture provide narrow sleep context for the current fictional author. Detailed historical numbers, baseline values and streak counts remain server-side. The adapter does not read stored clinical history or journal text. Its fixture context is frozen demonstration data, not the evolving saved medical record.
-
-Only bounded topic counters and the last reply are retained in server memory; conversation text is not persisted to disk by this adapter. State is scoped to author and mission day and clears on reset. The client discards replies after a session change. These controls support the tested demo boundary, but keyword coverage does not establish broad language understanding or reliable detection of all urgent situations. Sources: [R19], [R34], [R35], [R36].
-
-### 8 3 Earlier model exploration and current privacy boundary
-
-An earlier OpenAI-backed experiment is visible in Git history and in the historical PR title. The recorded decision on 14 November selected offline use, with no configured external-model key. The delivered companion makes no external model call. The separate psychologist chat is also scripted locally; no psychologist identity or real message transport is implemented.
-
-The intended longer-term brief allows the author's support assistant to use private thoughts under an agreed private path, and limits human journal readers to the author and assigned psychologist. The current implementation is narrower: journal access is author-only, and its text is not sent to the companion. Ordinary clinical reports exclude journal and companion material. A future model-connected version would need an explicit model choice, data-processing arrangement, retention/access design and a documented evaluation before making stronger claims. These are future requirements, not completed training work. Sources: [R05], [R12], [R13], [R37].
+The companion runs locally with topic rules and prepared responses, using the signed-in user's current check-in and limited synthetic history as context. It does not use a newly trained model or make external model calls. Private journal text is excluded from its context and ordinary clinical reports. Sources: [R19], [R34], [R37].
 
 ## 9 Software architecture and persistence
 
@@ -230,7 +214,7 @@ NASA medical-kit, pharmaceutical-stability and inventory-tracking resources info
 
 ### 10 2 Normal collection path
 
-A crew member reports symptoms with an area, code, severity and optional note/vitals. The medicine rules return suggestions and restrictions. Normal-flow allergy checks can block an item despite an otherwise valid grant. Self-care may be available without approval, while reserves, conditions, daily limits and ingredient checks can restrict it. Prescription medicines require the medical officer; controlled medicines require Earth. The current code also routes the medical officer's own prescription needs to Earth. Tommy later requested a change to that exception, but it remains the implemented rule at this revision.
+A crew member reports symptoms with an area, code, severity and optional note/vitals. The medicine rules return suggestions and restrictions. Normal-flow allergy checks can block an item despite an otherwise valid grant. Self-care may be available without approval, while reserves, conditions, daily limits and ingredient checks can restrict it. Prescription medicines require the medical officer; controlled medicines require Earth. The current code also routes the medical officer's own prescription needs to Earth. Thomas later requested a change to that exception, but it remains the implemented rule at this revision.
 
 An eligible prescription generates a reusable course credential. Typed and scanned RX2 payloads resolve to the same grant. A collection batch includes the items currently due; each compartment is confirmed once. Stock and the collected-dose log change at confirmation. Collection is not proof of swallowing, and a later effectiveness follow-up is separate.
 
@@ -292,7 +276,7 @@ NASA's medical-operations material supports private medical/psychological commun
 
 Server-side role checks, crew ownership and strict input fields define the demo boundary. Selecting another crew ID in a request does not authorize access. Clinical analyses, journals and Pulsars state have different audiences. A medical role is not a universal bypass, and Earth receives only delivered clinical material through its report workflow.
 
-The journal is author-only in this implementation. The intended author/assigned-psychologist relationship is a future role and private-transport requirement. The companion does not read the journal, and questionnaire answers stored in Pulsars are not appended to it or to clinical reports. Change events carry metadata, not private content.
+The journal gives crew members a private space to record their thoughts, separate from routine clinical reporting. It is author-only in this implementation. The intended author/assigned-psychologist relationship is a future role and private-transport requirement. The companion does not read the journal, and questionnaire answers stored in Pulsars are not appended to it or to clinical reports. Change events carry metadata, not private content.
 
 These are tested application behaviors under simulated identities. They are not a production security certification. Before real health data could be used, the team would need real identity proof, secure transport and storage, access lifecycle and audit design, retention/consent decisions, specialist review and a deployment threat assessment. The public repository and public demonstration should continue to use fictional people and synthetic private content. Sources: [R08], [R19], [R37], [R44], [R46].
 
@@ -341,18 +325,20 @@ PULSE demonstrates an onboard way to organize health routines and clinical conte
 
 Our collected research and archives informed field selection and scenario design. Synthetic histories made the public demo reproducible. The statistical comparison remains inspectable, the companion remains a local scripted support tool, and the human medical roles retain the care decisions. The software tests support the implemented prototype; clinical evaluation, live sensing, real communications and operational qualification remain future work.
 
-## 17 Contributors and development record
+## 17 Team organization and contributions
+
+We divided the work into components linked by a shared contract. Zisis built the server and initial interface to provide common identity, mission time and storage. Angelos built personal health comparisons and history to show changes against each person's fixed reference. Diamantis implemented medicine and inventory workflows to enforce patient, allergy and due-dose checks. Petros prepared research, demo histories and the exercise program to support traceable scenarios and structured training. Christos implemented environmental replay and support helpers to connect symptoms with cabin context and offer local guidance. Thomas developed product workflows, integration, interface refinement and Pulsars to join the components into a usable daily routine. Sources: [R02], [R05], [R09], [R18], [R40], [R43], [R45].
 
 | Contributor | GitHub identity | Documented contribution |
 |---|---|---|
 | Angelos | AngelosAth30 | Personal comparison, Python prototypes/import, Node health service, client and integration verification; this consolidated report |
-| Dadis2 | dadis2 | Medical inventory, catalogue, allergies, prescriptions, reusable grants, dispensing, emergencies and stock |
+| Diamantis | dadis2 | Medical inventory, catalogue, allergies, prescriptions, reusable grants, dispensing, emergencies and stock |
 | Petros | petrosmpidis | Primary-source research, historical vital-sign transcription, fictional histories, measurement guides and exercise program/controller |
-| Potest | Potest04 | Environmental archives, processing, alert/replay bridge and Crew Support response helpers |
-| Tommy | tommy2002t | Product requirements and reviews, integration and visual refinement after handoff, wellbeing form and Pulsars |
-| zt | Tilihub | Repository coordination, shared contract, core server, initial interface and 3D body work |
+| Christos | Potest04 | Environmental archives, processing, alert/replay bridge and Crew Support response helpers |
+| Thomas | tommy2002t | Product requirements and reviews, integration and visual refinement after handoff, wellbeing form, private journal connection and Pulsars |
+| Zisis | Tilihub | Repository coordination, shared contract, core server, initial interface and 3D body work |
 
-The names above use the public contributor identities recorded in the repository. The public GitHub record provides the chronology: early prototypes and requirement reviews; contract #49; external import #50; data #51 and alignment #64; health module #57; workout #63/#67; medicine #66/#70; core #71; and connected application #73/#74 with Pulsars #75. PR titles describe their historical scope and may retain earlier terminology, such as the OpenAI-backed companion prototype. The actual delivered behavior is described in the relevant implementation sections. [R03], [R04]
+First names follow the team's confirmed roster; GitHub handles identify each member's public contributions. Appendix D summarizes the development chronology from separate prototypes to the shared contract and integrated app. [R03], [R04]
 
 ## 18 References and document conventions
 
