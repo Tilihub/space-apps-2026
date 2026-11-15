@@ -2,7 +2,7 @@ import {mascotSvg as drawMascot,coin,cartIcon} from '/pulsars-mascot.js';
 import {createPulsarsShop} from '/pulsars-shop.js';
 import {DEFAULT_LOOK} from '/pulsars/catalog.js';
 import {createDisplayClock} from '/display-clock.js';
-import {validWellbeingSubmission} from '/wellbeing-questions.js';
+import {validWellbeingSubmission,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {makeTrainingReplay} from '/training-demo.js';
 import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
@@ -98,6 +98,11 @@ async function login(crewId,platform='astronaut') {
   await show();
 }
 async function logout() { try { await api('/session',{method:'DELETE'}); } catch { /* Clear this tab even if its old server token expired. */ } resetLocal(); token=null; user=null; sessionStorage.removeItem('pulse-token'); location.hash='login'; await show(); }
+function restartBrowserSession() {
+ for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-'))sessionStorage.removeItem(key);
+ history.replaceState(null,'',location.pathname+location.search);
+ location.reload();
+}
 const personQuery = () => `?crewId=${encodeURIComponent(patient)}`;
 const allBins = () => (data.lockers?.lockers ?? []).flatMap(l=>l.shelves.flatMap(s=>s.bins));
 const binName = id => allBins().find(b=>b.itemId===id)?.label ?? id;
@@ -379,11 +384,15 @@ async function handleForm(form,submitter) {
  if(id==='daily-wellbeing-finish'){
   delete drafts[id];
   if(!validWellbeingSubmission(v))throw new Error('Answer all ten questions before finishing.');
-  if(!data.today?.checkedInToday)await health.submitCheckIn(numberFields(v,['mood','stress','fatigue']));
-  const result=await api('/pulsars/wellbeing',{method:'POST',body:{missionDay:clock.missionDay,answers:Object.fromEntries(Object.entries(v).map(([k,value])=>[k,Number(value)]))}});
+  if(!data.today?.checkedInToday){
+   const saved=await health.submitCheckIn(numberFields(v,['mood','stress','fatigue','sleepHours']));
+   data.today=saved.today;
+   delete drafts['wellbeing-core-form'];
+  }
+  const result=await api('/pulsars/wellbeing',{method:'POST',body:{missionDay:clock.missionDay,answers:numberFields(v,WELLBEING_SCALE_IDS)}});
   data.pulsars={wallet:result.wallet};showAwards(result.awards);
   sessionStorage.setItem(wellbeingFinishKey(),clock.now);
-  delete drafts[id];delete drafts['checkin-form'];
+  delete drafts[id];
   notice('Daily wellbeing completed.');
  } else if(id==='checkin-form') {
   const values=numberFields(v,[...Object.keys(MEASUREMENTS),'mood','stress','fatigue']);
@@ -562,6 +571,7 @@ function paintDisplay(){
 let pollCount=0;
 async function poll() {
  if(!token||busy)return;
+ if(!user){await init();return;}
  const version=revision;
  try {
   const [next,events]=await Promise.all([api('/clock'),api(`/events?after=${eventsAfter}`)]);
@@ -591,13 +601,20 @@ async function poll() {
     habitatView.update(habitat);
    }finally{habitatRefreshPending=false;}
   }
- } catch(e){if(version===revision)notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);}
+ } catch(e){
+  if(version!==revision)return;
+  if(e.code==='not_logged_in'){restartBrowserSession();return;}
+  notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);
+ }
 }
 async function init() {
  try {
   const loaded=await Promise.all([fetch('/demo-data/workout-heart-rate.json').then(r=>r.json()),fetch('/demo-data/measurement-guides.json').then(r=>r.json())]);
   [replay,guides]=loaded;
-  if(token){try{user=(await api('/session')).user;}catch{token=null;sessionStorage.removeItem('pulse-token');}}
+  if(token){
+   try{user=(await api('/session')).user;}
+   catch(e){if(e.code==='not_logged_in'){restartBrowserSession();return;}throw e;}
+  }
   if(user){const events=await api('/events');eventsAfter=events.lastId;
    try {const cached=JSON.parse(sessionStorage.getItem('pulse-collection')??'null');if(cached?.token===token&&cached.collection?.crewId===user.crewId)collection=cached.collection;}catch{sessionStorage.removeItem('pulse-collection');}
   }
