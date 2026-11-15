@@ -637,12 +637,13 @@
       camera.updateProjectionMatrix();
       measureLabels();
       if (!body) return;
-      const top = 42, bottom = 44;
+      const overview = opts.mode === 'view';
+      const top = overview ? 46 : 42, bottom = overview ? 30 : 44;
       const labelRoom = Math.min(110, size.w * 0.14);
       const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       const dH = (body.H / 2) / (tanV * (size.h - top - bottom) / size.h);
       const dW = (body.W / 2) / (tanV * camera.aspect * Math.max(0.3, (size.w - 2 * labelRoom) / size.w));
-      const d = Math.max(dH, dW) * 1.03 + body.D / 2;
+      const d = Math.max(dH, dW) * (overview ? 1 : 1.03) + body.D / 2;
       defaultTarget.set(0, body.H / 2 + ((top - bottom) / 2 / size.h) * 2 * d * tanV, 0);
       const ratio = fitDist ? camera.position.distanceTo(controls.target) / fitDist : 1;
       if (!fitDist) {

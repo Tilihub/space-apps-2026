@@ -8,6 +8,8 @@
 
 ## Now
 
+- Latest visual refinement: smaller, medium-bold Overview numeric values only; ring geometry and titles unchanged. Overview body viewer fills the card height with tighter view-only framing, preserving reporting-mode fit and backend behavior.
+
 - Publishing: Tommy requested the entire current app for the team, with nothing omitted, including the planned L3 defibrillator. Complete handoff: current-app-handoff.md. PR #74 now targets main directly for review of the entire snapshot; #73 remains the earlier functional-only proposal. The protected contract clarification and unchanged Potest #55 dependency still require teammate review/owner agreement. No backend capability is added in this publication step.
 
 - Latest: replaced the redundant support-request question with mental refreshment, 1–10. Overview now has six equal instrument cards (including existing SpO2 and BP), with 205px rings/larger values on desktop and a full column matching body-panel height. Medical access shows short actual-authority labels; actionable safety blocks remain. The requested removal of doctor-as-patient Earth routing is a dadis2/zt backend/contract follow-up, not implemented here. Current demo remains open on port 8018.
@@ -23,6 +25,8 @@
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Reduced only Overview numeric type (40px regular readings / 31px pressure at desktop, with smaller responsive sizes), softened weight and tracking, and preserved ring/title styles. The Overview-only body stage now fills its card and uses tighter camera framing; Check-in framing is unchanged. Browser verified equal body/instrument height, centered full body/base, updated values and unchanged ring dimensions. Root tests passed 106/106; no backend change.
 
 - Complete publication verified: PR #74 now targets main directly with the whole functional + current UI snapshot; all five teammates are requested reviewers. Added a pointer on #73 to prevent reviewing/merging the older functional-only app as the current release. No PR was approved or merged. All current runtime files remain identical to reviewed UI commit 5990f26.
 - Exported HEAD with git archive into an isolated temporary folder containing tracked files only; all 106 root checks passed there, none skipped. This proves the testable app does not rely on uncommitted local code/data. Reproduction instructions and all visible draft features, including the full-width AED shelf, remain in current-app-handoff.md.
