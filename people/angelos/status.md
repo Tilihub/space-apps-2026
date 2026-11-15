@@ -8,11 +8,19 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:06 (Asia/Nicosia)
-- Working on: Connection audit at main 050422b: source #64 merged, 70 root checks pass, and Potest's 3 pending companion checks independently pass. Common core/pages remain unbuilt.
-- Branch: angelos/connection-audit
+- Last updated: 2026-11-15 (Asia/Nicosia)
+- Working on: Approved Tommy PR #75 at the user's explicit instruction; independent 117/117 checks passed. Isolated loopback preview on port 8020 is running for the user; see reviews/PR75.md.
+- Branch: angelos/review-pulsars-75
 
 ## Done
+
+- Synced main 1d2d7ca, inspected Tommy's stacked #73/#74/#75 PRs, and confirmed
+  the user selected #75. Independently passed 117/117 root tests at ba2c0ee in
+  an isolated checkout, reviewed private wellbeing/health and shop boundaries,
+  and submitted/confirmed APPROVED as AngelosAth30. No other PR was approved
+  or merged. Started a fresh synthetic localhost preview on port 8020 and seeded
+  the five published scenarios; verified HTTP 200. Browser appearance was not
+  independently audited. Restart instructions are in reviews/PR75.md.
 
 - Installed Git and GitHub CLI; signed in from PowerShell and cloned the repository.
 - Configured the repository commit identity with a private GitHub noreply email.
@@ -182,6 +190,11 @@
   node --test "**/*.test.js". Node.js 24 is available; no packages are needed.
 
 ## Next steps
+
+- The user can open the running local #75 preview at port 8020. Keep its TEMP
+  checkout/store while they use it; do not reset their other databases. See
+  reviews/PR75.md for restart and the exact reviewed commit. #75 is stacked on
+  #74/#73; this approval does not approve or merge those underlying PRs.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
   main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
