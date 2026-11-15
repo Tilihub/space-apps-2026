@@ -8,9 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 18:17
-- Working on: the live demo script. The crew rename (PR #99) is merged and deployed on Render.
-- Branch: none open
+- Last updated: 2026-11-15 19:20
+- Working on: the live demo. Scrolling over the 3D body now scrolls the page, and the app fills
+  wide screens; needs a Manual Deploy on Render to reach the live site.
+- Branch: `zt/body-scroll-fit`
 
 ## Done
 
@@ -82,6 +83,8 @@
 - Star map distance: 125.2 million km on mission day 42 (was 25.2); the simulated Earth link delay
   matches it: 7 minutes one way (was 12)
 - Linked the narrator script in `shared/submission/narrator-script.md`
+- Two-finger scroll or mouse wheel over the 3D body scrolls the page instead of zooming (a pinch
+  still zooms), and the app content now fills the full window width instead of stopping at 1400 px
 
 ## Blocked / need from others
 
