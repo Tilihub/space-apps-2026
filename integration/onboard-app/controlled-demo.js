@@ -1,14 +1,14 @@
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { basename, dirname, join } from 'node:path';
+import { readFile, rename, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { createHealthModule } from '../../people/angelos/health/index.js';
 import { companionRoute } from '../../people/potest/crew-support/companion.js';
 import { createCore } from './core.js';
 import { connectQuestionnaireCompanion, syntheticHealthFixture, syntheticHealthSource } from './adapters/companion-support.js';
 
-// Mara keeps Petros's steady history. Tomas's contrasting stretch ends the day before launch.
-const tomasDays = new Map([
+// Profile c1 keeps Petros's steady history. Profile c4's contrasting stretch ends before launch.
+const recurringCrewId = 'c4';
+const recurringDays = new Map([
   [38, { sleepHours: 5.6, mood: 4, stress: 7, fatigue: 7 }],
   [39, { sleepHours: 5.2, mood: 4, stress: 8, fatigue: 8 }],
   [40, { sleepHours: 5, mood: 3, stress: 8, fatigue: 8 }],
@@ -23,15 +23,15 @@ function upgradeCanonicalHistory(state, fixture, fixtureDigest) {
   if (state?.contractVersion !== fixture.contractVersion || state.scaleVersion !== 'self-report-1-10-v1' ||
       !canonicalDigests.has(state.source?.sha256) || state.source.kind !== 'synthetic') return null;
 
-  const rows = state.crew?.c4?.checkIns;
+  const rows = state.crew?.[recurringCrewId]?.checkIns;
   if (!Array.isArray(rows)) return null;
-  const originals = syntheticHealthFixture.crew.c4.checkIns;
+  const originals = syntheticHealthFixture.crew[recurringCrewId].checkIns;
   const toUpdate = new Map();
-  for (const [day, fields] of tomasDays) {
+  for (const [day, fields] of recurringDays) {
     const matches = rows.filter(row => row.missionDay === day);
     const [row] = matches;
     const original = originals.find(row => row.missionDay === day);
-    if (!original || matches.length !== 1 || row.id !== `health_c4_d${day}` || row.crewId !== 'c4' ||
+    if (!original || matches.length !== 1 || row.id !== `health_${recurringCrewId}_d${day}` || row.crewId !== recurringCrewId ||
         Object.keys(fields).some(key => row[key] !== original[key])) return null;
     toUpdate.set(row, fields);
   }
@@ -40,39 +40,11 @@ function upgradeCanonicalHistory(state, fixture, fixtureDigest) {
   return state;
 }
 
-export async function createControlledRun({ dataDir = tmpdir(), ...options }) {
-  await mkdir(dataDir, { recursive: true });
-  const parent = await realpath(dataDir);
-  const prefix = 'pulse-controlled-';
-  const runDir = await mkdtemp(join(parent, prefix));
-  async function removeRun() {
-    const target = await realpath(runDir);
-    if (dirname(target) !== parent || !basename(target).startsWith(prefix)) {
-      throw new Error('Refusing to remove anything outside the controlled rehearsal directory.');
-    }
-    await rm(target, { recursive: true, force: true, maxRetries: 3 });
-  }
-
-  try {
-    const core = await createDemoCore({ ...options, dataDir: runDir });
-    return {
-      ...core,
-      async stop() {
-        await core.stop();
-        await removeRun();
-      },
-    };
-  } catch (error) {
-    await removeRun();
-    throw error;
-  }
-}
-
 export async function createDemoCore({ modules, dataDir, ...options }) {
   const fixture = structuredClone(syntheticHealthFixture);
-  const tomas = fixture.crew.c4;
-  tomas.story = 'Four recent days of short sleep, high stress and high fatigue for the controlled rehearsal.';
-  tomas.checkIns = tomas.checkIns.map(row => ({ ...row, ...tomasDays.get(row.missionDay) }));
+  const recurringCrew = fixture.crew[recurringCrewId];
+  recurringCrew.story = 'Four recent days of short sleep, high stress and high fatigue for the controlled rehearsal.';
+  recurringCrew.checkIns = recurringCrew.checkIns.map(row => ({ ...row, ...recurringDays.get(row.missionDay) }));
 
   const fixtureText = JSON.stringify(fixture);
   const fixtureDigest = digest(fixtureText);

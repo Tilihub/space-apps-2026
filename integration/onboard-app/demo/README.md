@@ -10,7 +10,15 @@ node integration/onboard-app/demo/seed-presentation.mjs http://localhost:8012
 
 The script uses existing session, health, meds and journal APIs. It refuses to overwrite a current-day check-in. Keep the original demo store separately; no reset is needed. The server must still be on mission day 42.
 
-The main server seeds health histories from Petros's `demo-data/health.json`, with four consecutive short-sleep days for Tomas. An older store with those original synthetic rows upgrades on first use while keeping saved entries. For the live Crew Assistant comparison, skip the current-day seeder and give both Mara and Tomas the same check-in. You can select a new `PULSE_DATA_DIR` to rehearse alongside an existing store.
+The main server seeds health histories from Petros's `demo-data/health.json`. Mara Quinn (`c1`) has steady recent readings. The `c4` profile, named Diamandis in the presenter roster, has four consecutive short-sleep days. Older stores with the original synthetic rows upgrade on first use while keeping saved entries.
+
+Open **Wellbeing → Crew Assistant** in the main app. For the two-profile comparison, skip the current-day seeder and give both profiles the same check-in. Use 4.6 hours of sleep, mood 5, stress 7, fatigue 7, worry 5, focus 4, motivation 5, loneliness 7, connection 5, workload 6 and mental rest 5. Finish daily wellbeing for both, then send the same prompts in order.
+
+1. “I am not feeling very well today.”
+2. “What should I do next?”
+3. “I feel disconnected from the crew.”
+
+The main launch and the prepared presentation both run this assistant. The old `--controlled-companion` flag opens the standard app with the same saved store. Set a new `PULSE_DATA_DIR` if you want an empty run alongside existing progress.
 
 For the filled presentation, current entries use `scenarios.json` for c1 (healthy exercise), c3 (mood/stress) and c4 (short sleep/headache/NSAID allergy). Fields omitted by a scenario are copied from that person's last synthetic day; c2 and c5 extend their stable last day. These extensions are invented demonstration inputs, not additional observations in Petros's source. c5 starts before the reaction; trigger Emergency live. Workout summaries are actual saved records, initially empty. Overview now shows two daily tasks (explicit ten-question wellbeing completion and ended/saved training activity), rather than a session counter. The c3 journal is a labelled invented example; clinical roles still cannot read it.
 
