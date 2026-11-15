@@ -4,7 +4,7 @@ const sensors = [
   { id: 'radiation', name: 'Radiation', zone: 'Forward hull', unit: 'µGy/h', digits: 1, side: 'left', y: 24, point: [422, 151], wire: 'M 155 163 H 354 L 380 151 H 422' },
   { id: 'co2', name: 'CO₂', zone: 'Crew cockpit', unit: 'ppm', digits: 0, side: 'right', y: 35, point: [697, 250], wire: 'M 845 238 H 762 L 750 250 H 697' },
   { id: 'humidity', name: 'Humidity', zone: 'Water recycler', unit: '%', digits: 1, side: 'left', y: 68, point: [370, 435], wire: 'M 155 462 H 304 L 331 435 H 370' },
-  { id: 'temperature', name: 'Temperature', zone: 'Main lounge', unit: '°C', digits: 1, side: 'center', y: 56 },
+  { id: 'temperature', name: 'Temperature', zone: 'Main lounge', unit: '°C', digits: 1, side: 'right', y: 70, point: [500, 378], wire: 'M 845 476 H 690 L 592 378 H 500' },
 ];
 
 const states = { normal: 'Normal', warning: 'Warning', danger: 'Danger', 'no-reading': 'No reading' };
@@ -42,15 +42,15 @@ let focused = null;
 let replay = null;
 let token = sessionStorage.getItem(sessionKey);
 
-document.querySelector('#sensor-wires').innerHTML = sensors.filter(sensor => sensor.wire).map(sensor => {
+document.querySelector('#sensor-wires').innerHTML = sensors.map(sensor => {
   const [x, y] = sensor.point;
   return `<g class="sensor-wire" data-metric="${sensor.id}"><path d="${sensor.wire}"/><circle cx="${x}" cy="${y}" r="10"/><circle cx="${x}" cy="${y}" r="3"/></g>`;
 }).join('');
 
 sensorGroup.innerHTML = sensors.map(sensor => `<button type="button" class="sensor" data-metric="${sensor.id}" data-side="${sensor.side}" style="--y: ${sensor.y}%" aria-controls="trend-panel" aria-pressed="false">
-  <span class="sensor-name">${sensor.side === 'center' ? sensor.zone : sensor.name}</span>
+  <span class="sensor-name">${sensor.name}</span>
   <b class="sensor-number">${readingValue(null, sensor)}</b>
-  <span class="sensor-location">${sensor.side === 'center' ? sensor.name : sensor.zone}</span>
+  <span class="sensor-location">${sensor.zone}</span>
 </button>`).join('');
 
 function historyChart(sensor, history, endTime) {

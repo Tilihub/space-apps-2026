@@ -14,6 +14,7 @@
 
 ## Done
 
+- Moved the main lounge temperature badge beside the Falcon, with a guide line to the lounge.
 - Added a hull-clipped thermal map using simulated zone temperatures and the cabin replay as the main lounge reference. The main lounge reading and its trend are selected by default.
 - Refined the Habitat preview with a pulsing blue silhouette and a continuous Celsius color scale on the temperature marker, reading and chart.
 - Built a standalone Habitat preview with four color-coded sensor locations, replay charts for hover and keyboard focus, selection for touch, and the existing cabin alerts.
