@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Earth's reply</title>
+  <meta name="description" content="Demo: a simulated message from a flight surgeon on Earth, with a medicine grant as a QR code for the crew app to scan. Sample data, sender not verified.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .reply { max-width: 560px; margin: 0 auto; text-align: center; }
+    .reply h1 { font-size: 26px; margin: 6px 0 4px; }
+    .kicker { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    /* Always dark modules on white, even in dark mode: cameras read that best */
+    .qr-big { background: #fff; border-radius: 16px; padding: 14px; width: min(420px, 92vw); margin: 18px auto; box-shadow: 0 2px 12px rgba(0, 0, 0, .25); }
+    .qr-big svg { display: block; width: 100%; height: auto; }
+    .recipe { text-align: left; display: inline-block; margin: 0 auto 10px; padding-left: 18px; font-size: 16px; }
+    .code { font-family: ui-monospace, Consolas, monospace; font-size: 17px; font-weight: 700; letter-spacing: .03em; overflow-wrap: anywhere; }
+    .sim { display: inline-block; background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+    @media print { .topbar, footer, .no-print { display: none; } .qr-big { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="brand">🌍 Message from Earth</div>
+    <div class="me"><span class="muted small">Flight surgeon · demo</span></div>
+  </header>
+  <main>
+    <div class="reply">
+      <p class="kicker">Reply from the flight surgeon · simulated</p>
+      <h1 id="title">Reply for …</h1>
+      <p id="lead" class="muted"></p>
+      <div id="qr" class="qr-big" aria-live="polite"></div>
+      <ul id="recipe" class="recipe"></ul>
+      <p id="code" class="code"></p>
+      <p><span class="sim">Simulated: the sender isn't verified. Not medical advice.</span></p>
+      <p class="muted small no-print">In the crew app: <b>Import from Earth → 📷 Scan QR</b>, and hold this screen or a printout up to
+        the laptop camera. Typing the code works too. Any other grant: the <a href="earth.html">Earth tool</a>.</p>
+    </div>
+  </main>
+  <footer class="no-print">
+    <div>Prototype with sample data. Not medical advice. Not affiliated with NASA.</div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="logic.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="qr.js"></script>
+  <script>
+    // Earth's answer to Tomas's sleeping-pill request (scene A and E of the demo). The same code is in
+    // earth-reply-qr.svg, for a phone or a printout. Dated mission day 42 (14 Nov 2026), so it works in
+    // the prototype until 20 Nov and in the joined app on its demo clock. Options in the address:
+    // ?start=today (dated today instead), ?crew=c1 (another crew member).
+    (function () {
+      "use strict";
+      var L = window.MedLogic, state = L.buildState(window.INVENTORY_DATA, new Date());
+      var q = new URLSearchParams(location.search);
+      var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+      var d = new Date();
+      var start = q.get("start") === "today" ? d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) : "2026-11-14";
+      var crew = L.getCrew(state, q.get("crew") || "c4") || L.getCrew(state, "c4");
+      var reply = { issuerId: L.EARTH, patientId: crew.id, start: start, items: [{ itemId: "zolpidem-5", units: 1, perDay: 1, days: 7 }] };
+      var code = L.encodeGrant(state, reply);
+      var check = L.decodeGrant(state, code);
+
+      document.getElementById("title").textContent = "Reply for " + crew.name;
+      document.getElementById("lead").textContent = check.error
+        ? check.error
+        : "Your request for a sleeping pill: approved by Earth. Scan this with the crew app.";
+      document.getElementById("qr").innerHTML = MedQR.svg(code, 8).svg;
+      document.getElementById("code").textContent = code;
+      document.getElementById("recipe").innerHTML = reply.items.map(function (x) {
+        var it = L.getItem(state, x.itemId);
+        return "<li><b>" + it.name + " " + it.strength + "</b>: " + x.units + (x.units === 1 ? " tablet" : " tablets") + ", " +
+          (x.perDay === 1 ? "once a day" : x.perDay + " times a day") + ", " + x.days + " days, from " + start + "</li>";
+      }).join("");
+      window.EARTH_REPLY_CODE = code;
+    })();
+  </script>
+</body>
+</html>

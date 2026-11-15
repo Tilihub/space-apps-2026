@@ -188,6 +188,7 @@ footer { color: var(--muted); font-size: 12px; padding: 0 16px 28px; text-align:
 .code-row { display: flex; gap: 8px; }
 .code-input { flex: 1; min-width: 0; font-family: ui-monospace, Consolas, monospace; font-size: 16px; letter-spacing: .04em; text-transform: uppercase; }
 .qr-video { width: 100%; max-height: 300px; border-radius: 12px; background: #000; margin-top: 10px; object-fit: cover; }
+.qr-video.mirror { transform: scaleX(-1); }
 
 .screen-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .screen-head h2 { margin: 0; }
