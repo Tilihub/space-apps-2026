@@ -145,7 +145,9 @@ Kai is new). There is no backup medical officer.
 | `medical_officer` | Leo (`c2`) only | medical officer platform | every crew member's health analyses and medicine data, and approvals. **Never** the journal or the companion |
 | `earth` | the specialist on Earth (simulated) | Earth console | cabin conditions, requests waiting for Earth, and (wave 2) reports sent to Earth |
 
-When Leo is the patient, anything that needs the medical officer's approval goes to Earth instead.
+Leo approves his own requests too: there are two approval routes, the medical officer, or Earth for
+controlled medicines (agreed terms, 15 Nov). The medical officer can also take any medicine from the
+cabinet (section 8).
 
 The detailed health analyses (today against the crew member's normal, their history, the weekly
 report) are for care roles only, not for the astronaut (Tommy, PR #47). Hiding them in a page is
@@ -332,8 +334,8 @@ grants, due doses). What changes from the prototype:
 
 - No screens: the pages draw the lockers from `GET /lockers`.
 - State lives in `ctx.store`, not `localStorage`. Time comes from `ctx.now()`, not the device clock.
-- Crew are `c1`–`c5`. `c2` is the only medical officer, with no backup; when `c2` is the patient,
-  approvals go to Earth.
+- Crew are `c1`–`c5`. `c2` is the only medical officer, with no backup, and approves their own
+  requests too; only controlled medicines go to Earth.
 - Symptom severity is 1–10, and symptom codes come from `SYMPTOMS`. Tiers are `MED_TIERS`.
 - Each crew member has a medical profile with their allergies. Demo start: `c4` is allergic to
   NSAIDs; nobody else has a known allergy (see the demo cases).
@@ -350,25 +352,26 @@ Paths are after `/api/meds`.
 | `GET /symptom-reports?crewId=&days=7` | crew (own), medical_officer | | `{ reports: [...] }` |
 | `GET /profile?crewId=` | crew (own), medical_officer | | `{ profile }` |
 | `POST /allergies` | crew (own, `suspected` only), medical_officer (anyone) | `{ crewId, substance, status, note }`, `status` is `suspected`, `confirmed` or `removed` | `{ profile }` |
-| `GET /lockers` | crew, medical_officer | | `{ lockers: [...] }`, as seen by this person |
-| `POST /collections` | crew | `{ itemId, units, reportId }` for self-care; `{ grantId }` for a grant's due dose; or, wave 2, `{ emergencyId, itemId, units, overrideAllergy }` for an emergency release | 201 `{ collection }`; `needs_approval`, `not_due`, `already_done` |
-| `POST /collections/:id/scan` | crew (own) | `{ compartmentId, skipScan }`; `skipScan: true` only in an emergency | `{ collection }`; `status` is `complete` once every box is scanned |
-| `DELETE /collections/:id` | crew (own) | | `{ collection }` with `status: "cancelled"` |
-| `POST /requests` | crew | `{ itemId, reportId, note }` | 201 `{ request }` |
+| `GET /lockers` | crew, medical_officer | | `{ lockers: [...] }`, as seen by this person; for the medical officer every bin is open |
+| `POST /collections` | crew; medical_officer | crew: `{ itemId, units, reportId }` for self-care; `{ grantId }` for a grant's due dose; or, wave 2, `{ emergencyId, itemId, units, overrideAllergy }` for an emergency release. medical_officer: `{ itemId, units, patientId, overrideAllergy }`, any medicine or supply for any crew member, with no further approval | 201 `{ collection }`; `needs_approval`, `not_due`, `already_done` |
+| `POST /collections/:id/scan` | crew (own), medical_officer (own) | `{ compartmentId, skipScan }`; `skipScan: true` only in an emergency | `{ collection }`; `status` is `complete` once every box is scanned |
+| `DELETE /collections/:id` | crew (own), medical_officer (own) | | `{ collection }` with `status: "cancelled"` |
+| `POST /requests` | crew | `{ itemId, reportId, note }`; `note` is the reason, required unless the medicine is self-care | 201 `{ request }`; `invalid_field` without a reason |
 | `GET /requests?crewId=&status=` | crew (own), medical_officer, earth (`waiting_earth` only) | | `{ requests: [...] }` |
 | `POST /requests/:id/decision` | medical_officer; earth for `waiting_earth` | `{ decision, units, perDay, days, note }`, `decision` is `approve` or `deny` | `{ request, grant }`; `needs_earth` |
 | `GET /grants?crewId=` | crew (own), medical_officer | | `{ grants: [...] }` |
 | `POST /grants/import` | crew | `{ code }`, typed or scanned from Earth | 201 `{ grant }`; `invalid_code`, `not_your_data`, `already_done` |
 | `GET /doses?crewId=&days=7` | crew (own), medical_officer | | `{ doses: [...] }` |
 | `POST /doses/:id/follow-up` | crew (own) | `{ helped: true }` | `{ dose }` |
-| `POST /emergencies` | crew (for **any** crew member) | `{ patientId, reason, vitals }` | wave 2. 201 `{ emergency }` |
+| `POST /emergencies` | crew (for **any** crew member) | `{ patientId, reason, vitals }`; `reason` is optional | wave 2. 201 `{ emergency }` |
 | `GET /emergencies?status=open` | crew, medical_officer | | wave 2. `{ emergencies: [...] }`; crew get only `id`, `patientId`, `raisedAt` and `status` |
 | `POST /emergencies/:id/paperwork` | medical_officer | `{ note }` | wave 2. `{ emergency }` with `status: "closed"` |
 | `GET /stock` | medical_officer | | wave 2. `{ items: [{ itemId, name, tier, units, reserve, belowReserve, nextExpiry }] }` |
 | `POST /grants/code` | earth | `{ crewId, items }` | later. `{ code }` |
 
-`note`, `vitals`, `reportId`, `units` and `overrideAllergy` may be `null`. `vitals` uses the
-`MEASUREMENTS` field names.
+`note`, `vitals`, `reportId`, `units` and `overrideAllergy` may be `null`, except a request's `note`
+(its reason), which is required unless the medicine is self-care. An emergency's `reason` may be
+`null` too. `vitals` uses the `MEASUREMENTS` field names.
 
 ```json
 "report":     { "id": "sym_…", "crewId": "c4", "reportedAt": "…", "missionDay": 42,
@@ -403,22 +406,29 @@ Paths are after `/api/meds`.
 - `suggestion.approval` and `request.status` follow `MED_TIERS`. `request.status` is
   `waiting_medical_officer`, `waiting_earth`, `approved` or `denied`.
 - `collection.status` is `open`, `complete` or `cancelled`. `collection.source` and `dose.source`
-  are `self-care` or `grant`.
+  are `self-care`, `grant`, `emergency` or `medical-officer`. A collection also has `patientId`:
+  the person it's for, who may differ from the one collecting (`crewId`). The dose is logged for
+  the patient.
 - `grant.issuer` is `c2` or `EARTH`. `grant.verification` is `onboard-officer` (approved by Leo on
   the medical officer platform) or `simulated` (a code from Earth; the sender isn't verified yet).
 - In `lockers`, `locked` means this person can't take it without approval, and `open` means it is
-  part of their open collection right now.
+  part of their open collection right now. For the medical officer nothing is locked, except an
+  empty bin.
+- The medical officer's route (agreed terms, 15 Nov): from the medical officer platform, the medical
+  officer takes any medicine or supply for any crew member, with no further approval. It's logged as
+  `source: "medical-officer"`, with the patient and the medical officer as the collector.
 - Collecting is the dose (dadis2's rule): one scanned box is one dose, recorded once. A grant
   never releases more than the dose that is due now.
 - `blocked` lists items the person may not take, with the reason, so the page can show "blocked"
   instead of hiding them. Items matching a `suspected` or `confirmed` allergy are always blocked,
-  except in an emergency with `overrideAllergy: true` (the "give anyway" step), which is logged.
+  except in an emergency, or when the medical officer takes them, with `overrideAllergy: true` (the
+  "give anyway" step), which is logged.
 - `substance` uses dadis2's ingredient or class names (`NSAID`, `penicillin`). Anything else is
   stored and shown but blocks nothing.
 - Emergency (Tommy, Q15): any crew member can raise one, for anyone, without approval. Only the
-  emergency items are released, a scan may be skipped, and every release is logged. Paperwork is
-  due 2 hours after `raisedAt`, and only the medical officer closes it. Exact rules beyond the demo
-  are still open.
+  emergency items are released, a scan may be skipped, and every release is logged. The reason is
+  optional, because there may be no time to type. Paperwork is due 2 hours after `raisedAt`, and
+  only the medical officer closes it. Exact rules beyond the demo are still open.
 - Events: `meds.symptom-reported`, `meds.request-created`, `meds.request-decided`,
   `meds.grant-added`, `meds.collection-opened`, `meds.dose-collected`, `meds.collection-closed`,
   `meds.allergy-changed`, `meds.emergency-raised` (every open page shows the alarm),

@@ -105,18 +105,17 @@ None of these change a contract field; some add one. To agree or fold into the c
 9. **Scene E, step 4:** "answers the sleeping-pill request in Approvals". If that pill is zolpidem,
    it's controlled, so it waits for Earth and Leo gets `needs_earth` (`MED_TIERS`). Either the demo
    uses a prescription medicine, or Leo only sees it waiting for Earth.
-10. **Two approval routes only** (Tommy and dadis2, 15 Nov; branch `dadis2/mo-console`): the
-    medical officer, or Earth for controlled medicines. Leo's own requests go to the medical
-    officer too. The contract still says "when `c2` is the patient, approvals go to Earth"; that line
-    needs a contract change.
-11. **The medical officer console** (`medical_officer` role, branch `dadis2/mo-console`):
+Items 10–12 are the agreed terms of 15 Nov, written into `shared/contract/README.md` in PR #85.
+
+10. **Two approval routes only:** the medical officer, or Earth for controlled medicines. Leo's own
+    requests go to the medical officer too.
+11. **The medical officer console** (`medical_officer` role):
     - `POST /collections` with `{ itemId, units, patientId, overrideAllergy }` takes any medicine or
       supply for any crew member, with no further approval
     - `source: "medical-officer"`; the dose is logged for the patient (`collectedBy: "c2"`)
     - an allergy still needs `overrideAllergy: true`, which is logged
     - the medical officer can confirm and cancel collections
     - their `GET /lockers` shows every bin open (only an empty bin is locked)
-12. **Reasons** (dadis2, 15 Nov):
-    - `POST /requests` needs a reason in `note`, because it isn't an emergency. The contract says
-      `note` may be `null`.
+12. **Reasons:**
+    - `POST /requests` needs a reason in `note`, unless the medicine is self-care.
     - `POST /emergencies` takes `reason` as optional (`null` when there's no time to type).

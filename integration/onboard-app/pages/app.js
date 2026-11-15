@@ -470,8 +470,10 @@ async function handleForm(form,submitter) {
   await api(`/meds/requests/${form.dataset.request}/decision`,{method:'POST',body:{decision:submitter.value,...numberFields(v,['units','perDay','days']),note:v.note}});delete drafts[id];notice('Decision saved by the medicine module.');
  } else if(form.dataset.item) {
   if(submitter.value==='request') {
-   if(!(v.note??'').trim())throw new Error('Say why you need it: a short reason is required.');
-   const sent=(await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:v.note.trim()}})).request;
+   // A reason is required, except for a self-care medicine (agreed terms)
+   const selfCare=allBins().find(b=>b.itemId===form.dataset.item)?.tier==='self-care', reason=(v.note??'').trim();
+   if(!reason&&!selfCare)throw new Error('Say why you need it: a short reason is required.');
+   const sent=(await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:reason||null}})).request;
    notice(sent.status==='waiting_earth'?'Sent to Earth: controlled medicines need Earth’s approval. The reply arrives as a QR code.':'Sent to the medical officer for approval.');
   } else {await collect({itemId:form.dataset.item,units:Number(v.units)});return;}
  } else if(id==='workout-step') {

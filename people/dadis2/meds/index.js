@@ -527,13 +527,13 @@ export default {
     {
       method: 'POST', path: '/requests', roles: ['crew'], status: 201,
       handler: async (req, ctx) => {
-        // A reason is required for every request (dadis2, 15 Nov): it's not an emergency, so the doctor
-        // or Earth decides on it. The request's `note` holds the reason.
+        // A reason is required for every request except a self-care one (agreed terms, 15 Nov): it's
+        // not an emergency, so the doctor or Earth decides on it. The request's `note` holds the reason.
         const body = checkFields(req.body, ['itemId', 'reportId', 'note'], ['itemId']);
-        const reason = checkNote(body.note)?.trim();
-        if (!reason) throw apiError('invalid_field', 'Say why you need it: a short reason is required.');
+        const reason = checkNote(body.note)?.trim() || null;
         const crewId = resolveCrewId(req.user);
         const item = mustItem(body.itemId);
+        if (!reason && item.tier !== 'self-care') throw apiError('invalid_field', 'Say why you need it: a short reason is required.');
         const state = await load(ctx);
         const now = ctx.now();
         if (body.reportId != null && !state.reports.some((r) => r.id === body.reportId && r.crewId === crewId)) {

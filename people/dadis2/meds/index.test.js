@@ -126,6 +126,16 @@ test('Step 6: reset puts back the same start, every time', async () => {
 
 // ---- who decides -------------------------------------------------------------------------------
 
+test('A self-care request needs no reason; anything else does', async () => {
+  const ctx = await setup();
+  // Only loratadine's reserve is left, so for Tomas it now needs the medical officer
+  for (const lot of ctx.saved().lots.filter((l) => l.itemId === 'loratadine-10')) lot.qty = 10;
+  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'loratadine-10' })).request;
+  assert.deepEqual([r.status, r.note], ['waiting_medical_officer', null]);
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'promethazine-25' }), 'invalid_field');
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5', note: '' }), 'invalid_field');
+});
+
 test('Controlled medicines go to Earth, and Earth approves them', async () => {
   const ctx = await setup();
   const zol = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5', note: 'Test reason' })).request;
