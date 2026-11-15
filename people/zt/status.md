@@ -8,12 +8,16 @@
 
 ## Now
 
-- Last updated: 2026-11-15 23:20
-- Working on: the live demo. Live wrist heart rate from my OnePlus Watch 2R is done and deployed on
-  https://pulse-crew-health.onrender.com ([watch-hr](watch-hr/README.md)).
-- Branch: `zt/status-watch-hr` (this status update only)
+- Last updated: 2026-11-16 00:20
+- Working on: nothing; the live demo is done and went well.
+- Branch: `zt/status-after-demo` (this status update only)
 
 ## Done
+
+- Live demo done (15 Nov), with live heart rate from my OnePlus Watch 2R on the Exercise page.
+  For the demo the watch ran a newer version that keeps sending with the screen off (a foreground
+  service with a Stop button, stopping itself after 3 hours). That version is on my laptop only, not
+  yet in the repo; the repo has the screen-on version.
 
 - Live wrist heart rate: a one-screen Wear OS app ([watch-hr](watch-hr/README.md)) sends the watch's
   reading once a second to `POST /live/heart-rate` (server.js, outside the contract, memory only).
@@ -107,13 +111,12 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
-- Live heart rate in the demo: charge the watch; join it to a Wi-Fi with internet and no login page
-  (a phone hotspot is safest), keep the phone paired over Bluetooth with mobile data as the backup;
-  open Pulse HR a minute before the Exercise scene and keep it on screen; check the "Live · wrist
-  sensor" card says "updated 0–1 s ago" before calling it live. Don't deploy on Render during the
-  demo. Without the watch the page falls back to the simulated values, so nothing breaks.
-- Watch: anyone who knows the address can post a reading to `/live/heart-rate` (no login, 20–250 bpm
-  only). Fine for the demo; a real version would need the watch to sign in.
+- Watch, after the event: stop Pulse HR, turn off Wireless debugging and ADB debugging (or all of
+  Developer options), and uninstall Pulse HR if it's no longer needed. Decide whether to commit the
+  screen-off version of the app to `people/zt/watch-hr/`.
+- Live site: anyone who knows the address can post a reading to `/live/heart-rate` (no login,
+  20–250 bpm only). Fine for the demo; remove the route, or make the watch sign in, if the site
+  stays up.
 
 - Sunday, before the 14:00 feature freeze: agree an owner for the project page and the slides
   (`shared/submission/project-page.md`, at most 7 slides), and what goes in `final/`. Run the app
