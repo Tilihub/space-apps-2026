@@ -8,6 +8,8 @@
 
 ## Now
 
+- Published the current initial seven-minute script idea for team iteration in presentation/README.md (v1), on tommy/presentation-script / PR #79. Five fictional crew stories, Greek spoken delivery, no speaker assignment yet. Clearly separates the working branch AED from the still-unimplemented complete reset presets. No app changes or merge in this publication step.
+
 - AED and seven-minute update on tommy/presentation-script / PR #79: Tommy confirmed dadis2 agrees to the addition in people/dadis2/meds/catalogue.json. Added one emergency-tier equipment device in L3-4-01, rendered as the existing three-column lower shelf with the ordinary Emergency/collection flow. Fresh local preview: localhost:8024; previous servers/stores preserved. Kai's presentation story is now fictional sudden cardiac arrest, AED retrieval and narrated successful resuscitation. Seven-minute schedule: presentation/seven-minute-run.md.
 
 - Latest presentation direction: five candidate stories first, with no presenter assignment yet. Greek spoken delivery confirmed. Read presentation/five-scenarios.md; earlier six-owner lineup is only a superseded proposal. Complete scenario initialization on presentation reset is still a design requirement, not an implemented feature.
