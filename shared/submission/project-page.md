@@ -13,6 +13,9 @@ Our Local Event asks for a 7-minute presentation or a 7-minute live demo. We're 
 contents. A short Q&A with the judges follows the 7 minutes, and the guide asks for screenshots or
 videos as a backup for the live demo.
 
+The app must be at a public web address, not localhost. How to deploy it on Render, and what
+`final/` must keep for that: [deploy.md](deploy.md).
+
 ## Checklist (from the official 2026 Project Submission Guide)
 
 - [ ] All six of us are confirmed participants at the same Local Event

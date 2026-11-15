@@ -8,9 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 12:35
-- Working on: the submission. Added the Local Event's presentation guide to `shared/submission/`.
-- Branch: zt/presentation-guide
+- Last updated: 2026-11-15 14:40
+- Working on: deploying the app. Render is set up on zt's account but not deployed; it waits for
+  `final/`. Recipe: [shared/submission/deploy.md](../../shared/submission/deploy.md).
+- Branch: zt/deploy-recipe
 
 ## Done
 
@@ -55,6 +56,10 @@
   `shared/submission/local-presentation-guide.pdf`, with a text summary next to it and a pointer
   from `project-page.md`: 7 minutes plus Q&A, the five judging criteria, recommended contents, and
   how Tommy's draft demo plan (PR #79) compares
+- Checked that everyone's open code combines: #85, #79, potest's presentation branch and the
+  live-watch work merge with main without conflicts, and 130 of 130 tests pass
+- Wrote the Render deploy recipe in `shared/submission/deploy.md`: settings, what `final/` must keep
+  (checked by loading all six modules from a copy in `final/onboard-app/`), and free-plan limits
 
 ## Blocked / need from others
 
