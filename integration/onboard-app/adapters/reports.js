@@ -5,7 +5,7 @@ import { apiError, checkFields, isCrewId } from '../../../shared/contract/contra
 import { encodeGrant, checkCourse, EARTH, labelOf } from '../../../people/dadis2/meds/rules.js';
 const CAT = JSON.parse(await readFile(new URL('../../../people/dadis2/meds/catalogue.json', import.meta.url), 'utf8'));
 const roles = ['medical_officer', 'earth'];
-const DELAY = 12 * 60_000;
+const DELAY = 7 * 60_000; // one way, at 125.2 million km (the star map's day-42 distance)
 const initial = () => ({ linkUp: true, reports: [] });
 async function load(ctx) { return await ctx.store.load() ?? initial(); }
 function deliver(state, now) {
@@ -83,12 +83,12 @@ export default {
     state.reports.unshift(report); deliver(state, ctx.now()); await ctx.store.save(state);
     return { report };
   } }, { method: 'GET', path: '/link', roles, async handler(req, ctx) {
-    checkFields(req.query, []); return { linkUp: (await load(ctx)).linkUp, delayMinutes: 12, simulated: true };
+    checkFields(req.query, []); return { linkUp: (await load(ctx)).linkUp, delayMinutes: 7, simulated: true };
   } }, { method: 'POST', path: '/link', roles, async handler(req, ctx) {
     const { linkUp } = checkFields(req.body, ['linkUp'], ['linkUp']);
     if (typeof linkUp !== 'boolean') throw apiError('invalid_field', 'linkUp must be true or false.');
     const state = await load(ctx); state.linkUp = linkUp; deliver(state, ctx.now()); await ctx.store.save(state);
-    return { linkUp, delayMinutes: 12, simulated: true };
+    return { linkUp, delayMinutes: 7, simulated: true };
   } }, { method: 'POST', path: '/:id/replies', roles: ['earth'], status: 201, async handler(req, ctx) {
     const { note = '', code = '' } = checkFields(req.body, ['note', 'code']);
     const state = await load(ctx); deliver(state, ctx.now());

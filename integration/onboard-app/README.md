@@ -111,7 +111,7 @@ promoting it to the protected shared contract.
 |---|---|---|
 | `GET /api/reports` | medical officer, Earth | `{ reports }`; Earth sees delivered reports only; medical officer sees only delivered replies |
 | `POST /api/reports` | medical officer | `{ crewId, note, health: { daily, history, weekly?, workouts? }, meds: { reports, doses, profile }, environment }` → `{ report }` |
-| `GET /api/reports/link` | medical officer, Earth | `{ linkUp, delayMinutes: 12, simulated: true }` |
+| `GET /api/reports/link` | medical officer, Earth | `{ linkUp, delayMinutes: 7, simulated: true }` |
 | `POST /api/reports/link` | medical officer, Earth | `{ linkUp: boolean }` |
 | `POST /api/reports/:id/replies` | Earth | `{ note, code }`, at least one nonempty → `{ reply }` |
 | `GET /api/reports/catalogue` | Earth | Public demo medicine labels/IDs only, no patient profile |
