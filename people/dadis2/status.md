@@ -8,10 +8,11 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:01
-- Working on: the contract's `meds` module. Waves 1 and 2 are merged into main (PRs #66, #70).
-  `npm test`: 78 of 78 pass (26 are meds). Waiting for zt's core server to join it.
-- Branch: dadis2/meds-wave2 (merged)
+- Last updated: 2026-11-15 11:12
+- Working on: Earth's reply as a QR code for the presentation, scanned by the laptop camera, on
+  `dadis2/earth-qr` (pushed, no PR yet). `meds` waves 1 and 2 are merged (PRs #66, #70); `npm test`
+  91 of 91 (27 are meds).
+- Branch: dadis2/earth-qr
 
 ## Done
 
@@ -86,6 +87,18 @@
   - `GET /stock` (Leo only): epinephrine goes below its reserve after scene C's release.
   - Tests follow scenes C and E. `npm test` with main merged in: 78 of 78 pass (26 are meds).
 
+- **Earth's reply as a QR code** (branch `dadis2/earth-qr`), for the presentation:
+  - The laptop camera now reads QR codes in any browser, Windows included: the browser's own
+    reader if it has one, otherwise jsQR 1.4.0 (Apache-2.0), committed in `inventory/vendor/` and
+    listed in `shared/sources.md`.
+  - `earth-reply.html` and `earth-reply-qr.svg`: Earth's answer to Tomas's sleeping-pill request,
+    zolpidem 5 mg once a day for 7 days (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`).
+  - Scanning shows the recipe exactly like typing the code. Add answers the waiting request (both in
+    the prototype and in the `meds` module).
+  - `serve.mjs`: a local server (Node.js only) so the camera works on localhost.
+  - Tested in the browser with a simulated camera (tilted, blurred QR). Checks: prototype 43 of 43,
+    `npm test` 91 of 91.
+
 ## Blocked / need from others
 
 - **zt (contract owner):** the grant rules now match `shared/contract/` (controlled → Earth, Leo as
@@ -115,6 +128,17 @@
 
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
+
+- **Presentation QR** (branch `dadis2/earth-qr`, then main): the steps for the presentation laptop are in
+  `inventory/README.md`, "Presentation: Earth's reply as a QR code". In short:
+  - `git pull`
+  - `node people/dadis2/inventory/serve.mjs`
+  - open `http://localhost:8080/index.html?user=c4`
+  - Import from Earth → 📷 Scan QR
+  - hold up `inventory/earth-reply-qr.svg` (on a phone or printed)
+
+  The QR reader (jsQR) is committed, so nothing to download. Try it once with the real webcam
+  before presenting; it's only been tested with a simulated camera.
 
 - Everything is on main: open `people/dadis2/inventory/index.html` (crew app), `earth.html` (Earth
   tool) and `tests.html` (43 checks). The demo script is in `inventory/README.md`. The save key is now `medInventory.v5`,

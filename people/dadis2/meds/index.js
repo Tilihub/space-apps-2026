@@ -601,6 +601,12 @@ export default {
         if (ms(grantEnd(draft)) <= ms(now)) throw apiError('invalid_code', 'This grant has expired.');
         const added = storeGrant(state, draft, now, ctx);
         if (added.error) throw apiError('invalid_code', added.error);
+        // Earth's code answers this crew member's waiting requests for the same medicines
+        for (const r of state.requests) {
+          if (r.crewId !== crewId || !r.status.startsWith('waiting') || !added.grant.items.some((x) => x.itemId === r.itemId)) continue;
+          Object.assign(r, { status: 'approved', decidedAt: now, decisionNote: 'Answered by a grant code from Earth', grantId: added.grant.id });
+          ctx.emit('meds.request-decided', crewId);
+        }
         await ctx.store.save(state);
         return { grant: grantView(state, added.grant, now), alreadyImported: false };
       },

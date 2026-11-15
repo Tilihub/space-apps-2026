@@ -55,6 +55,12 @@ Run the tests from the repo root with `npm test`, or only these with `node --tes
   - ingredients are added up across courses, and two NSAIDs at once are refused
 - **Grant codes** use the prototype's format (`RX2-…`), so codes from `../inventory/earth.html` work.
   The same code typed or scanned again finds the same grant, ready for its next dose.
+  - A new code answers the crew member's waiting requests for the same medicines (`approved`, with
+    its `grantId`).
+  - For the presentation, `../inventory/earth-reply-qr.svg` is Earth's answer to Tomas's sleeping-pill
+    request.
+  - **Pages that scan:** reuse `../inventory/qr.js` (`MedQR.read(video)`) with `../inventory/vendor/jsQR.js`.
+    It works on Windows too, then sends the text to `POST /grants/import`.
 - **Emergencies** (wave 2, contract rules):
   - `POST /emergencies`: any crew member, for anyone, with a reason. Pressing again for the same
     person finds the open emergency.

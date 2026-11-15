@@ -171,6 +171,17 @@ test('A code is refused for the wrong person, with a typo, for an allergy, or on
   fails(await call(ctx, tomas, 'POST', '/grants/import', { code: code('c4', '2026-11-01', [{ itemId: 'ondansetron-4', units: 1, perDay: 2, days: 3 }]) }), 'invalid_code');
 });
 
+test('Earth\'s reply QR (inventory/earth-reply-qr.svg) answers Tomas\'s waiting sleeping-pill request', async () => {
+  const ctx = await setup();
+  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5' })).request;
+  assert.equal(r.status, 'waiting_earth');
+  const g = ok(await call(ctx, tomas, 'POST', '/grants/import', { code: 'RX2-EARTH-C4-261114-ZOL1X1X7-9Z' })).grant;
+  assert.deepEqual([g.issuer, g.verification, g.dueNow, g.items[0].itemId, g.items[0].days], ['EARTH', 'simulated', true, 'zolpidem-5', 7]);
+  const after = ok(await call(ctx, tomas, 'GET', '/requests')).requests[0];
+  assert.deepEqual([after.status, after.grantId], ['approved', g.id]);
+  assert.equal(ok(await call(ctx, earthUser(), 'GET', '/requests')).requests.length, 0);
+});
+
 test('The prototype\'s Earth test code still works here', async () => {
   const ctx = await setup();
   const g = ok(await call(ctx, tomas, 'POST', '/grants/import', { code: 'RX2-EARTH-C4-261114-OND1X2X3.CAL2X3X5-LW' })).grant;

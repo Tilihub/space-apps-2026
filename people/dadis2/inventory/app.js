@@ -837,7 +837,8 @@
     var html = '<div class="screen-head"><button class="back" data-act="go-home" aria-label="Back">←</button><h2>Import from Earth</h2></div><div class="stack">';
     html += '<div class="hcard"><div class="hc-kicker">A grant from your flight surgeon</div>';
     if (ui.qrActive) {
-      html += '<video id="qrVideo" class="qr-video" autoplay playsinline muted></video><div class="hc-actions"><button class="btn" data-act="qr-stop">Stop camera</button></div>';
+      html += '<video id="qrVideo" class="qr-video' + (qr.mirror ? " mirror" : "") + '" autoplay playsinline muted></video>' +
+        '<div class="hc-sub small">Hold Earth\'s QR code up to the camera.</div><div class="hc-actions"><button class="btn" data-act="qr-stop">Stop camera</button></div>';
     } else {
       html += '<div class="hc-actions"><button class="btn big" data-act="qr-start">📷 Scan QR</button></div>';
     }
@@ -876,34 +877,54 @@
   function addRx() {
     var why = L.acceptGrant(state, ui.rxPreview, me, now());
     if (why) { ui.rxError = why; return; }
-    L.addGrant(state, ui.rxPreview, now());
+    var g = L.addGrant(state, ui.rxPreview, now());
+    // Earth's code answers my waiting requests for the same medicines
+    var answered = state.requests.filter(function (r) {
+      return r.patientId === me && r.status === "pending" && g.items.some(function (x) { return x.itemId === r.itemId; });
+    });
+    answered.forEach(function (r) { r.status = "granted"; r.grantId = g.id; });
     ui.rxPreview = null; ui.rxCode = ""; ui.screen = "main";
     save();
-    toast("Added");
+    toast(answered.length ? "Added. It answers your request." : "Added");
   }
 
+  // Camera scan of Earth's QR code. Works on any laptop: the browser's own QR reader if it has one,
+  // otherwise jsQR (see qr.js). The camera needs the page on localhost or HTTPS (README: "Run it").
   function qrStart() {
     ui.rxError = "";
-    if (!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      ui.rxError = "This device can't scan QR codes here. Type the code instead.";
+    if (!window.MedQR || !MedQR.canRead()) { ui.rxError = "The QR reader is missing (vendor/jsQR.js). Type the code instead."; return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      ui.rxError = window.isSecureContext === false
+        ? "The camera only works when the page is opened from localhost. Start it with: node people/dadis2/inventory/serve.mjs"
+        : "This browser has no camera access. Type the code instead.";
       return;
     }
-    try { qr.detector = new window.BarcodeDetector({ formats: ["qr_code"] }); } catch (e) {
-      ui.rxError = "This device can't scan QR codes here. Type the code instead.";
-      return;
-    }
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false }).then(function (stream) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }, audio: false }).then(function (stream) {
       qr.stream = stream;
+      var track = stream.getVideoTracks()[0], settings = track && track.getSettings ? track.getSettings() : {};
+      qr.mirror = settings.facingMode !== "environment"; // a laptop's front camera: show it like a mirror
       ui.qrActive = true;
       render();
       qr.timer = setInterval(function () {
         var v = document.getElementById("qrVideo");
-        if (!v || v.readyState < 2) return;
-        qr.detector.detect(v).then(function (codes) {
-          if (codes && codes.length) { qrStop(); ui.rxCode = codes[0].rawValue; checkRx(); render(); }
-        }).catch(function () { /* keep trying */ });
-      }, 400);
-    }).catch(function () { ui.rxError = "No camera access. Type the code instead."; render(); });
+        if (!v || qr.busy) return;
+        qr.busy = true;
+        MedQR.read(v).then(function (text) {
+          qr.busy = false;
+          if (!text || !qr.stream) return;
+          qrStop();
+          ui.rxCode = MedQR.codeFrom(text);
+          checkRx();
+          if (!ui.rxError) toast("QR read");
+          render();
+        }, function () { qr.busy = false; });
+      }, 250);
+    }).catch(function (e) {
+      ui.rxError = e && e.name === "NotAllowedError" ? "Camera blocked. Allow the camera for this page (the icon in the address bar), or type the code."
+        : e && e.name === "NotFoundError" ? "No camera found. Type the code instead."
+        : "The camera didn't start. Type the code instead.";
+      render();
+    });
   }
   function attachQr() {
     var v = document.getElementById("qrVideo");

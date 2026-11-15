@@ -83,3 +83,4 @@ even if they are free or open source.
 | Dijk et al. (2001) | [Shuttle sleep and circadian study](https://doi.org/10.1152/ajpregu.2001.281.5.R1647) | In-flight Neurolab core temperature during sleep and wakefulness | petros_the_space_larper |
 | Conkin et al. (2017) | [Shuttle oxygen saturation study](https://pubmed.ncbi.nlm.nih.gov/28539140/) | Approximate in-flight finger oximetry summary under mild hypoxia | petros_the_space_larper |
 | qrcode-generator 1.4.4 (Kazuhiko Arase, MIT licence), code library | https://www.npmjs.com/package/qrcode-generator | Drawing the QR image of medicine grant codes (copied into `people/dadis2/inventory/vendor/`) | dadis2 |
+| jsQR 1.4.0 (cozmo/jsQR on GitHub, Apache-2.0 licence), code library | https://github.com/cozmo/jsQR | Reading grant QR codes with the laptop camera where the browser has no QR reader (copied into `people/dadis2/inventory/vendor/`) | dadis2 |
