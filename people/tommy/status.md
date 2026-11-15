@@ -8,12 +8,15 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — sixteen Overview visual studies
-- Working on: Tommy removed the Overview BPM archive panel. Sixteen isolated static Overview studies and four screenshot comparison sheets are ready in overview-designs/. Awaiting his visual choice; no study theme is applied to the app. Backend, owner modules, data and actions are unchanged.
+- Last updated: 2026-11-15 — Mission Control appearance refinements
+- Working on: Tommy chose Mission Control (03), its carbon/amber palette and dashed instrument rings. Eight isolated family options (MC01–MC08), with two comparison sheets, are ready in overview-designs/mission-control/. Awaiting the preferred refinement; the functional app/backend/owner modules are unchanged by this follow-up.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Recorded Tommy's Mission Control preference: preserve carbon/amber and visibly segmented rings. Added an unchanged reference plus seven static refinements: softer panels, blackout contrast, lighter alloy, bold condensed type, fine precision ticks, quiet amber and centered anatomy. All use the same content, values, original logo and body reference. No application or backend file changed in this follow-up.
+- Captured eight full-size browser screenshots and two comparison sheets, inspected the results, checked segment styles and card bounds, and widened the visible gaps in the rounded variants so the rings remain dashed. Original sixteen concepts remain available; specific refinement selection is still pending. Root tests passed 102/102, none skipped; syntax/diff checks passed. The temporary capture server was stopped afterward.
 
 - Removed the historical BPM replay from the real Overview, including its unused module/render/tick and CSS. Kept the current profile's original resting-pulse instrument. This supersedes the previous archive-panel entry below.
 - Created 16 static appearance studies in people/tommy/overview-designs/: original navy/cyan/gold, white/blue, amber control room, monochrome graphite, mint glass, cobalt, copper habitat, titanium lab, violet, sage clinic, blueprint, warm sand, horizontal instruments, centered anatomy, editorial numerals and signal yellow. Four contact sheets and 16 full-size browser JPEGs are included. Same fictional profile/values and unchanged original logo; no proposal is selected or wired into the app.
@@ -141,7 +144,7 @@
 
 ## Next steps
 
-- Continue from `tommy/frontend-polish`. First ask Tommy to choose visual study IDs (01–16), or combine a palette, typeface and arrangement from people/tommy/overview-designs/. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Continue from `tommy/frontend-polish`. Tommy selected Mission Control: now ask him to choose refinement IDs MC01–MC08 from people/tommy/overview-designs/mission-control/, or combine their panel/type/segment treatments. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.

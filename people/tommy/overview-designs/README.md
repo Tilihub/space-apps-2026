@@ -1,6 +1,6 @@
 # Overview appearance studies
 
-Sixteen **static visual concepts** for Tommy to choose from. No theme is selected or applied to the functional application. The only functional-app presentation change in this review is removal of the historical BPM panel from Overview; its original resting-pulse instrument remains.
+Sixteen **static visual concepts** for Tommy to choose from. Tommy has since selected Mission Control (03) as the direction; [eight refinements](mission-control/README.md) are ready for the next choice. No study theme is yet applied to the functional application. The only functional-app presentation change in this review is removal of the historical BPM panel from Overview; its original resting-pulse instrument remains.
 
 Every study uses the same fictional Tomas profile and frozen comparison values: resting pulse 63 bpm, body temperature 36.8 °C, sleep 4.6 hours and zero saved workouts. They reuse a screenshot of the existing male thermal model, including its original controls/pedestal; the thermal readings remain the previously approved visual-only simulation. The clock is frozen for comparison. The original team logo is referenced without editing it, and remains on a dark header in light studies. Safety/thermal colors are not reinterpreted as new clinical states.
 

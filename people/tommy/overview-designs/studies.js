@@ -1,4 +1,6 @@
-const themes=await fetch('./themes.json').then(r=>r.json());
+const params=new URLSearchParams(location.search);
+const missionControl=params.get('family')==='mission-control';
+const themes=await fetch(missionControl?'./mission-control/themes.json':'./themes.json').then(r=>r.json());
 const theme=themes.find(t=>t.id===new URLSearchParams(location.search).get('design'))??themes[0];
 const root=document.documentElement;
 for(const key of ['bg','surface','border','text','muted','accent','secondary'])root.style.setProperty(`--${key}`,theme[key]);
@@ -6,6 +8,8 @@ root.style.setProperty('--font',`"${theme.font}",system-ui,sans-serif`);
 root.style.setProperty('--display',`"${theme.display}",system-ui,sans-serif`);
 root.style.setProperty('--radius',`${theme.radius}px`);
 document.body.dataset.style=theme.style;
+document.body.dataset.variant=theme.variant??'';
+document.body.dataset.composition=theme.composition??'';
 document.getElementById('study-id').textContent=theme.id;
 document.getElementById('study-name').textContent=theme.name;
 document.getElementById('study-palette').textContent=theme.palette+' / '+theme.font;

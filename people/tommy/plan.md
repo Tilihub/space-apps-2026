@@ -19,7 +19,7 @@ Tommy explicitly authorized implementation in the existing `integration/onboard-
 
 - Tommy removed the historical BPM graph from Overview; retain the original personal resting-pulse instrument.
 - Review the 16 static recipes and screenshot comparisons in [overview-designs/README.md](overview-designs/README.md). They vary palette, type, edge/shadow treatment and visual arrangement while retaining the same content. None is a selected design or a new application implementation.
-- Tommy will choose IDs or a combination. Only then transfer the chosen presentation to the real frontend, keeping backend, permissions, sources, data, controls and connected behavior unchanged.
+- Tommy selected Mission Control (03), specifically the carbon/amber palette and dashed circular instruments. Preserve that direction. Compare the eight options in overview-designs/mission-control/README.md, then transfer only the selected refinement to the real frontend, keeping backend, permissions, sources, data, controls and connected behavior unchanged.
 
 ### Follow-up crew workflow cleanup
 
