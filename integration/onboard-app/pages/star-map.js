@@ -208,14 +208,16 @@ function drawPulsingText(ctx, text, x, y, time, phase) {
 let state = null; // { key, scene, layer, twinkles }
 let info = { missionDay: null, crewCount: null };
 let running = false;
-let resizeHooked = false;
+let frame = 0;
+let resizeObserver;
 
 function sceneFor(canvas) {
   const box = canvas.parentElement.getBoundingClientRect();
-  // Screen pixels per picture pixel: about 140 picture pixels tall, but at least 230 wide, so the
-  // facts in the corner never run into "YOU ARE HERE"
-  const pixel = Math.max(2, Math.min(Math.round(box.height / 140), Math.floor(box.width / 230)));
-  const W = Math.max(120, Math.round(box.width / pixel)), H = Math.max(80, Math.round(box.height / pixel));
+  if (!box.width || !box.height) return null;
+  // Use one pixel size for both axes so the picture keeps the shape of its viewport.
+  const preferredPixel = Math.max(2, Math.min(Math.round(box.height / 140), Math.floor(box.width / 230)));
+  const pixel = Math.min(preferredPixel, box.width / 120, box.height / 80);
+  const W = Math.round(box.width / pixel), H = Math.round(box.height / pixel);
   const key = `${W}x${H}`;
   if (state?.key === key) return state;
   const scene = layout(W, H);
@@ -234,7 +236,9 @@ function sceneFor(canvas) {
 }
 
 function drawFrame(canvas, frame) {
-  const { scene: s, layer, twinkles } = sceneFor(canvas);
+  const drawing = sceneFor(canvas);
+  if (!drawing) return;
+  const { scene: s, layer, twinkles } = drawing;
   if (canvas.width !== s.W || canvas.height !== s.H) { canvas.width = s.W; canvas.height = s.H; }
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
@@ -275,12 +279,15 @@ export function startStarMap({ missionDay, crewCount } = {}) {
   info = { missionDay: missionDay ?? null, crewCount: crewCount ?? null };
   const canvas = document.getElementById('star-map');
   if (!canvas) return;
-  let frame = 0;
+  if (!running) frame = 0;
   drawFrame(canvas, frame);
-  if (!resizeHooked) {
-    resizeHooked = true;
-    window.addEventListener('resize', () => { const c = document.getElementById('star-map'); if (c) drawFrame(c, frame); });
-  }
+  resizeObserver ??= new ResizeObserver(() => {
+    const current = document.getElementById('star-map');
+    if (current) drawFrame(current, frame);
+    else resizeObserver.disconnect();
+  });
+  resizeObserver.disconnect();
+  resizeObserver.observe(canvas.parentElement);
   if (running || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
   running = true;
   let last = 0;
