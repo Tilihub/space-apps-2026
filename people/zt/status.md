@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 19:20
-- Working on: the live demo. Scrolling over the 3D body now scrolls the page, and the app fills
-  wide screens; needs a Manual Deploy on Render to reach the live site.
-- Branch: `zt/body-scroll-fit`
+- Last updated: 2026-11-15 19:45
+- Working on: the live demo. The start screen has a Reset demo button; needs a Manual Deploy on
+  Render to reach the live site.
+- Branch: `zt/demo-refresh-reset`
 
 ## Done
 
@@ -85,6 +85,8 @@
 - Linked the narrator script in `shared/submission/narrator-script.md`
 - Two-finger scroll or mouse wheel over the 3D body scrolls the page instead of zooming (a pinch
   still zooms), and the app content now fills the full window width instead of stopping at 1400 px
+- Reset demo button on the start screen: one click (plus a confirm) puts the whole demo back to day
+  42, 07:30, clearing open emergencies and today's reports. A page refresh still keeps everything
 
 ## Blocked / need from others
 

@@ -98,6 +98,18 @@ async function login(crewId,platform='astronaut') {
   location.hash=platform==='medical'?'crew':platform==='earth'?'earth':'home';
   await show();
 }
+// Start screen "Reset demo" (zt, 15 Nov): nobody is signed in there, so sign in briefly as Mara,
+// reset (presentation mode then loads the prepared day 42), and sign out again, as presentation.js does.
+async function resetFromStart() {
+ if(!window.confirm('Reset the demo for everyone? This clears every check-in, request and emergency and goes back to day 42, 07:30.'))return;
+ const temp=await api('/session',{method:'POST',body:{crewId:'c1',platform:'astronaut'},publicRequest:true});
+ const call=(method,path)=>fetch(`/api${path}`,{method,cache:'no-store',headers:{'Content-Type':'application/json',Authorization:`Bearer ${temp.token}`},...(method==='POST'?{body:'{}'}:{})}).then(r=>r.json());
+ try {
+  const result=await call('POST','/demo/reset');
+  if(!result.ok)throw new Error(result.error?.message??'The reset failed.');
+ } finally { await call('DELETE','/session').catch(()=>{}); }
+ clearDailyTaskMarkers();resetLocal();notice('Demo reset to day 42 at 07:30 UTC.');
+}
 async function logout() { try { await api('/session',{method:'DELETE'}); } catch { /* Clear this tab even if its old server token expired. */ } resetLocal(); token=null; user=null; sessionStorage.removeItem('pulse-token'); location.hash='login'; await show(); }
 function restartBrowserSession() {
  for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-'))sessionStorage.removeItem(key);
@@ -545,6 +557,7 @@ async function action(el) {
  if(a==='login')return login(id);
  if(a==='login-medical')return login('c2','medical');
  if(a==='login-earth')return login(null,'earth');
+ if(a==='reset-demo-start')return resetFromStart();
  if(a==='mo-tab'){moTab=id;render();return;}
  if(a==='logout')return logout();
  if(a==='refresh')return show();
