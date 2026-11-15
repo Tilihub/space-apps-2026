@@ -8,11 +8,11 @@
 
 ## Now
 
-- Last updated: 2026-11-15 16:20
-- Working on: the demo-ready public app. The prepared day-42 start, the stage push-up rewards and
-  Ines's prefilled wellbeing are built (branch `zt/stage-demo-ready`); next, redeploy Render with
-  `PULSE_PRESENTATION=1`.
-- Branch: zt/stage-demo-ready
+- Last updated: 2026-11-15 17:01
+- Working on: renaming the crew for the presentation (branch `zt/crew-names`, a pull request that
+  needs a teammate's approval because it changes `shared/contract/`). After it merges, press
+  Manual Deploy in Render so the public link shows the new names.
+- Branch: zt/crew-names
 
 ## Done
 
@@ -70,6 +70,10 @@
   nine wellbeing answers are prefilled. Checked in a scratch run and in the browser; 131 of 131
   tests pass. Wrote `shared/submission/demo-plan-updates.md` listing what is now out of date in
   Tommy's presentation plan
+- Renamed the crew to the presenters for the live demo: Leo → Aggelos, Ines → Chris, Tomas →
+  Diamandis (now the Commander), Kai → Petros; Mara stays and becomes the Mission specialist.
+  Chris (`c3`) now has the male body. Changed in the contract's crew list, the app's login button,
+  Earth's reply card, one error message and one test. 131 of 131 tests pass; checked in the browser
 
 ## Blocked / need from others
 

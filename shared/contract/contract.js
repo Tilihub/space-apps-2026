@@ -52,11 +52,11 @@ export const ROLES = Object.freeze(['crew', 'medical_officer', 'earth']);
  */
 export const CREW = Object.freeze(
   [
-    { id: 'c1', name: 'Mara Quinn', title: 'Commander', medicalOfficer: false },
-    { id: 'c2', name: 'Leo Haddad', title: 'Medical officer', medicalOfficer: true },
-    { id: 'c3', name: 'Ines Sato', title: 'Flight engineer', medicalOfficer: false },
-    { id: 'c4', name: 'Tomas Reyes', title: 'Mission specialist', medicalOfficer: false },
-    { id: 'c5', name: 'Kai Lindqvist', title: 'Pilot', medicalOfficer: false },
+    { id: 'c1', name: 'Mara', title: 'Mission specialist', medicalOfficer: false },
+    { id: 'c2', name: 'Aggelos', title: 'Medical officer', medicalOfficer: true },
+    { id: 'c3', name: 'Chris', title: 'Flight engineer', medicalOfficer: false },
+    { id: 'c4', name: 'Diamandis', title: 'Commander', medicalOfficer: false },
+    { id: 'c5', name: 'Petros', title: 'Pilot', medicalOfficer: false },
   ].map((member) => Object.freeze(member)),
 );
 

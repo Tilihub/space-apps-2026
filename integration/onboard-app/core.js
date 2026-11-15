@@ -317,7 +317,7 @@ export const createCore = async ({ modules, dataDir, realNow = Date.now, log = c
     } else {
       if (!isCrewId(crewId)) throw apiError('invalid_field', 'Pick a crew member, c1 to c5.');
       if (role === 'medical_officer' && crewId !== MEDICAL_OFFICER_ID) {
-        throw apiError('wrong_role', 'Only the medical officer, Leo (c2), can use the medical officer platform.');
+        throw apiError('wrong_role', 'Only the medical officer, Aggelos (c2), can use the medical officer platform.');
       }
     }
     /** @type {User} */

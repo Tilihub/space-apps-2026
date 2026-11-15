@@ -135,7 +135,7 @@ function bodyOptions(mode) {
       reported[POINT_BY_ID[exact]?exact:area]={short:sym.label,severity:s.severity};
     }
   }
-  return {mode,body:({c1:'female',c2:'male',c3:'female',c4:'male',c5:'male'})[user?.crewId]??'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
+  return {mode,body:({c1:'female',c2:'male',c3:'male',c4:'male',c5:'male'})[user?.crewId]??'female',reported,selected:selectedArea,thermal:page==='home'&&clock?.missionDay===42?thermalDemo[user?.crewId]:null};
 }
 function syncBody() { const frame=$('iframe.body-frame'); frame?.contentWindow?.postMessage({type:'pulse-body-update',options:bodyOptions(page==='checkin'?'report':'view'),theme:document.documentElement.dataset.theme},location.origin); }
 const bodyFrame = mode => `<iframe class="body-frame" src="/body.html?mode=${mode}&body=${bodyOptions(mode).body}&typeface=${document.documentElement.dataset.typeface}" title="Interactive 3D body"></iframe>`;
@@ -189,7 +189,7 @@ function renderCompanion() {
  restoreDrafts();
 }
 function loginScreen() {
- return `<div class="login"><div class="login-card"><svg class="icon logo-lg" aria-hidden="true"><use href="#i-logo"/></svg><h1 class="display">PULSE</h1><p class="muted">Mars transit · connected team demo</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar lg">${c.name.split(' ').map(x=>x[0]).join('')}</span><b>${c.name}</b><small>${c.title}</small></button>`).join('')}</div><div class="btn-row">${btn('Medical officer · Leo','login-medical','','ghost')}${btn('Earth specialist','login-earth','','ghost')}</div><p class="subtle">Synthetic crew profiles and demo sessions. Choose a role to test its actual API permissions. Registration and face authentication are not implemented.</p></div></div>`;
+ return `<div class="login"><div class="login-card"><svg class="icon logo-lg" aria-hidden="true"><use href="#i-logo"/></svg><h1 class="display">PULSE</h1><p class="muted">Mars transit · connected team demo</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar lg">${c.name.split(' ').map(x=>x[0]).join('')}</span><b>${c.name}</b><small>${c.title}</small></button>`).join('')}</div><div class="btn-row">${btn('Medical officer · Aggelos','login-medical','','ghost')}${btn('Earth specialist','login-earth','','ghost')}</div><p class="subtle">Synthetic crew profiles and demo sessions. Choose a role to test its actual API permissions. Registration and face authentication are not implemented.</p></div></div>`;
 }
 function homeScreen() {
  const row=data.today?.checkIn, doses=data.doses?.doses??[], grants=data.grants?.grants??[];
@@ -326,7 +326,7 @@ function earthScreen() {
  const catalogue=data.catalogue??[], waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_earth');
  const reports=data.reports?.reports??[];
  const generator=`<p class="subtle">Uses dadis2’s RX2 encoder. The code and the QR hold the same text. A simulation, not a signed prescription.</p><form id="earth-code-form">${crewSelect('crewId','c4')}${[0,1].map(i=>`<details ${i===0?'open':''}><summary>Medicine ${i+1}${i===1?' (optional)':''}</summary>${select('Medicine',`item${i}`,[['','Choose medicine'],...catalogue.map(x=>[x.itemId,x.label])])}<div class="form-grid">${field('Units per dose',`units${i}`,{type:'number',value:1,attrs:'min="1" max="9"'})}${field('Times a day',`perDay${i}`,{type:'number',value:1,attrs:'min="1" max="4"'})}${field('Days',`days${i}`,{type:'number',value:3,attrs:'min="1" max="30"'})}</div></details>`).join('')}${submit('Make code')}</form>${generatedCode?`<code>${esc(generatedCode)}</code>${qrFor(generatedCode)}`:''}`;
- const reply=card('Reply for Tomas · QR code',`<p class="subtle">Zolpidem 5 mg, once a day for 7 days. Show this QR to the crew app’s camera (Medical bay → My treatment → Scan QR), or type the code. It answers his waiting request.</p>${qrFor(DEMO_EARTH_CODE)}<p><code>${esc(DEMO_EARTH_CODE)}</code></p><p class="subtle">Simulated: the sender isn’t verified.</p>`);
+ const reply=card('Reply for Diamandis · QR code',`<p class="subtle">Zolpidem 5 mg, once a day for 7 days. Show this QR to the crew app’s camera (Medical bay → My treatment → Scan QR), or type the code. It answers his waiting request.</p>${qrFor(DEMO_EARTH_CODE)}<p><code>${esc(DEMO_EARTH_CODE)}</code></p><p class="subtle">Simulated: the sender isn’t verified.</p>`);
  return `<div class="two"><div class="stack">${card(`Pills waiting for Earth · ${waiting.length}`,waiting.map(r=>approvalRow(r,true)).join('')||empty('No requests are waiting for Earth.'))}${disclosure(`Reports from the medical officer · ${reports.length}`,reportsPanel())}</div><div class="stack">${reply}${disclosure('Make another prescription code',generator)}${disclosure('Demo controls',demoClockPanel())}</div></div>`;
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:()=>'<div class="falcon-habitat"></div>',fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
