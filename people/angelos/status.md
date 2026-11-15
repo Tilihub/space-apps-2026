@@ -9,11 +9,12 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Consolidated PULSE technical report, with the team logo, design rationale, data catalogs, AI explanation, architecture, validation and source traceability at main b0f968c. The full app and Pulsars are now merged via #74/#75.
+- Working on: Completed the consolidated PULSE technical report and publication handoff in PR #78. The 42-page PDF covers the team logo, rationale, data, AI explanation, architecture, validation and source traceability at app snapshot b0f968c. The full app and Pulsars are merged via #74/#75.
 - Branch: angelos/project-report
 
 ## Done
 
+- Published the report in https://github.com/Tilihub/space-apps-2026/pull/78. All 42 pages were rendered and visually checked; text bounds and embedded-font glyph coverage pass, 465 navigation/reference links are present, and Git preserves the verified PDF bytes. The PR touches only my folder and one appended source row, with no protected files or conflicts.
 - Prepared people/angelos/report/PULSE_Project_Report.pdf and its editable English narrative/build script. The report follows the public NASA Publications Guide structure with only the team's supplied logo. It distinguishes the local scripted companion from model training, synthetic crew fixtures from historical observations, and delivered features from remaining work.
 - Reproduced all 117 root JavaScript checks with zero failures/skips using the exact package test command, with Python and localhost HTTP available. Saved the complete validation log. Generated a pinned evidence manifest and appendices covering 33 environmental groups/93 channels/126,782 processed points, 47 historical vital records, 65 synthetic check-ins, the 21-item sample medicine catalogue and the repository documentation index.
 - Verified the current GitHub merge state for #73/#74/#75/#55 and reconciled stale planning notes in the report. Added only the report-format reference at the end of the NASA source table; no application or protected contract/final files changed.
@@ -188,7 +189,7 @@ Current report task: no implementation blocker. The older connection-audit items
 
 ## Next steps
 
-- Current report handoff: continue from angelos/project-report. Read report/README.md, edit report/report.md for narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices are pinned to b0f968c. Preserve the distinction between human requirements, old proposals and merged behavior. Publish/merge this own-folder plus source-row change through its PR; do not edit teammate folders, final/ or protected files for the documentation task.
+- Current report handoff: PR #78, branch angelos/project-report. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices are pinned to b0f968c. Preserve the distinction between human requirements, old proposals and merged behavior. The documentation is ready to use; do not edit teammate folders, final/ or protected files for this task.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
   main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
