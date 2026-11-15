@@ -9,11 +9,23 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Completed report version 1.1 in PR #82: shortened section 8 to two paragraphs, explicitly credited the team with designing and building the application pipeline, and removed the contributor-by-contributor AI tool list. Application evidence remains pinned to b0f968c.
-- Branch: angelos/shorten-ai-section
+- Working on: Independently audited report version 1.2: technical coverage matches pinned code, 117 tests and 101 source hashes pass, 41 PDF pages checked. See report/REVIEW.md; no report rewrite needed.
+- Branch: angelos/report-review
 
 ## Done
 
+- Independently reviewed report v1.2 on main fcc17e7 against its pinned b0f968c
+  application evidence. No blocking technical omission or rendering defect found.
+  Reproduced 117/117 tests and all 101 manifest hashes; independently recomputed
+  data counts, medians and catalogue tiers. Rendered all 41 PDF pages and checked
+  bounds/links plus selected full-size pages. No report/PDF rewrite was needed.
+  Published the review scope and submission follow-through in report/REVIEW.md.
+- Report audit publication: https://github.com/Tilihub/space-apps-2026/pull/84;
+  only my review notes, report README and status differ. The reviewed PDF and
+  narrative remain unchanged.
+
+- Published the team-organization and names update in https://github.com/Tilihub/space-apps-2026/pull/83. Changes are confined to my report folder and status; the final 41-page PDF is ready for the team.
+- Cross-checked the public GitHub profiles and Git author names. Used the team-confirmed first names Angelos, Zisis, Christos, Petros, Diamantis and Thomas; did not infer missing profile names or publish extra surnames. Section 17 now links each core responsibility to its purpose, and the journal section explicitly explains its private-reflection role. Version 1.2 remains 41 pages; rendered and reviewed every changed page, with clean text bounds, complete font coverage and 466 navigation/reference links. The application evidence and short section 8 AI disclosure are unchanged.
 - Published the revised report in https://github.com/Tilihub/space-apps-2026/pull/82, with changes confined to my own folder. The 41-page PDF is ready for the team.
 - Revised report section 8 at Angelos's request: reduced it from about 500 words to 105, retained a brief AI-use disclosure and accurate companion description, and made the team's pipeline ownership explicit. Version 1.1 is 41 pages, all rendered and visually reviewed; text bounds, font coverage and 459 navigation/reference links pass. The narrative outside section 8 and the pinned application evidence are unchanged. Kept the architecture diagram and caption together after reflow.
 - Published the report in https://github.com/Tilihub/space-apps-2026/pull/78. All 42 pages were rendered and visually checked; text bounds and embedded-font glyph coverage pass, 465 navigation/reference links are present, and Git preserves the verified PDF bytes. The PR touches only my folder and one appended source row, with no protected files or conflicts.
@@ -191,7 +203,7 @@ Current report task: no implementation blocker. The older connection-audit items
 
 ## Next steps
 
-- Current report handoff: version 1.1 on angelos/shorten-ai-section, updating the report originally delivered in PR #78. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices remain pinned to b0f968c. Section 8 gives the brief AI disclosure and team pipeline ownership; no per-member tool list is needed. The revised PDF is ready to use.
+- Current report handoff: version 1.2 on angelos/team-report-roles, following PR #78 and the short-AI update #82. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices remain pinned to b0f968c. Section 17 uses confirmed first names and explains each core role and purpose; section 8 retains the brief AI disclosure. The revised PDF is ready to use.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
   main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
