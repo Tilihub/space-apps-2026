@@ -8,10 +8,11 @@
 
 ## Now
 
-- Last updated: 2026-11-15 15:00
-- Working on: the app is live at https://pulse-crew-health.onrender.com/ (Render free plan, kept
-  awake by UptimeRobot). It runs `integration/onboard-app/`; switch it to `final/` once that exists.
-- Branch: zt/deploy-live
+- Last updated: 2026-11-15 16:20
+- Working on: the demo-ready public app. The prepared day-42 start, the stage push-up rewards and
+  Ines's prefilled wellbeing are built (branch `zt/stage-demo-ready`); next, redeploy Render with
+  `PULSE_PRESENTATION=1`.
+- Branch: zt/stage-demo-ready
 
 ## Done
 
@@ -63,6 +64,12 @@
 - Deployed the app on Render's free plan (zt's account, Frankfurt, Node 24) at
   https://pulse-crew-health.onrender.com/, with a free UptimeRobot monitor every 5 minutes so it
   never sleeps. Recorded the link, the pinger and how to switch to `final/` in `deploy.md`
+- Made the app demo-ready with the team's decisions: a prepared mission day 42 on every start, Reset
+  and end of day 42 (`--presentation` / `PULSE_PRESENTATION=1`, `integration/onboard-app/presentation.js`);
+  stage push-ups always pay +200 and +100 for the record; Mara starts at 700 Pulsars; Ines's first
+  nine wellbeing answers are prefilled. Checked in a scratch run and in the browser; 131 of 131
+  tests pass. Wrote `shared/submission/demo-plan-updates.md` listing what is now out of date in
+  Tommy's presentation plan
 
 ## Blocked / need from others
 

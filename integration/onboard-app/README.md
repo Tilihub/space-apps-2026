@@ -35,6 +35,10 @@ node integration/onboard-app/start.js
 ```
 
 Open the printed URL (default `http://localhost:8000/`). No package installation is required.
+
+For the prepared presentation (what the public demo runs), add `--presentation` or set
+`PULSE_PRESENTATION=1`: every start, Reset and the end of mission day 42 load a ready day 42, replacing
+whatever that data folder held. Details in `presentation.js` and `shared/submission/deploy.md`.
 Use `PORT=8010` for another port. `PULSE_DATA_DIR=/absolute/path` selects a separate demo store;
 otherwise ignored `integration/onboard-app/data/` is used. Stop with Ctrl+C. The clock pauses
 while the process is stopped. `/demo/` retains zt's plain core controls.
