@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import test from 'node:test';
 import { controlledReply } from '../../people/potest/crew-support/controlled-replies.js';
 import { createDemoCore, createControlledRun } from './controlled-demo.js';
@@ -45,6 +46,9 @@ test('standard launch compares the crew histories with the same check-in and scr
   dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: mara, body: { missionDay: 42, answers } }));
   assert.match(dataOf(await send(app, mara, opening)).reply, /rough day.*quiet break/);
   assert.match(dataOf(await send(app, tomas, next)).reply, /which noncritical duty can move/);
+  for (const token of [mara, tomas]) {
+    assert.match(dataOf(await send(app, token, 'I feel disconnected from the crew.')).reply, /crewmate you trust/);
+  }
   assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /far from home/);
   assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
 
@@ -55,36 +59,36 @@ test('standard launch compares the crew histories with the same check-in and scr
   for (const token of [mara, officer, earth]) assert.equal((await send(app, token, opening, today)).status, 403);
 });
 
-test('an existing standard store keeps its records, and an explicit reset installs matching rehearsal history', async () => {
+test('normal startup upgrades the original synthetic history while keeping saved check-ins, answers and journal', async () => {
   const realNow = () => 0;
   const previous = await boot(modules, { realNow });
   let tomas;
   let officer;
+  let originalHistory;
   try {
     tomas = await previous.login('c4');
     officer = await previous.login('c2', 'medical');
     dataOf(await previous.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
     dataOf(await previous.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
     dataOf(await previous.call('POST', '/api/mind/journal', { token: tomas, body: { text: 'Keep this entry' } }));
+    originalHistory = dataOf(await previous.call('GET', '/api/health/history?crewId=c4', { token: officer }));
   } finally {
     await previous.close({ keepData: true });
   }
 
   const options = { dataDir: previous.dataDir, makeCore: createDemoCore, realNow };
-  const getEarlierSleep = async app => dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }))
-    .checkIns.filter(row => row.missionDay < 42).slice(-4).map(row => row.sleepHours);
+  const getHistory = async app => dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
   const upgraded = await boot(modules, options);
   try {
     assert.equal((await getToday(upgraded, tomas)).checkIn.sleepHours, 4.6);
     assert.deepEqual(dataOf(await upgraded.call('GET', '/api/pulsars/me', { token: tomas })).wallet.todayAnswers, answers);
     assert.equal(dataOf(await upgraded.call('GET', '/api/mind/journal', { token: tomas })).entries[0].text, 'Keep this entry');
-    assert.deepEqual(await getEarlierSleep(upgraded), [6.7, 7.1, 5, 4.8]);
-    assert.doesNotMatch(dataOf(await send(upgraded, tomas, opening)).reply, /pattern of short sleep/);
-
-    dataOf(await upgraded.call('POST', '/api/demo/reset', { token: tomas, body: {} }));
-    assert.equal((await getToday(upgraded, tomas)).checkIn, null);
-    assert.deepEqual(await getEarlierSleep(upgraded), [5.6, 5.2, 5, 4.8]);
-    dataOf(await upgraded.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
+    const history = await getHistory(upgraded);
+    assert.deepEqual(history.baseline, originalHistory.baseline);
+    assert.deepEqual(history.checkIns.filter(row => row.missionDay < 38 || row.missionDay > 41),
+      originalHistory.checkIns.filter(row => row.missionDay < 38 || row.missionDay > 41));
+    assert.deepEqual(history.checkIns.filter(row => row.missionDay >= 38 && row.missionDay <= 41).map(row => row.sleepHours),
+      [5.6, 5.2, 5, 4.8]);
     assert.match(dataOf(await send(upgraded, tomas, opening)).reply, /pattern of short sleep/);
   } finally {
     await upgraded.close({ keepData: true });
@@ -92,11 +96,37 @@ test('an existing standard store keeps its records, and an explicit reset instal
 
   const restarted = await boot(modules, options);
   try {
-    assert.deepEqual(await getEarlierSleep(restarted), [5.6, 5.2, 5, 4.8]);
+    assert.deepEqual((await getHistory(restarted)).checkIns.filter(row => row.missionDay >= 38 && row.missionDay <= 41)
+      .map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
     assert.equal((await getToday(restarted, tomas)).checkIn.sleepHours, 4.6);
+    assert.deepEqual(dataOf(await restarted.call('GET', '/api/pulsars/me', { token: tomas })).wallet.todayAnswers, answers);
     assert.match(dataOf(await send(restarted, tomas, opening)).reply, /pattern of short sleep/);
   } finally {
     await restarted.close();
+  }
+});
+
+test('startup leaves a customized synthetic record alone even when the original source matches', async () => {
+  const realNow = () => 0;
+  const previous = await boot(modules, { realNow });
+  const officer = await previous.login('c2', 'medical');
+  const tomas = await previous.login('c4');
+  dataOf(await previous.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
+  await previous.close({ keepData: true });
+
+  const healthFile = join(previous.dataDir, 'health.json');
+  const customized = JSON.parse(await readFile(healthFile, 'utf8'));
+  customized.crew.c4.checkIns.find(row => row.missionDay === 38).sleepHours = 8;
+  await writeFile(healthFile, JSON.stringify(customized), 'utf8');
+
+  const app = await boot(modules, { makeCore: createDemoCore, dataDir: previous.dataDir, realNow });
+  try {
+    const history = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+    assert.equal(history.checkIns.find(row => row.missionDay === 38).sleepHours, 8);
+    assert.equal(history.checkIns.find(row => row.missionDay === 39).sleepHours, 7.1);
+    assert.doesNotMatch(dataOf(await send(app, tomas, opening)).reply, /pattern of short sleep/);
+  } finally {
+    await app.close();
   }
 });
 
