@@ -8,11 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-15 17:01
-- Working on: renaming the crew for the presentation (branch `zt/crew-names`, a pull request that
-  needs a teammate's approval because it changes `shared/contract/`). After it merges, press
-  Manual Deploy in Render so the public link shows the new names.
-- Branch: zt/crew-names
+- Last updated: 2026-11-15 17:45
+- Working on: the live demo script. The crew rename (PR #99) is merged and deployed on Render.
+- Branch: none open
 
 ## Done
 
@@ -74,6 +72,8 @@
   Diamandis (now the Commander), Kai → Petros; Mara stays and becomes the Mission specialist.
   Chris (`c3`) now has the male body. Changed in the contract's crew list, the app's login button,
   Earth's reply card, one error message and one test. 131 of 131 tests pass; checked in the browser
+- Crew rename merged ([PR #99](https://github.com/Tilihub/space-apps-2026/pull/99), approved by Tommy):
+  Mara has no surname now. Deployed on Render from main at `0a71561`
 
 ## Blocked / need from others
 
