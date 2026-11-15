@@ -20,6 +20,9 @@
   data counts, medians and catalogue tiers. Rendered all 41 PDF pages and checked
   bounds/links plus selected full-size pages. No report/PDF rewrite was needed.
   Published the review scope and submission follow-through in report/REVIEW.md.
+- Report audit publication: https://github.com/Tilihub/space-apps-2026/pull/84;
+  only my review notes, report README and status differ. The reviewed PDF and
+  narrative remain unchanged.
 
 - Published the team-organization and names update in https://github.com/Tilihub/space-apps-2026/pull/83. Changes are confined to my report folder and status; the final 41-page PDF is ready for the team.
 - Cross-checked the public GitHub profiles and Git author names. Used the team-confirmed first names Angelos, Zisis, Christos, Petros, Diamantis and Thomas; did not infer missing profile names or publish extra surnames. Section 17 now links each core responsibility to its purpose, and the journal section explicitly explains its private-reflection role. Version 1.2 remains 41 pages; rendered and reviewed every changed page, with clean text bounds, complete font coverage and 466 navigation/reference links. The application evidence and short section 8 AI disclosure are unchanged.
