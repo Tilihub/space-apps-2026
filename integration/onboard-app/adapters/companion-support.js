@@ -7,7 +7,8 @@ import { getComparisonReply } from '../../crew-assistant/replies.mjs';
 import { dailyFor, referenceFor } from '../../../people/angelos/health/analysis.js';
 import { errorAnswer } from '../core.js';
 
-export const syntheticHealthFixture = JSON.parse(await readFile(new URL('../../../people/petros_the_space_larper/demo-data/health.json', import.meta.url), 'utf8'));
+export const syntheticHealthSource = await readFile(new URL('../../../people/petros_the_space_larper/demo-data/health.json', import.meta.url), 'utf8');
+export const syntheticHealthFixture = JSON.parse(syntheticHealthSource);
 // Only topic counters and the last reply are kept in memory, never message/journal text on disk.
 const conversations = new Map();
 export const resetSupportConversation = () => conversations.clear();

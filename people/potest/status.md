@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-15 (Europe/Athens)
-- Working on: Making the Mara–Tomas comparison available from the standard app launch.
-- Branch: potest/default-crew-assistant-rehearsal
+- Working on: Restoring the Mara–Tomas comparison in existing standard app stores.
+- Branch: potest/restore-companion-history
 
 ## Done
 
@@ -30,6 +30,7 @@
 - Added a local rehearsal mode to the onboard app. Run `node integration/onboard-app/start.js --controlled-companion` from the repo root. The assistant uses the signed-in crew member’s ten saved answers and the synthetic health fixture. Mara Quinn has a steady preceding week. Tomas Reyes has four preceding days with short sleep, higher stress and fatigue. The added optional sleep-hours field allows both profiles to enter the same short night from the browser.
 - Each controlled launch starts a fresh day-42 store. Open tabs with an old login return to the welcome screen once they reconnect.
 - The standard launch uses the current crew member’s saved ten-question wellbeing check-in for supported prompts. An empty or explicitly reset store loads the four-day synthetic comparison. Existing records survive an ordinary restart. The separate rehearsal mode starts from a fresh store each time.
+- Older stores with Petros's original synthetic records now receive the same four-day Tomas history on first use. The update preserves day-42 check-ins, questionnaire answers and journal entries.
 
 ## Blocked / need from others
 
