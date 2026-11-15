@@ -688,6 +688,8 @@ async function paintLiveHr() {
   const {data}=await fetch('/live/heart-rate').then(r=>r.json());
   const live=data&&data.ageSeconds<5;
   globalThis.liveHr=live?data:null;
+  // Last 5 minutes of real readings, [seconds, bpm], for the training display's heart-rate chart.
+  if(live){const h=globalThis.liveHrHistory??=[];const t=Date.now()/1000-data.ageSeconds;if(!h.length||t-h.at(-1)[0]>=0.5)h.push([t,data.bpm]);while(h.length&&h[0][0]<t-300)h.shift();}
   // The card stays hidden unless a watch has sent a reading in the last 2 minutes, so the page is unchanged without one.
   globalThis.liveHrHtml=!data||data.ageSeconds>120?'':live?`<div class="pulse-value">${data.bpm}<span>bpm</span></div><p class="subtle">Live from the watch · updated ${Math.round(data.ageSeconds)} s ago</p>`:`<div class="pulse-value">${data.bpm}<span>bpm</span></div><p class="subtle">Watch signal lost ${Math.round(data.ageSeconds)} s ago</p>`;
  }catch{globalThis.liveHrHtml='';globalThis.liveHr=null;}

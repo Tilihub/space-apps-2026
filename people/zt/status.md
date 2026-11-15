@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 22:50
+- Last updated: 2026-11-15 23:10
 - Working on: live heart rate from my OnePlus Watch 2R into the app ([watch-hr](watch-hr/README.md)).
-  Needs a Manual Deploy on Render to reach the live site, then the watch pointed at it.
-- Branch: `zt/live-watch-hr`
+  Live on the Render site; the chart fix needs a Manual Deploy.
+- Branch: `zt/watch-hr-chart`
 
 ## Done
 
@@ -19,7 +19,9 @@
   reading once a second to `POST /live/heart-rate` (server.js, outside the contract, memory only).
   The Exercise page shows it in a "Live · wrist sensor" card and in the training display while it's
   under 5 s old; otherwise the page is exactly as before. Tested end to end with the real watch;
-  `npm test` 130 of 131 (the crew-assistant failure is the same on main).
+  `npm test` 130 of 131 (the crew-assistant failure is the same on main). Live on Render (PR #109);
+  the training heart-rate chart now draws the real readings too, and the watch app's default
+  address is the live site.
 - Cut the onboarding from six questions to one (PR #3)
 - Onboarding: this status file (PR #4)
 - Restructured the repo into `people/`, `shared/`, `integration/` and `final/` (PR #5)
