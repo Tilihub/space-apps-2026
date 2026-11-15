@@ -1,5 +1,8 @@
 # PULSE project report
 
+Independent version-1.2 audit: [REVIEW.md](REVIEW.md), including reproduced test
+and data/hash checks, PDF rendering observations and remaining submission actions.
+
 The consolidated English technical report explains the team's recorded rationale, design
 choices, research, datasets, processing, personal comparison rules, companion behavior,
 architecture, medicine workflows, exercise, Pulsars, privacy, tests and remaining work.
