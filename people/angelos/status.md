@@ -14,6 +14,13 @@
 
 ## Done
 
+- Checked the running isolated #75 demo's actual APIs: c4 sleep 4.6 h, computed
+  reference 6.8 h and three-day sleep deviation; own-context companion response
+  succeeds, while another crew's context and crew clinical analysis are refused
+  with 403. Test sessions were revoked; no health entry/store was reset. Computer
+  Use refused Chrome access, so visual UI verification remains unperformed.
+  Details are in reviews/PR75.md; the previous 117-test PR suite remains green.
+
 - User subsequently requested approval of #74. Independently passed 106/106
   checks at 823874a, reviewed the synthetic-context clarification and private
   health/journal boundary, and submitted/confirmed APPROVED as AngelosAth30.
