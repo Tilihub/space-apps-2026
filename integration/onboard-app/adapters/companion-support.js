@@ -94,7 +94,7 @@ export const contextualCompanionRoute = {
   },
 };
 
-export function connectQuestionnaireCompanion(core, { fixture = syntheticHealthFixture, rehearsal = false } = {}) {
+export function connectQuestionnaireCompanion(core, { historyFor, rehearsal }) {
   async function api(request) {
     const result = await core.api(request);
     if (!result.body.ok || request.method !== 'POST' ||
@@ -115,12 +115,10 @@ export function connectQuestionnaireCompanion(core, { fixture = syntheticHealthF
       return errorAnswer('invalid_field', 'Reload today’s check-in and try again.');
     }
     const answers = pulsars.body.data.wallet.todayAnswers;
-    if (!rehearsal && !answers) return result;
-
     return {
       status: result.status,
       body: { ok: true, data: controlledReply({
-        message, topic, today, answers, history: fixture.crew[today.crewId]?.checkIns ?? [],
+        message, topic, today, answers, history: historyFor(today.crewId),
       }) },
     };
   }

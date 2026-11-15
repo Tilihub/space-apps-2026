@@ -6,8 +6,7 @@
  */
 import { networkInterfaces } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { connectQuestionnaireCompanion } from './adapters/companion-support.js';
-import { createCore } from './core.js';
+import { createControlledRun, createDemoCore } from './controlled-demo.js';
 import { startServer } from './server.js';
 import modules from './modules.js';
 
@@ -15,10 +14,10 @@ const port = Number(process.env.PORT ?? 8000);
 const dataDir = process.env.PULSE_DATA_DIR;
 const controlled = process.argv.includes('--controlled-companion');
 const core = controlled
-  ? await (await import('./controlled-demo.js')).createControlledRun({ modules, dataDir })
-  : connectQuestionnaireCompanion(await createCore({
+  ? await createControlledRun({ modules, dataDir })
+  : await createDemoCore({
     modules, dataDir: dataDir ?? fileURLToPath(new URL('./data/', import.meta.url)),
-  }));
+  });
 
 /** @type {{ port: number, close: () => Promise<void> }} */
 let server;
