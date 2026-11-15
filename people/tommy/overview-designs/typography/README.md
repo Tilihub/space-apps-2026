@@ -2,11 +2,11 @@
 
 **Latest review:** [the same font choices on the complete Overview](overview/README.md), as Tommy requested.
 
-Tommy selected **MC02 Soft Panels**, then clarified that fonts must be considered throughout the application, not just Overview. He also requested the same font comparison in Alloy. Both original designs used IBM Plex Sans with IBM Plex Mono; their surface styling made them feel different.
+Tommy initially selected MC02 Soft Panels, then corrected the final base to **MC04 Alloy** and clarified that fonts must be considered throughout the application, not just Overview. He also requested the same font comparison in Alloy. Both original designs used IBM Plex Sans with IBM Plex Mono; their surface styling made them feel different.
 
-The real application now loads the selected Soft Panels presentation and a shared font-recipe layer. Tommy selected Clean / Inter (T02), now the global default; T01 remains a comparison reference. Use `?typeface=T01` through `?typeface=T08` before the hash to preview a recipe across the full application. A hash navigation retains the choice; the body-frame URL carries the same whitelisted ID. Unknown values fall back to the selected T02. No font preference, data, authorization or controller state is written by this layer.
+The real application now loads the selected Alloy presentation and a shared font-recipe layer. Tommy selected Clean / Inter (T02), now the global default; T01 remains a comparison reference. Use `?typeface=T01` through `?typeface=T08` before the hash to preview a recipe across the full application. A hash navigation retains the choice; the body-frame URL carries the same whitelisted ID. Unknown values fall back to the selected T02. No font preference, data, authorization or controller state is written by this layer.
 
-Soft Panels is the actual app base. **Alloy is a comparison on these static boards only**, and has not replaced that selection. The paired sheets keep text/sizes identical in both palettes. The component boards include navigation, overview readings, Check-in questions/fields, Exercise sets, Medical bay labels/dose text, Wellbeing chat and Habitat labels. Their illustrative values and chat lines are static fictional specimens, not actual prescriptions or generated support replies.
+**Alloy is now the actual app base**, with Clean / Inter (T02). The boards below preserve the earlier Soft Panels/Alloy comparison. The paired sheets keep text/sizes identical in both palettes. The component boards include navigation, overview readings, Check-in questions/fields, Exercise sets, Medical bay labels/dose text, Wellbeing chat and Habitat labels. Their illustrative values and chat lines are static fictional specimens, not actual prescriptions or generated support replies.
 
 [Paired comparison T01–T04](exports/paired-1.jpg) · [Paired comparison T05–T08](exports/paired-2.jpg)
 

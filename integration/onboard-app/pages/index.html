@@ -559,7 +559,7 @@
     <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color: var(--accent)"/><stop offset="1" style="stop-color: var(--accent-2)"/></linearGradient>
     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--accent); stop-opacity: .3"/><stop offset="1" style="stop-color: var(--accent); stop-opacity: 0"/></linearGradient>
     <linearGradient id="figGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="440"><stop offset="0" style="stop-color: var(--fig-top)"/><stop offset="1" style="stop-color: var(--fig-bottom)"/></linearGradient>
-    <radialGradient id="mascotGrad" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#E3F4FF"/><stop offset=".45" style="stop-color: var(--accent)"/><stop offset="1" stop-color="#1F4FB8"/></radialGradient>
+    <radialGradient id="mascotGrad" cx=".38" cy=".32" r=".75"><stop offset="0" style="stop-color:var(--mascot-light, #E3FFFF)"/><stop offset=".45" style="stop-color:var(--mascot-body, #27EAFF)"/><stop offset="1" style="stop-color:var(--mascot-shade, #0B779E)"/></radialGradient>
     <g id="fig-arms"><path d="M158 100 L136 182 L128 254 M242 100 L264 182 L272 254"/></g>
     <g id="fig-legs"><path d="M184 262 L180 342 L178 416 M216 262 L220 342 L222 416"/></g>
     <g id="fig-core">
@@ -630,7 +630,7 @@
 </div>
 
 <footer class="mission-footer" id="app-footer" hidden><span><i></i> ONBOARD SUPPORT</span><span>MARS TRANSIT <b>·</b> DEMO</span><span>May the Pulse Be With You</span></footer>
-<aside class="help-panel" id="help-panel" role="dialog" aria-label="Help" hidden><div class="card-head"><h3>Your mission workspace</h3><button class="icon-btn" data-action="ui-help" aria-label="Close help">×</button></div><p>Check in daily, follow your training and collect approved medicines in Medical bay.</p><p>The planet companion is always nearby. Private notes stay in Wellbeing.</p><details><summary>About this demo</summary><p>Crew profiles, sensors, the cabinet and Earth delivery are simulated. Habitat readings are historical replays. The companion works offline.</p><p>Instrument colors use an illustrative amber-to-copper value scale, not a health rating. Gray shows missing readings or a training session not yet recorded.</p></details></aside>
+<aside class="help-panel" id="help-panel" role="dialog" aria-label="Help" hidden><div class="card-head"><h3>Your mission workspace</h3><button class="icon-btn" data-action="ui-help" aria-label="Close help">×</button></div><p>Check in daily, follow your training and collect approved medicines in Medical bay.</p><p>The planet companion is always nearby. Private notes stay in Wellbeing.</p><details><summary>About this demo</summary><p>Crew profiles, sensors, the cabinet and Earth delivery are simulated. Habitat readings are historical replays. The companion works offline.</p><p>Instrument colors use an illustrative cyan-to-amber value scale, not a health rating. Gray shows missing readings or a training session not yet recorded.</p></details></aside>
 <!-- The companion floats in the corner of every screen -->
 <div class="companion" id="floating-companion">
   <div class="cp" id="cp" hidden>

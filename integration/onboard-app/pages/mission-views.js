@@ -1,4 +1,4 @@
-import {readingTint} from '/overview-colors.js';
+import {readingTint,scaleTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
@@ -6,7 +6,7 @@ import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { setChecks:{},stageReps:{},wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
@@ -17,7 +17,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null}={}) => {
     const missing=value===null||value===undefined||value==='—';
     const arc=435.6,amount=missing?0:Math.max(0,Math.min(1,fraction));
-    return `<${link?'a':'div'} class="gauge-card ${color}" ${tint?`style="--instrument-color:${tint}" aria-description="Illustrative value tint, not a health rating"`:""} ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
+    return `<${link?'a':'div'} class="gauge-card ${color}" style="--instrument-color:${tint??scaleTint(amount)}" ${tint?'aria-description="Illustrative value tint, not a health rating"':''} ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
   };
   function login() {
     const { CREW }=state();
@@ -114,20 +114,20 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const tier={'self-care':'Self-care',prescription:'Medical officer approval',controlled:'Earth approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
     let actions='';
     if(role==='crew') {
-      if(b.open&&part)actions=`<div class="ready-note">${pill('Door open','green')}<span>${part.units} unit(s) ready</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel remaining batch','cancel-collection','','ghost sm')}`;
+      if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel remaining batch','cancel-collection','','ghost sm')}`;
       else if(b.why?.startsWith('Allergy:'))actions=`<button type="button" class="btn ghost" disabled>Unavailable for this profile</button>`;
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
       else if(b.tier==='emergency')actions=btn('Open emergency access','ui-med-tab','data-id="emergency"','ghost');
       else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
     }
-    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(b.compartmentId),pill(b.open?'Door open':b.locked?'Restricted':'Available',b.open?'green':b.locked?'red':'cyan'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>Available</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(b.compartmentId)}</dd></div></dl>${b.why?`<p class="access-reason">${icon('lock')}${esc(b.why)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
+    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(b.compartmentId),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'green':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(b.compartmentId)}</dd></div></dl>${b.why?`<p class="access-reason">${icon('lock')}${esc(b.why)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
   }
   function medbay() {
     const {role,data}=state();
     if(role==='crew'&&ui.medTab==='activity')ui.medTab='courses';
     if(role==='earth')return `<div class="stack">${legacy.requestsPanel()}<a class="btn primary" href="#earth">Open Earth console</a></div>`;
     const tabs=[['cabinet','Cabinet'],['courses','My treatment'],...(role==='crew'?[]:[['activity','Activity']]),['profile','Allergies']];
-    const content={cabinet:()=>`${collectionStrip()}${cabinet()}${role==='medical_officer'?disclosure('Stock watch',legacy.stockPanel(),'card compact'):''}`,courses:()=>`<div class="two">${role==='crew'?importCard():legacy.requestsPanel()}<div class="stack">${role==='crew'?upcomingTreatment():legacy.grantsPanel()}${role==='crew'?legacy.requestsPanel():''}</div></div>`,activity:()=>legacy.dosesPanel(),profile:()=>role==='crew'?readOnlyProfile():legacy.profilePanel(),emergency:()=>legacy.emergencyPanel()};
+    const content={cabinet:()=>`${cabinet()}${role==='medical_officer'?disclosure('Stock watch',legacy.stockPanel(),'card compact'):''}`,courses:()=>`<div class="two">${role==='crew'?importCard():legacy.requestsPanel()}<div class="stack">${role==='crew'?upcomingTreatment():legacy.grantsPanel()}${role==='crew'?legacy.requestsPanel():''}</div></div>`,activity:()=>legacy.dosesPanel(),profile:()=>role==='crew'?readOnlyProfile():legacy.profilePanel(),emergency:()=>legacy.emergencyPanel()};
     return `${role==='medical_officer'?legacy.patientPicker():''}${ui.medTab!=='cabinet'?collectionStrip():''}<div class="med-toolbar"><div class="page-tabs ${role==='crew'?'crew-med-tabs':''}" role="group" aria-label="Medical bay sections">${tabs.map(([id,label])=>btn(label,'ui-med-tab',`data-id="${id}" aria-pressed="${ui.medTab===id}"`,'ghost sm')).join('')}</div>${btn(`${icon('shield')} Emergency`,'ui-med-tab',`data-id="emergency" aria-pressed="${ui.medTab==='emergency'}"`,'emergency-button sm')}</div>${(content[ui.medTab]??content.cabinet)()}`;
   }
   function readOnlyProfile(){
@@ -158,7 +158,9 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     let d='',pen=false;
     for(const p of points){if(p[1]==null){pen=false;continue;}d+=`${pen?'L':'M'}${x(valueTime(p)).toFixed(1)},${y(p[1]).toFixed(1)} `;pen=true;}
     const label=t=>elapsed?`${Math.round(t)}s`:new Date(t).toISOString().slice(11,16);
-    return `<svg class="mission-chart" viewBox="0 0 680 202" role="img" aria-label="${esc(unit)} measurements"><g>${[0,1,2,3].map(i=>{const v=min+(max-min)*i/3;return `<line x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text x="38" y="${y(v)+4}" text-anchor="end">${v>=100?Math.round(v):v.toFixed(1)}</text>`;}).join('')}</g>${thresholds.map(([l,v])=>`<line class="chart-threshold" x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text class="threshold-caption" x="54" y="${y(v)-6}">${l} ${v}</text>`).join('')}<path d="${d}"/><circle class="chart-endpoint" cx="${x(valueTime(valid.at(-1)))}" cy="${y(valid.at(-1)[1])}" r="4"/>${[xs[0],xs.at(-1)].map((t,i)=>`<text x="${i?646:48}" y="194" text-anchor="${i?'end':'start'}">${label(t)}${!elapsed?' UTC':''}</text>`).join('')}</svg>`;
+    const colorId=`pulse-plot-${++ui.chartId}`;
+    const endTint=scaleTint((valid.at(-1)[1]-min)/(max-min));
+    return `<svg class="mission-chart" viewBox="0 0 680 202" role="img" aria-label="${esc(unit)} measurements"><defs><linearGradient id="${colorId}" gradientUnits="userSpaceOnUse" x1="0" y1="165" x2="0" y2="33"><stop offset="0" style="stop-color:var(--graph-base)"/><stop offset="1" style="stop-color:var(--graph-warm)"/></linearGradient></defs><g>${[0,1,2,3].map(i=>{const v=min+(max-min)*i/3;return `<line x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text x="38" y="${y(v)+4}" text-anchor="end">${v>=100?Math.round(v):v.toFixed(1)}</text>`;}).join('')}</g>${thresholds.map(([l,v])=>`<line class="chart-threshold" x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text class="threshold-caption" x="54" y="${y(v)-6}">${l} ${v}</text>`).join('')}<path d="${d}" style="stroke:url(#${colorId})"/><circle style="fill:${endTint}" class="chart-endpoint" cx="${x(valueTime(valid.at(-1)))}" cy="${y(valid.at(-1)[1])}" r="4"/>${[xs[0],xs.at(-1)].map((t,i)=>`<text x="${i?646:48}" y="194" text-anchor="${i?'end':'start'}">${label(t)}${!elapsed?' UTC':''}</text>`).join('')}</svg>`;
   }
   function habitat() {
     const {data}=state();

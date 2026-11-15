@@ -3,3 +3,7 @@ html,body{height:auto;overflow:visible;min-width:1280px}body{margin:0}.type-revi
 :root[data-surface="alloy"]{--bg:#1a1f23;--surface:#293035;--card-bg:linear-gradient(160deg,#343d43,#293035);--border:#4b555b;--border-strong:#667178;--text:#f4f2e8;--text-2:#bec5c5;--text-3:#aeb9b8;--accent:#f0c56b;--gold:#f0c56b;--fine-soft:#443d2d;--track:#3b454b}
 [data-surface="alloy"] .card,[data-surface="alloy"] .gauge-card{border-radius:6px;border-top:2px solid #d0ae68;background:var(--card-bg)}
 [data-surface="alloy"] .board-nav b{border-radius:4px;border-color:#f0c56b70}
+
+/* Preserve the earlier Soft Panels review when the shared live appearance changes. */
+:root[data-surface="soft"]{--bg:#111315;--surface:#202326;--card-bg:linear-gradient(140deg,#282c2e,#1c2023);--surface-2:#171b1e;--surface-3:#292f32;--border:#393e42;--border-strong:#535b60;--text:#f4f2e8;--text-2:#bfc4c2;--text-3:#a7afac;--accent:#e9bd64;--accent-2:#e9bd64;--gold:#e9bd64;--fine-soft:#3c3423;--track:#343a3b}
+[data-surface="soft"] .card,[data-surface="soft"] .gauge-card{border-radius:13px;border-top:1px solid #d8ae5750}

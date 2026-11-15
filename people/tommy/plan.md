@@ -280,3 +280,15 @@ Latest review outcome: after the privacy correction at 76b2e09, Tommy explicitly
 ### Selected visual scale — 2026-11-15
 
 Tommy explicitly chose a demo-only amber-to-copper value tint for Overview rather than introducing health-evaluation colors. Contract min/max acceptance spans are only drawing coordinates, not medical thresholds: higher pulse/temperature and lower sleep move toward copper. Gray covers missing readings and pending training. No clinical status, baseline comparison, private analysis or backend decision is derived; all actual medical rules and permissions remain unchanged.
+
+### Corrected final appearance — 2026-11-15
+
+Tommy corrected the selection to **Alloy (MC04) + Clean / Inter (T02)** across the application, superseding Soft Panels. Preserve the nonclinical value scale, with the latest graph-only cyan-to-amber endpoints. The mascot has a cyan blue body matching the pulse in the unchanged team logo, with an amber ring, independently of the app accent. All appearances of the shared mascot use this scheme; no behavior or backend change is requested.
+
+### Alloy polish follow-up — 2026-11-15
+
+- Amber cap rules stay single, muted and 2px after Tommy's thickness adjustment. No second rule inside the 3D Overview/Symptoms frame.
+- Cabinet has one confirmation location: the selected item's right-hand panel. Keep per-item/parallel collection rules and handlers unchanged.
+- Graphs alone use logo cyan → yellow/amber. Keep interface controls/caps amber, the mascot body cyan/ring amber, and all existing alert and thermal meanings. The color scale remains illustrative rather than a clinical rating.
+
+- Medical bay follows the shared status-pill shape: cyan Available, green Open and red Restricted. Shelf LEDs retain their original blue available / red restricted / green open mapping; Tommy canceled changing all closed LEDs to red. Stock is labelled In stock.
