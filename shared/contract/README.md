@@ -130,7 +130,7 @@ The app imports your module straight from your folder, without copying it. Only 
 
 | id | Name | Title | Demo story (from the demo cases) |
 |---|---|---|---|
-| `c1` | Mara Quinn | Mission specialist | B: healthy, does a workout |
+| `c1` | Mara | Mission specialist | B: healthy, does a workout |
 | `c2` | Aggelos | Medical officer | E: the only medical officer, and also a normal crew member |
 | `c3` | Chris | Flight engineer | D: mood below normal for 6 days; resting heart rate missing on days 39 and 41 |
 | `c4` | Diamandis | Commander | A: known NSAID allergy, headache, three short nights, CO₂ high overnight, says "I'm fine" |

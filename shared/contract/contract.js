@@ -52,7 +52,7 @@ export const ROLES = Object.freeze(['crew', 'medical_officer', 'earth']);
  */
 export const CREW = Object.freeze(
   [
-    { id: 'c1', name: 'Mara Quinn', title: 'Mission specialist', medicalOfficer: false },
+    { id: 'c1', name: 'Mara', title: 'Mission specialist', medicalOfficer: false },
     { id: 'c2', name: 'Aggelos', title: 'Medical officer', medicalOfficer: true },
     { id: 'c3', name: 'Chris', title: 'Flight engineer', medicalOfficer: false },
     { id: 'c4', name: 'Diamandis', title: 'Commander', medicalOfficer: false },
