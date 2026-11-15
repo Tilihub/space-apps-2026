@@ -8,3 +8,9 @@ export const EXTRA_QUESTIONS = Object.freeze([
  {id:'connection',prompt:'How connected and supported did you feel by your crew?',low:'Not at all',high:'Very much'},
  {id:'workload',prompt:'How demanding did your workload feel?',low:'Very light',high:'Extremely demanding'},
 ]);
+
+export const WELLBEING_SCALE_IDS=Object.freeze(['mood','stress','fatigue',...EXTRA_QUESTIONS.map(q=>q.id)]);
+export function validWellbeingSubmission(values){
+ return WELLBEING_SCALE_IDS.every(key=>{const v=Number(values[key]);return Number.isInteger(v)&&v>=1&&v<=10;})
+  &&['yes','no'].includes(values.supportWanted);
+}

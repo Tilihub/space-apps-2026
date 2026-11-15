@@ -1,7 +1,7 @@
 import {trainingTrace} from '/training-demo.js';
 import {compartmentLabel} from '/cabinet-labels.js';
 import {readingTint,scaleTint} from '/overview-colors.js';
-import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
+import {EXTRA_QUESTIONS,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
 import { getDailyWorkout } from '/demo-data/workout-program.js';
@@ -27,12 +27,12 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {
-    const {data,clock,workout,trainingEndedToday}=state(), row=data.today?.checkIn;
+    const {data,clock,workout,trainingEndedToday,wellbeingCompletedToday}=state(), row=data.today?.checkIn;
     const workouts=(data.workouts?.workouts??[]).filter(w=>w.missionDay===clock.missionDay);
     const pending=[];
     const training=workout?.snapshot(clock.now);
     const justFinished=training?.day.missionDay===clock.missionDay&&['completed','stopped'].includes(training.status);
-    const wellbeingDone=['mood','stress','fatigue'].every(k=>Number.isFinite(row?.[k]));
+    const wellbeingDone=!!wellbeingCompletedToday;
     const trainingDone=!getDailyWorkout(clock.missionDay).sessions.length||workouts.length>0||justFinished||trainingEndedToday;
     const tasksDone=Number(wellbeingDone)+Number(!!trainingDone);
     if(!wellbeingDone)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily wellbeing</a>');
@@ -71,7 +71,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const extraDraft=()=>{try{return JSON.parse(sessionStorage.getItem(draftKey())??'{}');}catch{return {};}};
   const keepExtra=form=>{const values={...extraDraft(),...Object.fromEntries(new FormData(form))};sessionStorage.setItem(draftKey(),JSON.stringify(values));};
   function wellbeing() {
-    const {data,drafts,user}=state();
+    const {data,drafts,user,wellbeingCompletedToday}=state();
     if(ui.wellbeingCrew!==user?.crewId){ui.wellbeingCrew=user?.crewId;ui.wellbeingStep=0;}
     const row=data.today?.checkIn,saved=!!row,step=ui.wellbeingStep;
     const core=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
@@ -80,8 +80,8 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     let content='';
     if(step===0)content=`<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}</fieldset></form>`;
     if(step===1||step===2)content=`<form id="wellbeing-extra-form">${EXTRA_QUESTIONS.slice((step-1)*3,step*3).map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,false)).join('')}</form>`;
-    if(step===3)content=`<form id="wellbeing-extra-form"><div class="rating-group" data-rating="supportWanted"><div class="rating-title"><b>Would you like a private conversation with a support professional?</b></div><input type="hidden" name="supportWanted" value="${esc(extra('supportWanted'))}"><div class="support-choice">${['yes','no'].map(v=>btn(v==='yes'?'Yes':'No','ui-support-choice',`data-value="${v}" aria-pressed="${extra('supportWanted')===v}"`,'ghost')).join('')}</div></div></form><p class="draft-explainer">These seven additional answers are a demo draft, kept in this session. They are not saved to your health record or sent to anyone.</p>${saved?pill('Mood, stress & fatigue saved','green'):`<form id="checkin-form">${['mood','stress','fatigue'].map(k=>`<input type="hidden" name="${k}" value="${esc(core(k))}">`).join('')}${submit('Save check-in')}</form>`}`;
-    return `<div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(step===0&&saved?'Saved today':step===0?'Daily check-in':'Session draft',step===0&&saved?'green':'quiet'))}<div class="wellbeing-steps" role="group" aria-label="Question sections">${tabs.map((label,i)=>btn(label,'ui-wellbeing-step',`data-id="${i}" aria-pressed="${i===step}"`,'ghost sm')).join('')}</div><span class="subtle question-progress">${step<3?`${step*3+1}–${step*3+3}`:'10'} of 10 questions</span>${content}<div class="wellbeing-navigation">${btn('Previous','ui-wellbeing-step',`data-id="${step-1}" ${step===0?'disabled':''}`,'ghost sm')}${step<3?btn('Next','ui-wellbeing-step',`data-id="${step+1}"`,'primary sm'):''}</div></div>`;
+    if(step===3)content=`<form id="wellbeing-extra-form"><div class="rating-group" data-rating="supportWanted"><div class="rating-title"><b>Would you like a private conversation with a support professional?</b></div><input type="hidden" name="supportWanted" value="${esc(extra('supportWanted'))}"><div class="support-choice">${['yes','no'].map(v=>btn(v==='yes'?'Yes':'No','ui-support-choice',`data-value="${v}" aria-pressed="${extra('supportWanted')===v}"`,'ghost')).join('')}</div></div></form><p class="draft-explainer">These seven additional answers are a demo draft, kept in this session. They are not saved to your health record or sent to anyone.</p><form id="daily-wellbeing-finish">${[...WELLBEING_SCALE_IDS,'supportWanted'].map(k=>`<input type="hidden" name="${k}" value="${esc(['mood','stress','fatigue'].includes(k)?core(k):extra(k))}">`).join('')}<button class="btn primary" type="submit" ${wellbeingCompletedToday?'disabled':''}>${wellbeingCompletedToday?'Completed today':'Finish daily wellbeing'}</button></form>`;
+    return `<div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(wellbeingCompletedToday?'Completed today':step===0&&saved?'Core answers saved':step===0?'Daily check-in':'Session draft',wellbeingCompletedToday?'green':'quiet'))}<div class="wellbeing-steps" role="group" aria-label="Question sections">${tabs.map((label,i)=>btn(label,'ui-wellbeing-step',`data-id="${i}" aria-pressed="${i===step}"`,'ghost sm')).join('')}</div><span class="subtle question-progress">${step<3?`${step*3+1}–${step*3+3}`:'10'} of 10 questions</span>${content}<div class="wellbeing-navigation">${btn('Previous','ui-wellbeing-step',`data-id="${step-1}" ${step===0?'disabled':''}`,'ghost sm')}${step<3?btn('Next','ui-wellbeing-step',`data-id="${step+1}"`,'primary sm'):''}</div></div>`;
   }
   function checkin() {
     const {drafts,SYMPTOMS,selectedArea,stagedSymptoms}=state();
@@ -187,7 +187,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const trace=trainingTrace(s,state().exerciseReplay);
     const pending=['pending','failed','saving'].includes(s.saveStatus);
     const recovery=Math.max(0,60-(state().clock.now?Math.floor((Date.parse(state().clock.now)-Date.parse(s.outcomes.find(o=>o.sessionId===s.sessionId)?.endedAt??state().clock.now))/1000):0));
-    return `<div class="training-sensors"><div class="section-heading"><h3>Session sensors</h3>${pill('Simulated · 5 min','quiet')}</div><div class="sensor-plot"><div><h4>Heart rate</h4><b>${s.heartRate.bpm??'—'} <small>bpm</small></b></div>${drawChart(trace.pulse,{unit:'Heart rate · bpm',elapsed:true,relative:true})}</div><div class="sensor-plot"><div><h4>Breathing</h4><b>${trace.breathsPerMinute??'—'} <small>breaths/min</small></b></div>${drawChart(trace.breathing,{unit:'Breathing · breaths/min',elapsed:true,relative:true})}</div><div class="training-session-status"><span>${s.completed.length}/${s.totalSteps} exercises</span><span>${Math.floor(s.elapsedSeconds/60)}:${String(s.elapsedSeconds%60).padStart(2,'0')}</span></div>${pending?`<p class="subtle auto-save-status" role="status">${s.saveStatus==='saving'?'Saving automatically…':s.saveStatus==='failed'?'Automatic save retry pending':recovery?`Recovery · ${recovery}s · saves automatically`:'Saving automatically…'}</p>`:s.status!=='active'?pill('Session complete','green'):''}</div>`;
+    return `<div class="training-sensors"><div class="section-heading"><h3>Session sensors</h3>${pill('Simulated · 5 min','quiet')}</div><div class="sensor-plot"><div><h4>Heart rate</h4><b>${s.heartRate.bpm??'—'} <small>bpm</small></b></div>${drawChart(trace.pulse,{unit:'Heart rate · bpm',elapsed:true,relative:true})}</div><div class="sensor-plot"><div><h4>Breathing</h4><b>${trace.breathsPerMinute??'—'} <small>breaths/min</small></b></div>${drawChart(trace.breathing,{unit:'Breathing · breaths/min',elapsed:true,relative:true})}</div><div class="training-session-status"><span>${s.completed.length}/${s.totalSteps} exercises</span><span>Session · ${Math.floor(s.elapsedSeconds/60)}:${String(s.elapsedSeconds%60).padStart(2,'0')}</span></div>${pending?`<p class="subtle auto-save-status" role="status">${s.saveStatus==='saving'?'Saving automatically…':s.saveStatus==='failed'?'Automatic save retry pending':recovery?`Recovery · ${recovery}s · saves automatically`:'Saving automatically…'}</p>`:s.status!=='active'?pill('Session complete','green'):''}</div>`;
   }
   function loadDraft(step){
     if(step.kind!=='resistance')return '';
@@ -203,17 +203,28 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       const reps=ui.stageReps[key]??0;
       return `<form id="workout-step" data-step="${step.id}">${loadDraft(step)}<input type="hidden" name="reps" value="${reps}"><div class="rep-counter">${btn('−','ui-workout-reps',`data-step="${step.id}" data-delta="-1" aria-label="Remove one repetition"`,'ghost')}<span><b>${reps}</b><small>repetitions</small></span>${btn('+','ui-workout-reps',`data-step="${step.id}" data-delta="1" aria-label="Add one repetition"`,'primary')}${btn('+5','ui-workout-reps',`data-step="${step.id}" data-delta="5" aria-label="Add five repetitions"`,'ghost sm')}</div>${submit('Finish exercise')}</form>`;
     }
-    return `<form id="workout-step" data-step="${step.id}">${loadDraft(step)}<div class="step-time"><b>${Math.floor(s.stepElapsedSeconds/60)}:${String(s.stepElapsedSeconds%60).padStart(2,'0')}</b>${step.durationSeconds?`<span> / ${Math.floor(step.durationSeconds/60)}:${String(step.durationSeconds%60).padStart(2,'0')}</span>`:''}</div>${submit('Complete exercise')}</form>`;
+    if(step.kind==='intervals')return `<form id="workout-step" data-step="${step.id}"><div class="step-time"><b data-interval-remaining>${Math.floor(s.interval.remainingSeconds/60)}:${String(s.interval.remainingSeconds%60).padStart(2,'0')}</b><span><span data-interval-phase>${s.interval.phase==='work'?'Work':s.interval.phase==='recovery'?'Recovery':'Complete'}</span> · Round <span data-interval-round>${s.interval.round}</span>/${step.count}</span></div>${submit('Complete exercise')}</form>`;
+    return `<form id="workout-step" data-step="${step.id}">${loadDraft(step)}<div class="step-time"><b data-step-elapsed>${Math.floor(s.stepElapsedSeconds/60)}:${String(s.stepElapsedSeconds%60).padStart(2,'0')}</b>${step.durationSeconds?`<span> / ${Math.floor(step.durationSeconds/60)}:${String(step.durationSeconds%60).padStart(2,'0')}</span>`:''}</div>${submit('Complete exercise')}</form>`;
   }
   function restLabel(){
-    const entry=ui.rest;if(!entry||entry.key!==setKey(state().workout.snapshot(state().clock.now)))return 'Check off each completed set.';
+    const snapshot=state().workout.snapshot(state().clock.now),key=setKey(snapshot);
+    if(snapshot.currentStep?.sets&&ui.setChecks[key]?.checked.length===snapshot.currentStep.sets)return 'Sets complete';
+    const entry=ui.rest;if(!entry||entry.key!==key)return 'Check off each completed set.';
     const remaining=Math.max(0,entry.seconds-Math.floor((Date.parse(state().clock.now)-Date.parse(entry.at))/1000));
     return remaining?`Rest · ${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}`:'Ready for the next set';
   }
   function tick(){
     const rest=document.getElementById('set-rest');if(rest)rest.textContent=restLabel();
-    const timer=document.querySelector('.step-time b'),snapshot=state().workout?.snapshot(state().clock.now);
-    if(timer&&snapshot?.currentStep)timer.textContent=`${Math.floor(snapshot.stepElapsedSeconds/60)}:${String(snapshot.stepElapsedSeconds%60).padStart(2,'0')}`;
+    const snapshot=state().workout?.snapshot(state().clock.now);
+    if(snapshot?.currentStep){
+      for(const timer of document.querySelectorAll('[data-step-elapsed]'))timer.textContent=`${Math.floor(snapshot.stepElapsedSeconds/60)}:${String(snapshot.stepElapsedSeconds%60).padStart(2,'0')}`;
+      const remaining=document.querySelector('[data-interval-remaining]');
+      if(remaining&&snapshot.interval){
+        remaining.textContent=`${Math.floor(snapshot.interval.remainingSeconds/60)}:${String(snapshot.interval.remainingSeconds%60).padStart(2,'0')}`;
+        document.querySelector('[data-interval-phase]').textContent={work:'Work',recovery:'Recovery',done:'Complete'}[snapshot.interval.phase];
+        document.querySelector('[data-interval-round]').textContent=snapshot.interval.round;
+      }
+    }
   }
   function fitness() {
     const {workout,clock,workoutMode}=state(),s=workout?.snapshot(clock.now);
@@ -222,7 +233,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const step=s.currentStep,unresolved=['pending','failed','saving'].includes(s.saveStatus),active=s.status==='active';
     const canStart=!active&&!unresolved&&s.nextSessionId;
     const mode=`<select class="input compact-select" id="workout-mode" aria-label="Training program" ${active||unresolved?'disabled':''}><option value="weekly" ${workoutMode==='weekly'?'selected':''}>Mars transit program</option><option value="stage" ${workoutMode==='stage'?'selected':''}>Stage demo · synthetic sensors</option></select>`;
-    return `<div class="training-toolbar">${mode}${btn('Start training','workout-start',`data-id="${s.nextSessionId??''}" ${canStart?'':'disabled'}`,'primary start-training')}</div><div class="exercise-workspace gym-workspace"><div class="card live-training-card"><div id="workout-live">${workoutReadout(s)}</div></div><aside class="stack">${step?`<div class="card active-exercise-card">${heading('CURRENT EXERCISE',esc(step.label),pill(`${s.completed.length+1} of ${s.totalSteps}`,'quiet'))}${stepControls(s)}${disclosure('Technique & equipment',`<p>${esc(step.equipment)}</p><p>${esc(step.instruction)}</p>${step.targetHeartRateBpm?`<p>Assigned reference: ${step.targetHeartRateBpm.join('–')} bpm</p>`:''}`)}${btn('End session','workout-stop','','ghost sm')}</div>`:''}<div class="card program-card">${heading('TODAY’S PROGRAM',esc(s.day.label))}${s.day.sessions.map(session=>`<div class="program-session"><div><span class="row-icon">${icon('workout')}</span><span class="grow"><h4>${esc(session.label)}</h4><small>${session.steps.length} exercises${session.recommendedMinutesAfterResistance?' · 4–6 h after resistance':''}</small></span></div>${disclosure('View exercises',`${session.preparation?`<p>${esc(session.preparation)}</p>`:''}<div class="exercise-checklist">${session.steps.map(st=>`<div><span class="check ${s.sessionId===session.id&&s.completed.some(c=>c.stepId===st.id)?'on':''}">${s.sessionId===session.id&&s.completed.some(c=>c.stepId===st.id)?icon('check'):''}</span><span class="grow"><b>${esc(st.label)}</b><small>${st.sets?`${st.sets} × ${st.repsPerSet} reps · ${st.restBetweenSetsSeconds/60} min rest`:st.durationSeconds?`${Math.round(st.durationSeconds/60)} min`:esc(st.equipment)}</small></span>${st.kind==='resistance'?'<span class="plan-pr">PR — <small>Draft</small></span>':''}</div>`).join('')}</div>`)}</div>`).join('')||empty('A recovery day. No scheduled session.')}</div>${disclosure('Demo controls',legacy.demoClockPanel(),'demo-controls')}</aside></div>`;
+    return `<div class="training-toolbar">${mode}${btn('Start training','workout-start',`data-id="${s.nextSessionId??''}" ${canStart?'':'disabled'}`,'primary start-training')}</div><div class="exercise-workspace gym-workspace"><div class="card live-training-card"><div id="workout-live">${workoutReadout(s)}</div></div><aside class="stack">${step?`<div class="card active-exercise-card">${heading('CURRENT EXERCISE',esc(step.label),pill(`${s.completed.length+1} of ${s.totalSteps}`,'quiet'))}${step.kind==='resistance'?`<div class="exercise-time-readout"><span>Exercise time</span><b data-step-elapsed>${Math.floor(s.stepElapsedSeconds/60)}:${String(s.stepElapsedSeconds%60).padStart(2,'0')}</b></div>`:''}${stepControls(s)}${disclosure('Technique & equipment',`<p>${esc(step.equipment)}</p><p>${esc(step.instruction)}</p>${step.targetHeartRateBpm?`<p>Assigned reference: ${step.targetHeartRateBpm.join('–')} bpm</p>`:''}`)}${btn('End session','workout-stop','','ghost sm')}</div>`:''}<div class="card program-card">${heading('TODAY’S PROGRAM',esc(s.day.label))}${s.day.sessions.map(session=>`<div class="program-session"><div><span class="row-icon">${icon('workout')}</span><span class="grow"><h4>${esc(session.label)}</h4><small>${session.steps.length} exercises${session.recommendedMinutesAfterResistance?' · 4–6 h after resistance':''}</small></span></div>${disclosure('View exercises',`${session.preparation?`<p>${esc(session.preparation)}</p>`:''}<div class="exercise-checklist">${session.steps.map(st=>`<div><span class="check ${s.sessionId===session.id&&s.completed.some(c=>c.stepId===st.id)?'on':''}">${s.sessionId===session.id&&s.completed.some(c=>c.stepId===st.id)?icon('check'):''}</span><span class="grow"><b>${esc(st.label)}</b><small>${st.sets?`${st.sets} × ${st.repsPerSet} reps · ${st.restBetweenSetsSeconds/60} min rest`:st.durationSeconds?`${Math.round(st.durationSeconds/60)} min`:esc(st.equipment)}</small></span>${st.kind==='resistance'?'<span class="plan-pr">PR — <small>Draft</small></span>':''}</div>`).join('')}</div>`)}</div>`).join('')||empty('A recovery day. No scheduled session.')}</div>${disclosure('Demo controls',legacy.demoClockPanel(),'demo-controls')}</aside></div>`;
   }
   function psychologistPreview(){
     const messages=ui.psychMessages??[];
@@ -263,7 +274,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       const key=setKey(snapshot);
       if(name==='ui-workout-set'){
         const checked=[...(ui.setChecks[key]?.checked??[])],index=Number(id),at=checked.indexOf(index);
-        if(at>=0)checked.splice(at,1);else{checked.push(index);ui.rest={key,at:clock.now,seconds:step.restBetweenSetsSeconds};}
+        if(at>=0)checked.splice(at,1);else{checked.push(index);ui.rest=checked.length===step.sets?null:{key,at:clock.now,seconds:step.restBetweenSetsSeconds};}
         ui.setChecks[key]={checked};
       }else{ui.stageReps[key]=Math.max(0,Math.min(1000000,(ui.stageReps[key]??0)+Number(el.dataset.delta)));drafts['workout-step']={reps:String(ui.stageReps[key])};}
       redraw();return;

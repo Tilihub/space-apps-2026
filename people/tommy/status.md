@@ -8,15 +8,26 @@
 
 ## Now
 
+- Latest: Daily wellbeing stays pending until Finish daily wellbeing validates all ten answers. Preset core readings are not questionnaire completion. Exercise/session/rest/interval displays render each second from a bounded server-clock projection; saved timestamps and recovery decisions remain on server time. Overview-space suggestions are in overview-space-proposal.md and are not implemented.
+
 - Latest UI: manual load entry is enabled with stacked +/− controls in 5 kg steps, with an explicit unsaved-draft caption; PR/AED backend integration remains pending as Tommy chose. The current port-8018 preview is open on Exercise with the five-minute simulated plots and no open emergency banner. Original filled port-8012 data remain available.
 
-- Last updated: 2026-11-15 — Daily tasks, training completion cue and restored presentation values
+- Last updated: 2026-11-15 — Explicit wellbeing completion and smooth exercise timers
 - Working on: Tommy selected Clean / Inter (T02) for the entire app. Tommy corrected the base to MC04 Alloy, replacing Soft Panels. He explicitly chose a nonclinical demo value scale, then changed its graph-only endpoints to logo cyan → amber; missing/pending instruments stay gray. The shared mascot is cyan with an amber ring, outer accents are single muted 2px rules, and Cabinet confirmations are only in the item panel. The live filled demo is running on 8012 using its original saved store, with no reset. Backend/owner modules/contracts remain unchanged.
 - Medical bay follow-up: saturated green Open, chess-style display labels, no Allergies navigation tab, and an inline crew Emergency toggle/form using unchanged APIs. Root suite passed 102/102, none skipped; syntax/diff checks passed. Temporary port-8017 QA server stopped; user-facing port 8012 remains running.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Added the pending Daily wellbeing cue beside Training open. The final Finish daily wellbeing action requires nine integer scales (1–10) and the support yes/no answer. Existing core records are preserved; new core entries use the current health endpoint. Seven extra answers remain declared local drafts. Completion is a per-person/day UI marker, retained on reload and reset with the demo.
+- Browser verified that preset health values still show both pending cues/0 of 2, incomplete answers are refused, all ten answers plus the final action remove only the wellbeing cue, and reload retains 1 of 2. Tested in a separate same-origin tab, signed out and closed; no preset check-in or workout was submitted/overwritten.
+- Replaced three-second-only timer rendering with a one-second display clock based on monotonic elapsed time and the latest server sample. It caps extrapolation on disconnection and follows mission-clock changes. All API writes and recovery decisions retain authoritative server timestamps.
+- Separated Exercise time from Session elapsed. The exercise timer resets on advancing; interval work/recovery/round labels use Petros's controller. Completed final sets show Sets complete without restarting a rest countdown.
+- Browser timing check: 25.868 seconds wall time yielded 26 displayed seconds. After advancement, session time stayed at 45 seconds and exercise time reset to zero. No console errors.
+- Added four regression tests for timer drift/interpolation, per-step reset with the original controller, mission-date/jump/disconnection handling and ten-answer validation. Root npm test passed 106/106, none skipped; syntax/diff checks passed.
+- Proposed a compact SpO2/BP row and conditional next-dose reminder for unused Overview space. No new layout section is adopted; see overview-space-proposal.md.
+
 
 - Overview now shows Daily tasks (0/2, 1/2, 2/2) instead of counting workout sessions: supported saved wellbeing answers (mood/stress/fatigue) and today's training activity. A scheduled rest day does not leave a training task pending. The two orange cues follow these same completion states.
 - Training completion clears Training open immediately when the controller ends a session, before the one-minute recovery save. A per-person/day session marker preserves the visual completion through reload/sign-out; demo reset clears markers. Saved health records remain authoritative for workout summaries; no summary or PR is fabricated by this marker.

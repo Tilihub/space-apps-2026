@@ -310,3 +310,11 @@ Tommy chose drafts until the owners connect AED and load/PR support. The three-c
 Replace the training-session instrument with Daily tasks, currently two tasks: daily wellbeing and training. Use the supported saved mood/stress/fatigue answers for wellbeing completion; the extra questionnaire items are still drafts. Training is complete after today's controller session ends or a workout is saved; recovery recording may finish afterward. Keep the visual per-person/day completion through reload and clear it for a demo reset/new day. Rest days have no pending exercise requirement.
 
 Kilograms use manual typing plus vertically stacked +/− controls in 5 kg steps, with no suggestion popup. Loads/PR are still not part of the backend schema. Restore the agreed day-42 fixtures in the active demo when moving from QA; preserve existing check-ins/workouts. Tommy canceled reducing L1: keep ten medicines on two pages.
+
+### Wellbeing completion and timers — 2026-11-15
+
+Daily wellbeing stays pending until the user finishes the ten-question form explicitly. Preset mood/stress/fatigue values are existing core records, not proof of questionnaire completion. Validate nine scales plus the support yes/no answer; preserve the one-check-in-per-day rule and seven extra local drafts. Use a per-person/day UI completion marker.
+
+Render exercise/session/rest displays each second against synchronized mission time, keeping saved timestamps on the raw server clock. Show exercise elapsed separately, reset it at the next step, and use the owner's interval phase/round snapshot. No new between-set rest follows the final set.
+
+Overview-space proposals remain unimplemented: compact SpO2/BP row, optionally a next-dose reminder only when a course applies. See overview-space-proposal.md.

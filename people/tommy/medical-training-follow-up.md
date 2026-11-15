@@ -41,6 +41,12 @@ The free-text UI is a scripted preview, not a connected clinician. Real delivery
 
 ## Latest Overview/task correction
 
-The fourth Overview instrument is now Daily tasks, not a count of sessions: wellbeing (the three currently persisted answers) and training. Training's task cue closes immediately on session end, and a per-person/day visual marker survives reload before recovery storage finishes. It is not a fabricated workout record. A new day or demo reset clears that marker; rest days have no pending exercise requirement.
+The fourth Overview instrument is now Daily tasks, not a count of sessions: wellbeing (explicit completion of all ten questions) and training. Training's task cue closes immediately on session end, and a per-person/day visual marker survives reload before recovery storage finishes. It is not a fabricated workout record. A new day or demo reset clears that marker; rest days have no pending exercise requirement.
 
 Load entry uses stacked +/− controls, five kilograms per press, and no large suggestion popup. L1 remains ten items/two pages following Tommy's cancellation of the proposed reduction. Port 8018's missing current entries were populated using the existing agreed presentation seeder, with no store reset or workout overwrite.
+
+## Explicit wellbeing and timer correction
+
+Preset core records no longer complete the wellbeing task. The user answers all ten questions and presses Finish daily wellbeing. This UI completion marker is separate from the three persisted core values and seven local drafts.
+
+One-second rendering interpolates the synchronized server clock without changing API/save timestamps. Exercise time resets independently of session time; final sets do not restart rest; interval labels follow the original controller. Four new regression checks and browser validation passed (106 root tests total). Overview-space proposals remain in overview-space-proposal.md.
