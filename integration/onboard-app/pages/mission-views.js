@@ -25,9 +25,16 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   };
   function login() {
     const { CREW }=state();
-    // Opening screen (dadis2): the full star map with "Welcome aboard" (before login there's no clock: demo start day)
-    if(!ui.welcome) return `<div class="welcome-map">${starMapScreen({missionDay:state().clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length})}<div class="welcome-cta">${btn('Welcome aboard','ui-begin','','primary welcome-button')}</div></div>`;
-    return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
+    // Opening (dadis2): first choose who you are, then the full star map welcomes you aboard by name.
+    // Before login there's no clock, so the map shows the demo start day. Earth isn't aboard: it logs in directly.
+    if(ui.pending){
+      const person=CREW.find(c=>c.id===ui.pending.crewId), first=esc((person?.name??'').split(' ')[0]);
+      const go=ui.pending.platform==='medical'
+        ? btn(`Welcome aboard, ${first}`,'login-medical','','primary welcome-button')
+        : btn(`Welcome aboard, ${first}`,'login',`data-id="${esc(person?.id)}"`,'primary welcome-button');
+      return `<div class="welcome-map">${starMapScreen({missionDay:state().clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length})}<div class="welcome-cta">${go}${btn('Not you? Choose again','ui-pick-profile','data-id=""','ghost sm welcome-back')}</div></div>`;
+    }
+    return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Who’s aboard?</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="ui-pick-profile" data-id="${c.id}" data-platform="astronaut"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','ui-pick-profile','data-id="c2" data-platform="medical"','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {
     const {data,clock,workout,trainingEndedToday,wellbeingCompletedToday}=state(), row=data.today?.checkIn;
@@ -293,7 +300,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       }else{ui.stageReps[key]=Math.max(0,Math.min(1000000,(ui.stageReps[key]??0)+Number(el.dataset.delta)));drafts['workout-step']={reps:String(ui.stageReps[key])};}
       redraw();return;
     }
-    if(name==='ui-begin'){ui.welcome=true;sessionStorage.setItem('pulse-welcome','done');redraw();return;}
+    if(name==='ui-pick-profile'){ui.pending=id?{crewId:id,platform:el.dataset.platform}:null;redraw();return;} // chosen profile, before the welcome
     if(name==='ui-help'){$help().hidden=!$help().hidden;return;}
     if(name==='ui-wellbeing-step'){ui.wellbeingStep=Math.max(0,Math.min(3,Number(id)));refreshWellbeing(true);return;}
     if(name==='ui-rating'){
@@ -318,6 +325,6 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const $help=()=>document.getElementById('help-panel');
   return {screens:{login,home,checkin,medbay,habitat,fitness,mind},cabinet,action,workoutReadout,selectArea,tick,
     psychMessage,emergencyEnabled:()=>ui.emergencyEnabled,
-    resetSession:()=>{ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
+    resetSession:()=>{ui.pending=null;ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
   };
 }

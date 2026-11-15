@@ -14,3 +14,4 @@ body.page-starmap #app-header,body.page-starmap #app-footer,body.page-starmap #t
 /* Opening screen (dadis2): the star map fills the screen, with "Welcome aboard" on it */
 .welcome-map{position:relative;height:100svh;overflow:hidden;background:#05060F}.welcome-map .starmap-full{position:absolute;inset:0}.welcome-cta{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);z-index:1}
 #login:has(>.welcome-map){padding:0}
+.welcome-cta{display:flex;flex-direction:column;align-items:center;gap:12px}.welcome-cta .welcome-back{opacity:.8}
