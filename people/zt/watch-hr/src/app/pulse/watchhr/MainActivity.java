@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
  * adb shell am start -n app.pulse.watchhr/.MainActivity --es server http://IP:8000
  */
 public class MainActivity extends Activity implements SensorEventListener {
-    private static final String DEFAULT_SERVER = "http://192.168.1.9:8000";
+    private static final String DEFAULT_SERVER = "https://pulse-crew-health.onrender.com";
     private static final String[] PERMISSIONS = {
         "android.permission.BODY_SENSORS", "android.permission.health.READ_HEART_RATE"
     };
