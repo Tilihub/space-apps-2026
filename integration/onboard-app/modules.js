@@ -5,7 +5,8 @@
  * adapters fill the missing journal, mission-clock environment API and report transport.
  * See README.md for source revisions, permissions, pending handoffs and limitations.
  */
-import pulsars from '../../people/tommy/pulsars/index.js';
+// Tommy's Pulsars plus the stage push-up reward (connection-owned, adapters/pulsars-demo.js).
+import pulsars from './adapters/pulsars-demo.js';
 import health from '../../people/angelos/health/index.js';
 import meds from '../../people/dadis2/meds/index.js';
 import mind from './adapters/mind.js';

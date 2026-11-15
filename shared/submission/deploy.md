@@ -5,13 +5,14 @@ accepted.
 
 **Live: https://pulse-crew-health.onrender.com/** (since 15 November, 14:46). It runs on Render's free
 plan, deployed straight from this public repo, and a free UptimeRobot monitor opens it every
-5 minutes so it never falls asleep. For now it runs today's app from `integration/onboard-app/`
-(main at `e14b582`); once `final/` exists, switch it over (see below).
+5 minutes so it never falls asleep. It runs the app from `integration/onboard-app/` in
+**presentation mode** (`PULSE_PRESENTATION=1`): it always opens on a prepared mission day 42, ready
+for the five demo stories. See "The prepared start" below.
 
 ## Switching to `final/`
 
 1. In the Render dashboard (zt's account), open pulse-crew-health → Settings → Start Command, and
-   change it to `node final/onboard-app/start.js`.
+   change it to `node final/onboard-app/start.js`. Keep the `PULSE_PRESENTATION=1` variable.
 2. Press Manual Deploy → Deploy latest commit. The link stays the same; the data starts fresh.
 3. Open the link and log in once to check it.
 
@@ -30,7 +31,7 @@ live service was created with, in case it ever needs rebuilding.
 | Build command | `npm install` (there are no packages, so it does nothing) |
 | Start command | now `node integration/onboard-app/start.js`; `node final/onboard-app/start.js` once `final/` exists |
 | Instance type | **Free, $0/month.** The form pre-selects the $7 plan, so switch it |
-| Environment variable | `NODE_VERSION` = `24`, the version our tests run on |
+| Environment variables | `NODE_VERSION` = `24`, the version our tests run on; `PULSE_PRESENTATION` = `1`, the prepared start |
 
 Then press **Deploy web service**. The first build and start take a few minutes.
 
@@ -60,21 +61,36 @@ minute. To prevent that, zt's free UptimeRobot account has an HTTP(s) monitor on
 most other addresses need a login and would be reported as down. One always-on free service fits
 in Render's 750 free hours a month, and the pings use about 100 MB a week.
 
-## Good to know before presenting from it
+## The prepared start
 
-- **The mission clock runs in real time.** About 16 hours after a start or reset it's mission
-  day 43, and the parts built for day 42 (skin map, cabin replay, prepared data) go missing. Press
-  the app's Reset demo before showing it, or before judges are expected to look.
+With `PULSE_PRESENTATION=1` (or `node integration/onboard-app/start.js --presentation` on a laptop),
+`integration/onboard-app/presentation.js` loads the prepared mission day 42 **on every start, on
+every Reset, and whenever the mission clock leaves day 42** (it checks every minute). So the link
+always opens ready, and pressing Reset gives a clean prepared demo. It holds:
+
+- today's check-in for all five crew (Petros's synthetic data and stage cases, as Tommy's seeder does);
+- **Tomas:** the headache report and a sleeping-pill request waiting for Earth. The Earth console's
+  QR code answers it;
+- **Ines:** her journal entry, and nine of her ten wellbeing answers. The presenter answers the
+  tenth, "mental refreshment", and presses Finish;
+- **Mara:** 700 Pulsars earned on days 38–40.
+
+**Stage push-ups** (Exercise → Program → Stage demo) always pay +200 for the exercise and +100 for
+a new personal best, whatever the count, every run, for anyone. Mara goes from 700 to 1,000 and can
+buy the round spectacles. This works with or without presentation mode.
+
+All values are synthetic demo data. A laptop started without the flag behaves as before.
+
+## Good to know before presenting from it
 
 - **If the pinger ever stops**, the app sleeps after 15 idle minutes and the next visit takes
   about a minute. Render has maintenance on 18 November around 04:00 (Greek time); the app restarts
   by itself afterwards.
-- **Every sleep, restart or deploy wipes saved data**; the demo starts again at mission day 42.
+- **Every restart or deploy goes back to the prepared start**, wiping whatever visitors did.
 - **New code isn't picked up by itself:** Render offers no automatic deploys for a public repo added
   by address. After merging, press Manual Deploy → Deploy latest commit in the Render dashboard.
-  That also wipes the data.
-- **Everyone shares one demo.** If a judge presses Reset, it resets for the presenter too.
-- **The presentation seeder** (`integration/onboard-app/demo/seed-presentation.mjs`) only accepts a
-  localhost address, so as it is it can't fill the public copy with the prepared demo data.
+  That also goes back to the prepared start.
+- **Everyone shares one demo.** If a judge presses Reset, it resets for the presenter too. Press
+  Reset once before the full run, not between speakers.
 - **Nothing private is exposed:** all data is synthetic and the logins are demo profiles. Render
   serves the app over HTTPS, which the QR camera scan needs.

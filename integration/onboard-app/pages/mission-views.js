@@ -83,7 +83,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     if(ui.wellbeingCrew!==user?.crewId){ui.wellbeingCrew=user?.crewId;ui.wellbeingStep=0;}
     const row=data.today?.checkIn,saved=!!row,step=ui.wellbeingStep;
     const core=k=>saved?(row[k]??''):(drafts['wellbeing-core-form']?.[k]??'');
-    const extras=extraDraft(),extra=k=>drafts['wellbeing-extra-form']?.[k]??extras[k]??data.pulsars?.wallet?.todayAnswers?.[k]??'';
+    const extras=extraDraft(),extra=k=>drafts['wellbeing-extra-form']?.[k]??extras[k]??data.pulsars?.wallet?.todayAnswers?.[k]??data.pulsars?.wallet?.prefillAnswers?.[k]??'';
     const tabs=['Today','Focus','Crew','Recovery'];
     let content='';
     if(step===0)content=`<form id="wellbeing-core-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}${field('Sleep in the last 24 hours (hours, optional)','sleepHours',{type:'number',attrs:'min="0" max="24" step="0.1"',value:core('sleepHours')})}</fieldset></form>`;

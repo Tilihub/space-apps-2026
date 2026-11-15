@@ -488,6 +488,9 @@ async function handleForm(form,submitter) {
    if(!queue.some(x=>x.id===id))queue.push({id,day:before.day.missionDay,body});
    sessionStorage.setItem(rewardQueueKey(),JSON.stringify(queue));
    try{await flushRewards();}catch(error){notice('Exercise completed. Pulsars will retry when connected. '+error.message,true);}
+  } else if(workoutMode==='stage'&&step.id==='push-ups'&&role()==='crew'){
+   // Stage push-ups always pay +200 and +100 for the record (adapters/pulsars-demo.js).
+   try{const result=await api('/pulsars/stage-exercise',{method:'POST',body:{missionDay:before.day.missionDay,stepId:step.id,reps:Number(v.reps??0)}});data.pulsars={wallet:result.wallet};showAwards(result.awards);}catch(error){notice('Push-ups completed. Pulsars could not be added: '+error.message,true);}
   }
  } else if(id==='report-form') {
   // Refresh every section for this patient; no mind endpoint is requested.
