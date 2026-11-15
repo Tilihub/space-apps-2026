@@ -314,7 +314,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea,tick,
+  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},cabinet,action,workoutReadout,selectArea,tick,
     psychMessage,emergencyEnabled:()=>ui.emergencyEnabled,
     resetSession:()=>{ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
   };

@@ -8,22 +8,22 @@
 
 ## Now
 
-- Last updated: 2026-11-15 12:02
-- Working on: a lean medical officer console and Earth console in Tommy's complete demo (PR #74,
-  approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes `dadis2/earth-qr`.
-  `npm test` 111 of 111.
+- Last updated: 2026-11-15 12:13
+- Working on: a minimal medical officer console and a lean Earth console in Tommy's complete demo
+  (PR #74, approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes
+  `dadis2/earth-qr`. `npm test` 111 of 111.
 - Branch: dadis2/mo-console
 
 ### Medical officer and Earth consoles (`dadis2/mo-console`, based on Tommy's `tommy/frontend-polish`)
 
-- **Medical officer console** (login → "Medical officer"): four tabs instead of every panel at once.
-  - **Approvals:** approve or deny everything waiting for the medical officer, each with a compact
-    course. Earth's requests are shown read-only.
-  - **Inventory:** take any medicine or supply for any crew member, with no further approval (an
-    allergy asks "give anyway"); stock folded away.
-  - **Patients:** the clinical summary, latest symptoms and allergies.
-  - **Reports to Earth.**
-- **The medical officer's Medical bay cabinet** is fully open: a bin → "Take (no approval needed)".
+- **Medical officer console** (login → "Medical officer"): only two features, by my decision of
+  15 Nov; the rest (patients, reports to Earth, emergency paperwork, Habitat and Medical bay in the
+  menu) is removed from the medical officer's view.
+  - **Approvals:** what the crew asked for, with their reason, and just **Approve** or **Deny**. There's
+    no prescription to write: an approval releases one standard dose, due at once.
+  - **Inventory:** the crew's cabinet view (lockers L1–L3), with everything unlocked. A bin → choose
+    who it's for → "Take (no approval needed)" → Confirm collection. An allergy asks "give anyway",
+    which is logged.
 - **Earth console:** pills waiting for Earth with Approve and Deny, and Earth's reply QR for Tomas
   (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`, the same as `inventory/earth-reply-qr.svg`). The code generator
   and demo controls are folded away.

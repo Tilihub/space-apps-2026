@@ -121,7 +121,7 @@ function renderChrome() {
  $('#floating-companion').hidden=!logged||role()!=='crew';
  $('#nav-crew').href=role()==='earth'?'#earth':'#crew';$('#nav-crew span').textContent=role()==='earth'?'Earth console':'Medical officer';
  for(const a of document.querySelectorAll('[data-nav]')){
-  a.hidden=role()!=='crew'&&a.id!=='nav-crew'&&!['habitat','medbay'].includes(a.dataset.nav);
+  a.hidden=role()!=='crew'&&a.id!=='nav-crew'&&!(role()==='earth'&&['habitat','medbay'].includes(a.dataset.nav));
   if(a.dataset.nav===page||a.id==='nav-crew'&&['crew','earth'].includes(page))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
  }
  $('#nav-crew').hidden=role()==='crew';
@@ -282,9 +282,10 @@ function reportContents(r) {
 function reportsPanel() {
  return card('Clinical reports · simulated Earth link',`${role()==='medical_officer'?`<form id="report-form">${note('Reason for specialist review')}${submit('Create and send patient report')}</form>`:''}<p class="subtle">Medical officer creates reports. Crew cannot read their content. No journal data is included. ${data.link?.delayMinutes??12} mission minutes each way.</p><div class="toolbar">${tag(data.link?.linkUp?'Link up':'Link down',!data.link?.linkUp)}${btn(data.link?.linkUp?'Take link down':'Restore link','toggle-link','','ghost sm')}${btn('+12 mission min','advance','data-minutes="12"','ghost sm')}</div>${(data.reports?.reports??[]).map(r=>`<div class="report-card"><b>${esc(member(r.crewId))}</b> ${tag(r.status)}<p class="subtle">Created ${time(r.createdAt)}${r.arrivesAt?` · arrival ${time(r.arrivesAt)}`:''}</p>${reportContents(r)}${r.replies.map(reply=>`<div class="chat-msg"><b>Earth reply · ${esc(reply.status)}</b><p>${esc(reply.note)}</p>${reply.code?`<label class="field"><span>Prescription credential for ${esc(member(r.crewId))}</span><textarea class="input" rows="3" readonly>${esc(reply.code)}</textarea></label>${qrFor(reply.code)}<p class="subtle">Give the credential to the patient to enter or scan in Med bay. The same credential is valid for later scheduled doses.</p>`:''}</div>`).join('')}${role()==='earth'?`<form id="reply-${r.id}" data-report="${r.id}">${note('Specialist reply')}${field('Prescription code (optional)','code',{value:generatedCode})}${submit('Send reply to medical officer')}</form>`:''}</div>`).join('')||empty(role()==='earth'?'No reports have arrived at Earth.':'No reports created.')}`);
 }
-// ---- Medical officer console (dadis2, 15 Nov): one section at a time instead of every panel at once.
-// Approvals: decide every request waiting for the medical officer. Inventory: take any medicine for
-// any crew member with no further approval (the meds module logs it as "medical-officer").
+// ---- Medical officer console (dadis2, 15 Nov): only two features.
+// Approvals: approve or deny what the crew asked for, with no prescription to write (an approval
+// releases one standard dose). Inventory: the crew's cabinet view with everything unlocked; take any
+// medicine for any crew member with no further approval (the meds module logs it as "medical-officer").
 let moTab='approvals';
 // Earth's reply for the presentation: Tomas's sleeping pill (people/dadis2/inventory/earth-reply-qr.svg)
 const DEMO_EARTH_CODE='RX2-EARTH-C4-261114-ZOL1X1X7-9Z';
@@ -295,26 +296,15 @@ function approvalRow(r,decide) {
  return `<div class="request-form"><div class="status-line"><b>${esc(member(r.crewId))}</b><span>${esc(r.name)}</span>${tag(r.status.replace(/_/g,' '),r.status==='denied')}</div><small class="muted">${time(r.createdAt)}${r.note?` · ${esc(r.note)}`:''}${r.decisionNote?` · ${esc(r.decisionNote)}`:''}</small>${decide?`<form id="decision-${r.id}" data-request="${r.id}"><div class="form-grid">${field('Units per dose','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}${field('Times a day','perDay',{type:'number',value:1,attrs:'min="1" max="4"',required:true})}${field('Days','days',{type:'number',value:days,attrs:'min="1" max="30"',required:true})}</div><div class="btn-row"><button class="btn primary sm" name="decision" value="approve">Approve</button><button class="btn ghost sm" name="decision" value="deny">Deny</button></div></form>`:''}</div>`;
 }
 function moApprovals() {
- const all=data.requests?.requests??[];
- const mine=all.filter(r=>r.status==='waiting_medical_officer'), earth=all.filter(r=>r.status==='waiting_earth'), done=all.filter(r=>!r.status.startsWith('waiting')).slice(0,8);
- const open=data.emergencies?.emergencies??[];
- return `<div class="stack">${open.length?emergencyPanel():''}${card(`Waiting for you · ${mine.length}`,mine.map(r=>approvalRow(r,true)).join('')||empty('Nothing is waiting for your approval.'))}${earth.length?card(`Waiting for Earth · ${earth.length}`,`<p class="subtle">Controlled medicines: Earth decides. Its reply arrives as a QR code the crew member scans.</p>${earth.map(r=>approvalRow(r,false)).join('')}`):''}${done.length?`<details class="card compact"><summary>Decided recently · ${done.length}</summary>${done.map(r=>approvalRow(r,false)).join('')}</details>`:''}</div>`;
-}
-function moInventory() {
- const items=data.stock?.items??[];
- const take=`<form id="mo-take-form"><div class="form-grid">${select('For','patientId',CREW.map(c=>[c.id,c.name]),patient)}${select('Medicine','itemId',items.map(i=>[i.itemId,`${i.name} · ${i.units} left`]))}${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}</div>${submit('Take from the cabinet')}</form>`;
- return `<div class="stack">${collectionPanel()}${card('Take any medicine',`<p class="subtle">As medical officer you can take any medicine or supply for any crew member. No further approval is needed. Every one is logged, and an allergy asks you to confirm.</p>${take}`)}${disclosure('Stock',table(['Medicine','Category','In stock','Reserve'],items.map(i=>tr([esc(i.name),esc(i.tier),`${i.units}${i.belowReserve?` ${tag('Below reserve',true)}`:''}`,esc(i.reserve)]))))}</div>`;
-}
-function moPatients() {
- const reports=(data.symptoms?.reports??[]).slice(0,3);
- return `${patientPicker()}<div class="two"><div class="stack">${clinicalPanel()}</div><div class="stack">${card('Latest symptoms',reports.map(r=>`<p><b>${time(r.reportedAt)}</b>${r.redFlag?` ${tag('Urgent',true)}`:''}<br>${r.symptoms.map(s=>`${esc(SYMPTOMS.find(x=>x.code===s.code)?.label??s.code)} · ${s.severity}/10`).join(', ')}</p>`).join('')||empty('No symptom reports.'))}${profilePanel()}${disclosure('Doses collected',dosesPanel())}</div></div>`;
+ const waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_medical_officer');
+ return card(`Waiting for you · ${waiting.length}`,waiting.map(r=>`<div class="request-form"><div class="status-line"><b>${esc(member(r.crewId))}</b><span>${esc(r.name)}</span></div><small class="muted">${time(r.createdAt)}${r.note?` · ${esc(r.note)}`:''}</small><form id="decision-${r.id}" data-request="${r.id}"><div class="btn-row">${'<button class="btn primary sm" name="decision" value="approve">Approve</button><button class="btn ghost sm" name="decision" value="deny">Deny</button>'}</div></form></div>`).join('')||empty('Nothing is waiting for your approval.'));
 }
 const disclosure=(title,content)=>`<details class="card compact"><summary>${title}</summary>${content}</details>`;
 function medicalScreen() {
  const waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_medical_officer').length;
- const tabs=[['approvals',`Approvals${waiting?` · ${waiting}`:''}`],['inventory','Inventory'],['patients','Patients'],['reports','Reports to Earth']];
- const body={approvals:moApprovals,inventory:moInventory,patients:moPatients,reports:()=>`<div class="stack">${reportsPanel()}${disclosure('Demo controls',demoClockPanel())}</div>`}[moTab]??moApprovals;
- return `${sectionTabs(tabs,moTab,'mo-tab')}${body()}`;
+ if(!['approvals','inventory'].includes(moTab))moTab='approvals';
+ const tabs=[['approvals',`Approvals${waiting?` · ${waiting}`:''}`],['inventory','Inventory']];
+ return `${sectionTabs(tabs,moTab,'mo-tab')}${moTab==='inventory'?missionViews.cabinet():moApprovals()}`;
 }
 // ---- Earth console: approve the pills that wait for Earth, and show Earth's reply QR for the demo.
 function earthScreen() {
@@ -346,7 +336,7 @@ function render() {
 async function show() {
  const task=++loading, version=revision;
  page=!user?'login':(location.hash.slice(1)|| (role()==='medical_officer'?'crew':role()==='earth'?'earth':'home'));
- if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&page==='earth')) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
+ if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
  if(!user) {render();return;}
  const get=path=>api(path);
  const jobs={ clock:get('/clock') };
@@ -359,12 +349,10 @@ async function show() {
   if(page==='mind') jobs.journal=get('/mind/journal');
  }
  if(page==='habitat') {jobs.env=get('/env/now');jobs.alerts=get('/env/alerts'); jobs.histories=Promise.all(['co2','temperature','humidity','radiation'].map(async m=>[m,await get(`/env/history?metric=${m}`)])).then(Object.fromEntries);}
- if(role()==='medical_officer'&&['crew','medbay'].includes(page)) {
-  const q=personQuery();jobs.daily=health.getDaily({crewId:patient});jobs.history=health.getHistory({crewId:patient});jobs.weekly=health.getWeekly({crewId:patient});jobs.workouts=health.getWorkouts({crewId:patient});
-  jobs.symptoms=get(`/meds/symptom-reports${q}`);jobs.profile=get(`/meds/profile${q}`);jobs.doses=get(`/meds/doses${q}`);jobs.grants=get(`/meds/grants${q}`);jobs.lockers=get(`/meds/lockers${q}`);jobs.requests=get('/meds/requests');jobs.stock=get('/meds/stock');
- }
+ // Medical officer: the console needs only the requests and the (all unlocked) cabinet
+ if(role()==='medical_officer'&&page==='crew') {jobs.lockers=get('/meds/lockers');jobs.requests=get('/meds/requests');}
  if(role()==='earth') jobs.requests=get('/meds/requests');
- if((role()==='medical_officer'&&page==='crew')||(role()==='earth'&&page==='earth')) {jobs.reports=get('/reports');jobs.link=get('/reports/link');}
+ if(role()==='earth'&&page==='earth') {jobs.reports=get('/reports');jobs.link=get('/reports/link');}
  // Earth never receives personal locker/profile endpoints. Catalogue is read-only demo metadata.
  if(role()==='earth'&&page==='earth') jobs.catalogue=get('/reports/catalogue').then(r=>r.items);
  const results=await Promise.allSettled(Object.values(jobs));
