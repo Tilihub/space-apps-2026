@@ -322,3 +322,12 @@ Overview-space proposals remain unimplemented: compact SpO2/BP row, optionally a
 ### Overview vitals and access copy — 2026-11-15
 
 Tommy approved SpO2 and blood pressure from the existing Today fields as two additional circular instruments in a six-card grid. The full right column matches body-panel height on desktop. Human support remains on Wellbeing; the tenth question is mental refreshment, 1–10. Medical access uses short onboard-doctor / Earth QR-code labels instead of policy prose, preserving safety blocks and actual permissions. The requested removal of doctor-as-patient Earth routing needs dadis2/zt contract review; see medical-training-follow-up.md.
+
+
+### Pulsars — personal progress, 2026-11-15
+
+Tommy explicitly restarted gamification as personal growth, with no competition. Earn 100 for each assigned main exercise and daily wellbeing; the fourth/fifth consecutive completed days pay 200 and the sixth onward 300. Separate streaks; scheduled rest preserves training streak without increasing it or paying coins. Warm-up/cool-down earn nothing. A load PR with all prescribed sets/repetitions pays +100 after the first baseline. No PR from extra repetitions or questionnaire answer values.
+
+Use gold Pulsars coins embossed with the unchanged team logo. A gold cart beside appearance/help/sign-out opens the shop: body colors 800, rings 500, expressions 900, basic accessories 1000, plus premium pearl/aurora/fluff/crown items. Free previews; explicit server-priced unlock/equip; saved per-person ownership and appearance throughout the app. Reward popups show +amount, one short reason and an X.
+
+Tommy authorized a complete new backend/contract in a separate PR over the current app. The module lives in people/tommy/pulsars; no teammate source is edited. The proposed shared contract also documents private persistence of all ten wellbeing answers in this new module, leaving the original health API unchanged. zt, Angelos and Petros review before adoption. This does not authorize a merge or resolve the unrelated doctor-as-patient medicine policy.

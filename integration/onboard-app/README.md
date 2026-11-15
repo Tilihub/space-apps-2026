@@ -159,3 +159,8 @@ and Mind screen. Both views share replies and keep input on failed requests.
 The female mesh’s torso is softened into smooth mannequin sections, with reduced surface sheen.
 Reported symptoms affect only red pins/lines/labels; skin no longer turns red. Blue selection and
 3D body-area picking remain available. Original source meshes and credits remain unchanged.
+
+
+## Pulsars feature under separate review
+
+The `tommy/pulsars` branch adds a Tommy-owned module at `people/tommy/pulsars`, the gold-cart shop and saved companion cosmetics. Its proposed API/private questionnaire and PR semantics are in `shared/contract/pulsars.md`; it requires teammate approval before adoption. Other owner modules remain unchanged. See `people/tommy/pulsars/README.md` for running the feature, rewards and limitations. AED and all previous screens remain included. `PULSE_HOST=127.0.0.1` optionally binds a review server strictly to localhost; the default network-demo behavior is retained.

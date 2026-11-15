@@ -8,6 +8,8 @@
 
 ## Now
 
+- Pulsars: new branch `tommy/pulsars`, based on current app `tommy/frontend-polish` at 823874a / PR #74. Tommy authorized the separate complete backend/contract. New private wallet/PR/questionnaire module, per-main-exercise rewards, independent streaks, saved shop purchases/equipped cosmetics and gold-cart UI. Local preview: http://localhost:8020/#shop, loopback only, separate copy of the demo store; original 8018 remains running. Protected contract proposal needs teammate review; no merge is authorized.
+
 - Latest visual refinement: smaller, medium-bold Overview numeric values only; ring geometry and titles unchanged. Overview body viewer fills the card height with tighter view-only framing, preserving reporting-mode fit and backend behavior.
 
 - Publishing: Tommy requested the entire current app for the team, with nothing omitted, including the planned L3 defibrillator. Complete handoff: current-app-handoff.md. PR #74 now targets main directly for review of the entire snapshot; #73 remains the earlier functional-only proposal. The protected contract clarification and unchanged Potest #55 dependency still require teammate review/owner agreement. No backend capability is added in this publication step.
@@ -25,6 +27,12 @@
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Built the separate Pulsars module with server-priced/de-duplicated credits and purchases, saved appearance and 24 catalogue choices including defaults. Rewards: 100/200/300 from streak days 1/4/6, per main assigned exercise and once per wellbeing day. Rest preserves but does not increase the training streak. Full main program extends the exercise streak; partial days retain coins. No points for warm-up/cool-down or stage preview.
+- Positive per-exercise kilogram PRs persist with prescribed sets/repetitions. First record establishes a baseline; later higher loads add 100. PR is shown beside the active load and in the exercise list. Existing owner program/controller/health/medicine modules are unchanged.
+- Full ten-question wellbeing now persists author-only in the new module, with completion independent of answer values. Existing health saves still use its original three fields. Fixed stale final hidden-answer propagation discovered in browser QA; completed forms become read-only.
+- Added the gold cart, logo-relief gold coin, freely combinable try-on previews, body/orbit/expression/accessory categories, server-checked unlock/equip, premium designs and dismissible +Pulsars popups. Appearance is applied to the floating mascot and every chat portrait.
+- Root suite passes 117/117 including ten module/schema checks and a real-HTTP concurrency/persistence test. Browser verified +100 wellbeing, per-exercise +100, close X, 500-Pulsars ring purchase, debit to zero, retained ownership and actual floating-ring appearance after reload. QA uses fictional profile inputs in the separate preview store. Main/server data at 8018 are unchanged.
 
 - Reduced only Overview numeric type (40px regular readings / 31px pressure at desktop, with smaller responsive sizes), softened weight and tracking, and preserved ring/title styles. The Overview-only body stage now fills its card and uses tighter camera framing; Check-in framing is unchanged. Browser verified equal body/instrument height, centered full body/base, updated values and unchanged ring dimensions. Root tests passed 106/106; no backend change.
 
@@ -215,12 +223,16 @@
 
 ## Blocked / need from others
 
+- Pulsars contract proposal: zt reviews new module/event/core wiring; Angelos reviews private ten-answer persistence alongside unchanged health fields; Petros reviews program/streak/load interpretation. Separate PR is required before adoption. The active 8018 server restart was rejected by automatic review; the complete feature runs on a loopback-only 8020 preview instead. No force restart or merge was performed.
+
 - Complete publication: all current code is pushed. #74 needs zt/Potest review of the protected context clarification and unchanged companion dependency, plus explicit user merge authorization after the automatic rejection. It is the full PR into main; do not merge an older functional-only version and omit the UI/AED.
 
 - No blocker to local connected-demo testing. PR #55 source is included unchanged as a dependency; coordinate its merge/review with Potest and zt before merging an integration PR that contains his files.
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
+
+- Continue from `tommy/pulsars`. Read people/tommy/pulsars/README.md and shared/contract/pulsars.md; test the complete shop at localhost:8020/#shop. Review the separate feature PR over #74; do not merge until teammate review and explicit merge authorization. Preserve AED and all existing features. No initial bonus coins or unearned leaderboard history is seeded.
 
 - Team delivery: start at current-app-handoff.md. Reviewers should use #74 against main for the entire app. zt/Potest need to approve its protected context clarification and original companion dependency. Automatic review rejected the attempted merge because of a prior no-merge instruction; obtain explicit user merge authorization too. No merge has been performed. Do not drop AED, draft loads/PR, private psychologist preview or any current screen to simplify the merge.
 

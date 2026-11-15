@@ -15,7 +15,7 @@ const core = await createCore({ modules, dataDir: process.env.PULSE_DATA_DIR ?? 
 /** @type {{ port: number, close: () => Promise<void> }} */
 let server;
 try {
-  server = await startServer({ core, port });
+  server = await startServer({ core, port, host: process.env.PULSE_HOST ?? '0.0.0.0' });
 } catch (err) {
   if (/** @type {NodeJS.ErrnoException} */ (err).code === 'EADDRINUSE') {
     console.error(`Port ${port} is already in use. Stop the other server, or start with PORT=8001.`);
@@ -31,7 +31,7 @@ const lanAddresses = Object.values(networkInterfaces())
   .map((a) => a?.address);
 
 console.log(`Onboard app is running. On this laptop: http://localhost:${server.port}/`);
-for (const address of lanAddresses) console.log(`  Other devices on this network: http://${address}:${server.port}/`);
+if (!process.env.PULSE_HOST || process.env.PULSE_HOST === '0.0.0.0') for (const address of lanAddresses) console.log(`  Other devices on this network: http://${address}:${server.port}/`);
 console.log(`Modules: ${modules.map((m) => m.name).join(', ')}. Mission time: ${core.clockView().now}`);
 console.log('Stop with Ctrl+C.');
 

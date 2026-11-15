@@ -176,6 +176,7 @@ export const MED_TIERS = Object.freeze({
  * so pages know what to reload. The mind module sends none.
  */
 export const EVENTS = Object.freeze([
+  'pulsars.changed', // own wallet/appearance changed; no answers or balance in event
   'health.check-in-saved',
   'health.workout-saved',
   'meds.symptom-reported',
