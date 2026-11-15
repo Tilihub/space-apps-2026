@@ -59,4 +59,6 @@ The app is `people/zt/watch-hr/build/watch-hr.apk`.
 
 - No login: anyone on the same network could send a reading. Fine for a demo, not for a real mission.
 - The server keeps only the latest reading, in memory. It isn't saved and isn't part of the contract.
-- The app keeps the screen on while open, and stops measuring when it's closed.
+- Measuring runs in a foreground service (type "health", like workout apps), so it keeps sending with
+  the screen off. An ongoing "Pulse HR" notification shows while it runs. Stop it with the Stop
+  button in the app or the notification; it also stops itself after 3 hours.
