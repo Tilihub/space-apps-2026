@@ -95,7 +95,7 @@ export const contextualCompanionRoute = {
   },
 };
 
-export function connectQuestionnaireCompanion(core, { historyFor, rehearsal }) {
+export function connectQuestionnaireCompanion(core, { historyFor }) {
   async function api(request) {
     const result = await core.api(request);
     if (!result.body.ok || request.method !== 'POST' ||
@@ -103,8 +103,6 @@ export function connectQuestionnaireCompanion(core, { historyFor, rehearsal }) {
 
     const { message, context } = request.body;
     const topic = scriptedSceneFor(message);
-    // Keep the ordinary conversation for follow-up chat and the existing Missing home scene.
-    if (!rehearsal && (!topic || topic === 'home' || topic === 'urgent' || topic === 'clinical')) return result;
 
     // Compose private read APIs using the same crew session after Mind's role, author and day checks.
     const get = path => core.api({ method: 'GET', path, token: request.token });
