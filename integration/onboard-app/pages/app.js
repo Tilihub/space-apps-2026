@@ -1,3 +1,6 @@
+import {mascotSvg as drawMascot,coin,cartIcon} from '/pulsars-mascot.js';
+import {createPulsarsShop} from '/pulsars-shop.js';
+import {DEFAULT_LOOK} from '/pulsars/catalog.js';
 import {createDisplayClock} from '/display-clock.js';
 import {validWellbeingSubmission} from '/wellbeing-questions.js';
 import {makeTrainingReplay} from '/training-demo.js';
@@ -21,14 +24,7 @@ const tag = (text, red = false) => `<span class="pill ${red?'red':'blue'}">${esc
 const btn = (label, action, attrs = '', cls = '') => `<button type="button" class="btn ${cls}" data-action="${action}" ${attrs}>${label}</button>`;
 const card = (title, content, cls = '') => `<div class="card ${cls}"><div class="card-head"><h3>${title}</h3></div>${content}</div>`;
 const qrFor = code => { try { return `<div class="credential-qr">${window.MedQR.svg(code,4).svg}</div>`; } catch { return '<p class="subtle">QR rendering unavailable; the same code can be typed.</p>'; } };
-  const mascotSvg = () => `<svg viewBox="0 0 64 64" aria-hidden="true">
-    <ellipse class="m-ring back" cx="32" cy="34" rx="29" ry="9" transform="rotate(-18 32 34)"/>
-    <circle cx="32" cy="32" r="17" fill="url(#mascotGrad)"/>
-    <circle class="m-cheek" cx="22.5" cy="36.5" r="2.2"/><circle class="m-cheek" cx="41.5" cy="36.5" r="2.2"/>
-    <ellipse class="m-eye" cx="26.5" cy="30.5" rx="2.5" ry="3.3"/><ellipse class="m-eye" cx="37.5" cy="30.5" rx="2.5" ry="3.3"/>
-    <path class="m-smile" d="M28 37 Q32 40.5 36 37"/>
-    <path class="m-ring" d="M4.4 43 A29 9 -18 0 0 59.6 25"/>
-  </svg>`;
+const mascotSvg=()=>drawMascot(data.pulsars?.wallet?.equipped??DEFAULT_LOOK);
 
 
 const empty = text => `<p class="empty">${esc(text)}</p>`;
@@ -60,7 +56,28 @@ function rememberTrainingEnd(){
  const snapshot=workout?.snapshot(clock.now);
  if(['completed','stopped'].includes(snapshot?.status))sessionStorage.setItem(trainingEndKey(),clock.now);
 }
-function clearDailyTaskMarkers(){for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-training-ended:')||key.startsWith('pulse-wellbeing-completed:'))sessionStorage.removeItem(key);}
+function clearDailyTaskMarkers(){for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-training-ended:')||key.startsWith('pulse-wellbeing-completed:')||key.startsWith('pulse-pulsars-outbox:'))sessionStorage.removeItem(key);}
+let rewardTimers=[];
+const rewardQueueKey=()=>`pulse-pulsars-outbox:${user?.crewId}`;
+const rewardOutbox=()=>{try{return JSON.parse(sessionStorage.getItem(rewardQueueKey())??'[]');}catch{return [];}};
+function showAwards(awards){
+ for(const award of awards??[]){
+  const popup=document.createElement('div');popup.className='pulsars-reward';popup.setAttribute('role','status');
+  popup.innerHTML=`<button type="button" aria-label="Close reward" data-action="pulsars-close-reward">×</button><div>${coin()}<b>+${award.amount}<small>Pulsars</small></b></div><p>${esc(award.reason)}</p>`;
+  $('#pulsars-rewards').append(popup);rewardTimers.push(setTimeout(()=>popup.remove(),9000));
+ }
+}
+async function flushRewards(){
+ if(role()!=='crew')return;
+ const version=revision,key=rewardQueueKey(),queue=rewardOutbox();
+ for(const item of queue){
+  if(item.day!==clock.missionDay)continue;
+  const result=await api('/pulsars/exercise',{method:'POST',body:item.body});
+  if(version!==revision)return;
+  data.pulsars={wallet:result.wallet};showAwards(result.awards);
+  sessionStorage.setItem(key,JSON.stringify(rewardOutbox().filter(x=>x.id!==item.id)));
+ }
+}
 let noticeTimer;
 function notice(message,error=false) {
  const copy={'Today’s check-in was saved to the health module.':'Mood, stress and fatigue saved.','Symptom report saved. Medicine guidance is shown below.':'Symptom report saved.','Decision saved by the medicine module.':'Decision saved.','Workout summary saved in the health module.':'Workout saved.','Collection complete. Doses and stock were updated.':'Collection complete.','Collection opened. Confirm each dispensed item once.':'Ready to collect. Confirm each item.'};
@@ -68,7 +85,7 @@ function notice(message,error=false) {
  if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
 }
 function clearNotice() { $('#notice').hidden=true; }
-function resetLocal() { displayClock.clear();missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; exerciseReplay=null; workoutRetryAt=0; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
+function resetLocal() { rewardTimers.forEach(clearTimeout);rewardTimers=[];$('#pulsars-rewards').replaceChildren();pulsarsShop.reset();displayClock.clear();missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; exerciseReplay=null; workoutRetryAt=0; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
   const old=token;
   // Revoke only this tab's old session. Other tabs keep their own tokens.
@@ -128,8 +145,8 @@ function renderChrome() {
  $('#nav-crew').hidden=role()==='crew';
  $('.rail-companion').hidden=true;
  const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
- $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
- const titles={home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Medical officer console'],earth:['GROUND SUPPORT','Earth console']};
+ $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${role()==='crew'?`<a href="#shop" class="btn ghost pulsars-shop-button" aria-label="Pulsars shop" title="Pulsars shop">${cartIcon}<span>${data.pulsars?.wallet?.balance?.toLocaleString('en-US')??'—'}</span></a>`:''}${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
+ const titles={shop:['YOUR OWN LITTLE ORBIT','Pulsars shop'],home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Medical officer console'],earth:['GROUND SUPPORT','Earth console']};
  const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
  $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;
  renderEmergencyBanner();
@@ -317,11 +334,13 @@ function earthScreen() {
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:habitatScreen,fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
 const missionViews=createMissionViews({
- state:()=>({user,role:role(),clock:displayClock.get()??clock,data,page,drafts,collection,suggestion,patient,workout,workoutMode,trainingEndedToday:!!sessionStorage.getItem(trainingEndKey()),wellbeingCompletedToday:!!sessionStorage.getItem(wellbeingFinishKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
+ state:()=>({user,role:role(),clock:displayClock.get()??clock,data,page,drafts,collection,suggestion,patient,workout,workoutMode,trainingEndedToday:data.pulsars?.wallet?.trainingDone??!!sessionStorage.getItem(trainingEndKey()),wellbeingCompletedToday:data.pulsars?.wallet?.wellbeingDone??!!sessionStorage.getItem(wellbeingFinishKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
  helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
  legacy:{suggestionsPanel,profilePanel,grantsPanel,requestsPanel,dosesPanel,emergencyPanel,stockPanel,patientPicker,demoClockPanel},
  redraw:()=>render(),remember,
 });
+const pulsarsShop=createPulsarsShop({state:()=>({wallet:data.pulsars?.wallet}),redraw:()=>render(),api,onWallet:wallet=>{data.pulsars={wallet};},esc});
+screens.shop=pulsarsShop.screen;
 Object.assign(screens,missionViews.screens);
 function render() {
  const detailKeys = elements => {
@@ -339,10 +358,11 @@ function render() {
 async function show() {
  const task=++loading, version=revision;
  page=!user?'login':(location.hash.slice(1)|| (role()==='medical_officer'?'crew':role()==='earth'?'earth':'home'));
- if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
+ if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind','shop'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
  if(!user) {render();return;}
  const get=path=>api(path);
  const jobs={ clock:get('/clock') };
+ if(role()==='crew')jobs.pulsars=get('/pulsars/me');
  if(role()!=='earth') jobs.emergencies=get('/meds/emergencies?status=open');
  if(role()==='crew') {
   if(['home','checkin','fitness'].includes(page)) {jobs.today=health.getToday();jobs.symptoms=get('/meds/symptom-reports');}
@@ -387,6 +407,8 @@ async function handleForm(form,submitter) {
   delete drafts[id];
   if(!validWellbeingSubmission(v))throw new Error('Answer all ten questions before finishing.');
   if(!data.today?.checkedInToday)await health.submitCheckIn(numberFields(v,['mood','stress','fatigue']));
+  const result=await api('/pulsars/wellbeing',{method:'POST',body:{missionDay:clock.missionDay,answers:Object.fromEntries(Object.entries(v).map(([k,value])=>[k,Number(value)]))}});
+  data.pulsars={wallet:result.wallet};showAwards(result.awards);
   sessionStorage.setItem(wellbeingFinishKey(),clock.now);
   delete drafts[id];delete drafts['checkin-form'];
   notice('Daily wellbeing completed.');
@@ -442,7 +464,18 @@ async function handleForm(form,submitter) {
    notice(sent.status==='waiting_earth'?'Sent to Earth: controlled medicines need Earth’s approval. The reply arrives as a QR code.':'Sent to the medical officer for approval.');
   } else {await collect({itemId:form.dataset.item,units:Number(v.units)});return;}
  } else if(id==='workout-step') {
-  clock=await api('/clock');workout.completeStep(form.dataset.step,clock.now,numberFields(v,['reps']));rememberTrainingEnd();delete drafts[id];
+  clock=await api('/clock');
+  const before=workout.snapshot(clock.now),step=before.currentStep;
+  if(step?.id!==form.dataset.step)return;
+  if(v.weightKg!==undefined&&v.weightKg!==''&&(!Number.isFinite(Number(v.weightKg))||Number(v.weightKg)<0||Number(v.weightKg)>1000))throw Error('Enter a load between 0 and 1000 kg.');
+  workout.completeStep(form.dataset.step,clock.now,numberFields(v,['reps']));rememberTrainingEnd();delete drafts[id];
+  if(workoutMode!=='stage'&&!['warm-up','cool-down'].includes(step.id)){
+   const body={missionDay:before.day.missionDay,sessionId:before.sessionId,stepId:step.id,...(step.sets?{sets:Array.from({length:step.sets},()=>step.repsPerSet),weightKg:v.weightKg===''?null:Number(v.weightKg)}:{})};
+   const queue=rewardOutbox(),id=`${before.day.missionDay}:${step.id}`;
+   if(!queue.some(x=>x.id===id))queue.push({id,day:before.day.missionDay,body});
+   sessionStorage.setItem(rewardQueueKey(),JSON.stringify(queue));
+   try{await flushRewards();}catch(error){notice('Exercise completed. Pulsars will retry when connected. '+error.message,true);}
+  }
  } else if(id==='report-form') {
   // Refresh every section for this patient; no mind endpoint is requested.
   const reportPatient=patient, q=`?crewId=${encodeURIComponent(reportPatient)}`;
@@ -490,6 +523,8 @@ async function scanQr() {
 }
 async function action(el) {
  const a=el.dataset.action,id=el.dataset.id;
+ if(a==='pulsars-close-reward'){el.closest('.pulsars-reward').remove();return;}
+ if(a.startsWith('pulsars-'))return pulsarsShop.action(el);
  if(a.startsWith('ui-'))return missionViews.action(el);
  if(a==='login')return login(id);
  if(a==='login-medical')return login('c2','medical');
@@ -521,7 +556,7 @@ async function action(el) {
  if(a==='toggle-link'){await api('/reports/link',{method:'POST',body:{linkUp:!data.link.linkUp}});notice('Simulated Earth link updated.');}
  if(a==='reset-demo') {
   if(window.prompt('This clears all demo records for all crew. Type RESET to continue.')!=='RESET')return;
-  clock=await api('/demo/reset',{method:'POST',body:{}});clearDailyTaskMarkers();resetLocal();notice('All demo modules reset to day 42 at 07:30 UTC.');
+  clock=await api('/demo/reset',{method:'POST',body:{}});for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-pulsars-outbox:'))sessionStorage.removeItem(key);clearDailyTaskMarkers();resetLocal();notice('All demo modules reset to day 42 at 07:30 UTC.');
  }
  if(a.startsWith('workout-')){
   clock=await api('/clock');
@@ -574,6 +609,7 @@ async function poll() {
   const last=events.lastId;
   if(reset){clearDailyTaskMarkers();resetLocal();clock=next;eventsAfter=last;await show();return;}
   eventsAfter=last;clock=next;
+  if(role()==='crew'&&rewardOutbox().some(x=>x.day===clock.missionDay)){await flushRewards();if(version!==revision)return;await show();}
   if(await autoSaveWorkout()){if(version!==revision)return;await show();}
   paintDisplay();
   if(role()!=='earth'&&events.events.some(e=>e.type.startsWith('meds.emergency-'))){

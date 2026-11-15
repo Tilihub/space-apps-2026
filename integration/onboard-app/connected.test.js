@@ -11,7 +11,7 @@ const post = (app, token, path, body) => app.call('POST', `/api${path}`, { token
 test('joined registry: private journal, own-today companion, clinical roles and restart persistence', async () => {
   let app = await boot(modules, { realNow: () => 0 });
   try {
-    assert.deepEqual(modules.map(m => m.name), ['health', 'meds', 'mind', 'env', 'reports']);
+    assert.deepEqual(modules.map(m => m.name), ['health', 'meds', 'mind', 'env', 'reports', 'pulsars']);
     const crew = await app.login('c4'), other = await app.login('c1'), doctor = await app.login('c2', 'medical'), earth = await app.login(null, 'earth');
     const check = dataOf(await post(app, crew, '/health/check-ins', { sleepHours: 4.6, restingHeartRateBpm: 63, mood: 6, stress: 4, fatigue: 4 }));
     assert.equal(check.today.checkedInToday, true); assert.equal(check.analysis, undefined);

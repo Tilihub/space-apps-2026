@@ -13,6 +13,10 @@ piece alone, to this file, so that joining the pieces is only the final link.
 Product requirements are Tommy's, in [people/tommy/plan.md](../../people/tommy/plan.md). If this
 file and those requirements disagree, ask zt and Tommy.
 
+## Pulsars addition under review
+
+Tommy authorized the separate personal-progress/shop module on 15 November 2026. Its additive API, owner folder, private ten-answer persistence, load PRs, reward rules and event are proposed in [pulsars.md](pulsars.md). Existing medicine/health interfaces remain unchanged; the addition requires teammate review before merge.
+
 ## 1. How the app runs
 
 ```
@@ -53,6 +57,7 @@ everything else the live demo needs.
 | env | potest | `people/potest/env/` | current readings, history, alerts, snapshot, with the real CO₂ rise | radiation: one real cruise reading | |
 | demo data | petros | `people/petros_the_space_larper/demo-data/` | health history per crew member (values in the demo cases), measurement guides, stories | workout heart-rate replay, wellbeing form wording (PET-2) | |
 | Reports and Earth link | potest, **proposed** (Tommy's POT-2), to confirm at the table | to be named | | report queue, 12-minute link delay, send to Earth | Earth replies |
+| Pulsars (proposed addition) | tommy | `people/tommy/pulsars/` | | private coins, streaks, PRs and cosmetic shop; see [pulsars.md](pulsars.md) | |
 | Readiness and task scores | Tommy and zt decide (Q16) | | a placeholder in the pages | | |
 
 Your existing prototype (`health_monitor/`, `inventory/`, `environmental-graphs/`) stays as it is.
@@ -541,7 +546,7 @@ runs end to end, scenes A to E.
 - Readiness and task scores: Tommy and zt (Q16). A placeholder until then.
 - Which health fields the astronaut sees on Home (`Today`): Tommy and zt. Ask Tommy whether one
   plain line (for example "sleep lower than usual") counts as a basic Home field.
-- Points for the workout (scene B): Tommy deferred points and gamification, so only if he agrees.
+- Tommy authorized Pulsars on 15 November; see the separately reviewed [pulsars.md](pulsars.md) proposal. Readiness/clinical scores remain separate and unapproved.
 - New crew names: the team picks them; the contract's names stand until then.
 - Psychologist role, journal access and support requests (Q11): later.
 - Emergency rules beyond the demo (Q15): with dadis2.

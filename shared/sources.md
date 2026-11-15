@@ -49,6 +49,7 @@ even if they are free or open source.
 | NASA Artemis II crew health research | [NASA update](https://science.nasa.gov/missions/artemis/artemis-2/nasas-artemis-ii-moon-mission-research-continues-on-earth/) | Confirmation of in-flight measurements and request-based access | petros_the_space_larper |
 | NASA PDS Artemis II Orion environment | [Mission data bundle](https://pds-geosciences.wustl.edu/missions/artemis2/mission.htm) | Verified in-flight temperature and humidity from an Orion storage-locker logger | petros_the_space_larper |
 | NASA OSDR Environmental Data App | [ISS telemetry portal](https://visualization.osdr.nasa.gov/eda/) | Environmental context for ISS experiments | petros_the_space_larper |
+| NASA Publications Guide for Authors, NASA/SP-2015-7602 Revision 2 (2015) | [NTRS guide and PDF](https://ntrs.nasa.gov/citations/20150013303) | Organization of the PULSE team technical report: front matter, methods, results, references and appendices; no agency branding reproduced | angelos |
 
 ## Space agency partner data and other references
 

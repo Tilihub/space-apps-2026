@@ -56,3 +56,7 @@ The full root suite passes 106 tests, none skipped. The existing real-HTTP cover
 PR #74 is the complete review into main, superseding the smaller functional-only review in #73. It changes the protected shared/contract/README.md and includes Potest's source dependency, so it must wait for another teammate's approval and owner agreement. zt (Tilihub) and Potest04 are the key reviewers. This handoff requests review; it is not an approval. Automatic approval review rejected the attempted #74-to-functional merge because of a prior no-merge instruction. No shared branch was merged; explicit user authorization is also needed before any merge.
 
 Publication verification: the full tracked snapshot was exported with git archive and tested in an isolated directory; all 106 checks passed with no skips. All five teammates are requested reviewers on #74. A comment on #73 redirects reviewers to the complete PR. Runtime app files are unchanged from visual review commit 5990f26.
+
+## Subsequent Pulsars feature
+
+The separately reviewed Pulsars system is on `tommy/pulsars`, PR #75 stacked on #74. It adds a persistent wallet, 100/200/300 per-main-exercise/wellbeing rewards, load PRs, private ten-answer persistence and a saved cosmetics shop; see pulsars/README.md and shared/contract/pulsars.md. This is not silently merged into the earlier app. Its local-only preview is localhost:8020; all 117 tests pass. Teammate contract approval is pending.
