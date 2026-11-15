@@ -8,6 +8,8 @@
 
 ## Now
 
+- Publishing: Tommy requested the entire current app for the team, with nothing omitted, including the planned L3 defibrillator. Complete handoff: current-app-handoff.md. Merge the UI-only PR #74 into the functional branch, then review the complete PR #73 into main. The protected contract clarification and unchanged Potest #55 dependency still require teammate review/owner agreement. No backend capability is added in this publication step.
+
 - Latest: replaced the redundant support-request question with mental refreshment, 1–10. Overview now has six equal instrument cards (including existing SpO2 and BP), with 205px rings/larger values on desktop and a full column matching body-panel height. Medical access shows short actual-authority labels; actionable safety blocks remain. The requested removal of doctor-as-patient Earth routing is a dadis2/zt backend/contract follow-up, not implemented here. Current demo remains open on port 8018.
 
 - Latest: Daily wellbeing stays pending until Finish daily wellbeing validates all ten answers. Preset core readings are not questionnaire completion. Exercise/session/rest/interval displays render each second from a bounded server-clock projection; saved timestamps and recovery decisions remain on server time. The approved SpO2/BP instruments are implemented; the next-dose suggestion remains only a proposal.
@@ -21,6 +23,8 @@
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Audited the current snapshot and both PR file lists: all runtime UI, logo, body scene, six instruments, daily tasks/questionnaire, cabinet/AED, exercise, companion, private journal, psychologist preview and clinical/Earth connections are included. Added current-app-handoff.md with exact checkout/run/seed instructions and explicit draft boundaries; existing local stores are preserved.
 
 - Replaced supportWanted yes/no with mentalRest, a tenth 1–10 item. Recovery replaces the questionnaire Support section; private support remains on Wellbeing. Completion validation requires all ten numeric scales; legacy support answers cannot substitute for mental refreshment. First three fields still use the existing API, seven extras remain labelled session drafts.
 - Added Today SpO2 and systolic/diastolic pressure with segmented rings matching the other four instruments. Six cards form two columns/three rows; enlarged rings and numbers reduce unused card space. Browser measured every desktop card at the same dimensions and both columns at 743.5px high. No physiological readings were invented or written by this revision.
@@ -208,6 +212,8 @@
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
+
+- Team delivery: start at current-app-handoff.md. After #74 joins the functional branch, reviewers should use #73 for the entire app. zt/Potest need to approve its protected context clarification and original companion dependency; then merge #73 into main with normal merge, never force-push/rebase. Do not drop AED, draft loads/PR, private psychologist preview or any current screen to simplify the merge.
 
 - Review the latest safety/training/support pass with Tommy. Follow medical-training-follow-up.md for pending AED, load/PR and real psychologist transport; these are not backend-connected features yet.
 - Review the inline Emergency cabinet with Tommy. New reasons for an already-open incident are not appended by the existing backend; coordinate a separate owner/contract change if that is required. Keep clinical allergy management and all permission checks intact.
