@@ -1,0 +1,101 @@
+/*
+  Phone layer (zt, experiment). Loaded last, and only by mobile.html, so index.html is unchanged.
+  Every rule sits inside one phone-width query: on a laptop or tablet, mobile.html looks exactly
+  like index.html. Goals: text of at least 11px, buttons of about 44px (a fingertip),
+  and less chrome so more of the small screen is content.
+*/
+@media (max-width: 640px) {
+  :root { --footer-height: 0px; --nav-height: 66px; }
+
+  /* ---------- Frame ---------- */
+  /* The decorative footer costs 28px of a small screen; the bottom bar replaces it. */
+  .mission-footer { display: none !important; }
+  .app { height: calc(100svh - var(--header-height) - var(--nav-height) - env(safe-area-inset-bottom)); }
+  .rail {
+    height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    gap: 2px; overflow: hidden;
+  }
+  /* Each tab takes its label's width plus an equal share of the rest, so "Medical bay" fits at 11px. */
+  .rail a[data-nav] { flex: 1 1 auto; min-width: 44px; min-height: 54px; padding: 7px 1px 6px; gap: 5px; border-radius: 12px; }
+  .rail a[data-nav] .icon { width: 22px; height: 22px; }
+  .rail a[data-nav] span { font-size: 11px; height: auto; min-height: 0; letter-spacing: 0; white-space: nowrap; }
+  /* Extra room at the end of every page, so the floating companion never hides the last button. */
+  .content { padding: 16px 16px 96px; }
+
+  /* ---------- Header ---------- */
+  .header-team-logo { width: 66px; height: 48px; }
+  .mission-clock { font-size: 12px; bottom: 9px; letter-spacing: .02em; }
+  .header-profile { gap: 6px; margin-top: 12px; }
+  .header-profile .avatar { width: 38px; height: 38px; font-size: 14px; }
+  .header-profile .btn { min-height: 40px; padding: 8px 12px; font-size: 13px; }
+  .header-profile .icon-button { width: 40px; min-width: 40px; padding: 8px; }
+
+  /* ---------- Page title row ---------- */
+  .page-title { font-size: 26px; }
+  .eyebrow { font-size: 11px; }
+  .page-tools .btn { min-width: 44px; min-height: 44px; }
+
+  /* ---------- Shared pieces ---------- */
+  .content .btn { min-height: 44px; }
+  .content .btn.sm, .content .btn.ghost { font-size: 13px; }
+  .content small, .content .subtle, .content summary, .content dt, .content dd { font-size: 12px; }
+  .status-pill { font-size: 11.5px; }
+  .content summary { min-height: 44px; display: flex; align-items: center; }
+
+  /* ---------- Overview ---------- */
+  /* The readings answer "how am I today?", so they come first, as a compact 3 x 2 grid.
+     The 3D body follows, a little shorter. */
+  .task-cue { font-size: 12.5px; min-height: 40px; }
+  .overview-grid > .overview-instruments { order: -1; }
+  #home .overview-instruments .gauge-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; gap: 8px; }
+  #home .overview-instruments .gauge-card { min-height: 0; padding: 10px 4px 10px; gap: 6px; justify-content: flex-start; }
+  #home .overview-instruments .gauge-ring { width: min(86px, 100%); margin: 2px 0 0; }
+  #home .overview-instruments .gauge-center b { font-size: 22px; }
+  #home .overview-instruments .gauge-compact-value .gauge-center b { font-size: 15px; }
+  #home .overview-instruments .gauge-center small { font-size: 11px; }
+  #home .overview-instruments .gauge-label { font-size: 12px; line-height: 1.2; min-height: 2.4em; text-align: center; }
+  #home .anatomy-stage { height: 400px; min-height: 400px; }
+
+  /* ---------- Check-in ---------- */
+  /* Ten answers in one row left 28px per button. Two rows of five give each one a thumb. */
+  .rating-options { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  .rating-options button { height: 46px; min-height: 46px; font-size: 16px; border-radius: 10px; }
+  .rating-anchors span, .range-ends small { font-size: 12px; }
+  .page-tabs .btn { min-height: 44px; font-size: 13px; }
+
+  /* ---------- Exercise ---------- */
+  .plan-pr, .plan-pr small { font-size: 12px; }
+
+  /* ---------- Habitat (positioned map labels: grow a little, not a lot) ---------- */
+  /* Petros's stylesheet nests everything under .falcon-habitat, so these need the same prefix. */
+  .falcon-habitat .technical, .falcon-habitat .alert-count, .falcon-habitat .reading-state,
+  .falcon-habitat .trend-source, .falcon-habitat .heat-scale figcaption,
+  .falcon-habitat .heat-scale-labels span, .falcon-habitat .trend-chart text { font-size: 11px; }
+  .falcon-habitat .sensor-name, .falcon-habitat .sensor-location { font-size: 11px; }
+  .falcon-habitat .sensor-number small { font-size: 10px; }
+
+  /* ---------- Medical bay ---------- */
+  .locker-switch .btn { font-size: 12.5px; }
+  .locker-switch .btn span { font-size: 11.5px; }
+  .emergency-button { font-size: 13px; }
+  .cabinet-ident, .cabinet-ident span, .cabinet-base span, .cabinet-legend span { font-size: 11px; }
+  .cabinet-ident b { font-size: 11px; }
+  .door-top b, .door-label { font-size: 11px; }
+  .content .btn[aria-label="Previous compartments"], .content .btn[aria-label="Next compartments"] { width: 44px; min-width: 44px; min-height: 44px; }
+
+  /* ---------- Wellbeing ---------- */
+  .support-topics .btn { font-size: 13px; min-height: 44px; padding: 8px 14px; }
+  .companion-caption { font-size: 12px; }
+
+  /* ---------- Pulsars shop ---------- */
+  .shop-layout, .shop-layout > * { min-width: 0; max-width: 100%; }
+  .shop-product-badge, .shop-product-price, .shop-preview-label, .shop-reset { font-size: 11px; }
+  .shop-stage > .eyebrow, .shop-selection > .eyebrow { font-size: 11px; }
+  .shop-reset { min-height: 40px; }
+  .shop-tabs .btn { font-size: 13px; }
+
+  /* ---------- Floating companion: smaller, so it covers less of the page ---------- */
+  .companion { bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 12px); right: 12px; }
+  .companion > .orb { width: 54px; height: 54px; }
+}

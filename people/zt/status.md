@@ -8,9 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 18:17
-- Working on: the live demo script. The crew rename (PR #99) is merged and deployed on Render.
-- Branch: none open
+- Last updated: 2026-11-15 19:20
+- Working on: a phone-friendly copy of the app to try out, `/mobile.html`. Not merged; the normal
+  page (`index.html`) is unchanged.
+- Branch: zt/mobile-ui
 
 ## Done
 
@@ -82,6 +83,11 @@
 - Star map distance: 125.2 million km on mission day 42 (was 25.2); the simulated Earth link delay
   matches it: 7 minutes one way (was 12)
 - Linked the narrator script in `shared/submission/narrator-script.md`
+- Phone-friendly copy of the app for review (branch `zt/mobile-ui`, not merged):
+  `integration/onboard-app/pages/mobile.html` is `index.html` plus one stylesheet, `mobile.css`, that
+  only acts at phone width. Text of at least 11px, buttons of about 44px, check-in answers as two
+  rows of five, the Overview readings above the 3D body, no decorative footer on phones. Open
+  `/mobile.html` instead of `/` to compare. Tests: 130 of 131 pass (the known Python one fails)
 
 ## Blocked / need from others
 
