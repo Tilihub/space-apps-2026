@@ -2,16 +2,18 @@
 import { readFile } from 'node:fs/promises';
 import { companionRoute } from '../../../people/potest/crew-support/companion.js';
 import { getScriptedReply } from '../../../people/potest/crew-support/chat.mjs';
+import { companionPriority, controlledReply, scriptedSceneFor } from '../../../people/potest/crew-support/controlled-replies.js';
 import { getComparisonReply } from '../../crew-assistant/replies.mjs';
 import { dailyFor, referenceFor } from '../../../people/angelos/health/analysis.js';
+import { errorAnswer } from '../core.js';
 
-const fixture = JSON.parse(await readFile(new URL('../../../people/petros_the_space_larper/demo-data/health.json', import.meta.url), 'utf8'));
+export const syntheticHealthFixture = JSON.parse(await readFile(new URL('../../../people/petros_the_space_larper/demo-data/health.json', import.meta.url), 'utf8'));
 // Only topic counters and the last reply are kept in memory, never message/journal text on disk.
 const conversations = new Map();
 export const resetSupportConversation = () => conversations.clear();
 
 export function supportContextFor(today) {
-  const rows = fixture.crew[today.crewId]?.checkIns ?? [];
+  const rows = syntheticHealthFixture.crew[today.crewId]?.checkIns ?? [];
   const baseline = rows.filter(r => r.missionDay >= 29 && r.missionDay <= 35);
   const earlier = rows.filter(r => r.missionDay > 35 && r.missionDay < today.missionDay);
   const analysis = dailyFor({ baseline, checkIns: earlier }, today.crewId, today.missionDay - 1);
@@ -29,8 +31,8 @@ export function supportContextFor(today) {
 function topicFor(message, previous) {
   const text = message.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
   // Unicode escapes also recognize common Greek words without changing the English repo/UI.
-  if (/\b(chest pain|cannot breathe|can't breathe|unconscious|hurt myself|kill myself)\b/u.test(text)) return 'urgent';
-  if (/\b(medication|medicine|pill|diagnos|prescrib)/u.test(text)) return 'clinical';
+  const priority = companionPriority(text);
+  if (priority) return priority;
   if (/\b(breath(?:ing)?|relax(?:ed|ation)?|wind.down|calm)\b|\u03b1\u03bd\u03b1\u03c0\u03bd\u03bf|\u03c7\u03b1\u03bb\u03b1\u03c1/u.test(text)) return 'wind-down';
   if (/\b(miss|home|family|lonely|isolation|isolated)\b|\u03bf\u03b9\u03ba\u03bf\u03b3\u03b5\u03bd|\u03bc\u03bf\u03bd\u03b1\u03be|\u03c3\u03c0\u03b9\u03c4\u03b9/u.test(text)) return 'home';
   if (/\b(sleep|tired|fatigue|worn|exhaust|drain)/u.test(text) || /\u03c5\u03c0\u03bd|\u03ba\u03bf\u03c5\u03c1\u03b1|\u03b5\u03be\u03b1\u03bd\u03c4\u03bb/u.test(text)) return 'sleep';
@@ -91,3 +93,37 @@ export const contextualCompanionRoute = {
       : !today.checkedInToday ? [{ screen: 'checkin' }] : [{ screen: 'mind' }] };
   },
 };
+
+export function connectQuestionnaireCompanion(core, { fixture = syntheticHealthFixture, rehearsal = false } = {}) {
+  async function api(request) {
+    const result = await core.api(request);
+    if (!result.body.ok || request.method !== 'POST' ||
+        request.path.split('/').filter(Boolean).join('/') !== 'mind/companion') return result;
+
+    const { message, context } = request.body;
+    const topic = scriptedSceneFor(message);
+    // Keep the ordinary conversation for follow-up chat and the existing Missing home scene.
+    if (!rehearsal && (!topic || topic === 'home' || topic === 'urgent' || topic === 'clinical')) return result;
+
+    // Compose private read APIs using the same crew session after Mind's role, author and day checks.
+    const get = path => core.api({ method: 'GET', path, token: request.token });
+    const [health, pulsars] = await Promise.all([get('/health/today'), get('/pulsars/me')]);
+    if (!health.body.ok) return health;
+    if (!pulsars.body.ok) return pulsars;
+    const today = health.body.data;
+    if (today.missionDay !== context.today.missionDay || today.missionDay !== core.clockView().missionDay) {
+      return errorAnswer('invalid_field', 'Reload today’s check-in and try again.');
+    }
+    const answers = pulsars.body.data.wallet.todayAnswers;
+    if (!rehearsal && !answers) return result;
+
+    return {
+      status: result.status,
+      body: { ok: true, data: controlledReply({
+        message, topic, today, answers, history: fixture.crew[today.crewId]?.checkIns ?? [],
+      }) },
+    };
+  }
+
+  return { ...core, api };
+}

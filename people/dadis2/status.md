@@ -8,11 +8,15 @@
 
 ## Now
 
-- Last updated: 2026-11-15 13:15
+- Last updated: 2026-11-15 13:34
 - Working on: **PR #85** to main (`dadis2/mo-console`): medical officer console, Earth console, star
-  map opening, request reasons. Main is merged in (it has #74/#75 now), conflicts in `pages/app.js`
-  resolved keeping both sides (Tommy's Pulsars shop and my console). `npm test` 122 of 122.
-  **Waiting for approval from zt and Tommy, not merged.** It includes `dadis2/earth-qr`.
+  map opening, request reasons. It includes `dadis2/earth-qr`.
+  - Main is merged in twice, each time keeping both sides of the conflicts:
+    1. After #74/#75: `pages/app.js` (Tommy's Pulsars shop and my console).
+    2. After Petros's #86: `pages/app.js` and `mission-views.js` (his Falcon Habitat view and its
+       `loadHabitat`, plus my star map, my lean medical officer loading and the cabinet export).
+  - `npm test` 127 of 127.
+  - **Waiting for approval from zt and Tommy, not merged.**
 - Branch: dadis2/mo-console
 
 ### Medical officer and Earth consoles (`dadis2/mo-console`, PR #85)
