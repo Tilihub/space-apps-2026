@@ -9,10 +9,16 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Approved Tommy PR #75 at the user's explicit instruction; independent 117/117 checks passed. Isolated loopback preview on port 8020 is running for the user; see reviews/PR75.md.
+- Working on: User-authorized approvals of Tommy #75 and #74 confirmed. Independent suites passed 117/117 and 106/106 respectively. The isolated #75 preview remains on port 8020; see reviews/PR75.md and PR74.md.
 - Branch: angelos/review-pulsars-75
 
 ## Done
+
+- User subsequently requested approval of #74. Independently passed 106/106
+  checks at 823874a, reviewed the synthetic-context clarification and private
+  health/journal boundary, and submitted/confirmed APPROVED as AngelosAth30.
+  Removed the isolated #74 test checkout and preserved the running #75 preview.
+  No PR was merged; #73 was not approved by this request. See reviews/PR74.md.
 
 - Synced main 1d2d7ca, inspected Tommy's stacked #73/#74/#75 PRs, and confirmed
   the user selected #75. Independently passed 117/117 root tests at ba2c0ee in
