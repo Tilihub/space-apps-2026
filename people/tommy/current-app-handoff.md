@@ -1,5 +1,7 @@
 # Complete current PULSE demo — team handoff
 
+**Release delivered on 2026-11-15:** PRs #74 and #75 are merged into main at b0f968c. Pull main to obtain the full current app with Pulsars and the planned AED. The merged runtime/contract matches approved snapshot ba2c0ee and passes all 117 tests. Earlier pending-review descriptions below are historical.
+
 Tommy asked on 2026-11-15 to publish the exact current app for everyone, retaining every feature, including the planned defibrillator. The reviewed visual snapshot is commit `5990f26` on `tommy/frontend-polish`. PR #74 now targets main directly and contains both the functional integration from #73 and the entire subsequent UI. No merge has been performed. Do not cherry-pick isolated screens or replace the module registry with main's older example registry.
 
 ## Get the complete version
