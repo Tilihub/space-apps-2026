@@ -150,6 +150,46 @@ const apiAnswer = async (core, req, url) => {
 };
 
 /**
+ * Live heart rate from the wrist sensor app (people/zt/watch-hr). A demo extra outside the
+ * contract: the watch POSTs { bpm, accuracy } about once a second, the Exercise page GETs the
+ * latest. Memory only, never saved, no login (the watch has no token).
+ */
+const LIVE_PATH = '/live/heart-rate';
+/** @type {{ bpm: number, accuracy: number | null, receivedAt: number } | null} */
+let liveHeartRate = null;
+
+/**
+ * @param {import('node:http').IncomingMessage} req
+ * @param {import('node:http').ServerResponse} res
+ * @returns {Promise<void>}
+ */
+const handleLive = async (req, res) => {
+  if (req.method === 'POST') {
+    const raw = await readBody(req);
+    /** @type {any} */
+    let reading = null;
+    try {
+      reading = raw ? JSON.parse(raw) : null;
+    } catch {
+      reading = null;
+    }
+    const bpm = Number(reading?.bpm);
+    if (!Number.isFinite(bpm) || bpm < 20 || bpm > 250) {
+      send(res, 400, JSON.stringify({ ok: false }), TYPES['.json']);
+      return;
+    }
+    const accuracy = Number.isFinite(reading?.accuracy) ? reading.accuracy : null;
+    liveHeartRate = { bpm: Math.round(bpm), accuracy, receivedAt: Date.now() };
+    send(res, 200, JSON.stringify({ ok: true }), TYPES['.json']);
+    return;
+  }
+  const data = liveHeartRate
+    ? { bpm: liveHeartRate.bpm, accuracy: liveHeartRate.accuracy, ageSeconds: (Date.now() - liveHeartRate.receivedAt) / 1000 }
+    : null;
+  send(res, 200, JSON.stringify({ ok: true, data }), TYPES['.json']);
+};
+
+/**
  * @param {Core} core
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res
@@ -157,6 +197,10 @@ const apiAnswer = async (core, req, url) => {
  */
 const handle = async (core, req, res) => {
   const url = new URL(req.url ?? '/', 'http://localhost');
+  if (url.pathname === LIVE_PATH) {
+    await handleLive(req, res);
+    return;
+  }
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     const { status, body } = await apiAnswer(core, req, url);
     send(res, status, JSON.stringify(body), TYPES['.json']);

@@ -681,3 +681,18 @@ async function init() {
  }catch(e){notice(`Could not initialize the connected demo: ${e.message}`,true);}
 }
 void init();setInterval(()=>void poll(),3000);setInterval(paintDisplay,1000);
+// Live heart rate from the wrist sensor app (people/zt/watch-hr), shown on the Exercise page.
+async function paintLiveHr() {
+ const el=document.getElementById('live-hr');if(!el){globalThis.liveHr=null;return;}
+ try{
+  const {data}=await fetch('/live/heart-rate').then(r=>r.json());
+  const live=data&&data.ageSeconds<5;
+  globalThis.liveHr=live?data:null;
+  // The card stays hidden unless a watch has sent a reading in the last 2 minutes, so the page is unchanged without one.
+  globalThis.liveHrHtml=!data||data.ageSeconds>120?'':live?`<div class="pulse-value">${data.bpm}<span>bpm</span></div><p class="subtle">Live from the watch · updated ${Math.round(data.ageSeconds)} s ago</p>`:`<div class="pulse-value">${data.bpm}<span>bpm</span></div><p class="subtle">Watch signal lost ${Math.round(data.ageSeconds)} s ago</p>`;
+ }catch{globalThis.liveHrHtml='';globalThis.liveHr=null;}
+ const now=document.getElementById('live-hr');if(now)now.innerHTML=globalThis.liveHrHtml;
+ const card=document.getElementById('live-hr-card');if(card)card.hidden=!globalThis.liveHrHtml;
+}
+setInterval(()=>void paintLiveHr(),1000);
+
