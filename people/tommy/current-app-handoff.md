@@ -1,14 +1,14 @@
 # Complete current PULSE demo — team handoff
 
-Tommy asked on 2026-11-15 to publish the exact current app for everyone, retaining every feature, including the planned defibrillator. The reviewed visual snapshot is commit `5990f26` on `tommy/frontend-polish`. PR #74 joins that entire UI into `tommy/functional-demo`; PR #73 then delivers the complete app to main. Do not cherry-pick isolated screens or replace the module registry with main's older example registry.
+Tommy asked on 2026-11-15 to publish the exact current app for everyone, retaining every feature, including the planned defibrillator. The reviewed visual snapshot is commit `5990f26` on `tommy/frontend-polish`. PR #74 now targets main directly and contains both the functional integration from #73 and the entire subsequent UI. No merge has been performed. Do not cherry-pick isolated screens or replace the module registry with main's older example registry.
 
 ## Get the complete version
 
-After PR #73 merges, use the updated main. While its teammate review is pending, create your own review branch from the complete published integration branch:
+After PR #74 merges, use the updated main. While its teammate review is pending, create your own review branch from the complete published app branch:
 
 ```sh
 git fetch origin
-git switch -c YOURNAME/review-complete-demo origin/tommy/functional-demo
+git switch -c YOURNAME/review-complete-demo origin/tommy/frontend-polish
 ```
 
 Use your own name and a fresh branch name. Preserve existing local work before switching. Node.js 24 and Python 3 must be on PATH for all repository tests; the app itself uses Node and no npm packages.
@@ -53,4 +53,4 @@ Open http://localhost:8000/. Use a genuinely new store on mission day 42 for the
 
 The full root suite passes 106 tests, none skipped. The existing real-HTTP coverage exercises module composition, role/privacy boundaries, code reuse, parallel dispensing, next doses, reports and workout persistence. Visual review screenshots, including the final six-instrument Overview, are under overview-designs/typography/exports/.
 
-PR #74 touches Tommy's own material and this existing connection; it can merge into #73 under the repo rules. The complete PR #73 changes the protected shared/contract/README.md and includes Potest's source dependency, so it must wait for another teammate's approval and owner agreement before merging into main. zt (Tilihub) and Potest04 are the key reviewers. This handoff requests review; it is not an approval.
+PR #74 is the complete review into main, superseding the smaller functional-only review in #73. It changes the protected shared/contract/README.md and includes Potest's source dependency, so it must wait for another teammate's approval and owner agreement. zt (Tilihub) and Potest04 are the key reviewers. This handoff requests review; it is not an approval. Automatic approval review rejected the attempted #74-to-functional merge because of a prior no-merge instruction. No shared branch was merged; explicit user authorization is also needed before any merge.

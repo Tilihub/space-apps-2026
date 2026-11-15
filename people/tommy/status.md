@@ -8,7 +8,7 @@
 
 ## Now
 
-- Publishing: Tommy requested the entire current app for the team, with nothing omitted, including the planned L3 defibrillator. Complete handoff: current-app-handoff.md. Merge the UI-only PR #74 into the functional branch, then review the complete PR #73 into main. The protected contract clarification and unchanged Potest #55 dependency still require teammate review/owner agreement. No backend capability is added in this publication step.
+- Publishing: Tommy requested the entire current app for the team, with nothing omitted, including the planned L3 defibrillator. Complete handoff: current-app-handoff.md. PR #74 now targets main directly for review of the entire snapshot; #73 remains the earlier functional-only proposal. The protected contract clarification and unchanged Potest #55 dependency still require teammate review/owner agreement. No backend capability is added in this publication step.
 
 - Latest: replaced the redundant support-request question with mental refreshment, 1–10. Overview now has six equal instrument cards (including existing SpO2 and BP), with 205px rings/larger values on desktop and a full column matching body-panel height. Medical access shows short actual-authority labels; actionable safety blocks remain. The requested removal of doctor-as-patient Earth routing is a dadis2/zt backend/contract follow-up, not implemented here. Current demo remains open on port 8018.
 
@@ -208,12 +208,14 @@
 
 ## Blocked / need from others
 
+- Complete publication: all current code is pushed. #74 needs zt/Potest review of the protected context clarification and unchanged companion dependency, plus explicit user merge authorization after the automatic rejection. It is the full PR into main; do not merge an older functional-only version and omit the UI/AED.
+
 - No blocker to local connected-demo testing. PR #55 source is included unchanged as a dependency; coordinate its merge/review with Potest and zt before merging an integration PR that contains his files.
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
 
-- Team delivery: start at current-app-handoff.md. After #74 joins the functional branch, reviewers should use #73 for the entire app. zt/Potest need to approve its protected context clarification and original companion dependency; then merge #73 into main with normal merge, never force-push/rebase. Do not drop AED, draft loads/PR, private psychologist preview or any current screen to simplify the merge.
+- Team delivery: start at current-app-handoff.md. Reviewers should use #74 against main for the entire app. zt/Potest need to approve its protected context clarification and original companion dependency. Automatic review rejected the attempted merge because of a prior no-merge instruction; obtain explicit user merge authorization too. No merge has been performed. Do not drop AED, draft loads/PR, private psychologist preview or any current screen to simplify the merge.
 
 - Review the latest safety/training/support pass with Tommy. Follow medical-training-follow-up.md for pending AED, load/PR and real psychologist transport; these are not backend-connected features yet.
 - Review the inline Emergency cabinet with Tommy. New reasons for an already-open incident are not appended by the existing backend; coordinate a separate owner/contract change if that is required. Keep clinical allergy management and all permission checks intact.
