@@ -9,11 +9,13 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Completed the consolidated PULSE technical report and publication handoff in PR #78. The 42-page PDF covers the team logo, rationale, data, AI explanation, architecture, validation and source traceability at app snapshot b0f968c. The full app and Pulsars are merged via #74/#75.
-- Branch: angelos/project-report
+- Working on: Completed report version 1.1 in PR #82: shortened section 8 to two paragraphs, explicitly credited the team with designing and building the application pipeline, and removed the contributor-by-contributor AI tool list. Application evidence remains pinned to b0f968c.
+- Branch: angelos/shorten-ai-section
 
 ## Done
 
+- Published the revised report in https://github.com/Tilihub/space-apps-2026/pull/82, with changes confined to my own folder. The 41-page PDF is ready for the team.
+- Revised report section 8 at Angelos's request: reduced it from about 500 words to 105, retained a brief AI-use disclosure and accurate companion description, and made the team's pipeline ownership explicit. Version 1.1 is 41 pages, all rendered and visually reviewed; text bounds, font coverage and 459 navigation/reference links pass. The narrative outside section 8 and the pinned application evidence are unchanged. Kept the architecture diagram and caption together after reflow.
 - Published the report in https://github.com/Tilihub/space-apps-2026/pull/78. All 42 pages were rendered and visually checked; text bounds and embedded-font glyph coverage pass, 465 navigation/reference links are present, and Git preserves the verified PDF bytes. The PR touches only my folder and one appended source row, with no protected files or conflicts.
 - Prepared people/angelos/report/PULSE_Project_Report.pdf and its editable English narrative/build script. The report follows the public NASA Publications Guide structure with only the team's supplied logo. It distinguishes the local scripted companion from model training, synthetic crew fixtures from historical observations, and delivered features from remaining work.
 - Reproduced all 117 root JavaScript checks with zero failures/skips using the exact package test command, with Python and localhost HTTP available. Saved the complete validation log. Generated a pinned evidence manifest and appendices covering 33 environmental groups/93 channels/126,782 processed points, 47 historical vital records, 65 synthetic check-ins, the 21-item sample medicine catalogue and the repository documentation index.
@@ -189,7 +191,7 @@ Current report task: no implementation blocker. The older connection-audit items
 
 ## Next steps
 
-- Current report handoff: PR #78, branch angelos/project-report. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices are pinned to b0f968c. Preserve the distinction between human requirements, old proposals and merged behavior. The documentation is ready to use; do not edit teammate folders, final/ or protected files for this task.
+- Current report handoff: version 1.1 on angelos/shorten-ai-section, updating the report originally delivered in PR #78. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices remain pinned to b0f968c. Section 8 gives the brief AI disclosure and team pipeline ownership; no per-member tool list is needed. The revised PDF is ready to use.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
   main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
