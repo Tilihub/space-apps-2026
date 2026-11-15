@@ -23,16 +23,25 @@ const SCENES = {
   next: Object.keys(CONCERNS),
 };
 
-function sceneFor(message) {
+export function companionPriority(message) {
   const text = message.toLowerCase().replace(/[’‘]/g, "'");
   if (/\b(chest pain|can(?:not|'t) breathe|short(?:ness)? of breath|difficulty breathing|(?:trouble|struggling) (?:to breathe|breathing)|unconscious|hurt myself|kill myself|suicid\w*)\b/u.test(text)) return 'urgent';
   if (/\b(medication|medicine|pills?|diagnos\w*|prescrib\w*)\b/u.test(text)) return 'clinical';
+  return null;
+}
+
+export function scriptedSceneFor(message) {
+  const priority = companionPriority(message);
+  if (priority) return priority;
+  const text = message.toLowerCase().replace(/[’‘]/g, "'");
   if (/\b(sleep|rest|tired|fatigue|worn|exhaust|drained)\b/u.test(text)) return 'sleep';
   if (/\b(stress\w*|worr\w*|anxio\w*|anxiety|calm|wind down|switch off|breathing|overwhelm\w*)\b/u.test(text)) return 'calm';
-  if (/\b(lonel\w*|isolat\w*|disconnect\w*|miss|family|support from (?:the|my) crew)\b/u.test(text)) return 'crew';
+  if (/\b(lonel\w*|isolat\w*|disconnect\w*|support from (?:the|my) crew)\b/u.test(text)) return 'crew';
+  if (/\b(miss|family|homesick)\b/u.test(text)) return 'home';
   if (/\b(focus|concentrat\w*|workload|motivat\w*|tasks?|duties)\b/u.test(text)) return 'tasks';
   if (/\b(what (?:should|can) i do|next step|start with)\b/u.test(text)) return 'next';
-  return 'general';
+  if (/\b(unwell|sad|low mood|out of sorts|feeling (?:bad|low|down|off)|not (?:feeling|doing) (?:very )?well|(?:rough|hard|bad) day)\b/u.test(text)) return 'general';
+  return null;
 }
 
 function flagged(row, concern) {
@@ -72,8 +81,8 @@ function nextStep(scene, concerns, recurring) {
   return 'What part of today would you like to talk through first?';
 }
 
-export function controlledReply({ message, today, answers, history }) {
-  const scene = sceneFor(message);
+export function controlledReply({ message, today, answers, history, topic = scriptedSceneFor(message) }) {
+  const scene = topic === 'home' ? 'crew' : topic ?? 'general';
   const careLinks = [{ screen: 'checkin' }, { screen: 'medbay' }];
   if (scene === 'urgent') return {
     reply: 'Contact the onboard crew medical officer or a nearby crewmate now and follow the mission emergency procedure. Ask them to stay with you while you get help.',

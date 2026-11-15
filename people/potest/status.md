@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-15 (Europe/Athens)
-- Working on: Fresh launches for the controlled rehearsal and a presentation cue for the Crew Assistant.
-- Branch: potest/controlled-crew-assistant
+- Working on: Integrating the updated Crew Assistant into the standard onboard app.
+- Branch: potest/crew-assistant-main
 
 ## Done
 
@@ -29,6 +29,7 @@
 - Followed Angelos's handoff at `91dc6da` and added the onboard browser client and crew-only companion route. The client refreshes today's check-in each turn. Tested two identities, no check-in, missing values, stale entries, role refusals and session reset through the shared dispatcher.
 - Added a local rehearsal mode to the onboard app. Run `node integration/onboard-app/start.js --controlled-companion` from the repo root. The assistant uses the signed-in crew member’s ten saved answers and the synthetic health fixture. Mara Quinn has a steady preceding week. Tomas Reyes has four preceding days with short sleep, higher stress and fatigue. The added optional sleep-hours field allows both profiles to enter the same short night from the browser.
 - Each controlled launch starts a fresh day-42 store. Open tabs with an old login return to the welcome screen once they reconnect.
+- The standard launch now uses the current crew member’s saved ten-question wellbeing check-in for supported prompts. It retains the canonical health history, storage and existing Missing home conversation. The four-day synthetic comparison and automatic reset remain in the separate rehearsal mode.
 
 ## Blocked / need from others
 

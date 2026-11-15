@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readdir } from 'node:fs/promises';
 import test from 'node:test';
 import { controlledReply } from '../../people/potest/crew-support/controlled-replies.js';
+import { connectQuestionnaireCompanion } from './adapters/companion-support.js';
 import { createControlledCore, createControlledRun } from './controlled-demo.js';
+import { createCore } from './core.js';
 import modules from './modules.js';
 import { boot, dataOf } from './test-helpers.js';
 
@@ -21,6 +23,37 @@ async function send(app, token, message, today) {
     token, body: { message, context: { today: today ?? await getToday(app, token) } },
   });
 }
+
+test('standard app uses the crew member’s saved questionnaire and preserves its original health data', async t => {
+  const makeCore = async options => connectQuestionnaireCompanion(await createCore(options));
+  const app = await boot(modules, { makeCore, realNow: () => 0 });
+  t.after(() => app.close());
+  const mara = await app.login('c1');
+  const tomas = await app.login('c4');
+  const officer = await app.login('c2', 'medical');
+  const earth = await app.login(null, 'earth');
+  const baseline = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+  assert.deepEqual(baseline.checkIns.slice(-4).map(row => row.sleepHours), [6.7, 7.1, 5, 4.8]);
+
+  for (const token of [mara, tomas]) {
+    dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));
+  }
+  assert.match(dataOf(await send(app, tomas, 'I feel tired.')).reply, /4.6 hours of sleep/);
+  dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
+
+  const reply = dataOf(await send(app, tomas, opening)).reply;
+  assert.match(reply, /short sleep.*difficulty concentrating.*loneliness/);
+  assert.doesNotMatch(reply, /pattern of short sleep/);
+  assert.doesNotMatch(dataOf(await send(app, mara, opening)).reply, /difficulty concentrating|loneliness/);
+  assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /far from home/);
+  assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
+
+  const today = await getToday(app, tomas);
+  assert.equal(dataOf(await send(app, tomas, opening, {
+    ...today, checkIn: { ...today.checkIn, sleepHours: 9 },
+  })).reply, reply);
+  for (const token of [mara, officer, earth]) assert.equal((await send(app, token, opening, today)).status, 403);
+});
 
 test('controlled rehearsal joins the same current answers to different crew histories through HTTP', async t => {
   const app = await boot(modules, { makeCore: createControlledCore, realNow: () => 0 });
