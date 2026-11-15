@@ -49,9 +49,8 @@ The organisers say slides 4 to 6 are suggestions: we can follow, change or ignor
 
 Points for the team to decide, not decisions.
 
-- **"Deployed and publicly available":** our app runs on one laptop
-  (`node integration/onboard-app/start.js`) and isn't hosted anywhere. Ask the organisers whether
-  the public repo is enough or whether they expect a public web address.
+- **"Deployed and publicly available":** the organisers confirmed localhost isn't accepted. The
+  plan is Render's free tier once `final/` exists; see [deploy.md](deploy.md).
 - **Backup:** [project-page.md](project-page.md) says no video is needed. That's still true for the
   global submission, but the guide asks for screenshots or videos as a backup for the live demo.
 - **Slides:** the six recommended sections plus a title slide make 7 slides, which is also the
