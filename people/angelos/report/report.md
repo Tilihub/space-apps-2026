@@ -184,27 +184,11 @@ Weekly analysis compares the latest seven calendar days with the preceding seven
 
 The health module persists a SHA-256 fingerprint of its loaded fixture source. An updated file does not overwrite a running store's reference. The earlier Python tool also supports a separately versioned personal-history JSON importer, preserves source, units and scales in SQLite, and provides a backup before reset. That importer and the app's `health.json` are different formats; neither silently migrates the other's history. Sources: [R09], [R32], [R33].
 
-## 8 AI use and what we mean by training
+## 8 AI use
 
-### 8 1 AI used to build the project
+Our team designed and built PULSE's application pipeline, including data ingestion, personal baseline comparisons, module integration and role-based workflows. We used AI tools to assist research, coding, testing and documentation. The team defined the concept, selected the sources and methods, made the design decisions and reviewed the results. Sources: [R02], [R05], [R09].
 
-The contributor profiles record Codex for Angelos, Petros, Potest and Tommy, and Claude Code for Dadis2 and zt. Two Gemini research reports were added as unverified discovery material. AI assistance supported research organization, implementation, tests, synthetic examples, interface exploration and documentation. Humans supplied the concept, answered product questions, selected scope and designs and reviewed shared changes.
-
-The repository does not contain a custom-model training pipeline, trained checkpoint, dataset split, optimization configuration or evaluation of a newly trained model. We therefore cannot describe the collected NASA or crew data as a training corpus. Preparing response text and application rules is configuration and implementation, not training model weights. This report was itself prepared with Codex assistance from the public project record. Sources: [R03], [R06], [R07], [R12].
-
-### 8 2 What the current companion does
-
-The browser reloads the authenticated author's current mission-day check-in before each message. The server validates role, author, day, accepted fields, scales and message length. The connection adapter recognizes topics with keyword rules, including selected Greek terms, and chooses authored response templates for sleep, stress, mood, missing home, relaxation and follow-up. Urgent phrases route toward onboard human help; medication or diagnostic questions route toward the medical workflow.
-
-Potest's response helpers provide the conversation text. Angelos's pure comparison functions and Petros's synthetic fixture provide narrow sleep context for the current fictional author. Detailed historical numbers, baseline values and streak counts remain server-side. The adapter does not read stored clinical history or journal text. Its fixture context is frozen demonstration data, not the evolving saved medical record.
-
-Only bounded topic counters and the last reply are retained in server memory; conversation text is not persisted to disk by this adapter. State is scoped to author and mission day and clears on reset. The client discards replies after a session change. These controls support the tested demo boundary, but keyword coverage does not establish broad language understanding or reliable detection of all urgent situations. Sources: [R19], [R34], [R35], [R36].
-
-### 8 3 Earlier model exploration and current privacy boundary
-
-An earlier OpenAI-backed experiment is visible in Git history and in the historical PR title. The recorded decision on 14 November selected offline use, with no configured external-model key. The delivered companion makes no external model call. The separate psychologist chat is also scripted locally; no psychologist identity or real message transport is implemented.
-
-The intended longer-term brief allows the author's support assistant to use private thoughts under an agreed private path, and limits human journal readers to the author and assigned psychologist. The current implementation is narrower: journal access is author-only, and its text is not sent to the companion. Ordinary clinical reports exclude journal and companion material. A future model-connected version would need an explicit model choice, data-processing arrangement, retention/access design and a documented evaluation before making stronger claims. These are future requirements, not completed training work. Sources: [R05], [R12], [R13], [R37].
+The companion runs locally with topic rules and prepared responses, using the signed-in user's current check-in and limited synthetic history as context. It does not use a newly trained model or make external model calls. Private journal text is excluded from its context and ordinary clinical reports. Sources: [R19], [R34], [R37].
 
 ## 9 Software architecture and persistence
 

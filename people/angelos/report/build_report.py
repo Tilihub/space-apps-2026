@@ -220,7 +220,7 @@ def make_table(rows, widths=None, padding=7):
 class Architecture(Flowable):
     def __init__(self):
         Flowable.__init__(self)
-        self.width, self.height = CONTENT_W, 235
+        self.width, self.height = CONTENT_W, 215
 
     def draw(self):
         c = self.canv
@@ -246,16 +246,16 @@ class Architecture(Flowable):
         for i, (t, s) in enumerate([('Crew pages', 'Own routine and private features'),
                                     ('Medical officer', 'Clinical review and approvals'),
                                     ('Earth console', 'Delivered reports and replies')]):
-            box(i*(w+9), 190, w, 43, t, s)
-            arrow(i*(w+9)+w/2, 190, i*(w+9)+w/2, 169)
-        box(0, 121, CONTENT_W, 48, 'One onboard Node.js core',
+            box(i*(w+9), 170, w, 43, t, s)
+            arrow(i*(w+9)+w/2, 170, i*(w+9)+w/2, 151)
+        box(0, 108, CONTENT_W, 43, 'One onboard Node.js core',
             'Sessions  |  permissions  |  mission clock  |  HTTP  |  events', colors.HexColor('#eaf4f6'))
         for i, (t, s) in enumerate([('Health', 'Reference and observations'), ('Meds', 'Grants and collection'),
                                     ('Mind', 'Journal and scripted support'), ('Environment', 'Archive and alerts'),
                                     ('Reports', 'Local delayed transport'), ('Pulsars', 'Private rewards and answers')]):
-            x, y = (i % 3)*(w+9), 60-(i//3)*53
-            box(x, y, w, 44, t, s)
-        arrow(CONTENT_W/2, 121, CONTENT_W/2, 105)
+            x, y = (i % 3)*(w+9), 53-(i//3)*53
+            box(x, y, w, 40, t, s)
+        arrow(CONTENT_W/2, 108, CONTENT_W/2, 94)
 
 
 class SleepChart(Flowable):
@@ -485,7 +485,7 @@ def appendices(story, datasets, vitals, catalogue, fixture, manifest):
     ]:
         story.append(para(text))
     story.append(heading('Artifact provenance', 2))
-    story.append(para('Report identifier PULSE TR 2026 01. Version 1.0. Date 15 November 2026. Application snapshot ' + COMMIT + '. Team logo reproduced unchanged from the application assets. The Overview image is an existing repository review export. Diagrams are generated from the documented architecture and synthetic fixture. The report text and build code were prepared with Codex assistance.'))
+    story.append(para('Report identifier PULSE TR 2026 01. Version 1.1. Date 15 November 2026. Application snapshot ' + COMMIT + '. Team logo reproduced unchanged from the application assets. The Overview image is an existing repository review export. Diagrams are generated from the documented architecture and synthetic fixture. AI use is summarized in section 8.'))
 
 
 def manifest_for(datasets, vitals):
@@ -503,7 +503,7 @@ def manifest_for(datasets, vitals):
         blob = pinned_blob(path)
         files.append({'path': path, 'sha256': hashlib.sha256(blob).hexdigest(), 'bytes':len(blob), 'url':repo_url(path)})
     return {'applicationCommit':COMMIT, 'reportDate':'2026-11-15', 'timezone':'Asia/Nicosia',
-            'reportId':'PULSE TR 2026 01', 'reportVersion':'1.0',
+            'reportId':'PULSE TR 2026 01', 'reportVersion':'1.1',
             'validation':{'command':'node --test "**/*.test.js"', 'tests':117, 'passed':117, 'failed':0, 'skipped':0},
             'githubMerges':{'74':'2026-11-15T09:37:47Z', '75':'2026-11-15T09:38:35Z'},
             'counts':{'environmentDatasetGroups':len(datasets),
@@ -529,7 +529,7 @@ def main():
               para('Project rationale data methods and system documentation', 'CoverSub'), Spacer(1, 15),
               para('May the Pulse Be With You', 'CoverSub'),
               para('2026 NASA Space Apps Challenge<br/>14 and 15 November 2026', 'CoverSub'),
-              Spacer(1, 12), para('PULSE TR 2026 01  |  Version 1.0<br/>15 November 2026', 'CoverSub'),
+              Spacer(1, 12), para('PULSE TR 2026 01  |  Version 1.1<br/>15 November 2026', 'CoverSub'),
               para('Application revision b0f968c  |  Team project report', 'CoverSub'),
               NextPageTemplate('body'), PageBreak(), heading('Contents')]
     toc = TableOfContents()
@@ -546,7 +546,7 @@ def main():
             continue
         if line.startswith(':::'):
             if line==':::architecture':
-                story += [Architecture(), para('Figure 3 One core joins the six services. Each role uses the same server with separate permissions and module stores.', 'Caption')]
+                story.append(KeepTogether([Architecture(), para('Figure 3 One onboard core serves the six modules and enforces role permissions.', 'Caption')]))
             elif line==':::references':
                 references(story)
             elif line==':::appendices':
