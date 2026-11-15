@@ -5,3 +5,13 @@
 
 /* Restore zt's animated companion artwork and conversation layout. */
 .orb #orb-art{display:block;width:100%;height:100%}.orb #orb-art svg{width:100%;height:100%;overflow:visible}.companion-chat-card{display:flex;flex-direction:column;min-height:520px}.companion-chat-card .chat-head h3{margin:0 0 3px}.mind-thread{min-height:270px;max-height:440px;overflow:auto;padding:10px 4px;flex:1}.msg{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.support-topics{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 0}.context-note{margin-top:14px}.companion-thread{max-height:310px;overflow:auto;padding:2px}.cp #cp-body{padding:0}.cp #cp-actions{display:block}.cp .composer{padding:0}.cp .composer .btn{padding:0 12px}.cp .composer .input{min-width:0}.cp .more{display:inline-block;margin:12px 0 5px}.cp .subtle{display:block}.mascot-md svg,.cp-mini svg{overflow:visible}.support-topics .btn{font-size:12px;padding:0 11px}
+
+/* Medical officer and Earth consoles (dadis2): compact course fields on one row. */
+#crew .request-form .form-grid,#earth .request-form .form-grid{grid-template-columns:repeat(3,minmax(0,150px))}#crew .request-form .btn-row,#earth .request-form .btn-row{margin-top:4px}#crew #mo-take-form .form-grid{grid-template-columns:minmax(0,200px) minmax(0,1fr) minmax(0,120px)}@media(max-width:550px){#crew .request-form .form-grid,#earth .request-form .form-grid,#crew #mo-take-form .form-grid{grid-template-columns:1fr}}
+
+/* Star map (dadis2): the opening screen's pixel art, scaled up crisp */
+.starmap-full{position:relative;width:100%;height:100%;background:#05060F}.starmap-full canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:crisp-edges;image-rendering:pixelated}
+/* Opening screen (dadis2): the star map fills the screen, with "Welcome aboard" on it */
+.welcome-map{position:relative;height:100svh;overflow:hidden;background:#05060F}.welcome-map .starmap-full{position:absolute;inset:0}.welcome-cta{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);z-index:1}
+#login:has(>.welcome-map){padding:0}
+.welcome-cta{display:flex;flex-direction:column;align-items:center;gap:12px}.welcome-cta .welcome-back{opacity:.8}

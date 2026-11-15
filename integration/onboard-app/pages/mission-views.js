@@ -3,7 +3,8 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {readingTint,scaleTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
-import {MEDICAL_OFFICER_ID} from '/shared/contract/contract.js';
+import {MEDICAL_OFFICER_ID,DEMO_START,missionDayOf} from '/shared/contract/contract.js';
+import {starMapScreen} from '/star-map.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
 import { getDailyWorkout } from '/demo-data/workout-program.js';
 
@@ -22,8 +23,16 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   };
   function login() {
     const { CREW }=state();
-    if(!ui.welcome) return `<div class="login mission-welcome"><div class="welcome-stars"></div><div class="welcome-content"><img class="team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You" width="420" height="420">${btn('Begin mission','ui-begin','','primary welcome-button')}</div></div>`;
-    return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
+    // Opening (dadis2): first choose who you are, then the full star map welcomes you aboard by name.
+    // Before login there's no clock, so the map shows the demo start day. Earth isn't aboard: it logs in directly.
+    if(ui.pending){
+      const person=CREW.find(c=>c.id===ui.pending.crewId), first=esc((person?.name??'').split(' ')[0]);
+      const go=ui.pending.platform==='medical'
+        ? btn(`Welcome aboard, ${first}`,'login-medical','','primary welcome-button')
+        : btn(`Welcome aboard, ${first}`,'login',`data-id="${esc(person?.id)}"`,'primary welcome-button');
+      return `<div class="welcome-map">${starMapScreen({missionDay:state().clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length})}<div class="welcome-cta">${go}${btn('Not you? Choose again','ui-pick-profile','data-id=""','ghost sm welcome-back')}</div></div>`;
+    }
+    return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Who’s aboard?</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="ui-pick-profile" data-id="${c.id}" data-platform="astronaut"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','ui-pick-profile','data-id="c2" data-platform="medical"','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {
     const {data,clock,workout,trainingEndedToday,wellbeingCompletedToday}=state(), row=data.today?.checkIn;
@@ -126,7 +135,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const routedToDoctor=/the medical officer decides/i.test(b.why??'');
     const earthApproval=b.tier==='controlled'||/Earth decides/.test(b.why??'')||(routedToDoctor&&state().user?.crewId===MEDICAL_OFFICER_ID);
     const safetyBlocked=b.why?.startsWith('Allergy:')||(b.tier==='self-care'&&b.locked&&!routedToDoctor);
-    const tier=safetyBlocked?'Unavailable':earthApproval?'Earth prescription · code / QR':{'self-care':b.locked?'Onboard doctor approval':'Self-care',prescription:'Onboard doctor approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
+    const tier=role==='medical_officer'?'Medical officer · open':safetyBlocked?'Unavailable':earthApproval?'Earth prescription · code / QR':{'self-care':b.locked?'Onboard doctor approval':'Self-care',prescription:'Onboard doctor approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
     // Routing is already shown in Access. Keep actionable safety blocks, not policy boilerplate.
     const safetyReason=/^(Prescription:|Controlled medicine:|Emergency medicine:|The medical officer is the patient:)/i.test(b.why??'')?null:b.why?.replace(/: the medical officer decides$/i,'');
     let actions='';
@@ -135,12 +144,18 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       else if(b.tier==='emergency') {
         const {CREW,user}=state();
         actions=ui.emergencyEnabled
-          ? `<form id="cabinet-emergency-${b.itemId}" data-cabinet-emergency data-item="${b.itemId}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),user.crewId)}<label class="field"><span>Emergency reason</span><textarea class="input" name="reason" rows="3" maxlength="500" required></textarea></label>${disclosure('Allergy override',`<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>`)}${submit('Collect item')}</form>`
+          ? `<form id="cabinet-emergency-${b.itemId}" data-cabinet-emergency data-item="${b.itemId}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),user.crewId)}<label class="field"><span>What happened? (optional)</span><textarea class="input" name="reason" rows="2" maxlength="500"></textarea></label>${disclosure('Allergy override',`<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>`)}${submit('Collect item')}</form>`
           : '';
       }
       else if(b.why?.startsWith('Allergy:'))actions=`<button type="button" class="btn ghost" disabled>Unavailable for this profile</button>`;
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
-      else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
+      else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?(b.tier==='self-care'?'<label class="field"><span>Why do you need it? (optional)</span><textarea class="input" name="note" rows="3" maxlength="1000"></textarea></label>':'<label class="field"><span>Why do you need it? (required)</span><textarea class="input" name="note" rows="3" maxlength="1000" required></textarea></label>'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
+    }
+    else if(role==='medical_officer') {
+      // The medical officer takes any medicine for any crew member, no further approval (logged)
+      const {CREW,patient}=state();
+      if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready${collection.patientId?` · For ${esc(member(collection.patientId))}`:''}</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel','cancel-collection','','ghost sm')}`;
+      else if(b.units>0)actions=`<form id="mo-take-form"><input type="hidden" name="itemId" value="${esc(b.itemId)}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),patient)}${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}${submit('Take (no approval needed)')}</form>`;
     }
     return `<aside class="card item-detail ${b.itemId==='aed'?'equipment-detail':''}">${heading('SELECTED COMPARTMENT',esc(compartmentLabel(b.compartmentId)),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'open':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(compartmentLabel(b.compartmentId))}</dd></div></dl>${safetyReason&&!b.open?`<p class="access-reason">${icon('lock')}${esc(safetyReason)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
   }
@@ -281,7 +296,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       }else{ui.stageReps[key]=Math.max(0,Math.min(1000000,(ui.stageReps[key]??0)+Number(el.dataset.delta)));drafts['workout-step']={reps:String(ui.stageReps[key])};}
       redraw();return;
     }
-    if(name==='ui-begin'){ui.welcome=true;sessionStorage.setItem('pulse-welcome','done');redraw();return;}
+    if(name==='ui-pick-profile'){ui.pending=id?{crewId:id,platform:el.dataset.platform}:null;redraw();return;} // chosen profile, before the welcome
     if(name==='ui-help'){$help().hidden=!$help().hidden;return;}
     if(name==='ui-wellbeing-step'){ui.wellbeingStep=Math.max(0,Math.min(3,Number(id)));refreshWellbeing(true);return;}
     if(name==='ui-rating'){
@@ -303,8 +318,8 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,fitness,mind},action,workoutReadout,selectArea,tick,
+  return {screens:{login,home,checkin,medbay,fitness,mind},cabinet,action,workoutReadout,selectArea,tick,
     psychMessage,emergencyEnabled:()=>ui.emergencyEnabled,
-    resetSession:()=>{ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
+    resetSession:()=>{ui.pending=null;ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
   };
 }

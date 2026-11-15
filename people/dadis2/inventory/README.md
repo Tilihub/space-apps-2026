@@ -24,6 +24,15 @@ events) is in [CONTRACT.md](CONTRACT.md).
 
 No install or build. Open `index.html` in a browser (double-click it).
 
+For the **camera** (scanning Earth's QR code), open it from the small local server instead, because
+browsers allow the camera on `localhost`. It needs Node.js 24 or newer, and nothing else:
+
+```bash
+node people/dadis2/inventory/serve.mjs
+```
+
+Then open `http://localhost:8080/index.html?user=c4` in Chrome or Edge. Stop the server with Ctrl+C.
+
 - The device belongs to Tomas (`c4`) by default.
 - Add `?user=c1`, `c2`, `c3` or `c4` to the address to see another crew member's device, for example
   `index.html?user=c2` for Leo, the CMO, who also gets the Stock, Approvals and Log tabs.
@@ -54,9 +63,41 @@ grant for whichever user is open, dated today. To make other codes, use the brow
 MedInventory.makeGrantCode({ issuerId: "EARTH", patientId: "c4", start: new Date(), items: [{ itemId: "melatonin-3", units: 1, perDay: 1, days: 3 }] })
 ```
 
-Scanning a QR code with the camera works where the browser has a built-in barcode detector (for example
-Chrome on Android or macOS). Elsewhere the app says so, and you type the code. A quick check: point
-your phone's camera at the QR in `earth.html`. It should show exactly the code underneath it.
+Scanning a QR code with the camera works in every browser, Windows laptops included. It uses the browser's
+own QR reader where there is one, and otherwise jsQR (`vendor/jsQR.js`). Typing the code always works.
+
+## Presentation: Earth's reply as a QR code
+
+The story: Tomas asked for a sleeping pill, which only Earth may approve. Earth's reply arrives as a QR
+code, and the laptop's camera reads it into the app, exactly like typing the code.
+
+**The QR code** (Tomas, zolpidem 5 mg, once a day for 7 days, from 14 Nov):
+- **On a phone:** open [`earth-reply-qr.svg`](earth-reply-qr.svg) on GitHub, and turn the brightness up.
+- **On paper:** open `earth-reply-qr.svg` or `earth-reply.html` and print it.
+- **On a second laptop:** open `http://localhost:8080/earth-reply.html` (it shows the recipe too).
+
+Its code, if the camera won't cooperate: `RX2-EARTH-C4-261114-ZOL1X1X7-9Z`. It's valid until 20 Nov.
+After that, open `earth-reply.html?start=today` for one dated today.
+
+**On the presentation laptop:**
+1. Get the latest with `git switch main`, then `git pull`. The QR reader is in the repo, so there's
+   nothing to download.
+2. Start the server: `node people/dadis2/inventory/serve.mjs`.
+3. Open `http://localhost:8080/index.html?user=c4` and press **Reset demo** at the bottom.
+4. Optional: tap **Zolpidem** → **Ask Earth**. The card says "Waiting for Earth".
+5. **Import from Earth** → **📷 Scan QR**, and allow the camera when the browser asks.
+6. Hold the QR code up to the camera, about 30 cm away, filling about a third of the picture. The recipe
+   appears.
+7. **Add**. The app answers "It answers your request", and the grant card offers **Collect now**.
+
+**If `vendor/jsQR.js` is missing** (for example, only some files were copied), download it again from the
+repo root. It's jsQR 1.4.0, 256,885 bytes:
+
+```bash
+curl.exe -L -o people/dadis2/inventory/vendor/jsQR.js https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js
+```
+
+On macOS or Linux, use `curl` instead of `curl.exe`.
 
 ## Files
 
@@ -69,6 +110,9 @@ your phone's camera at the QR in `earth.html`. It should show exactly the code u
 | `earth.html`, `earth.js` | Earth flight surgeon's tool: makes a grant code and its QR image |
 | `ground.js` | `MedGround.makeGrant`: the ground side without UI, for zt's Earth clinician screen |
 | `qr.js`, `vendor/qrcode.js` | QR image drawing (`MedQR.svg`), using qrcode-generator 1.4.4 (MIT, licence in `vendor/`) |
+| `qr.js`, `vendor/jsQR.js` | QR reading from the camera (`MedQR.read`), using jsQR 1.4.0 (Apache-2.0, licence in `vendor/`) where the browser has no reader of its own |
+| `earth-reply.html`, `earth-reply-qr.svg` | Earth's reply for the presentation: the QR code of a ready-made grant for Tomas |
+| `serve.mjs` | A small local server (Node.js only), so the camera works: `node people/dadis2/inventory/serve.mjs` |
 | `CONTRACT.md` | Grants: code, who grants what, validity, cancelling, verification, ground side, functions, compartment ids, events |
 | `tests.html`, `tests.js` | Regression checks for grants, collection, validity, cancelling, ground tool and QR |
 | `spec.md` | Spec: principles, tiers, locker layout, grants, data model, flows, screens, sources |
@@ -131,8 +175,8 @@ QR image, validity and cancelling.
 Not done yet:
 - **Who issued a grant isn't verified.** It's simulated by team decision and labelled everywhere. A real
   signature is described in `CONTRACT.md`, section 2a.
-- **QR camera scanning** hasn't been tested on a phone yet. It needs Android Chrome and the page served
-  over HTTPS.
+- **QR camera scanning** is tested in the browser with a simulated camera (a tilted, blurred QR code),
+  but not yet with a real laptop webcam. Try it before the presentation.
 - **Cancelling from Earth** has its logic ready, but nothing delivers it yet (that needs the report
   link from zt or potest).
 

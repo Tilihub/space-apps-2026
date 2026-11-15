@@ -134,9 +134,16 @@ MedGround.makeGrant(state, { patientId: "c4", start: "2026-11-14",
   - works offline
 - **Link format** for opening a grant on a device: `index.html?user=c4#grant=<code>`. It opens Import
   with the code filled in, and nothing is added until the crew member presses Add.
-- **Camera scanning** on the crew device uses the browser's built-in barcode detector. It isn't
-  available on Windows desktop browsers, so it's **not tested yet**. Test on Android Chrome; the camera
-  needs the page served over HTTPS (or localhost). Typing the code always works.
+- **Camera scanning** on the crew device uses the browser's own QR reader where there is one, and
+  otherwise jsQR (`vendor/jsQR.js`, Apache-2.0), so it works on Windows laptops too (`MedQR.read`
+  in `qr.js`).
+  - The camera needs the page on `localhost` or HTTPS: `node people/dadis2/inventory/serve.mjs`.
+  - A QR code holding a `#grant=<code>` link works as well.
+  - Tested with a simulated camera, not yet with a real webcam. Typing the code always works.
+- **Importing a code answers the crew member's waiting requests** for the same medicines (they become
+  granted). Same in the `meds` module.
+- **For the presentation:** `earth-reply.html` and `earth-reply-qr.svg` hold a ready-made Earth grant
+  for Tomas (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`). See README, "Presentation".
 
 ## 3. Functions
 

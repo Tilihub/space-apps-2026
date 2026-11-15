@@ -158,8 +158,9 @@ export const SYMPTOMS = Object.freeze([
 
 /**
  * Medicine tiers and who approves them (dadis2's rules, team decision 14 Nov).
- * Earth may also approve anything the medical officer can. When the medical officer is the
- * patient, their approval goes to Earth. Emergency items open only through the emergency button.
+ * Earth may also approve anything the medical officer can. The medical officer approves their own
+ * requests too (agreed terms, 15 Nov), and can take any medicine from the cabinet. Emergency items
+ * open only through the emergency button.
  */
 export const MED_TIERS = Object.freeze({
   supply: { label: 'Supplies', approval: 'none' },

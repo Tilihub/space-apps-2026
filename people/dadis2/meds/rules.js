@@ -29,7 +29,9 @@ export const compartmentOf = (item) => `${item.place[0]}-${String(item.place[1])
 export const labelOf = (item) => (item.strength ? `${item.name} ${item.strength}` : item.name);
 export const profileOf = (state, crewId) => state.profiles[crewId] ?? { conditions: [], allergies: [] };
 const symptomLabel = (code) => SYMPTOMS.find((s) => s.code === code)?.label ?? code;
-const officerFor = (crewId) => (crewId === MEDICAL_OFFICER_ID ? 'earth' : 'medical_officer');
+// Two approval routes only (Tommy and dadis2, 15 Nov): the onboard doctor, or Earth for controlled
+// medicines. No special Earth route when the doctor is the patient.
+const officerFor = () => 'medical_officer';
 
 /** The person's allergies (suspected or confirmed) that this item hits, by class or ingredient. */
 export function allergiesTo(state, crewId, item) {
@@ -104,7 +106,7 @@ export function safetyChecks(cat, state, crewId, item, units, now) {
  * approval: none | medical_officer | earth | emergency | blocked (nobody: allergy, limit, none left).
  * By tier (MED_TIERS), then the person's situation for self-care (dadis2, 14 Nov):
  * reserve or a condition → the medical officer decides; daily limit → wait; allergy → nobody.
- * When the medical officer is the patient, their approval goes to Earth.
+ * The medical officer's own requests also go to the medical officer (no Earth exception).
  */
 export function approvalFor(cat, state, crewId, item, units, now) {
   const sf = safetyChecks(cat, state, crewId, item, units, now);
@@ -114,9 +116,7 @@ export function approvalFor(cat, state, crewId, item, units, now) {
   if (has('allergy')) return result('blocked', has('allergy').msg);
   if (item.tier === 'supply') return result(has('none-left') ? 'blocked' : 'none', has('none-left') ? 'None left' : 'Supply');
   if (item.tier === 'controlled') return result('earth', 'Controlled medicine: Earth decides');
-  if (item.tier === 'prescription') {
-    return result(officerFor(crewId), crewId === MEDICAL_OFFICER_ID ? 'Prescription: Earth decides when the medical officer is the patient' : 'Prescription: the medical officer decides');
-  }
+  if (item.tier === 'prescription') return result(officerFor(crewId), 'Prescription: the medical officer decides');
   if (has('none-left')) return result('blocked', 'None left: tell the medical officer');
   if (has('daily-limit')) return result('blocked', has('daily-limit').msg);
   if (has('same-class')) return result('blocked', has('same-class').msg);
@@ -194,7 +194,7 @@ export function encodeGrant(cat, g) {
   return `${body}-${rxCheck(body)}`;
 }
 
-/** Who may grant what: the medical officer (never to themselves) or Earth; controlled → Earth only. */
+/** Who may grant what: the medical officer or Earth; controlled → Earth only. */
 export function canGrant(cat, state, issuer, crewId, item) {
   if (!item || item.kind !== 'medication') return { code: 'invalid_field', why: 'Only medicines can be granted.' };
   if (item.tier === 'emergency') return { code: 'invalid_field', why: `${item.name} is an emergency medicine: use the Emergency button.` };
@@ -202,7 +202,6 @@ export function canGrant(cat, state, issuer, crewId, item) {
   if (allergic.length) return { code: 'needs_approval', why: `Allergy: ${allergic.join(', ')}. Nobody grants ${item.name} to this crew member.` };
   if (issuer === EARTH) return null;
   if (issuer !== MEDICAL_OFFICER_ID) return { code: 'invalid_code', why: 'Only the medical officer or Earth can issue a grant.' };
-  if (crewId === MEDICAL_OFFICER_ID) return { code: 'needs_earth', why: 'The medical officer is the patient: Earth decides.' };
   if (item.tier === 'controlled') return { code: 'needs_earth', why: `${item.name} is controlled: Earth decides.` };
   return null;
 }

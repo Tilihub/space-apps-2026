@@ -55,6 +55,12 @@ Run the tests from the repo root with `npm test`, or only these with `node --tes
   - ingredients are added up across courses, and two NSAIDs at once are refused
 - **Grant codes** use the prototype's format (`RX2-…`), so codes from `../inventory/earth.html` work.
   The same code typed or scanned again finds the same grant, ready for its next dose.
+  - A new code answers the crew member's waiting requests for the same medicines (`approved`, with
+    its `grantId`).
+  - For the presentation, `../inventory/earth-reply-qr.svg` is Earth's answer to Tomas's sleeping-pill
+    request.
+  - **Pages that scan:** reuse `../inventory/qr.js` (`MedQR.read(video)`) with `../inventory/vendor/jsQR.js`.
+    It works on Windows too, then sends the text to `POST /grants/import`.
 - **Emergencies** (wave 2, contract rules):
   - `POST /emergencies`: any crew member, for anyone, with a reason. Pressing again for the same
     person finds the open emergency.
@@ -99,3 +105,17 @@ None of these change a contract field; some add one. To agree or fold into the c
 9. **Scene E, step 4:** "answers the sleeping-pill request in Approvals". If that pill is zolpidem,
    it's controlled, so it waits for Earth and Leo gets `needs_earth` (`MED_TIERS`). Either the demo
    uses a prescription medicine, or Leo only sees it waiting for Earth.
+Items 10–12 are the agreed terms of 15 Nov, written into `shared/contract/README.md` in PR #85.
+
+10. **Two approval routes only:** the medical officer, or Earth for controlled medicines. Leo's own
+    requests go to the medical officer too.
+11. **The medical officer console** (`medical_officer` role):
+    - `POST /collections` with `{ itemId, units, patientId, overrideAllergy }` takes any medicine or
+      supply for any crew member, with no further approval
+    - `source: "medical-officer"`; the dose is logged for the patient (`collectedBy: "c2"`)
+    - an allergy still needs `overrideAllergy: true`, which is logged
+    - the medical officer can confirm and cancel collections
+    - their `GET /lockers` shows every bin open (only an empty bin is locked)
+12. **Reasons:**
+    - `POST /requests` needs a reason in `note`, unless the medicine is self-care.
+    - `POST /emergencies` takes `reason` as optional (`null` when there's no time to type).

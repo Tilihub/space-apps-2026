@@ -8,8 +8,9 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
+import { startStarMap } from '/star-map.js';
 import { createHabitatView, loadHabitat } from '/demo-data/habitat/habitat-view.js';
-import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
+import { CREW, SYMPTOMS, MEASUREMENTS, SCALES, DEMO_START, missionDayOf } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
 import { createCompanionClient } from '/people/potest/crew-support/companion-client.js';
 import { createWorkoutController } from '/demo-data/workout-session.js';
@@ -143,16 +144,16 @@ function renderChrome() {
  $('#nav').hidden=!logged;$('#topbar').hidden=!logged;$('#app-header').hidden=!logged;$('#app-footer').hidden=!logged;
  document.body.classList.toggle('signed-out',!logged);
  $('#floating-companion').hidden=!logged||role()!=='crew';
- $('#nav-crew').href=role()==='earth'?'#earth':'#crew';$('#nav-crew span').textContent=role()==='earth'?'Earth console':'Clinical review';
+ $('#nav-crew').href=role()==='earth'?'#earth':'#crew';$('#nav-crew span').textContent=role()==='earth'?'Earth console':'Medical officer';
  for(const a of document.querySelectorAll('[data-nav]')){
-  a.hidden=role()!=='crew'&&a.id!=='nav-crew'&&!['habitat','medbay'].includes(a.dataset.nav);
+  a.hidden=role()!=='crew'&&a.id!=='nav-crew'&&!(role()==='earth'&&['habitat','medbay'].includes(a.dataset.nav));
   if(a.dataset.nav===page||a.id==='nav-crew'&&['crew','earth'].includes(page))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
  }
  $('#nav-crew').hidden=role()==='crew';
  $('.rail-companion').hidden=true;
  const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
  $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${role()==='crew'?`<a href="#shop" class="btn ghost pulsars-shop-button" aria-label="Pulsars shop" title="Pulsars shop">${cartIcon}<span>${data.pulsars?.wallet?.balance?.toLocaleString('en-US')??'—'}</span></a>`:''}${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
- const titles={shop:['YOUR OWN LITTLE ORBIT','Pulsars shop'],home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Clinical review'],earth:['GROUND SUPPORT','Earth console']};
+ const titles={shop:['YOUR OWN LITTLE ORBIT','Pulsars shop'],home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Medical officer console'],earth:['GROUND SUPPORT','Earth console']};
  const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
  $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;
  renderEmergencyBanner();
@@ -206,8 +207,9 @@ function checkinScreen() {
  return `<div class="checkin-grid"><div class="stack">${card('How are you today?',`<p class="subtle">Sleep is hours in the last 24 hours. Mood: higher is better. Stress and fatigue: higher means more. Leave unavailable measurements blank.</p>${data.today?.checkedInToday?`${tag('Already saved today')}<p class="subtle">One check-in per mission day. Your submitted values are shown below.</p>`:''}<form id="checkin-form"><fieldset ${data.today?.checkedInToday?'disabled':''} style="border:0;padding:0;margin:0"><div class="form-grid">${checkInFields()}</div>${!data.today?.checkedInToday?submit('Save today’s check-in'):''}</fieldset></form>`)}${card('Measurement instructions',guides.map(g=>`<details><summary>${esc(g.title)}</summary><ol>${g.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details>`).join(''))}${suggestionsPanel()}</div>${card('Report a symptom',symptomForm())}</div>`;
 }
 function collectionPanel() {
- if(!collection) return '';
- return card('Dispenser collection',`<p>${tag(collection.status)} · ${esc(collection.source)} · ${time(collection.openedAt)}</p><p class="subtle">All eligible compartments open in one batch. Confirm each dispensed item once. This simulates the cabinet; it does not confirm ingestion.</p>${collection.compartments.map(c=>`<div class="row-item"><span class="grow"><b>${esc(binName(c.itemId))} × ${c.units}</b><small>${esc(compartmentLabel(c.compartmentId))}</small></span>${c.scanned?tag('Collected'):btn('Confirm dispensed','scan-item',`data-id="${esc(c.compartmentId)}"`,'primary sm')}</div>`).join('')}${collection.status==='open'?btn('Cancel remaining items','cancel-collection','','ghost sm'):''}`);
+ // A cancelled batch has nothing left to confirm: don't keep showing it
+ if(!collection||collection.status==='cancelled') return '';
+ return card('Dispenser collection',`<p>${tag(collection.status)} · ${esc(collection.source)}${collection.patientId&&collection.patientId!==user?.crewId?` · for ${esc(member(collection.patientId))}`:''} · ${time(collection.openedAt)}</p><p class="subtle">All eligible compartments open in one batch. Confirm each dispensed item once. This simulates the cabinet; it does not confirm ingestion.</p>${collection.compartments.map(c=>`<div class="row-item"><span class="grow"><b>${esc(binName(c.itemId))} × ${c.units}</b><small>${esc(compartmentLabel(c.compartmentId))}</small></span>${c.scanned?tag('Collected'):collection.status==='open'?btn('Confirm dispensed','scan-item',`data-id="${esc(c.compartmentId)}"`,'primary sm'):''}</div>`).join('')}${collection.status==='open'?btn('Cancel remaining items','cancel-collection','','ghost sm'):''}`);
 }
 function profilePanel() {
  const p=data.profile?.profile;
@@ -230,7 +232,7 @@ function requestsPanel() {
 }
 function emergencyPanel() {
  const list=data.emergencies?.emergencies??[];
- if(role()==='crew') return card('Emergency access',`<p class="subtle">Any crew member may raise an emergency for a crewmate. Only emergency-tier medicines are released; the medical officer must complete the paperwork.</p><form id="emergency-form">${crewSelect('patientId')}${field('Emergency reason','reason',{required:true,attrs:'maxlength="2000"'})}${submit('Raise emergency')}</form>${list.map(e=>`<div class="report-card"><b>${esc(member(e.patientId))}</b>${allBins().filter(b=>b.tier==='emergency').map(b=>`<form id="emergency-item-${e.id}-${b.itemId}" data-emergency="${e.id}" data-item="${b.itemId}"><p>${esc(b.label)}</p>${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>${submit('Release emergency item')}</form>`).join('')}</div>`).join('')}`);
+ if(role()==='crew') return card('Emergency access',`<p class="subtle">Any crew member may raise an emergency for a crewmate. Only emergency-tier medicines are released; the medical officer must complete the paperwork.</p><form id="emergency-form">${crewSelect('patientId')}${field('What happened? (optional)','reason',{attrs:'maxlength="500"'})}${submit('Raise emergency')}</form>${list.map(e=>`<div class="report-card"><b>${esc(member(e.patientId))}</b>${allBins().filter(b=>b.tier==='emergency').map(b=>`<form id="emergency-item-${e.id}-${b.itemId}" data-emergency="${e.id}" data-item="${b.itemId}"><p>${esc(b.label)}</p>${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>${submit('Release emergency item')}</form>`).join('')}</div>`).join('')}`);
  return card('Emergency paperwork',list.map(e=>`<form id="paperwork-${e.id}" data-emergency="${e.id}"><b>${esc(member(e.patientId))}</b><p>${esc(e.reason)} · due ${time(e.paperworkDueAt)}</p>${(e.released??[]).map(r=>`<p>${esc(r.name)} × ${r.units} · ${time(r.at)}</p>`).join('')}${note('Paperwork / resolution note')}${submit('Close emergency')}</form>`).join('')||empty('No open emergency.'));
 }
 function importPanel() {
@@ -286,7 +288,7 @@ function patientPicker() { return `<label class="field patient-select"><span>Pat
 function clinicalPanel() {
  const daily=data.daily, weekly=data.weekly;
  if(!daily) return empty('Select a patient.');
- return card('Clinical review',`<p>${esc(daily.message)}</p>${table(['Measure','Today','Fixed reference','Change / streak'],daily.measures.map(m=>tr([esc(MEASUREMENTS[m.measure]?.label??m.measure),esc(m.today??'Missing'),esc(m.normal??'Unavailable'),m.changed?`${tag(m.direction,true)} · ${m.daysInARow} day(s)`:'—'])))}<details class="compact" open><summary>Recent clinical history</summary>${table(['Day','Sleep h','Resting bpm','Mood','Stress','Fatigue'],(data.history?.checkIns??[]).map(r=>tr([r.missionDay,...['sleepHours','restingHeartRateBpm','mood','stress','fatigue'].map(k=>esc(r[k]??'Missing'))])))}</details><details class="compact"><summary>Weekly description · ${esc(weekly?.completeness)}</summary>${table(['Measure','Current median / valid days','Previous median / valid days'],(weekly?.measures??[]).map(m=>tr([esc(m.measure),`${esc(m.current.median??'—')} / ${m.current.validDays}`,`${esc(m.previous.median??'—')} / ${m.previous.validDays}`])))}</details><p class="subtle">Synthetic demonstration records · ${esc(daily.limitations?.join(' ')??'')}</p>`);
+ return card('Clinical review',`<p>${esc(daily.message)}</p>${table(['Measure','Today','Fixed reference','Change / streak'],daily.measures.map(m=>tr([esc(MEASUREMENTS[m.measure]?.label??m.measure),esc(m.today??'Missing'),esc(m.normal??'Unavailable'),m.changed?`${tag(m.direction,true)} · ${m.daysInARow} day(s)`:'—'])))}<details class="compact"><summary>Recent clinical history</summary>${table(['Day','Sleep h','Resting bpm','Mood','Stress','Fatigue'],(data.history?.checkIns??[]).map(r=>tr([r.missionDay,...['sleepHours','restingHeartRateBpm','mood','stress','fatigue'].map(k=>esc(r[k]??'Missing'))])))}</details><details class="compact"><summary>Weekly description · ${esc(weekly?.completeness)}</summary>${table(['Measure','Current median / valid days','Previous median / valid days'],(weekly?.measures??[]).map(m=>tr([esc(m.measure),`${esc(m.current.median??'—')} / ${m.current.validDays}`,`${esc(m.previous.median??'—')} / ${m.previous.validDays}`])))}</details><p class="subtle">Synthetic demonstration records · ${esc(daily.limitations?.join(' ')??'')}</p>`);
 }
 function symptomHistoryPanel() { return card('Symptoms reported',(data.symptoms?.reports??[]).map(r=>`<div class="report-card"><b>${time(r.reportedAt)}</b>${r.redFlag?tag('Urgent',true):''}<p>${r.symptoms.map(s=>`${esc(SYMPTOMS.find(x=>x.code===s.code)?.label??s.code)} · ${s.severity}/10`).join('<br>')}</p><p>${esc(r.note)}</p></div>`).join('')||empty('No symptom reports.')); }
 function reportContents(r) {
@@ -295,14 +297,41 @@ function reportContents(r) {
 function reportsPanel() {
  return card('Clinical reports · simulated Earth link',`${role()==='medical_officer'?`<form id="report-form">${note('Reason for specialist review')}${submit('Create and send patient report')}</form>`:''}<p class="subtle">Medical officer creates reports. Crew cannot read their content. No journal data is included. ${data.link?.delayMinutes??12} mission minutes each way.</p><div class="toolbar">${tag(data.link?.linkUp?'Link up':'Link down',!data.link?.linkUp)}${btn(data.link?.linkUp?'Take link down':'Restore link','toggle-link','','ghost sm')}${btn('+12 mission min','advance','data-minutes="12"','ghost sm')}</div>${(data.reports?.reports??[]).map(r=>`<div class="report-card"><b>${esc(member(r.crewId))}</b> ${tag(r.status)}<p class="subtle">Created ${time(r.createdAt)}${r.arrivesAt?` · arrival ${time(r.arrivesAt)}`:''}</p>${reportContents(r)}${r.replies.map(reply=>`<div class="chat-msg"><b>Earth reply · ${esc(reply.status)}</b><p>${esc(reply.note)}</p>${reply.code?`<label class="field"><span>Prescription credential for ${esc(member(r.crewId))}</span><textarea class="input" rows="3" readonly>${esc(reply.code)}</textarea></label>${qrFor(reply.code)}<p class="subtle">Give the credential to the patient to enter or scan in Med bay. The same credential is valid for later scheduled doses.</p>`:''}</div>`).join('')}${role()==='earth'?`<form id="reply-${r.id}" data-report="${r.id}">${note('Specialist reply')}${field('Prescription code (optional)','code',{value:generatedCode})}${submit('Send reply to medical officer')}</form>`:''}</div>`).join('')||empty(role()==='earth'?'No reports have arrived at Earth.':'No reports created.')}`);
 }
-function medicalScreen() { return `${patientPicker()}<div class="two"><div class="stack">${clinicalPanel()}${symptomHistoryPanel()}${dosesPanel()}${profilePanel()}</div><div class="stack">${reportsPanel()}${requestsPanel()}${emergencyPanel()}${stockPanel()}${demoClockPanel()}</div></div>`; }
+// ---- Medical officer console (dadis2, 15 Nov): only two features.
+// Approvals: approve or deny what the crew asked for, with no prescription to write (an approval
+// releases one standard dose). Inventory: the crew's cabinet view with everything unlocked; take any
+// medicine for any crew member with no further approval (the meds module logs it as "medical-officer").
+let moTab='approvals';
+// Earth's reply for the presentation: Tomas's sleeping pill (people/dadis2/inventory/earth-reply-qr.svg)
+const DEMO_EARTH_CODE='RX2-EARTH-C4-261114-ZOL1X1X7-9Z';
+const sectionTabs=(tabs,current,actionName)=>`<div class="med-toolbar"><div class="page-tabs" role="group" aria-label="Sections">${tabs.map(([id,label])=>btn(label,actionName,`data-id="${id}" aria-pressed="${current===id}"`,'ghost sm')).join('')}</div></div>`;
+function approvalRow(r,decide) {
+ // Default course: once a day (always within every medicine's daily limit); Earth's default is a week.
+ const days=role()==='earth'?7:3;
+ return `<div class="request-form"><div class="status-line"><b>${esc(member(r.crewId))}</b><span>${esc(r.name)}</span>${tag(r.status.replace(/_/g,' '),r.status==='denied')}</div><small class="muted">${time(r.createdAt)}${r.note?` · ${esc(r.note)}`:''}${r.decisionNote?` · ${esc(r.decisionNote)}`:''}</small>${decide?`<form id="decision-${r.id}" data-request="${r.id}"><div class="form-grid">${field('Units per dose','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}${field('Times a day','perDay',{type:'number',value:1,attrs:'min="1" max="4"',required:true})}${field('Days','days',{type:'number',value:days,attrs:'min="1" max="30"',required:true})}</div><div class="btn-row"><button class="btn primary sm" name="decision" value="approve">Approve</button><button class="btn ghost sm" name="decision" value="deny">Deny</button></div></form>`:''}</div>`;
+}
+function moApprovals() {
+ const waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_medical_officer');
+ return card(`Waiting for you · ${waiting.length}`,waiting.map(r=>`<div class="request-form"><div class="status-line"><b>${esc(member(r.crewId))}</b><span>${esc(r.name)}</span></div><small class="muted">${time(r.createdAt)}${r.note?` · ${esc(r.note)}`:''}</small><form id="decision-${r.id}" data-request="${r.id}"><div class="btn-row">${'<button class="btn primary sm" name="decision" value="approve">Approve</button><button class="btn ghost sm" name="decision" value="deny">Deny</button>'}</div></form></div>`).join('')||empty('Nothing is waiting for your approval.'));
+}
+const disclosure=(title,content)=>`<details class="card compact"><summary>${title}</summary>${content}</details>`;
+function medicalScreen() {
+ const waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_medical_officer').length;
+ if(!['approvals','inventory'].includes(moTab))moTab='approvals';
+ const tabs=[['approvals',`Approvals${waiting?` · ${waiting}`:''}`],['inventory','Inventory']];
+ return `${sectionTabs(tabs,moTab,'mo-tab')}${moTab==='inventory'?missionViews.cabinet():moApprovals()}`;
+}
+// ---- Earth console: approve the pills that wait for Earth, and show Earth's reply QR for the demo.
 function earthScreen() {
- const catalogue=data.catalogue??[];
- return `<div class="two"><div class="stack">${reportsPanel()}${requestsPanel()}</div><div class="stack">${card('Generate a demo prescription credential',`<p class="subtle">Uses dadis2’s original RX2 encoder. Code contents and QR payload are identical. Patient, allergy, stock and due-dose checks run when it is used on board. This code is a simulation, not a signed medical prescription.</p><form id="earth-code-form">${crewSelect('crewId','c4')}${[0,1].map(i=>`<details ${i===0?'open':''}><summary>Medicine ${i+1}${i===1?' (optional)':''}</summary>${select('Medicine',`item${i}`,[['','Choose medicine'],...catalogue.map(x=>[x.itemId,x.label])])}<div class="form-grid">${field('Units per dose',`units${i}`,{type:'number',value:1,attrs:'min="1" max="9"'})}${field('Doses per day',`perDay${i}`,{type:'number',value:1,attrs:'min="1" max="6"'})}${field('Course days',`days${i}`,{type:'number',value:3,attrs:'min="1" max="30"'})}</div></details>`).join('')}${submit('Generate credential')}</form>${generatedCode?`<label class="field compact"><span>Code / exact QR payload</span><textarea class="input" readonly rows="4">${esc(generatedCode)}</textarea></label><p class="subtle">Copy to a specialist reply or enter in the patient’s Med bay.</p>${qrFor(generatedCode)}`:''}`)}${demoClockPanel()}</div></div>`;
+ const catalogue=data.catalogue??[], waiting=(data.requests?.requests??[]).filter(r=>r.status==='waiting_earth');
+ const reports=data.reports?.reports??[];
+ const generator=`<p class="subtle">Uses dadis2’s RX2 encoder. The code and the QR hold the same text. A simulation, not a signed prescription.</p><form id="earth-code-form">${crewSelect('crewId','c4')}${[0,1].map(i=>`<details ${i===0?'open':''}><summary>Medicine ${i+1}${i===1?' (optional)':''}</summary>${select('Medicine',`item${i}`,[['','Choose medicine'],...catalogue.map(x=>[x.itemId,x.label])])}<div class="form-grid">${field('Units per dose',`units${i}`,{type:'number',value:1,attrs:'min="1" max="9"'})}${field('Times a day',`perDay${i}`,{type:'number',value:1,attrs:'min="1" max="4"'})}${field('Days',`days${i}`,{type:'number',value:3,attrs:'min="1" max="30"'})}</div></details>`).join('')}${submit('Make code')}</form>${generatedCode?`<code>${esc(generatedCode)}</code>${qrFor(generatedCode)}`:''}`;
+ const reply=card('Reply for Tomas · QR code',`<p class="subtle">Zolpidem 5 mg, once a day for 7 days. Show this QR to the crew app’s camera (Medical bay → My treatment → Scan QR), or type the code. It answers his waiting request.</p>${qrFor(DEMO_EARTH_CODE)}<p><code>${esc(DEMO_EARTH_CODE)}</code></p><p class="subtle">Simulated: the sender isn’t verified.</p>`);
+ return `<div class="two"><div class="stack">${card(`Pills waiting for Earth · ${waiting.length}`,waiting.map(r=>approvalRow(r,true)).join('')||empty('No requests are waiting for Earth.'))}${disclosure(`Reports from the medical officer · ${reports.length}`,reportsPanel())}</div><div class="stack">${reply}${disclosure('Make another prescription code',generator)}${disclosure('Demo controls',demoClockPanel())}</div></div>`;
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:()=>'<div class="falcon-habitat"></div>',fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
 const missionViews=createMissionViews({
- state:()=>({user,role:role(),clock:displayClock.get()??clock,data,page,drafts,collection,suggestion,workout,workoutMode,trainingEndedToday:data.pulsars?.wallet?.trainingDone??!!sessionStorage.getItem(trainingEndKey()),wellbeingCompletedToday:data.pulsars?.wallet?.wellbeingDone??!!sessionStorage.getItem(wellbeingFinishKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
+ state:()=>({user,role:role(),clock:displayClock.get()??clock,data,page,drafts,collection,suggestion,patient,workout,workoutMode,trainingEndedToday:data.pulsars?.wallet?.trainingDone??!!sessionStorage.getItem(trainingEndKey()),wellbeingCompletedToday:data.pulsars?.wallet?.wellbeingDone??!!sessionStorage.getItem(wellbeingFinishKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
  helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
  legacy:{suggestionsPanel,profilePanel,grantsPanel,requestsPanel,dosesPanel,emergencyPanel,stockPanel,patientPicker,demoClockPanel},
  redraw:()=>render(),remember,
@@ -330,11 +359,13 @@ function render() {
  }
  for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
+ // The star map: the opening screen before login (no clock yet: the demo start day)
+ if(document.getElementById('star-map'))startStarMap({missionDay:clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length});
 }
 async function show() {
  const task=++loading, version=revision;
  page=!user?'login':(location.hash.slice(1)|| (role()==='medical_officer'?'crew':role()==='earth'?'earth':'home'));
- if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind','shop'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&page==='earth')) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
+ if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind','shop'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
  if(!user) {render();return;}
  const get=path=>api(path);
  const jobs={ clock:get('/clock') };
@@ -348,12 +379,10 @@ async function show() {
   if(page==='mind') jobs.journal=get('/mind/journal');
  }
  if(page==='habitat')jobs.habitat=loadHabitat(get);
- if(role()==='medical_officer'&&['crew','medbay'].includes(page)) {
-  const q=personQuery();jobs.daily=health.getDaily({crewId:patient});jobs.history=health.getHistory({crewId:patient});jobs.weekly=health.getWeekly({crewId:patient});jobs.workouts=health.getWorkouts({crewId:patient});
-  jobs.symptoms=get(`/meds/symptom-reports${q}`);jobs.profile=get(`/meds/profile${q}`);jobs.doses=get(`/meds/doses${q}`);jobs.grants=get(`/meds/grants${q}`);jobs.lockers=get(`/meds/lockers${q}`);jobs.requests=get('/meds/requests');jobs.stock=get('/meds/stock');
- }
+ // Medical officer: the console needs only the requests and the (all unlocked) cabinet
+ if(role()==='medical_officer'&&page==='crew') {jobs.lockers=get('/meds/lockers');jobs.requests=get('/meds/requests');}
  if(role()==='earth') jobs.requests=get('/meds/requests');
- if((role()==='medical_officer'&&page==='crew')||(role()==='earth'&&page==='earth')) {jobs.reports=get('/reports');jobs.link=get('/reports/link');}
+ if(role()==='earth'&&page==='earth') {jobs.reports=get('/reports');jobs.link=get('/reports/link');}
  // Earth never receives personal locker/profile endpoints. Catalogue is read-only demo metadata.
  if(role()==='earth'&&page==='earth') jobs.catalogue=get('/reports/catalogue').then(r=>r.items);
  const results=await Promise.allSettled(Object.values(jobs));
@@ -423,9 +452,9 @@ async function handleForm(form,submitter) {
  } else if(form.hasAttribute('data-cabinet-emergency')) {
   if(role()!=='crew'||!missionViews.emergencyEnabled())throw new Error('Enable Emergency above first.');
   const reason=(v.reason??'').trim();
-  if(!reason||reason.length>500)throw new Error('Enter an emergency reason, up to 500 characters.');
+  if(reason.length>500)throw new Error('Keep the emergency reason under 500 characters.'); // optional: no time to type
   // Compose the existing incident and collection APIs. The server owns eligibility, defaults and logging.
-  const result=await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason}});
+  const result=await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason:reason||null}});
   await collect({emergencyId:result.emergency.id,itemId:form.dataset.item,overrideAllergy:form.elements.overrideAllergy.checked});
   delete drafts[id];
   if(result.alreadyOpen)notice('Ready to collect. The open emergency keeps its original reason.');
@@ -441,7 +470,11 @@ async function handleForm(form,submitter) {
   await api(`/meds/requests/${form.dataset.request}/decision`,{method:'POST',body:{decision:submitter.value,...numberFields(v,['units','perDay','days']),note:v.note}});delete drafts[id];notice('Decision saved by the medicine module.');
  } else if(form.dataset.item) {
   if(submitter.value==='request') {
-   await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:v.note}});notice('Approval request submitted.');
+   // A reason is required, except for a self-care medicine (agreed terms)
+   const selfCare=allBins().find(b=>b.itemId===form.dataset.item)?.tier==='self-care', reason=(v.note??'').trim();
+   if(!reason&&!selfCare)throw new Error('Say why you need it: a short reason is required.');
+   const sent=(await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:reason||null}})).request;
+   notice(sent.status==='waiting_earth'?'Sent to Earth: controlled medicines need Earth’s approval. The reply arrives as a QR code.':'Sent to the medical officer for approval.');
   } else {await collect({itemId:form.dataset.item,units:Number(v.units)});return;}
  } else if(id==='workout-step') {
   clock=await api('/clock');
@@ -466,6 +499,15 @@ async function handleForm(form,submitter) {
   delete drafts[id];notice('Clinical snapshot created. Delivery follows the Earth link and mission clock.');
  } else if(form.dataset.report) {
   await api(`/reports/${form.dataset.report}/replies`,{method:'POST',body:{note:v.note,code:v.code}});delete drafts[id];notice('Specialist reply queued for the return link.');
+ } else if(id==='mo-take-form') {
+  // Medical officer: no approval needed. An allergy asks for an explicit "give anyway", which is logged.
+  const body={itemId:v.itemId,units:Number(v.units),patientId:v.patientId};
+  try { collection=(await api('/meds/collections',{method:'POST',body})).collection; }
+  catch(e) {
+   if(!/^Allergy:/.test(e.message)||!window.confirm(`${member(v.patientId)}: ${e.message.split('.')[0]}.\n\nGive it anyway? This is logged.`))throw e;
+   collection=(await api('/meds/collections',{method:'POST',body:{...body,overrideAllergy:true}})).collection;
+  }
+  delete drafts[id];notice(`Dispensed for ${member(v.patientId)}. Confirm the item to log it.`);
  } else if(id==='earth-code-form') {
   const items=[0,1].filter(i=>v[`item${i}`]).map(i=>({itemId:v[`item${i}`],units:Number(v[`units${i}`]),perDay:Number(v[`perDay${i}`]),days:Number(v[`days${i}`])}));
   generatedCode=(await api('/reports/grants-code',{method:'POST',body:{crewId:v.crewId,items}})).code;
@@ -500,6 +542,7 @@ async function action(el) {
  if(a==='login')return login(id);
  if(a==='login-medical')return login('c2','medical');
  if(a==='login-earth')return login(null,'earth');
+ if(a==='mo-tab'){moTab=id;render();return;}
  if(a==='logout')return logout();
  if(a==='refresh')return show();
  if(a==='dismiss-emergency'){const hidden=hiddenEmergencyIds();for(const e of data.emergencies?.emergencies??[])hidden.add(e.id);sessionStorage.setItem(bannerKey(),JSON.stringify([...hidden]));renderEmergencyBanner();return;}
