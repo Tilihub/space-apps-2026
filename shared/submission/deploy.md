@@ -1,13 +1,24 @@
 # Deploying the app
 
-The Local Event needs the app at a public web address; localhost isn't accepted. The plan is
-Render's free tier, deploying straight from this public repo. **Not deployed yet:** we deploy once
-`final/` holds the finished app.
+The Local Event needs the app at a public web address that works at any time; localhost isn't
+accepted.
+
+**Live: https://pulse-crew-health.onrender.com/** (since 15 November, 14:46). It runs on Render's free
+plan, deployed straight from this public repo, and a free UptimeRobot monitor opens it every
+5 minutes so it never falls asleep. For now it runs today's app from `integration/onboard-app/`
+(main at `e14b582`); once `final/` exists, switch it over (see below).
+
+## Switching to `final/`
+
+1. In the Render dashboard (zt's account), open pulse-crew-health → Settings → Start Command, and
+   change it to `node final/onboard-app/start.js`.
+2. Press Manual Deploy → Deploy latest commit. The link stays the same; the data starts fresh.
+3. Open the link and log in once to check it.
 
 ## Render settings
 
-On zt's Render account: New → Web Service → **Public Git Repository**. These were filled in and
-checked on 15 November; only the start command changes once `final/` exists.
+On zt's Render account: New → Web Service → **Public Git Repository**. These are the settings the
+live service was created with, in case it ever needs rebuilding.
 
 | Setting | Value |
 |---|---|
@@ -17,7 +28,7 @@ checked on 15 November; only the start command changes once `final/` exists.
 | Language | Node |
 | Region | Frankfurt (EU Central), the closest to Greece. The form defaults to Oregon |
 | Build command | `npm install` (there are no packages, so it does nothing) |
-| Start command | `node final/onboard-app/start.js`, see below |
+| Start command | now `node integration/onboard-app/start.js`; `node final/onboard-app/start.js` once `final/` exists |
 | Instance type | **Free, $0/month.** The form pre-selects the $7 plan, so switch it |
 | Environment variable | `NODE_VERSION` = `24`, the version our tests run on |
 
@@ -41,10 +52,23 @@ modules load (health, meds, mind, env, reports, pulsars).
 - If the team decides instead that `final/` only points to `integration/onboard-app/`, the start
   command is `node integration/onboard-app/start.js` and nothing needs copying.
 
+## Keeping it awake
+
+The free plan sleeps after 15 minutes without visitors, and the next visitor then waits about a
+minute. To prevent that, zt's free UptimeRobot account has an HTTP(s) monitor on
+`https://pulse-crew-health.onrender.com/` every 5 minutes. Keep the monitor on the main address:
+most other addresses need a login and would be reported as down. One always-on free service fits
+in Render's 750 free hours a month, and the pings use about 100 MB a week.
+
 ## Good to know before presenting from it
 
-- **It sleeps after 15 minutes without visitors**, and waking takes about a minute. Open it a few
-  minutes before the presentation.
+- **The mission clock runs in real time.** About 16 hours after a start or reset it's mission
+  day 43, and the parts built for day 42 (skin map, cabin replay, prepared data) go missing. Press
+  the app's Reset demo before showing it, or before judges are expected to look.
+
+- **If the pinger ever stops**, the app sleeps after 15 idle minutes and the next visit takes
+  about a minute. Render has maintenance on 18 November around 04:00 (Greek time); the app restarts
+  by itself afterwards.
 - **Every sleep, restart or deploy wipes saved data**; the demo starts again at mission day 42.
 - **New code isn't picked up by itself:** Render offers no automatic deploys for a public repo added
   by address. After merging, press Manual Deploy → Deploy latest commit in the Render dashboard.

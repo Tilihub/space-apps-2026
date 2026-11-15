@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 14:40
-- Working on: deploying the app. Render is set up on zt's account but not deployed; it waits for
-  `final/`. Recipe: [shared/submission/deploy.md](../../shared/submission/deploy.md).
-- Branch: zt/deploy-recipe
+- Last updated: 2026-11-15 15:00
+- Working on: the app is live at https://pulse-crew-health.onrender.com/ (Render free plan, kept
+  awake by UptimeRobot). It runs `integration/onboard-app/`; switch it to `final/` once that exists.
+- Branch: zt/deploy-live
 
 ## Done
 
@@ -60,6 +60,9 @@
   live-watch work merge with main without conflicts, and 130 of 130 tests pass
 - Wrote the Render deploy recipe in `shared/submission/deploy.md`: settings, what `final/` must keep
   (checked by loading all six modules from a copy in `final/onboard-app/`), and free-plan limits
+- Deployed the app on Render's free plan (zt's account, Frankfurt, Node 24) at
+  https://pulse-crew-health.onrender.com/, with a free UptimeRobot monitor every 5 minutes so it
+  never sleeps. Recorded the link, the pinger and how to switch to `final/` in `deploy.md`
 
 ## Blocked / need from others
 
