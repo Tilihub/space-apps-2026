@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-15 12:23
+- Last updated: 2026-11-15 12:31
 - Working on: a minimal medical officer console and a lean Earth console in Tommy's complete demo
   (PR #74, approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes
   `dadis2/earth-qr`. `npm test` 111 of 111.
@@ -25,11 +25,18 @@
     who it's for → "Take (no approval needed)" → Confirm collection. An allergy asks "give anyway",
     which is logged.
 - **Star map** (crew app, menu item below Wellbeing; `integration/onboard-app/pages/star-map.js`):
+  - fills the whole page except the sidebar (the header, title, footer and floating mascot are
+    hidden there, and come back on the other pages)
   - pixel art: Earth and Mars on a dark sky full of twinkling stars
   - a dotted route between them: cyan for the way travelled, pale blue for the way ahead
-  - the app's mascot halfway, heading for Mars, with "DAY 42" from the mission clock
-  - drawn on a 192×108 canvas scaled up crisp; no libraries, works offline; stays still if the
-    computer asks for reduced motion
+  - the app's mascot halfway, heading for Mars
+  - the mission's facts written into the sky in white, gently pulsing pixel letters:
+    "MISSION: FIRST DAWN", "DAY 42 OF MISSION" (mission clock), "CREW MEMBERS: 5" (shared crew list),
+    "YOU ARE HERE" and "YOU ARE 25.2 MILLION KM FROM EARTH"
+  - the distance is a demo value, day × 600,000 km; the mission name and that rate are two constants
+    at the top of `star-map.js`
+  - the picture is sized to the screen and scaled up crisp; no libraries, works offline; stays still
+    if the computer asks for reduced motion
 - **Earth console:** pills waiting for Earth with Approve and Deny, and Earth's reply QR for Tomas
   (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`, the same as `inventory/earth-reply-qr.svg`). The code generator
   and demo controls are folded away.

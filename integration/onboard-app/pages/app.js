@@ -119,6 +119,7 @@ function renderChrome() {
  const logged=!!user&&page!=='login';
  $('#nav').hidden=!logged;$('#topbar').hidden=!logged;$('#app-header').hidden=!logged;$('#app-footer').hidden=!logged;
  document.body.classList.toggle('signed-out',!logged);
+ document.body.classList.toggle('page-starmap',logged&&page==='starmap'); // the star map fills the page; the sidebar stays
  $('#floating-companion').hidden=!logged||role()!=='crew';
  $('#nav-crew').href=role()==='earth'?'#earth':'#crew';$('#nav-crew span').textContent=role()==='earth'?'Earth console':'Medical officer';
  for(const a of document.querySelectorAll('[data-nav]')){
@@ -324,7 +325,7 @@ const missionViews=createMissionViews({
 });
 Object.assign(screens,missionViews.screens);
 // Star map (dadis2): a pixel-art view of the Mars transit, below Wellbeing in the menu
-screens.starmap=()=>starMapScreen({missionDay:clock?.missionDay});
+screens.starmap=()=>starMapScreen({missionDay:clock?.missionDay,crewCount:CREW.length});
 function render() {
  const detailKeys = elements => {
   const counts=new Map();
@@ -335,7 +336,7 @@ function render() {
  $(`#${page}`).innerHTML=screens[page]();
  for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
- if(page==='starmap')startStarMap(clock?.missionDay);
+ if(page==='starmap')startStarMap({missionDay:clock?.missionDay,crewCount:CREW.length});
 }
 async function show() {
  const task=++loading, version=revision;
