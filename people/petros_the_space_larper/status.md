@@ -8,12 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:56 (Europe/Athens)
-- Working on: Publishing the verified stage-aligned PET-1 source for the onboard demo reset.
-- Branch: petros_the_space_larper/align-stage-data
+- Last updated: 2026-11-15 (Europe/Athens)
+- Working on: Awaiting teammate review of the Millennium Falcon [Habitat integration](demo-data/habitat/README.md).
+- Branch: petros_the_space_larper/habitat-integration
 
 ## Done
 
+- Mounted the shared Falcon view in the onboard Habitat tab with the existing user session, live replay refresh and Alloy theme colors.
+- Scaled the radiation trend to its first and last available observations so the recorded interval fills the chart width.
+- Moved the main lounge temperature badge beside the Falcon, with a guide line to the lounge.
+- Added a hull-clipped thermal map using simulated zone temperatures and the cabin replay as the main lounge reference. The main lounge reading and its trend are selected by default.
+- Refined the Habitat preview with a pulsing blue silhouette and a continuous Celsius color scale on the temperature marker, reading and chart.
+- Built a standalone Habitat preview with four color-coded sensor locations, replay charts for hover and keyboard focus, selection for touch, and the existing cabin alerts.
 - Installed GitHub CLI, signed in, and cloned the team repo.
 - Documented astronaut measurement methods, dataset access, and radiation exposure in [astronaut-health-research.md](astronaut-health-research.md).
 - Verified Inspiration4 CBC and CMP downloads, a PhysioNet vital signs sample, and RadLab queries for ISS and Artemis I.
@@ -42,6 +48,7 @@
 
 ## Blocked / need from others
 
+- Teammate approval before merging the Habitat integration.
 - Public direct downloads for continuous astronaut wearable recordings remain unverified. The notes link to published values, test data, and research access routes.
 - zt must start a fresh demo store or explicitly reset at `DEMO_START` after this source reaches main; an existing store intentionally keeps its previous reference. Page integration and role-boundary acceptance remain with zt and the relevant owners.
 - The final workout screen must import the controller. Live workout pulse needs a device adapter for the wearable chosen by the team.
@@ -51,6 +58,7 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
+- Run the onboard server from `petros_the_space_larper/habitat-integration`, sign in and open Habitat. Review the shared view in both themes, then approve the pull request if it is ready to merge.
 - Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries, cohort means and cohort medians. PhysioNet and RadLab can provide time-series replay inputs with documented provenance.
 - For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
 - Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.

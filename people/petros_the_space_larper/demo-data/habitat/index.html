@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e14">
+  <title>PULSE · Habitat preview</title>
+  <link rel="stylesheet" href="./habitat.css">
+  <link rel="stylesheet" href="./habitat-view.css">
+  <script type="module" src="./habitat.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/#habitat" aria-label="Back to PULSE">
+      <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="10"/><path d="M2 14h7l2-5 4 10 3-5h8"/></svg>
+      PULSE
+    </a>
+    <div class="connection" id="connection" role="status"><i></i><span>Connecting to replay</span></div>
+    <time class="mission-clock" id="mission-clock">— UTC</time>
+  </header>
+
+  <main>
+    <header class="intro">
+      <div>
+        <h1>Habitat</h1>
+        <p>Follow cabin conditions across the Millennium Falcon.</p>
+      </div>
+      <a class="back-link" href="/#habitat">Open PULSE <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <div class="falcon-habitat" id="habitat-preview"></div>
+  </main>
+</body>
+</html>
