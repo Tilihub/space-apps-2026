@@ -84,7 +84,11 @@ function profileView(state, crewId) {
   return { crewId, conditions: [...p.conditions], allergies: p.allergies.map((a) => ({ ...a })) };
 }
 
-function lockersView(state, crewId, now) {
+/**
+ * The cabinet as one person sees it. `officer`: the medical officer's console, where every medicine
+ * is open to them with no further approval (only an empty bin is locked).
+ */
+function lockersView(state, crewId, now, officer = false) {
   const open = state.collections.find((c) => c.crewId === crewId && c.status === 'open');
   return CAT.lockers.map((lk) => ({
     id: lk.id,
@@ -94,7 +98,9 @@ function lockersView(state, crewId, now) {
       level: sh.level,
       zone: sh.zone,
       bins: CAT.items.filter((it) => it.place[0] === sh.id).sort((a, b) => a.place[1] - b.place[1]).map((it) => {
-        const a = approvalFor(CAT, state, crewId, it, it.doseUnits, now);
+        const a = officer
+          ? (usableUnits(state, it.id, now) > 0 ? { approval: 'none', why: null } : { approval: 'blocked', why: 'None left' })
+          : approvalFor(CAT, state, crewId, it, it.doseUnits, now);
         const compartmentId = compartmentOf(it);
         return {
           compartmentId, bin: it.place[1], itemId: it.id, label: labelOf(it), tier: it.tier,
@@ -197,6 +203,29 @@ function emergencyCollection(state, body, now) {
   };
 }
 
+/**
+ * The medical officer takes any medicine or supply for any crew member, from the medical officer
+ * console, with no further approval (dadis2, 15 Nov). Logged as `medical-officer`. An allergy
+ * still needs the explicit "give anyway" (overrideAllergy), which is logged too.
+ */
+function officerCollection(state, body, now) {
+  if (!isCrewId(body.patientId)) throw apiError('invalid_field', 'patientId must be a crew member: who is it for?');
+  const item = mustItem(body.itemId);
+  const units = body.units ?? item.doseUnits;
+  if (!wholeIn(units, 1, 9)) throw apiError('invalid_field', 'units must be a whole number from 1 to 9.');
+  if (body.overrideAllergy != null && typeof body.overrideAllergy !== 'boolean') throw apiError('invalid_field', 'overrideAllergy must be true or false.');
+  const allergic = allergiesTo(state, body.patientId, item);
+  if (allergic.length && body.overrideAllergy !== true) {
+    throw apiError('needs_approval', `Allergy: ${allergic.join(', ')}. Give it anyway only if there is no other option (overrideAllergy).`);
+  }
+  if (!pickLot(state, item.id, units, now)) throw apiError('needs_approval', `Not enough ${item.name} left.`);
+  return {
+    source: 'medical-officer', grantId: null, slot: null, reportId: null, patientId: body.patientId,
+    allergyOverridden: allergic.length > 0,
+    compartments: [{ compartmentId: compartmentOf(item), itemId: item.id, units, scanned: false, grantIdx: null, slot: null }],
+  };
+}
+
 function collectionView(c) {
   return {
     id: c.id, crewId: c.crewId, source: c.source, grantId: c.grantId, slot: c.slot, status: c.status,
@@ -215,6 +244,8 @@ function confirmItem(state, c, part, now, ctx, scanSkipped) {
   if (c.source === 'emergency') {
     emergency = state.emergencies.find((x) => x.id === c.emergencyId);
     if (!emergency || emergency.status !== 'open') throw apiError('already_done', 'This emergency is closed.');
+    lot = pickLot(state, item.id, part.units, now);
+  } else if (c.source === 'medical-officer') {
     lot = pickLot(state, item.id, part.units, now);
   } else if (c.source === 'grant') {
     const g = state.grants.find((x) => x.id === c.grantId);
@@ -412,18 +443,29 @@ export default {
       method: 'GET', path: '/lockers', roles: ['crew', 'medical_officer'],
       handler: async (req, ctx) => {
         const crewId = /** @type {string} */ (req.user.crewId);
-        return { lockers: lockersView(await load(ctx), crewId, ctx.now()) };
+        return { lockers: lockersView(await load(ctx), crewId, ctx.now(), req.user.role === 'medical_officer') };
       },
     },
 
     // ---- collections: the cabinet dispenses, the crew member confirms each item ----
     {
-      method: 'POST', path: '/collections', roles: ['crew'], status: 201,
+      method: 'POST', path: '/collections', roles: ['crew', 'medical_officer'], status: 201,
       handler: async (req, ctx) => {
-        const body = checkFields(req.body, ['itemId', 'units', 'reportId', 'grantId', 'emergencyId', 'overrideAllergy']);
+        const officer = req.user.role === 'medical_officer';
+        const body = checkFields(req.body, officer ? ['itemId', 'units', 'patientId', 'overrideAllergy'] : ['itemId', 'units', 'reportId', 'grantId', 'emergencyId', 'overrideAllergy'],
+          officer ? ['itemId', 'patientId'] : []);
         const crewId = resolveCrewId(req.user);
         const state = await load(ctx);
         const now = ctx.now();
+        if (officer) {
+          const plan = officerCollection(state, body, now);
+          closeOpenCollection(state, crewId, now, ctx);
+          const collection = { id: newId('col'), crewId, status: 'open', openedAt: now, closedAt: null, ...plan };
+          state.collections.push(collection);
+          await ctx.store.save(state);
+          ctx.emit('meds.collection-opened', crewId);
+          return { collection: collectionView(collection) };
+        }
         const emergency = body.emergencyId != null;
         if (body.grantId != null && (body.itemId != null || emergency)) throw apiError('invalid_field', 'Send grantId alone, itemId (self-care), or emergencyId with itemId.');
         if (body.grantId == null && body.itemId == null) throw apiError('invalid_field', 'Send itemId (self-care), grantId (a grant), or emergencyId with itemId.');
@@ -441,7 +483,7 @@ export default {
       },
     },
     {
-      method: 'POST', path: '/collections/:id/scan', roles: ['crew'],
+      method: 'POST', path: '/collections/:id/scan', roles: ['crew', 'medical_officer'],
       handler: async (req, ctx) => {
         const body = checkFields(req.body, ['compartmentId', 'skipScan'], ['compartmentId']);
         if (body.skipScan != null && typeof body.skipScan !== 'boolean') throw apiError('invalid_field', 'skipScan must be true or false.');
@@ -466,7 +508,7 @@ export default {
       },
     },
     {
-      method: 'DELETE', path: '/collections/:id', roles: ['crew'],
+      method: 'DELETE', path: '/collections/:id', roles: ['crew', 'medical_officer'],
       handler: async (req, ctx) => {
         const state = await load(ctx);
         const c = state.collections.find((x) => x.id === req.params.id);

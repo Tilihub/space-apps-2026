@@ -8,11 +8,30 @@
 
 ## Now
 
-- Last updated: 2026-11-15 11:12
-- Working on: Earth's reply as a QR code for the presentation, scanned by the laptop camera, on
-  `dadis2/earth-qr` (pushed, no PR yet). `meds` waves 1 and 2 are merged (PRs #66, #70); `npm test`
-  91 of 91 (27 are meds).
-- Branch: dadis2/earth-qr
+- Last updated: 2026-11-15 11:58
+- Working on: a lean medical officer console and Earth console in Tommy's complete demo (PR #74,
+  approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes `dadis2/earth-qr`.
+  `npm test` 110 of 110.
+- Branch: dadis2/mo-console
+
+### Medical officer and Earth consoles (`dadis2/mo-console`, based on Tommy's `tommy/frontend-polish`)
+
+- **Medical officer console** (login → "Medical officer"): four tabs instead of every panel at once.
+  - **Approvals:** approve or deny everything waiting for the medical officer, each with a compact
+    course. Earth's requests are shown read-only.
+  - **Inventory:** take any medicine or supply for any crew member, with no further approval (an
+    allergy asks "give anyway"); stock folded away.
+  - **Patients:** the clinical summary, latest symptoms and allergies.
+  - **Reports to Earth.**
+- **The medical officer's Medical bay cabinet** is fully open: a bin → "Take (no approval needed)".
+- **Earth console:** pills waiting for Earth with Approve and Deny, and Earth's reply QR for Tomas
+  (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`, the same as `inventory/earth-reply-qr.svg`). The code generator
+  and demo controls are folded away.
+- **`meds` module:** the medical officer route (`source: "medical-officer"`, logged), and two approval
+  routes only (no Earth exception when Leo is the patient, as Tommy asked). Both are listed for zt in
+  `meds/README.md`, items 10 and 11; the contract text needs a change.
+- **Not mine to merge alone:** the page changes are in `integration/onboard-app/pages/` (zt's and
+  Tommy's). Bring them into PR #74, or open a PR they approve.
 
 ## Done
 

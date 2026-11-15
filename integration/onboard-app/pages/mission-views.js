@@ -127,7 +127,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const routedToDoctor=/the medical officer decides/i.test(b.why??'');
     const earthApproval=b.tier==='controlled'||/Earth decides/.test(b.why??'')||(routedToDoctor&&state().user?.crewId===MEDICAL_OFFICER_ID);
     const safetyBlocked=b.why?.startsWith('Allergy:')||(b.tier==='self-care'&&b.locked&&!routedToDoctor);
-    const tier=safetyBlocked?'Unavailable':earthApproval?'Earth prescription · code / QR':{'self-care':b.locked?'Onboard doctor approval':'Self-care',prescription:'Onboard doctor approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
+    const tier=role==='medical_officer'?'Medical officer · open':safetyBlocked?'Unavailable':earthApproval?'Earth prescription · code / QR':{'self-care':b.locked?'Onboard doctor approval':'Self-care',prescription:'Onboard doctor approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
     // Routing is already shown in Access. Keep actionable safety blocks, not policy boilerplate.
     const safetyReason=/^(Prescription:|Controlled medicine:|Emergency medicine:|The medical officer is the patient:)/i.test(b.why??'')?null:b.why?.replace(/: the medical officer decides$/i,'');
     let actions='';
@@ -142,6 +142,12 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       else if(b.why?.startsWith('Allergy:'))actions=`<button type="button" class="btn ghost" disabled>Unavailable for this profile</button>`;
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
       else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
+    }
+    else if(role==='medical_officer') {
+      // The medical officer takes any medicine for any crew member, no further approval (logged)
+      const {CREW,patient}=state();
+      if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready${collection.patientId?` · For ${esc(member(collection.patientId))}`:''}</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel','cancel-collection','','ghost sm')}`;
+      else if(b.units>0)actions=`<form id="mo-take-form"><input type="hidden" name="itemId" value="${esc(b.itemId)}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),patient)}${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}${submit('Take (no approval needed)')}</form>`;
     }
     return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(compartmentLabel(b.compartmentId)),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'open':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(compartmentLabel(b.compartmentId))}</dd></div></dl>${safetyReason&&!b.open?`<p class="access-reason">${icon('lock')}${esc(safetyReason)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
   }

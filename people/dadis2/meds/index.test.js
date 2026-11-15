@@ -122,19 +122,51 @@ test('Step 6: reset puts back the same start, every time', async () => {
 
 // ---- who decides -------------------------------------------------------------------------------
 
-test('Controlled medicines and the medical officer\'s own requests go to Earth', async () => {
+test('Controlled medicines go to Earth, and Earth approves them', async () => {
   const ctx = await setup();
   const zol = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5' })).request;
   assert.equal(zol.status, 'waiting_earth');
   fails(await call(ctx, medicalOfficer(), 'POST', `/requests/${zol.id}/decision`, { decision: 'approve', units: 1, perDay: 1, days: 3 }), 'needs_earth');
 
-  const own = ok(await call(ctx, leo, 'POST', '/requests', { itemId: 'ondansetron-4' })).request;
-  assert.equal(own.status, 'waiting_earth');
-
   const forEarth = ok(await call(ctx, earthUser(), 'GET', '/requests')).requests;
-  assert.deepEqual(forEarth.map((r) => r.id).sort(), [zol.id, own.id].sort());
+  assert.deepEqual(forEarth.map((r) => r.id), [zol.id]);
   const decided = ok(await call(ctx, earthUser(), 'POST', `/requests/${zol.id}/decision`, { decision: 'approve', units: 1, perDay: 1, days: 3, note: null }));
   assert.deepEqual([decided.grant.issuer, decided.grant.verification], ['EARTH', 'simulated']);
+});
+
+test('The medical officer\'s own prescription request goes to the medical officer, not Earth (two routes only)', async () => {
+  const ctx = await setup();
+  const own = ok(await call(ctx, leo, 'POST', '/requests', { itemId: 'ondansetron-4' })).request;
+  assert.equal(own.status, 'waiting_medical_officer');
+  const decided = ok(await call(ctx, medicalOfficer(), 'POST', `/requests/${own.id}/decision`, { decision: 'approve', units: 1, perDay: 2, days: 3 }));
+  assert.deepEqual([decided.grant.crewId, decided.grant.issuer], ['c2', 'c2']);
+});
+
+// ---- the medical officer console: any medicine, no further approval ----------------------------
+
+test('The medical officer takes any medicine for any crew member with no further approval, and it is logged', async () => {
+  const ctx = await setup();
+  const lockers = ok(await call(ctx, medicalOfficer(), 'GET', '/lockers'));
+  assert.deepEqual([bin(lockers, 'L2-1-01').locked, bin(lockers, 'L3-1-01').locked, bin(lockers, 'L2-1-07').locked], [false, false, false]);
+  for (const itemId of ['zolpidem-5', 'ondansetron-4', 'epinephrine-auto', 'gauze-4x4']) {
+    const col = ok(await call(ctx, medicalOfficer(), 'POST', '/collections', { itemId, units: 1, patientId: 'c3' })).collection;
+    assert.deepEqual([col.source, col.patientId, col.crewId], ['medical-officer', 'c3', 'c2']);
+    const done = ok(await call(ctx, medicalOfficer(), 'POST', `/collections/${col.id}/scan`, { compartmentId: col.compartments[0].compartmentId })).collection;
+    assert.equal(done.status, 'complete');
+  }
+  const doses = ok(await call(ctx, medicalOfficer(), 'GET', '/doses', null, { crewId: 'c3' })).doses;
+  assert.deepEqual(doses.map((d) => d.source).filter((s) => s === 'medical-officer').length, 4);
+  // Crew still can't: the officer route belongs to the medical officer role
+  fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'zolpidem-5', units: 1 }), 'needs_approval');
+});
+
+test('The medical officer must confirm "give anyway" for a patient\'s allergy', async () => {
+  const ctx = await setup();
+  const msg = fails(await call(ctx, medicalOfficer(), 'POST', '/collections', { itemId: 'ibuprofen-400', units: 1, patientId: 'c4' }), 'needs_approval');
+  assert.match(msg, /Allergy: NSAID/);
+  const col = ok(await call(ctx, medicalOfficer(), 'POST', '/collections', { itemId: 'ibuprofen-400', units: 1, patientId: 'c4', overrideAllergy: true })).collection;
+  assert.equal(col.patientId, 'c4');
+  fails(await call(ctx, medicalOfficer(), 'POST', '/collections', { itemId: 'ibuprofen-400', units: 1 }), 'invalid_field');
 });
 
 test('Earth can deny, and a denied request stays decided', async () => {
