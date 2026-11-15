@@ -130,14 +130,15 @@ The app imports your module straight from your folder, without copying it. Only 
 
 | id | Name | Title | Demo story (from the demo cases) |
 |---|---|---|---|
-| `c1` | Mara Quinn | Commander | B: healthy, does a workout |
-| `c2` | Leo Haddad | Medical officer | E: the only medical officer, and also a normal crew member |
-| `c3` | Ines Sato | Flight engineer | D: mood below normal for 6 days; resting heart rate missing on days 39 and 41 |
-| `c4` | Tomas Reyes | Mission specialist | A: known NSAID allergy, headache, three short nights, CO₂ high overnight, says "I'm fine" |
-| `c5` | Kai Lindqvist | Pilot | C: allergic reaction to a new food, an emergency |
+| `c1` | Mara Quinn | Mission specialist | B: healthy, does a workout |
+| `c2` | Aggelos | Medical officer | E: the only medical officer, and also a normal crew member |
+| `c3` | Chris | Flight engineer | D: mood below normal for 6 days; resting heart rate missing on days 39 and 41 |
+| `c4` | Diamandis | Commander | A: known NSAID allergy, headache, three short nights, CO₂ high overnight, says "I'm fine" |
+| `c5` | Petros | Pilot | C: allergic reaction to a new food, an emergency |
 
-The names are placeholders until the team picks new ones (four come from dadis2's prototype, and
-Kai is new). There is no backup medical officer.
+Renamed for the presentation on 15 November: Leo is now Aggelos, Ines is Chris, Tomas is
+Diamandis (now the Commander) and Kai is Petros; Mara keeps her name and becomes the Mission
+specialist. Older text below still uses the old names. There is no backup medical officer.
 
 | Role | Who | Page | Can see |
 |---|---|---|---|

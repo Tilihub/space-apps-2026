@@ -25,10 +25,10 @@ test('logging in: each platform gives its role, and only Leo (c2) gets the medic
   try {
     const tomas = dataOf(await app.call('POST', '/api/session', { body: { crewId: 'c4', platform: 'astronaut' } }));
     assert.equal(typeof tomas.token, 'string');
-    assert.deepEqual(tomas.user, { crewId: 'c4', role: 'crew', name: 'Tomas Reyes' });
+    assert.deepEqual(tomas.user, { crewId: 'c4', role: 'crew', name: 'Diamandis' });
 
     const leo = dataOf(await app.call('POST', '/api/session', { body: { crewId: 'c2', platform: 'medical' } }));
-    assert.deepEqual(leo.user, { crewId: 'c2', role: 'medical_officer', name: 'Leo Haddad' });
+    assert.deepEqual(leo.user, { crewId: 'c2', role: 'medical_officer', name: 'Aggelos' });
 
     const leoAsCrew = dataOf(await app.call('POST', '/api/session', { body: { crewId: 'c2', platform: 'astronaut' } }));
     assert.equal(leoAsCrew.user.role, 'crew');
