@@ -9,11 +9,12 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Report version 1.1: shortened section 8 to two paragraphs, explicitly credited the team with designing and building the application pipeline, and removed the contributor-by-contributor AI tool list. Application evidence remains pinned to b0f968c.
+- Working on: Completed report version 1.1 in PR #82: shortened section 8 to two paragraphs, explicitly credited the team with designing and building the application pipeline, and removed the contributor-by-contributor AI tool list. Application evidence remains pinned to b0f968c.
 - Branch: angelos/shorten-ai-section
 
 ## Done
 
+- Published the revised report in https://github.com/Tilihub/space-apps-2026/pull/82, with changes confined to my own folder. The 41-page PDF is ready for the team.
 - Revised report section 8 at Angelos's request: reduced it from about 500 words to 105, retained a brief AI-use disclosure and accurate companion description, and made the team's pipeline ownership explicit. Version 1.1 is 41 pages, all rendered and visually reviewed; text bounds, font coverage and 459 navigation/reference links pass. The narrative outside section 8 and the pinned application evidence are unchanged. Kept the architecture diagram and caption together after reflow.
 - Published the report in https://github.com/Tilihub/space-apps-2026/pull/78. All 42 pages were rendered and visually checked; text bounds and embedded-font glyph coverage pass, 465 navigation/reference links are present, and Git preserves the verified PDF bytes. The PR touches only my folder and one appended source row, with no protected files or conflicts.
 - Prepared people/angelos/report/PULSE_Project_Report.pdf and its editable English narrative/build script. The report follows the public NASA Publications Guide structure with only the team's supplied logo. It distinguishes the local scripted companion from model training, synthetic crew fixtures from historical observations, and delivered features from remaining work.
