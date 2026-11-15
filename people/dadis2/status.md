@@ -8,26 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-15 14:05
-- Working on: **PR #85** to main (`dadis2/mo-console`): medical officer console, Earth console, star
-  map opening, request reasons. It includes `dadis2/earth-qr`.
-  - Main is merged in twice, each time keeping both sides of the conflicts:
-    1. After #74/#75: `pages/app.js` (Tommy's Pulsars shop and my console).
-    2. After Petros's #86: `pages/app.js` and `mission-views.js` (his Falcon Habitat view and its
-       `loadHabitat`, plus my star map, my lean medical officer loading and the cabinet export).
-  - **Agreed terms (15 Nov), now also written into `shared/contract/README.md` in this PR**, as
-    Angelos's review asked:
-    - the medical officer can take medicines
-    - the medical officer approves their own requests
-    - every request needs a reason, except for a self-care medicine
-    - in an emergency the reason is optional
-  - Main merged in again after potest's #89, with no conflicts. `npm test` 129 of 129, and the app
-    was checked in the browser.
-  - **zt approved.** Angelos's earlier "changes requested" still blocks; he's asked to review again.
-    The PR is set to merge into main by itself once he approves.
-- Branch: dadis2/mo-console
+- Last updated: 2026-11-15 14:41
+- Done: **PR #85 is merged into main** (merged by zt on 15 Nov, after zt's approval; Angelos's earlier
+  review was dismissed). It brings:
+  - the medical officer console, the Earth console and the star map opening
+  - request reasons, and the agreed medicine terms written into `shared/contract/README.md`
+  - `dadis2/earth-qr`
 
-### Medical officer and Earth consoles (`dadis2/mo-console`, PR #85)
+  On main, with Tommy's #79 (AED) and zt's #90: `npm test` 130 of 130, and the app was checked in
+  the browser.
+- Branch: none open (this status update is on `dadis2/status-85-merged`).
+
+### Medical officer and Earth consoles (PR #85, merged)
 
 - **Medical officer console** (login → "Medical officer"): only two features, by my decision of
   15 Nov; the rest (patients, reports to Earth, emergency paperwork, Habitat and Medical bay in the
