@@ -527,7 +527,11 @@ export default {
     {
       method: 'POST', path: '/requests', roles: ['crew'], status: 201,
       handler: async (req, ctx) => {
+        // A reason is required for every request (dadis2, 15 Nov): it's not an emergency, so the doctor
+        // or Earth decides on it. The request's `note` holds the reason.
         const body = checkFields(req.body, ['itemId', 'reportId', 'note'], ['itemId']);
+        const reason = checkNote(body.note)?.trim();
+        if (!reason) throw apiError('invalid_field', 'Say why you need it: a short reason is required.');
         const crewId = resolveCrewId(req.user);
         const item = mustItem(body.itemId);
         const state = await load(ctx);
@@ -543,7 +547,7 @@ export default {
           throw apiError('already_done', `You already asked for ${item.name}. It's waiting for a decision.`);
         }
         const request = {
-          id: newId('req'), crewId, itemId: item.id, reportId: body.reportId ?? null, note: checkNote(body.note),
+          id: newId('req'), crewId, itemId: item.id, reportId: body.reportId ?? null, note: reason,
           status: a.approval === 'earth' ? 'waiting_earth' : 'waiting_medical_officer', createdAt: now,
           decidedAt: null, decisionNote: null, grantId: null,
         };
@@ -658,12 +662,14 @@ export default {
     {
       method: 'POST', path: '/emergencies', roles: ['crew'], status: 201,
       handler: async (req, ctx) => {
-        const body = checkFields(req.body, ['patientId', 'reason', 'vitals'], ['patientId', 'reason']);
+        // The reason is optional in an emergency (dadis2, 15 Nov): there may be no time to type
+        const body = checkFields(req.body, ['patientId', 'reason', 'vitals'], ['patientId']);
         resolveCrewId(req.user); // any crew member, for anyone
         if (!isCrewId(body.patientId)) throw apiError('invalid_field', `Unknown crew member: ${String(body.patientId)}.`);
-        if (typeof body.reason !== 'string' || !body.reason.trim() || body.reason.length > 500) {
-          throw apiError('invalid_field', 'reason must say what happened, up to 500 characters.');
+        if (body.reason != null && (typeof body.reason !== 'string' || body.reason.length > 500)) {
+          throw apiError('invalid_field', 'reason must be text, up to 500 characters.');
         }
+        const reason = body.reason?.trim() || null;
         const vitals = checkVitals(body.vitals);
         const state = await load(ctx);
         const now = ctx.now();
@@ -671,7 +677,7 @@ export default {
         const open = state.emergencies.find((e) => e.patientId === body.patientId && e.status === 'open');
         if (open) return { emergency: emergencyView(open, req.user.role), alreadyOpen: true };
         const e = {
-          id: newId('emg'), patientId: body.patientId, raisedBy: req.user.crewId, raisedAt: now, reason: body.reason.trim(), vitals,
+          id: newId('emg'), patientId: body.patientId, raisedBy: req.user.crewId, raisedAt: now, reason, vitals,
           status: 'open', paperworkDueAt: isoOf(ms(now) + PAPERWORK_HOURS * 3_600_000), paperworkNote: null, closedAt: null, released: [],
         };
         state.emergencies.push(e);

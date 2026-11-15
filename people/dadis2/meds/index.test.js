@@ -74,7 +74,7 @@ test('Step 3: ibuprofen is locked for Tomas and refused if he tries', async () =
   assert.equal(ibu.locked, true);
   assert.match(ibu.why, /Allergy/);
   fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'ibuprofen-400', units: 1 }), 'needs_approval');
-  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ibuprofen-400' }), 'needs_approval');
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ibuprofen-400', note: 'Test reason' }), 'needs_approval');
   // Mara has no allergy: for her it's self-care
   assert.equal(bin(ok(await call(ctx, mara, 'GET', '/lockers')), 'L1-1-02').locked, false);
 });
@@ -82,10 +82,14 @@ test('Step 3: ibuprofen is locked for Tomas and refused if he tries', async () =
 test('Steps 4 and 5: Leo approves a request; Tomas collects only the due dose, and again gives already_done', async () => {
   const ctx = await setup();
   fails(await call(ctx, tomas, 'POST', '/collections', { itemId: 'ondansetron-4', units: 1 }), 'needs_approval');
+  // Not an emergency: a reason is required
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4' }), 'invalid_field');
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4', note: '   ' }), 'invalid_field');
   const request = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4', note: 'Nausea since lunch' })).request;
+  assert.equal(request.note, 'Nausea since lunch');
   assert.equal(request.status, 'waiting_medical_officer');
   assert.deepEqual(ctx.events.at(-1), { type: 'meds.request-created', crewId: 'c4' });
-  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4' }), 'already_done');
+  fails(await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4', note: 'Test reason' }), 'already_done');
 
   const waiting = ok(await call(ctx, medicalOfficer(), 'GET', '/requests', null, { status: 'waiting_medical_officer' })).requests;
   assert.deepEqual(waiting.map((r) => r.id), [request.id]);
@@ -115,7 +119,7 @@ test('Step 6: reset puts back the same start, every time', async () => {
   const ctx = await setup();
   const start = structuredClone(ctx.saved());
   await call(ctx, tomas, 'POST', '/symptom-reports', { symptoms: [{ code: 'headache', severity: 5 }] });
-  await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4' });
+  await call(ctx, tomas, 'POST', '/requests', { itemId: 'ondansetron-4', note: 'Test reason' });
   await meds.reset(ctx);
   assert.deepEqual(ctx.saved(), start);
 });
@@ -124,7 +128,7 @@ test('Step 6: reset puts back the same start, every time', async () => {
 
 test('Controlled medicines go to Earth, and Earth approves them', async () => {
   const ctx = await setup();
-  const zol = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5' })).request;
+  const zol = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5', note: 'Test reason' })).request;
   assert.equal(zol.status, 'waiting_earth');
   fails(await call(ctx, medicalOfficer(), 'POST', `/requests/${zol.id}/decision`, { decision: 'approve', units: 1, perDay: 1, days: 3 }), 'needs_earth');
 
@@ -136,7 +140,7 @@ test('Controlled medicines go to Earth, and Earth approves them', async () => {
 
 test('The medical officer\'s own prescription request goes to the medical officer, not Earth (two routes only)', async () => {
   const ctx = await setup();
-  const own = ok(await call(ctx, leo, 'POST', '/requests', { itemId: 'ondansetron-4' })).request;
+  const own = ok(await call(ctx, leo, 'POST', '/requests', { itemId: 'ondansetron-4', note: 'Test reason' })).request;
   assert.equal(own.status, 'waiting_medical_officer');
   const decided = ok(await call(ctx, medicalOfficer(), 'POST', `/requests/${own.id}/decision`, { decision: 'approve', units: 1, perDay: 2, days: 3 }));
   assert.deepEqual([decided.grant.crewId, decided.grant.issuer], ['c2', 'c2']);
@@ -171,7 +175,7 @@ test('The medical officer must confirm "give anyway" for a patient\'s allergy', 
 
 test('Earth can deny, and a denied request stays decided', async () => {
   const ctx = await setup();
-  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'modafinil-100' })).request;
+  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'modafinil-100', note: 'Test reason' })).request;
   const d = ok(await call(ctx, earthUser(), 'POST', `/requests/${r.id}/decision`, { decision: 'deny', note: 'Sleep first' }));
   assert.deepEqual([d.request.status, d.grant], ['denied', null]);
   assert.equal(ok(await call(ctx, tomas, 'GET', '/requests')).requests[0].status, 'denied');
@@ -205,7 +209,7 @@ test('A code is refused for the wrong person, with a typo, for an allergy, or on
 
 test('Earth\'s reply QR (inventory/earth-reply-qr.svg) answers Tomas\'s waiting sleeping-pill request', async () => {
   const ctx = await setup();
-  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5' })).request;
+  const r = ok(await call(ctx, tomas, 'POST', '/requests', { itemId: 'zolpidem-5', note: 'Test reason' })).request;
   assert.equal(r.status, 'waiting_earth');
   const g = ok(await call(ctx, tomas, 'POST', '/grants/import', { code: 'RX2-EARTH-C4-261114-ZOL1X1X7-9Z' })).grant;
   assert.deepEqual([g.issuer, g.verification, g.dueNow, g.items[0].itemId, g.items[0].days], ['EARTH', 'simulated', true, 'zolpidem-5', 7]);
@@ -391,10 +395,21 @@ test('Scene C, step 6: the new allergy goes on Kai\'s profile as suspected; Leo 
   assert.deepEqual(p.allergies.map((a) => a.status), ['confirmed']);
 });
 
+test('In an emergency the reason is optional: no time to type', async () => {
+  const ctx = await setup();
+  const a = ok(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5' }));
+  const b = ok(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c1', reason: '  ' }));
+  const done = await release(ctx, mara, a.emergency.id, 'epinephrine-auto');
+  assert.equal(done.status, 'complete');
+  const all = ok(await call(ctx, medicalOfficer(), 'GET', '/emergencies')).emergencies;
+  assert.deepEqual(all.map((e) => e.reason), [null, null]);
+  assert.ok(b.emergency.id);
+});
+
 test('Emergency inputs are checked; Earth can\'t raise one', async () => {
   const ctx = await setup();
   fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c9', reason: 'x' }), 'invalid_field');
-  fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5', reason: '' }), 'invalid_field');
+  fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5', reason: 'x'.repeat(501) }), 'invalid_field');
   fails(await call(ctx, mara, 'POST', '/emergencies', { patientId: 'c5', reason: 'x', vitals: { spo2Pct: 140 } }), 'invalid_field');
   fails(await call(ctx, earthUser(), 'POST', '/emergencies', { patientId: 'c5', reason: 'x' }), 'wrong_role');
   fails(await call(ctx, mara, 'POST', '/collections', { itemId: 'acetaminophen-325', units: 1, overrideAllergy: true }), 'invalid_field');

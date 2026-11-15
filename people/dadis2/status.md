@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 11:58
+- Last updated: 2026-11-15 12:02
 - Working on: a lean medical officer console and Earth console in Tommy's complete demo (PR #74,
   approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes `dadis2/earth-qr`.
-  `npm test` 110 of 110.
+  `npm test` 111 of 111.
 - Branch: dadis2/mo-console
 
 ### Medical officer and Earth consoles (`dadis2/mo-console`, based on Tommy's `tommy/frontend-polish`)
@@ -30,6 +30,11 @@
 - **`meds` module:** the medical officer route (`source: "medical-officer"`, logged), and two approval
   routes only (no Earth exception when Leo is the patient, as Tommy asked). Both are listed for zt in
   `meds/README.md`, items 10 and 11; the contract text needs a change.
+- **Reasons:** a request (not an emergency) needs a reason: "Why do you need it? (required)", checked
+  on the server too. In an emergency the reason is optional ("What happened? (optional)").
+  - After a request, the message says who decides: "Sent to Earth" for controlled medicines
+    (zolpidem, modafinil), otherwise "Sent to the medical officer".
+  - Listed for zt as item 12.
 - **Not mine to merge alone:** the page changes are in `integration/onboard-app/pages/` (zt's and
   Tommy's). Bring them into PR #74, or open a PR they approve.
 

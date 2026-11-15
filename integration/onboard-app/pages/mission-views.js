@@ -136,12 +136,12 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       else if(b.tier==='emergency') {
         const {CREW,user}=state();
         actions=ui.emergencyEnabled
-          ? `<form id="cabinet-emergency-${b.itemId}" data-cabinet-emergency data-item="${b.itemId}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),user.crewId)}<label class="field"><span>Emergency reason</span><textarea class="input" name="reason" rows="3" maxlength="500" required></textarea></label>${disclosure('Allergy override',`<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>`)}${submit('Collect item')}</form>`
+          ? `<form id="cabinet-emergency-${b.itemId}" data-cabinet-emergency data-item="${b.itemId}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),user.crewId)}<label class="field"><span>What happened? (optional)</span><textarea class="input" name="reason" rows="2" maxlength="500"></textarea></label>${disclosure('Allergy override',`<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>`)}${submit('Collect item')}</form>`
           : '';
       }
       else if(b.why?.startsWith('Allergy:'))actions=`<button type="button" class="btn ghost" disabled>Unavailable for this profile</button>`;
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
-      else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
+      else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?'<label class="field"><span>Why do you need it? (required)</span><textarea class="input" name="note" rows="3" maxlength="1000" required></textarea></label>':field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
     }
     else if(role==='medical_officer') {
       // The medical officer takes any medicine for any crew member, no further approval (logged)

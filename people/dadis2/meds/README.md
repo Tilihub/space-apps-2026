@@ -116,3 +116,7 @@ None of these change a contract field; some add one. To agree or fold into the c
     - an allergy still needs `overrideAllergy: true`, which is logged
     - the medical officer can confirm and cancel collections
     - their `GET /lockers` shows every bin open (only an empty bin is locked)
+12. **Reasons** (dadis2, 15 Nov):
+    - `POST /requests` needs a reason in `note`, because it isn't an emergency. The contract says
+      `note` may be `null`.
+    - `POST /emergencies` takes `reason` as optional (`null` when there's no time to type).

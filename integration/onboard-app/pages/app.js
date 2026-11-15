@@ -207,7 +207,7 @@ function requestsPanel() {
 }
 function emergencyPanel() {
  const list=data.emergencies?.emergencies??[];
- if(role()==='crew') return card('Emergency access',`<p class="subtle">Any crew member may raise an emergency for a crewmate. Only emergency-tier medicines are released; the medical officer must complete the paperwork.</p><form id="emergency-form">${crewSelect('patientId')}${field('Emergency reason','reason',{required:true,attrs:'maxlength="2000"'})}${submit('Raise emergency')}</form>${list.map(e=>`<div class="report-card"><b>${esc(member(e.patientId))}</b>${allBins().filter(b=>b.tier==='emergency').map(b=>`<form id="emergency-item-${e.id}-${b.itemId}" data-emergency="${e.id}" data-item="${b.itemId}"><p>${esc(b.label)}</p>${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>${submit('Release emergency item')}</form>`).join('')}</div>`).join('')}`);
+ if(role()==='crew') return card('Emergency access',`<p class="subtle">Any crew member may raise an emergency for a crewmate. Only emergency-tier medicines are released; the medical officer must complete the paperwork.</p><form id="emergency-form">${crewSelect('patientId')}${field('What happened? (optional)','reason',{attrs:'maxlength="500"'})}${submit('Raise emergency')}</form>${list.map(e=>`<div class="report-card"><b>${esc(member(e.patientId))}</b>${allBins().filter(b=>b.tier==='emergency').map(b=>`<form id="emergency-item-${e.id}-${b.itemId}" data-emergency="${e.id}" data-item="${b.itemId}"><p>${esc(b.label)}</p>${field('Units','units',{type:'number',value:1,attrs:'min="1" max="9"',required:true})}<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>${submit('Release emergency item')}</form>`).join('')}</div>`).join('')}`);
  return card('Emergency paperwork',list.map(e=>`<form id="paperwork-${e.id}" data-emergency="${e.id}"><b>${esc(member(e.patientId))}</b><p>${esc(e.reason)} · due ${time(e.paperworkDueAt)}</p>${(e.released??[]).map(r=>`<p>${esc(r.name)} × ${r.units} · ${time(r.at)}</p>`).join('')}${note('Paperwork / resolution note')}${submit('Close emergency')}</form>`).join('')||empty('No open emergency.'));
 }
 function importPanel() {
@@ -428,9 +428,9 @@ async function handleForm(form,submitter) {
  } else if(form.hasAttribute('data-cabinet-emergency')) {
   if(role()!=='crew'||!missionViews.emergencyEnabled())throw new Error('Enable Emergency above first.');
   const reason=(v.reason??'').trim();
-  if(!reason||reason.length>500)throw new Error('Enter an emergency reason, up to 500 characters.');
+  if(reason.length>500)throw new Error('Keep the emergency reason under 500 characters.'); // optional: no time to type
   // Compose the existing incident and collection APIs. The server owns eligibility, defaults and logging.
-  const result=await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason}});
+  const result=await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason:reason||null}});
   await collect({emergencyId:result.emergency.id,itemId:form.dataset.item,overrideAllergy:form.elements.overrideAllergy.checked});
   delete drafts[id];
   if(result.alreadyOpen)notice('Ready to collect. The open emergency keeps its original reason.');
@@ -446,7 +446,9 @@ async function handleForm(form,submitter) {
   await api(`/meds/requests/${form.dataset.request}/decision`,{method:'POST',body:{decision:submitter.value,...numberFields(v,['units','perDay','days']),note:v.note}});delete drafts[id];notice('Decision saved by the medicine module.');
  } else if(form.dataset.item) {
   if(submitter.value==='request') {
-   await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:v.note}});notice('Approval request submitted.');
+   if(!(v.note??'').trim())throw new Error('Say why you need it: a short reason is required.');
+   const sent=(await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:v.note.trim()}})).request;
+   notice(sent.status==='waiting_earth'?'Sent to Earth: controlled medicines need Earth’s approval. The reply arrives as a QR code.':'Sent to the medical officer for approval.');
   } else {await collect({itemId:form.dataset.item,units:Number(v.units)});return;}
  } else if(id==='workout-step') {
   clock=await api('/clock');workout.completeStep(form.dataset.step,clock.now,numberFields(v,['reps']));rememberTrainingEnd();delete drafts[id];
