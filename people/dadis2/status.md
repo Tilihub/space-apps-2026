@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-15 13:40
+- Last updated: 2026-11-15 14:05
 - Working on: **PR #85** to main (`dadis2/mo-console`): medical officer console, Earth console, star
   map opening, request reasons. It includes `dadis2/earth-qr`.
   - Main is merged in twice, each time keeping both sides of the conflicts:
@@ -21,9 +21,10 @@
     - the medical officer approves their own requests
     - every request needs a reason, except for a self-care medicine
     - in an emergency the reason is optional
-  - `npm test` 128 of 128.
-  - **Waiting for approval (contract change: a teammate must approve; Angelos re-requested), not
-    merged.**
+  - Main merged in again after potest's #89, with no conflicts. `npm test` 129 of 129, and the app
+    was checked in the browser.
+  - **zt approved.** Angelos's earlier "changes requested" still blocks; he's asked to review again.
+    The PR is set to merge into main by itself once he approves.
 - Branch: dadis2/mo-console
 
 ### Medical officer and Earth consoles (`dadis2/mo-console`, PR #85)
