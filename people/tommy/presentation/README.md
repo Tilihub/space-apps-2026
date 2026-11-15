@@ -17,6 +17,19 @@ We follow five fictional crew members during a long journey toward Mars. Each st
 | 6:10–6:40 | Closing | Connect the five stories: a shared ecosystem supporting daily routines, environmental awareness, privacy and accountable care. State the impact, one concrete next development step, and close. |
 | 6:40–7:00 | Reserve | Transitions or a delayed click. Have screenshots ready rather than using this time for another scene. |
 
+## Scenario 4 speaker cues — Crew Assistant
+
+Use these cues inside the existing 4:00–5:05 slot. The comparison screenshots come from a separate controlled rehearsal, so the live Ines scene and the following clinician scene keep their prepared state.
+
+| Time | On screen | Spoken cue for Greek delivery |
+|---|---|---|
+| 4:00–4:18 | As Ines, finish the prepared daily wellbeing check-in and open **Wellbeing**. | “Ines can check in about how she feels and talk privately to the Crew Assistant onboard.” |
+| 4:18–4:30 | Select **Missing home** and show the offline reply. | “The assistant acknowledges how hard it can feel to be far from home and asks what she misses most.” |
+| 4:30–4:53 | Show the two prepared replies side by side. Both astronauts entered the same check-in and typed **“I am not feeling very well today.”** | “Mara had been doing well, so she gets a suggestion to take a quiet break and check in again after sleep. Tomas has had several difficult days. The same question prompts him to ask the crew medical officer for help protecting his next sleep block.” |
+| 4:53–5:05 | Hand over to Leo’s clinician view. | “The assistant uses scripted replies offline. Leo will now show how a clinician reviews the underlying readings.” |
+
+**Prepare the comparison.** On `potest/controlled-crew-assistant`, start the app with `node integration/onboard-app/start.js --controlled-companion`. For both Mara Quinn and Tomas Reyes, enter 4.6 hours of sleep and the same ten ratings. Use mood 5, stress 7, fatigue 7, worry 5, focus 4, motivation 5, loneliness 7, connection 5, workload 6 and mental rest 5. The overnight history is synthetic. Mara’s recent check-ins are steady. Tomas has four consecutive earlier days of short sleep, high stress and fatigue. Capture each reply with the prompt visible. Prepare a screenshot of Ines’s completed check-in and reply in case the live submission takes too long.
+
 ## The reset requirement
 
 Tommy wants the presentation app ready after every reset: correct profiles, symptoms, stock, clinician/request/grant state, wallet/PR history, unfinished live tasks and prepared demo drafts. Clear previous-run emergencies, collections, rewards, messages and local timers. Reset once before the full run, not between speakers.
