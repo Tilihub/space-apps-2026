@@ -9,11 +9,12 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Report version 1.2: added a short team-organization paragraph explaining each member's main implementation and its purpose; replaced narrative aliases with the team-confirmed first names and retained GitHub handles for traceability. Application evidence remains pinned to b0f968c.
+- Working on: Completed report version 1.2 in PR #83: a short team-organization paragraph explains each member's main implementation and purpose; narrative aliases are replaced with team-confirmed first names, with GitHub handles retained for traceability. Application evidence remains pinned to b0f968c.
 - Branch: angelos/team-report-roles
 
 ## Done
 
+- Published the team-organization and names update in https://github.com/Tilihub/space-apps-2026/pull/83. Changes are confined to my report folder and status; the final 41-page PDF is ready for the team.
 - Cross-checked the public GitHub profiles and Git author names. Used the team-confirmed first names Angelos, Zisis, Christos, Petros, Diamantis and Thomas; did not infer missing profile names or publish extra surnames. Section 17 now links each core responsibility to its purpose, and the journal section explicitly explains its private-reflection role. Version 1.2 remains 41 pages; rendered and reviewed every changed page, with clean text bounds, complete font coverage and 466 navigation/reference links. The application evidence and short section 8 AI disclosure are unchanged.
 - Published the revised report in https://github.com/Tilihub/space-apps-2026/pull/82, with changes confined to my own folder. The 41-page PDF is ready for the team.
 - Revised report section 8 at Angelos's request: reduced it from about 500 words to 105, retained a brief AI-use disclosure and accurate companion description, and made the team's pipeline ownership explicit. Version 1.1 is 41 pages, all rendered and visually reviewed; text bounds, font coverage and 459 navigation/reference links pass. The narrative outside section 8 and the pinned application evidence are unchanged. Kept the architecture diagram and caption together after reflow.
