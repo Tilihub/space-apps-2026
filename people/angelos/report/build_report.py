@@ -485,7 +485,7 @@ def appendices(story, datasets, vitals, catalogue, fixture, manifest):
     ]:
         story.append(para(text))
     story.append(heading('Artifact provenance', 2))
-    story.append(para('Report identifier PULSE TR 2026 01. Version 1.1. Date 15 November 2026. Application snapshot ' + COMMIT + '. Team logo reproduced unchanged from the application assets. The Overview image is an existing repository review export. Diagrams are generated from the documented architecture and synthetic fixture. AI use is summarized in section 8.'))
+    story.append(para('Report identifier PULSE TR 2026 01. Version 1.2. Date 15 November 2026. Application snapshot ' + COMMIT + '. Team logo reproduced unchanged from the application assets. The Overview image is an existing repository review export. Diagrams are generated from the documented architecture and synthetic fixture. AI use is summarized in section 8.'))
 
 
 def manifest_for(datasets, vitals):
@@ -503,7 +503,7 @@ def manifest_for(datasets, vitals):
         blob = pinned_blob(path)
         files.append({'path': path, 'sha256': hashlib.sha256(blob).hexdigest(), 'bytes':len(blob), 'url':repo_url(path)})
     return {'applicationCommit':COMMIT, 'reportDate':'2026-11-15', 'timezone':'Asia/Nicosia',
-            'reportId':'PULSE TR 2026 01', 'reportVersion':'1.1',
+            'reportId':'PULSE TR 2026 01', 'reportVersion':'1.2',
             'validation':{'command':'node --test "**/*.test.js"', 'tests':117, 'passed':117, 'failed':0, 'skipped':0},
             'githubMerges':{'74':'2026-11-15T09:37:47Z', '75':'2026-11-15T09:38:35Z'},
             'counts':{'environmentDatasetGroups':len(datasets),
@@ -529,7 +529,7 @@ def main():
               para('Project rationale data methods and system documentation', 'CoverSub'), Spacer(1, 15),
               para('May the Pulse Be With You', 'CoverSub'),
               para('2026 NASA Space Apps Challenge<br/>14 and 15 November 2026', 'CoverSub'),
-              Spacer(1, 12), para('PULSE TR 2026 01  |  Version 1.1<br/>15 November 2026', 'CoverSub'),
+              Spacer(1, 12), para('PULSE TR 2026 01  |  Version 1.2<br/>15 November 2026', 'CoverSub'),
               para('Application revision b0f968c  |  Team project report', 'CoverSub'),
               NextPageTemplate('body'), PageBreak(), heading('Contents')]
     toc = TableOfContents()

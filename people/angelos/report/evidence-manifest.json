@@ -3,7 +3,7 @@
   "reportDate": "2026-11-15",
   "timezone": "Asia/Nicosia",
   "reportId": "PULSE TR 2026 01",
-  "reportVersion": "1.1",
+  "reportVersion": "1.2",
   "validation": {
     "command": "node --test \"**/*.test.js\"",
     "tests": 117,
