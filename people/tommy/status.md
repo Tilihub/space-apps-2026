@@ -8,12 +8,19 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — Alloy refinements, graph palette and Medical bay status badges
+- Last updated: 2026-11-15 — Medical bay inline emergency flow and clearer compartment labels
 - Working on: Tommy selected Clean / Inter (T02) for the entire app. Tommy corrected the base to MC04 Alloy, replacing Soft Panels. He explicitly chose a nonclinical demo value scale, then changed its graph-only endpoints to logo cyan → amber; missing/pending instruments stay gray. The shared mascot is cyan with an amber ring, outer accents are single muted 2px rules, and Cabinet confirmations are only in the item panel. The live filled demo is running on 8012 using its original saved store, with no reset. Backend/owner modules/contracts remain unchanged.
+- Medical bay follow-up: saturated green Open, chess-style display labels, no Allergies navigation tab, and an inline crew Emergency toggle/form using unchanged APIs. Root suite passed 102/102, none skipped; syntax/diff checks passed. Temporary port-8017 QA server stopped; user-facing port 8012 remains running.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Simplified crew Medical bay: removed its Allergies tab, retaining stored profiles, clinical allergy tools and all server-side allergy checks. Available stays cyan; Open uses a more saturated green (#65E69C), distinct from the blue available LEDs.
+- Cabinet locations now display chess-style row letters (L1-A-02, L1-B-01). Original compartment IDs remain in all API payloads, data attributes and records; no catalogue migration or backend change.
+- One top Emergency toggle enables the inline emergency-item form inside the existing cabinet. Before enabling, emergency medicines have no editable reason or collection action. Enabling selects L3 and retains the shelves, patient choice, required reason (maximum 500 characters), default server dose, explicit optional allergy override and the normal item confirmation/cancel controls. Disabling or signing out resets UI access; already-open collections remain confirmable. Ordinary supplies and L2 approvals are unchanged.
+- Frontend composes the existing POST emergencies and POST collections routes; no module, permission, contract or server logic changed. Existing backend limitation: one open incident per patient; reusing it preserves its original reason, rather than saving a new per-release reason. The success notice explains that reuse. Separate backend/contract work would be needed for per-release notes.
+- Isolated port-8017 browser checks: empty reason refused, no form before enabling, one Emergency toggle, green Open with one right-panel confirmation, collection survives reload, canonical-ID scan succeeds, stock changes only on confirmation, correct patient for both self and another crewmate, reset on sign-out/profile change, Tomas's NSAID block preserved without an Allergies tab, no console errors. Inspected only temporary fictional QA records to verify both reasons and patient/dose attribution. Saved screenshots. Port-8012 original store and user events preserved; updated app is open.
 
 - Medical bay uses the shared status-pill shape: Available is cyan, Open is green and Restricted stays red. Stock is labelled In stock and the duplicate inner Door open badge is removed. Tommy canceled making all closed LEDs red: the original blue available / red restricted / green open LED mapping is unchanged. Browser verified the cyan Available badge, blue available LEDs and no upper Cabinet collection panel. No collection action was submitted. Final root suite: 102/102 passed, none skipped; syntax/diff checks passed.
 
@@ -165,6 +172,7 @@
 
 ## Next steps
 
+- Review the inline Emergency cabinet with Tommy. New reasons for an already-open incident are not appended by the existing backend; coordinate a separate owner/contract change if that is required. Keep clinical allergy management and all permission checks intact.
 - Continue from `tommy/frontend-polish`. Tommy selected MC04 Alloy + Clean / Inter (T02), now the shared default. Review the running port-8012 app with Tommy; keep its saved data and existing events intact. Preserve the cyan-to-amber graph palette, single muted 2px amber caps, cyan/amber mascot and Medical bay right-panel confirmations. LED mapping remains blue available / red restricted / green open. Make only requested presentation changes and preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.

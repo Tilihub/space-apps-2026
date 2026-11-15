@@ -1,3 +1,4 @@
+import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
@@ -54,7 +55,7 @@ function notice(message,error=false) {
  if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
 }
 function clearNotice() { $('#notice').hidden=true; }
-function resetLocal() { for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
+function resetLocal() { missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
   const old=token;
   // Revoke only this tab's old session. Other tabs keep their own tokens.
@@ -162,7 +163,7 @@ function checkinScreen() {
 }
 function collectionPanel() {
  if(!collection) return '';
- return card('Dispenser collection',`<p>${tag(collection.status)} · ${esc(collection.source)} · ${time(collection.openedAt)}</p><p class="subtle">All eligible compartments open in one batch. Confirm each dispensed item once. This simulates the cabinet; it does not confirm ingestion.</p>${collection.compartments.map(c=>`<div class="row-item"><span class="grow"><b>${esc(binName(c.itemId))} × ${c.units}</b><small>${esc(c.compartmentId)}</small></span>${c.scanned?tag('Collected'):btn('Confirm dispensed','scan-item',`data-id="${esc(c.compartmentId)}"`,'primary sm')}</div>`).join('')}${collection.status==='open'?btn('Cancel remaining items','cancel-collection','','ghost sm'):''}`);
+ return card('Dispenser collection',`<p>${tag(collection.status)} · ${esc(collection.source)} · ${time(collection.openedAt)}</p><p class="subtle">All eligible compartments open in one batch. Confirm each dispensed item once. This simulates the cabinet; it does not confirm ingestion.</p>${collection.compartments.map(c=>`<div class="row-item"><span class="grow"><b>${esc(binName(c.itemId))} × ${c.units}</b><small>${esc(compartmentLabel(c.compartmentId))}</small></span>${c.scanned?tag('Collected'):btn('Confirm dispensed','scan-item',`data-id="${esc(c.compartmentId)}"`,'primary sm')}</div>`).join('')}${collection.status==='open'?btn('Cancel remaining items','cancel-collection','','ghost sm'):''}`);
 }
 function profilePanel() {
  const p=data.profile?.profile;
@@ -173,7 +174,7 @@ function grantsPanel() {
  return card('Prescription courses',grants.map(g=>`<div class="report-card"><div class="status-line"><b>${esc(member(g.crewId))}</b>${tag(g.status)}${g.dueNow?tag('Dose due'):''}</div>${g.items.map(i=>`<p>${esc(i.name)} · ${i.units} unit(s), ${i.perDay}/day for ${i.days} day(s)<br><small class="muted">${esc(i.status)}${i.nextDue?` · next ${time(i.nextDue)}`:''}</small></p>`).join('')}<small class="muted">Course ends ${time(g.end)}</small>${role()==='crew'?`<p>${btn('Collect due items','collect-grant',`data-id="${g.id}"`,'primary sm')}</p>`:''}<details><summary>Credential</summary><code>${esc(g.code)}</code>${qrFor(g.code)}<p class="subtle">The same credential can be reused when the next dose is due. QR and typed code use the same backend.</p></details></div>`).join('')||empty('No prescription courses.'));
 }
 function lockersPanel() {
- return card('Connected cabinet',`<p class="subtle">Inventory and locks come from the meds API. Quantities below are usable stock; the server rechecks each collection.</p>${(data.lockers?.lockers??[]).map(l=>`<details><summary>${esc(l.name)}</summary>${l.shelves.map(s=>`<h4>${esc(s.id)} · ${esc(s.zone??'')}</h4><div class="locker-bins">${s.bins.map(b=>`<div class="locker-bin"><b>${esc(b.label)}</b><small>${esc(b.compartmentId)} · ${esc(b.tier)} · ${b.units} unit(s)</small><span class="subtle">${esc(b.why??(b.open?'Open for collection':'Available under self-care rules'))}</span>${role()==='crew'&&b.tier!=='emergency'?`<form id="item-${b.itemId}" data-item="${b.itemId}">${!b.locked?field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true}):note('Request note')}<button class="btn ghost sm" type="submit" name="intent" value="${b.locked?'request':'collect'}">${b.locked?'Request approval':'Collect'}</button></form>`:''}</div>`).join('')}</div>`).join('')}</details>`).join('')}`);
+ return card('Connected cabinet',`<p class="subtle">Inventory and locks come from the meds API. Quantities below are usable stock; the server rechecks each collection.</p>${(data.lockers?.lockers??[]).map(l=>`<details><summary>${esc(l.name)}</summary>${l.shelves.map(s=>`<h4>${esc(s.id)} · ${esc(s.zone??'')}</h4><div class="locker-bins">${s.bins.map(b=>`<div class="locker-bin"><b>${esc(b.label)}</b><small>${esc(compartmentLabel(b.compartmentId))} · ${esc(b.tier)} · ${b.units} unit(s)</small><span class="subtle">${esc(b.why??(b.open?'Open for collection':'Available under self-care rules'))}</span>${role()==='crew'&&b.tier!=='emergency'?`<form id="item-${b.itemId}" data-item="${b.itemId}">${!b.locked?field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true}):note('Request note')}<button class="btn ghost sm" type="submit" name="intent" value="${b.locked?'request':'collect'}">${b.locked?'Request approval':'Collect'}</button></form>`:''}</div>`).join('')}</div>`).join('')}</details>`).join('')}`);
 }
 function dosesPanel() {
  const doses=data.doses?.doses??[];
@@ -343,6 +344,16 @@ async function handleForm(form,submitter) {
   if(version!==revision)return;
   chat.push({mine:true,text:v.message},{mine:false,text:response.reply});delete drafts[id];form.elements.message.value='';
   renderCompanion();refreshChatViews();return;
+ } else if(form.hasAttribute('data-cabinet-emergency')) {
+  if(role()!=='crew'||!missionViews.emergencyEnabled())throw new Error('Enable Emergency above first.');
+  const reason=(v.reason??'').trim();
+  if(!reason||reason.length>500)throw new Error('Enter an emergency reason, up to 500 characters.');
+  // Compose the existing incident and collection APIs. The server owns eligibility, defaults and logging.
+  const result=await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason}});
+  await collect({emergencyId:result.emergency.id,itemId:form.dataset.item,overrideAllergy:form.elements.overrideAllergy.checked});
+  delete drafts[id];
+  if(result.alreadyOpen)notice('Ready to collect. The open emergency keeps its original reason.');
+  return;
  } else if(id==='emergency-form') {
   await api('/meds/emergencies',{method:'POST',body:{patientId:v.patientId,reason:v.reason}});
   delete drafts[id];notice('Emergency raised. Emergency-only releases are available below.',true);

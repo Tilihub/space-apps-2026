@@ -292,3 +292,9 @@ Tommy corrected the selection to **Alloy (MC04) + Clean / Inter (T02)** across t
 - Graphs alone use logo cyan → yellow/amber. Keep interface controls/caps amber, the mascot body cyan/ring amber, and all existing alert and thermal meanings. The color scale remains illustrative rather than a clinical rating.
 
 - Medical bay follows the shared status-pill shape: cyan Available, green Open and red Restricted. Shelf LEDs retain their original blue available / red restricted / green open mapping; Tommy canceled changing all closed LEDs to red. Stock is labelled In stock.
+
+### Medical bay simplification — 2026-11-15
+
+Tommy requested a greener Open badge, chess-style compartment labels (row 1 → A, row 2 → B), no Allergies tab in Medical bay, and a single top Emergency toggle. Keep allergy data and enforcement. Emergency medicines stay locked until the toggle is enabled; then choose an item, choose who needs help and enter the required reason in the item panel while the cabinet stays visible. No per-item Emergency button or separate crew Emergency page. Keep the server's default emergency dose, explicit allergy override and per-item confirmation.
+
+This frontend uses the existing incident/release endpoints. Their existing one-open-incident-per-patient rule preserves the original reason if the incident already exists. Recording a fresh note with every release remains a separate backend/contract follow-up, not silently introduced here. Display-only row letters do not change canonical IDs, stored history, codes or API requests.

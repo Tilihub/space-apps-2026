@@ -39,3 +39,11 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 
 /* Shared status-pill shape, with availability separate from the interface accent. */
 .status-pill.available{color:#78E0E8}[data-theme="light"] .status-pill.available{color:#117D8D}
+
+/* An open compartment uses the same distinct green as its lit medicine window. */
+.item-detail .status-pill.open{color:#65E69C}
+[data-theme="light"] .item-detail .status-pill.open{color:#167847}
+.med-toolbar .emergency-button[aria-pressed="true"]{color:var(--alert);border-color:var(--alert);background:color-mix(in srgb,var(--alert) 16%,var(--surface))}
+.item-actions [data-cabinet-emergency] > .btn{width:100%}
+.item-actions [data-cabinet-emergency] .disclosure{margin:0 0 16px}
+@media(max-width:640px){.crew-med-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}

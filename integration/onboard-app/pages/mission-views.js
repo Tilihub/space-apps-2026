@@ -1,3 +1,4 @@
+import {compartmentLabel} from '/cabinet-labels.js';
 import {readingTint,scaleTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
@@ -6,7 +7,7 @@ import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, emergencyEnabled:false,medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
@@ -103,7 +104,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     ui.binId=selected?.compartmentId;
     const current=bins.slice(ui.cabinetPage*9,(ui.cabinetPage+1)*9);
     const doors=Array.from({length:9},(_,i)=>current[i]);
-    return `<div class="cabinet-workspace"><div class="cabinet-column"><div class="locker-switch" role="group" aria-label="Cabinet">${lockers.map(l=>btn(`${l.id} <span>${esc(l.name.split('·').pop().trim())}</span>`,'ui-locker',`data-id="${l.id}" aria-pressed="${l.id===locker.id}"`,'ghost sm')).join('')}</div><div class="cabinet-housing"><div class="cabinet-ident"><b>PULSE <i>/</i> MED-${esc(locker.id.slice(1).padStart(2,'0'))}</b><span>${bins.length} COMPARTMENTS</span></div><div class="cabinet-recess"><div class="cabinet-grid">${doors.map(b=>b?`<button class="cabinet-door ${b.open?'door-open':''} ${b.compartmentId===ui.binId?'selected':''}" data-action="ui-bin" data-id="${b.compartmentId}" aria-pressed="${b.compartmentId===ui.binId}" aria-label="${esc(b.label)} · ${b.compartmentId} · ${b.open?'door open':b.locked?'restricted':'available'}"><span class="door-top"><b>${esc(b.compartmentId)}</b><i class="door-led ${b.open?'green':b.locked?'red':'cyan'}"></i></span><span class="door-window">${itemArt(b)}<i class="door-handle"></i></span><span class="door-label">${esc(b.label)}</span></button>`:`<div class="cabinet-door unused" aria-hidden="true"><span class="door-top"><b>—</b><i class="door-led"></i></span><span class="door-window"><span class="empty-bin">SPARE</span></span><span class="door-label">Unassigned</span></div>`).join('')}</div></div><div class="cabinet-base"><span><i></i> CABINET SIMULATOR</span><div>${btn('‹','ui-cabinet-page',`data-step="-1" aria-label="Previous compartments" ${ui.cabinetPage===0?'disabled':''}`,'ghost sm')}<b>${ui.cabinetPage+1} / ${pages}</b>${btn('›','ui-cabinet-page',`data-step="1" aria-label="Next compartments" ${ui.cabinetPage===pages-1?'disabled':''}`,'ghost sm')}</div></div></div><div class="cabinet-legend"><span><i class="cyan"></i>Selected</span><span><i class="green"></i>Open for collection</span><span><i class="red"></i>Restricted</span></div></div>${itemDetail(selected,role)}</div>`;
+    return `<div class="cabinet-workspace"><div class="cabinet-column"><div class="locker-switch" role="group" aria-label="Cabinet">${lockers.map(l=>btn(`${l.id} <span>${esc(l.name.split('·').pop().trim())}</span>`,'ui-locker',`data-id="${l.id}" aria-pressed="${l.id===locker.id}"`,'ghost sm')).join('')}</div><div class="cabinet-housing"><div class="cabinet-ident"><b>PULSE <i>/</i> MED-${esc(locker.id.slice(1).padStart(2,'0'))}</b><span>${bins.length} COMPARTMENTS</span></div><div class="cabinet-recess"><div class="cabinet-grid">${doors.map(b=>b?`<button class="cabinet-door ${b.open?'door-open':''} ${b.compartmentId===ui.binId?'selected':''}" data-action="ui-bin" data-id="${b.compartmentId}" aria-pressed="${b.compartmentId===ui.binId}" aria-label="${esc(b.label)} · ${esc(compartmentLabel(b.compartmentId))} · ${b.open?'door open':b.locked?'restricted':'available'}"><span class="door-top"><b>${esc(compartmentLabel(b.compartmentId))}</b><i class="door-led ${b.open?'green':b.locked?'red':'cyan'}"></i></span><span class="door-window">${itemArt(b)}<i class="door-handle"></i></span><span class="door-label">${esc(b.label)}</span></button>`:`<div class="cabinet-door unused" aria-hidden="true"><span class="door-top"><b>—</b><i class="door-led"></i></span><span class="door-window"><span class="empty-bin">SPARE</span></span><span class="door-label">Unassigned</span></div>`).join('')}</div></div><div class="cabinet-base"><span><i></i> CABINET SIMULATOR</span><div>${btn('‹','ui-cabinet-page',`data-step="-1" aria-label="Previous compartments" ${ui.cabinetPage===0?'disabled':''}`,'ghost sm')}<b>${ui.cabinetPage+1} / ${pages}</b>${btn('›','ui-cabinet-page',`data-step="1" aria-label="Next compartments" ${ui.cabinetPage===pages-1?'disabled':''}`,'ghost sm')}</div></div></div><div class="cabinet-legend"><span><i class="cyan"></i>Selected</span><span><i class="green"></i>Open for collection</span><span><i class="red"></i>Restricted</span></div></div>${itemDetail(selected,role)}</div>`;
   }
   function itemDetail(b,role) {
     const {collection,data}=state();
@@ -114,25 +115,27 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const tier={'self-care':'Self-care',prescription:'Medical officer approval',controlled:'Earth approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
     let actions='';
     if(role==='crew') {
-      if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel remaining batch','cancel-collection','','ghost sm')}`;
+      if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready${collection.source==='emergency'?` · For ${esc(member(collection.patientId))}`:''}</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel remaining batch','cancel-collection','','ghost sm')}`;
+      else if(b.tier==='emergency') {
+        const {CREW,user}=state();
+        actions=ui.emergencyEnabled
+          ? `<form id="cabinet-emergency-${b.itemId}" data-cabinet-emergency data-item="${b.itemId}">${select('For','patientId',CREW.map(c=>[c.id,c.name]),user.crewId)}<label class="field"><span>Emergency reason</span><textarea class="input" name="reason" rows="3" maxlength="500" required></textarea></label>${disclosure('Allergy override',`<label class="checkline"><input type="checkbox" name="overrideAllergy"> Give despite an allergy only if there is no other option; log the override.</label>`)}${submit('Collect item')}</form>`
+          : '';
+      }
       else if(b.why?.startsWith('Allergy:'))actions=`<button type="button" class="btn ghost" disabled>Unavailable for this profile</button>`;
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
-      else if(b.tier==='emergency')actions=btn('Open emergency access','ui-med-tab','data-id="emergency"','ghost');
       else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
     }
-    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(b.compartmentId),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'green':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(b.compartmentId)}</dd></div></dl>${b.why?`<p class="access-reason">${icon('lock')}${esc(b.why)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
+    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(compartmentLabel(b.compartmentId)),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'open':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(compartmentLabel(b.compartmentId))}</dd></div></dl>${b.why&&!b.open&&!(b.tier==='emergency'&&ui.emergencyEnabled)?`<p class="access-reason">${icon('lock')}${esc(b.why)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
   }
   function medbay() {
     const {role,data}=state();
+    if(ui.medTab==='profile')ui.medTab='cabinet';
     if(role==='crew'&&ui.medTab==='activity')ui.medTab='courses';
     if(role==='earth')return `<div class="stack">${legacy.requestsPanel()}<a class="btn primary" href="#earth">Open Earth console</a></div>`;
-    const tabs=[['cabinet','Cabinet'],['courses','My treatment'],...(role==='crew'?[]:[['activity','Activity']]),['profile','Allergies']];
-    const content={cabinet:()=>`${cabinet()}${role==='medical_officer'?disclosure('Stock watch',legacy.stockPanel(),'card compact'):''}`,courses:()=>`<div class="two">${role==='crew'?importCard():legacy.requestsPanel()}<div class="stack">${role==='crew'?upcomingTreatment():legacy.grantsPanel()}${role==='crew'?legacy.requestsPanel():''}</div></div>`,activity:()=>legacy.dosesPanel(),profile:()=>role==='crew'?readOnlyProfile():legacy.profilePanel(),emergency:()=>legacy.emergencyPanel()};
-    return `${role==='medical_officer'?legacy.patientPicker():''}${ui.medTab!=='cabinet'?collectionStrip():''}<div class="med-toolbar"><div class="page-tabs ${role==='crew'?'crew-med-tabs':''}" role="group" aria-label="Medical bay sections">${tabs.map(([id,label])=>btn(label,'ui-med-tab',`data-id="${id}" aria-pressed="${ui.medTab===id}"`,'ghost sm')).join('')}</div>${btn(`${icon('shield')} Emergency`,'ui-med-tab',`data-id="emergency" aria-pressed="${ui.medTab==='emergency'}"`,'emergency-button sm')}</div>${(content[ui.medTab]??content.cabinet)()}`;
-  }
-  function readOnlyProfile(){
-    const p=state().data.profile?.profile;
-    return card('Allergies on file',`${(p?.allergies??[]).filter(a=>a.status!=='removed').map(a=>`<div class="row-item"><span class="grow"><b>${esc(a.substance)}</b>${a.note?`<small>${esc(a.note)}</small>`:''}</span>${pill(a.status,'quiet')}</div>`).join('')||empty('No known allergies on file.')}${p?.conditions?.length?`<p>${p.conditions.map(esc).join(', ')}</p>`:''}`);
+    const tabs=[['cabinet','Cabinet'],['courses','My treatment'],...(role==='crew'?[]:[['activity','Activity']])];
+    const content={cabinet:()=>`${cabinet()}${role==='medical_officer'?disclosure('Stock watch',legacy.stockPanel(),'card compact'):''}`,courses:()=>`<div class="two">${role==='crew'?importCard():legacy.requestsPanel()}<div class="stack">${role==='crew'?upcomingTreatment():legacy.grantsPanel()}${role==='crew'?legacy.requestsPanel():''}</div></div>`,activity:()=>legacy.dosesPanel(),emergency:()=>legacy.emergencyPanel()};
+    return `${role==='medical_officer'?legacy.patientPicker():''}${ui.medTab!=='cabinet'?collectionStrip():''}<div class="med-toolbar"><div class="page-tabs ${role==='crew'?'crew-med-tabs':''}" role="group" aria-label="Medical bay sections">${tabs.map(([id,label])=>btn(label,'ui-med-tab',`data-id="${id}" aria-pressed="${ui.medTab===id}"`,'ghost sm')).join('')}</div>${btn(`${icon('shield')} Emergency`,role==='crew'?'ui-emergency':'ui-med-tab',`data-id="emergency" aria-pressed="${role==='crew'?ui.emergencyEnabled:ui.medTab==='emergency'}"`,'emergency-button sm')}</div>${(content[ui.medTab]??content.cabinet)()}`;
   }
   function dosesRemaining(g,item,now){
     if(g.status!=='active'||['finished','replaced','cancelled'].includes(item.status))return 0;
@@ -235,6 +238,13 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===el)));
       group.querySelector('.rating-title span').textContent=`${input.value} / 10`;remember(input.form);if(input.form.id==='wellbeing-extra-form')keepExtra(input.form);return;
     }
+    if(name==='ui-emergency'){
+      ui.emergencyEnabled=!ui.emergencyEnabled;ui.medTab='cabinet';
+      if(ui.emergencyEnabled){
+        const locker=(state().data.lockers?.lockers??[]).find(l=>binsOf(l).some(b=>b.tier==='emergency'));
+        if(locker){ui.lockerId=locker.id;ui.cabinetPage=0;ui.binId=null;}
+      }
+    }
     if(name==='ui-med-tab')ui.medTab=id;
     if(name==='ui-locker'){ui.lockerId=id;ui.cabinetPage=0;ui.binId=null;}
     if(name==='ui-bin')ui.binId=id;
@@ -243,5 +253,8 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea,tick};
+  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea,tick,
+    emergencyEnabled:()=>ui.emergencyEnabled,
+    resetSession:()=>{ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
+  };
 }
