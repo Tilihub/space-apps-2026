@@ -36,6 +36,8 @@
 
 ## Done
 
+- Published the functional AED and exact seven-minute outline in updated PR #79; owner agreement is recorded in shared/decisions/2026-11-15-1240-emergency-aed-demo.md. Requesting dadis2/zt review; no merge performed.
+
 - Added only the explicitly authorized five-line catalogue change in dadis2's folder; no owner logic/policy file edited. Emergency-only AED uses one equipment unit and its existing stock/patient/audit mechanisms; checkout is not an ingestion or patient-recovery assertion. Large shelf reads the actual API bin and turns green/open with normal confirmation. An older server lacking the entry keeps a truthful unavailable fallback.
 - Added a real-HTTP AED regression: no ordinary collection, quantity/author checks, one successful patient-linked emergency checkout, no duplicate/second release, persisted depletion, logged operator and reset restoring one device/no incidents. Root suite passes 118/118. Browser confirmed the full Kai/AED flow and persisted zero stock, then reset/reseeded only the disposable 8024 preview, leaving one AED available and no old emergency banner. Screenshot: presentation/review/aed-open.jpg.
 - Updated scene 3 to sudden cardiac arrest and a scripted successful resuscitation, separating equipment access from clinical outcome. Read the Local Event's 7-minute guide and created an exact 420-second run (intro, five stories, close, transitions/reserve). The full automatic presentation initializer remains a separate unimplemented planning item.
