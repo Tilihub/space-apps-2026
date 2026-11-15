@@ -23,7 +23,7 @@ const PRESENTATION_DAY = 42;
 export const STAGE_EXERCISE_REWARD = 200;
 export const STAGE_RECORD_REWARD = 100;
 
-/** Ines's prefilled answers: six of the seven extra questions (not mentalRest, the tenth). */
+/** Chris's (c3) and Mara's (c1) prefilled answers: six of the seven extra questions (not mentalRest, the tenth). */
 export const INES_PREFILL = Object.freeze({ worry: 6, focus: 4, motivation: 5, loneliness: 7, connection: 5, workload: 6 });
 
 /** An empty wallet, the same shape as blank() in people/tommy/pulsars/index.js. */
@@ -106,7 +106,7 @@ const stageRoute = {
 export default { ...pulsars, routes: [...pulsars.routes, stageRoute] };
 
 /**
- * The presentation version: Mara's prepared wallet on every reset, and Ines's prefilled answers.
+ * The presentation version: Mara's prepared wallet on every reset, and Chris's and Mara's prefilled answers.
  * @param {typeof pulsars} mod the module from modules.js
  * @returns {typeof pulsars}
  */
@@ -118,7 +118,7 @@ export const presentationPulsars = (mod) => ({
     /** @type {(req: any, ctx: any) => Promise<any>} */
     handler: async (req, ctx) => {
       const answer = await route.handler(req, ctx);
-      if (resolveCrewId(req.user) === 'c3' && ctx.missionDay() === PRESENTATION_DAY && !answer.wallet.wellbeingDone) {
+      if (['c1', 'c3'].includes(resolveCrewId(req.user)) && ctx.missionDay() === PRESENTATION_DAY && !answer.wallet.wellbeingDone) {
         answer.wallet.prefillAnswers = { ...INES_PREFILL };
       }
       return answer;
