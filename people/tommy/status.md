@@ -8,13 +8,24 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — Medical bay inline emergency flow and clearer compartment labels
+- Latest UI: manual load entry is enabled (5 kg suggestions), with an explicit unsaved-draft caption; PR/AED backend integration remains pending as Tommy chose. The current port-8018 preview is open on Exercise with the five-minute simulated plots and no open emergency banner. Original filled port-8012 data remain available.
+
+- Last updated: 2026-11-15 — Locked-bin styling, automatic training flow and free-text psychologist preview
 - Working on: Tommy selected Clean / Inter (T02) for the entire app. Tommy corrected the base to MC04 Alloy, replacing Soft Panels. He explicitly chose a nonclinical demo value scale, then changed its graph-only endpoints to logo cyan → amber; missing/pending instruments stay gray. The shared mascot is cyan with an amber ring, outer accents are single muted 2px rules, and Cabinet confirmations are only in the item panel. The live filled demo is running on 8012 using its original saved store, with no reset. Backend/owner modules/contracts remain unchanged.
 - Medical bay follow-up: saturated green Open, chess-style display labels, no Allergies navigation tab, and an inline crew Emergency toggle/form using unchanged APIs. Root suite passed 102/102, none skipped; syntax/diff checks passed. Temporary port-8017 QA server stopped; user-facing port 8012 remains running.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Applied Tommy's new crew presentation pass; see medical-training-follow-up.md for the exact implementation and owner handoffs. Locked bins use a transparent red tint with the same transient hover/single-frame selection as blue bins; open bins remain green and available supplies stay neutral. Browser checked Tomas's allergy case and a 0px offset outline.
+- Emergency banners have a per-person/per-incident dismiss button; new incidents reappear. At Tommy's later explicit request, closed existing demo incidents through medical-officer paperwork on ports 8012/8017/8018 (1/0/2 respectively), verified zero open, and preserved other data. This is a demo-state action, not a backend source change.
+- Training now has one global Start training, no crew manual save/recovery/dismiss actions, no saved-session list, no week/day strip and no No pulse sensor text. Existing sets/order/rest rules remain. Automatic summary/recovery saves use the original controller/health endpoint after one mission minute, including on another tab/page, with retry and existing duplicate protection.
+- Added clearly simulated heart-rate/breathing plots with a rolling five-minute window and fictional pre-start display history excluded from workout records. Summary source remains synthetic. Verified the four-set gate and reset on the next exercise, plus one actual temporary health save (48 reps and recovery) while on Wellbeing.
+- Added free-text psychologist messaging with local scripted replies, replacing fixed-topic buttons at Tommy's follow-up. Clearly labelled preview, no Earth transport or private-data sharing; local messages clear on session/profile reset. Existing companion and real private journal remain separate.
+- Tommy selected drafts until owner integration for the defibrillator and loads/PR. L3 contains a full-width planned AED compartment with disabled collection. Kilograms are manually editable with 5 kg suggestions and an explicit unsaved-draft caption; official PR remains blank. No fake catalogue item or unsupported workout fields are posted.
+- Root suite passed 102/102, none skipped; syntax/diff checks and supplemental controller/display checks passed. Updated screenshots are in the typography exports folder. Owner modules, protected contracts and backend implementation remain unchanged. The filled port-8012 store is preserved, except for the explicitly requested incident closure.
+
 
 - Simplified crew Medical bay: removed its Allergies tab, retaining stored profiles, clinical allergy tools and all server-side allergy checks. Available stays cyan; Open uses a more saturated green (#65E69C), distinct from the blue available LEDs.
 - Cabinet locations now display chess-style row letters (L1-A-02, L1-B-01). Original compartment IDs remain in all API payloads, data attributes and records; no catalogue migration or backend change.
@@ -172,6 +183,7 @@
 
 ## Next steps
 
+- Review the latest safety/training/support pass with Tommy. Follow medical-training-follow-up.md for pending AED, load/PR and real psychologist transport; these are not backend-connected features yet.
 - Review the inline Emergency cabinet with Tommy. New reasons for an already-open incident are not appended by the existing backend; coordinate a separate owner/contract change if that is required. Keep clinical allergy management and all permission checks intact.
 - Continue from `tommy/frontend-polish`. Tommy selected MC04 Alloy + Clean / Inter (T02), now the shared default. Review the running port-8012 app with Tommy; keep its saved data and existing events intact. Preserve the cyan-to-amber graph palette, single muted 2px amber caps, cyan/amber mascot and Medical bay right-panel confirmations. LED mapping remains blue available / red restricted / green open. Make only requested presentation changes and preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.

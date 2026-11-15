@@ -1,3 +1,4 @@
+import {makeTrainingReplay} from '/training-demo.js';
 import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
@@ -36,7 +37,7 @@ const submit = label => `<button class="btn primary" type="submit">${label}</but
 let token = sessionStorage.getItem('pulse-token'), user = null, clock = null, data = {}, page = 'login';
 let revision=0, loading=0, patient='c4', eventsAfter=0, busy=false, collection=null, suggestion=null;
 let drafts={}, selectedArea=null, stagedSymptoms=[], chat=[], companionOpen=false, workout=null, workoutMode='weekly', workoutDay=null;
-let replay=null, guides=[], generatedCode='';
+let replay=null, exerciseReplay=null, guides=[], generatedCode='', workoutAutoBusy=false, workoutRetryAt=0;
 const role = () => user?.role;
 const health = createHealthClient({token:()=>token});
 const companion = createCompanionClient({getToken:()=>token});
@@ -55,7 +56,7 @@ function notice(message,error=false) {
  if(!error)noticeTimer=setTimeout(()=>{$('#notice').hidden=true;},5000);
 }
 function clearNotice() { $('#notice').hidden=true; }
-function resetLocal() { missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
+function resetLocal() { missionViews.resetSession(); for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-wellbeing-draft:'))sessionStorage.removeItem(key);sessionStorage.removeItem('pulse-collection'); revision++; loading++; companion.clearSession(); drafts={}; data={}; chat=[]; workout=null; workoutDay=null; exerciseReplay=null; workoutRetryAt=0; collection=null; suggestion=null; selectedArea=null; stagedSymptoms=[]; generatedCode=''; companionOpen=false; eventsAfter=0; }
 async function login(crewId,platform='astronaut') {
   const old=token;
   // Revoke only this tab's old session. Other tabs keep their own tokens.
@@ -116,13 +117,21 @@ function renderChrome() {
  $('.rail-companion').hidden=true;
  const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
  $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
- const titles={home:['YOUR DAY IN ORBIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Clinical review'],earth:['GROUND SUPPORT','Earth console']};
+ const titles={home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Clinical review'],earth:['GROUND SUPPORT','Earth console']};
  const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
  $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;
- $('#emergency-banner').hidden=!(data.emergencies?.emergencies?.length);
- $('#emergency-banner').textContent=(data.emergencies?.emergencies??[]).map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
+ renderEmergencyBanner();
  $('#orb-art').innerHTML=mascotSvg();$('#orb-badge').hidden=true;
  renderCompanion();
+}
+const bannerKey = () => `pulse-hidden-emergencies:${user?.crewId}:${role()}`;
+function hiddenEmergencyIds() {
+ try {return new Set(JSON.parse(sessionStorage.getItem(bannerKey())??'[]'));}catch{return new Set();}
+}
+function renderEmergencyBanner() {
+ const hidden=hiddenEmergencyIds(), list=(data.emergencies?.emergencies??[]).filter(e=>!hidden.has(e.id));
+ const banner=$('#emergency-banner');banner.hidden=!list.length;
+ banner.innerHTML=list.length?`<span>${list.map(e=>esc(`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`)).join(' | ')}</span>${btn('×','dismiss-emergency','aria-label="Dismiss emergency banner" title="Hide this notification"','ghost icon-button')}`:'';
 }
 function chatTranscript() {
  return chat.length ? chat.map(m=>`<p class="msg ${m.mine?'me':'them'}">${esc(m.text)}</p>`).join('')
@@ -223,7 +232,21 @@ async function ensureWorkout() {
   if(s.status==='active'||['pending','failed','saving'].includes(s.saveStatus)) return;
   workout=null;
  }
- if(!workout) {workout=createWorkoutController({missionDay:clock.missionDay,...(workoutMode==='stage'?{stage:true,replay}:{}),submitWorkout:health.submitWorkout});workoutDay=clock.missionDay;}
+ if(!workout) {exerciseReplay=workoutMode==='stage'?replay:makeTrainingReplay(replay);workout=createWorkoutController({missionDay:clock.missionDay,...(workoutMode==='stage'?{stage:true}:{}),replay:exerciseReplay,submitWorkout:health.submitWorkout});workoutDay=clock.missionDay;workoutRetryAt=0;}
+}
+async function autoSaveWorkout() {
+ if(!workout||!clock||workoutAutoBusy||Date.parse(clock.now)<workoutRetryAt)return false;
+ const version=revision,current=workout,snapshot=current.snapshot(clock.now);
+ if(!['pending','failed'].includes(snapshot.saveStatus)||!snapshot.recoveryReady)return false;
+ workoutAutoBusy=true;
+ try {
+  await current.save(clock.now,{withRecovery:true});
+  workoutRetryAt=0;return version===revision;
+ } catch(error) {
+  if(version!==revision)return false;
+  workoutRetryAt=Date.parse(clock.now)+15000;
+  notice('Training save will retry automatically. '+error.message,true);return false;
+ } finally {workoutAutoBusy=false;}
 }
 function fitnessScreen() {
  const s=workout?.snapshot(clock.now); if(!s) return empty('Loading training program.');
@@ -254,7 +277,7 @@ function earthScreen() {
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:habitatScreen,fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
 const missionViews=createMissionViews({
- state:()=>({user,role:role(),clock,data,page,drafts,collection,suggestion,workout,workoutMode,replay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
+ state:()=>({user,role:role(),clock,data,page,drafts,collection,suggestion,workout,workoutMode,replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
  helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
  legacy:{suggestionsPanel,profilePanel,grantsPanel,requestsPanel,dosesPanel,emergencyPanel,stockPanel,patientPicker,demoClockPanel},
  redraw:()=>render(),remember,
@@ -338,6 +361,8 @@ async function handleForm(form,submitter) {
   delete drafts[id]; notice('Allergy profile updated.');
  } else if(id==='journal-form') {
   await api('/mind/journal',{method:'POST',body:{text:v.text}});delete drafts[id];notice('Private entry saved.');
+ } else if(id==='psychologist-demo-form') {
+  delete drafts[id];missionViews.psychMessage(v.message);return;
  } else if(id==='chat-form'||id==='mind-chat-form') {
   const version=revision;
   const response=await companion.send(v.message);
@@ -413,6 +438,7 @@ async function action(el) {
  if(a==='login-earth')return login(null,'earth');
  if(a==='logout')return logout();
  if(a==='refresh')return show();
+ if(a==='dismiss-emergency'){const hidden=hiddenEmergencyIds();for(const e of data.emergencies?.emergencies??[])hidden.add(e.id);sessionStorage.setItem(bannerKey(),JSON.stringify([...hidden]));renderEmergencyBanner();return;}
  if(a==='theme'){const theme=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=theme;localStorage.setItem('ui-look-theme',theme);syncBody();return;}
  if(a==='companion'){companionOpen=!companionOpen;renderCompanion();return;}
  if(a==='support-prompt'){
@@ -482,13 +508,13 @@ async function poll() {
   const last=events.lastId;
   if(reset){resetLocal();clock=next;eventsAfter=last;await show();return;}
   eventsAfter=last;clock=next;
+  if(await autoSaveWorkout()){if(version!==revision)return;await show();}
   missionViews.tick();
   const label=$('#mission-label');if(label)label.textContent=`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`;
   if(page==='fitness'&&workout){const live=$('#workout-live');if(live)live.innerHTML=workoutLive(workout.snapshot(clock.now));}
   if(role()!=='earth'&&events.events.some(e=>e.type.startsWith('meds.emergency-'))){
    data.emergencies=await api('/meds/emergencies?status=open');
-   $('#emergency-banner').hidden=!data.emergencies.emergencies.length;
-   $('#emergency-banner').textContent=data.emergencies.emergencies.map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
+   renderEmergencyBanner();
   }
   const clinicalRefresh=++pollCount%5===0&&((role()==='earth'&&page==='earth')||(role()==='medical_officer'&&page==='crew'));
   const medicationRefresh=pollCount%5===0&&page==='medbay';

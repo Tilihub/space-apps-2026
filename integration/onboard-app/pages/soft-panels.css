@@ -47,3 +47,67 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 .item-actions [data-cabinet-emergency] > .btn{width:100%}
 .item-actions [data-cabinet-emergency] .disclosure{margin:0 0 16px}
 @media(max-width:640px){.crew-med-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Lock styling follows the real per-profile API state, never the locker number alone. */
+.cabinet-door.door-locked{background:linear-gradient(125deg,#5c283322,#8d394028),var(--surface-2);border-color:color-mix(in srgb,var(--alert) 38%,var(--border))}
+.cabinet-door.door-locked .door-window{background:linear-gradient(135deg,#e66a7814,#e66a7806),#101b24}
+
+.cabinet-legend i.cyan{background:#78E0E8}
+#emergency-banner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#emergency-banner[hidden]{display:none}
+#emergency-banner>span{min-width:0}
+#emergency-banner .btn{flex:none;color:inherit;border-color:color-mix(in srgb,currentColor 32%,transparent);font-size:23px;line-height:1}
+.planned-equipment{grid-column:1/-1;min-height:144px}
+.planned-equipment .door-window{height:80px}
+.planned-equipment .door-label{display:flex;align-items:center;justify-content:center;gap:12px}
+.planned-equipment small{color:var(--text-3);font-size:10px}
+.aed-device{position:relative;display:inline-block;width:108px;height:65px;border-radius:11px;background:linear-gradient(135deg,#f1eee5,#a5afb2);box-shadow:inset 0 0 0 5px #56656c,0 6px 10px #0005;transform:perspective(200px) rotateX(8deg);color:#723e4a}
+.aed-handle{position:absolute;top:-9px;left:31px;width:43px;height:14px;border:4px solid #7d8d94;border-bottom:0;border-radius:9px 9px 0 0}
+.aed-screen{position:absolute;left:13px;top:14px;width:42px;height:35px;border-radius:4px;background:#263943;color:#f3abb0;font-size:29px;line-height:35px}
+.aed-mark{position:absolute;right:12px;top:14px;font:700 12px var(--font-ui)}
+.aed-device>i{position:absolute;right:21px;bottom:12px;height:12px;width:12px;background:#6a8b69;border-radius:50%;border:2px solid #eff1df}
+.detail-art .aed-device{transform:scale(.85)}
+.gym-workspace{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);align-items:start}
+.start-training{min-width:165px}
+.training-idle{min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-2);gap:12px}
+.training-idle .icon{height:37px;width:37px;color:var(--graph-base)}
+.training-idle p{font-size:13px;margin-bottom:0}
+.training-sensors>.section-heading{margin-bottom:20px}
+.sensor-plot+.sensor-plot{border-top:1px solid var(--border);margin-top:18px;padding-top:18px}
+.sensor-plot>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sensor-plot h4{font-size:13px;color:var(--text-2)}
+.sensor-plot b{font-size:24px;font-variant-numeric:tabular-nums}
+.sensor-plot b small{font-size:10px;color:var(--text-3)}
+.sensor-plot .mission-chart{height:142px;min-height:0;margin-top:10px}
+.sensor-plot .chart-empty{height:125px;margin-top:12px;font-size:11px}
+.training-session-status{display:flex;justify-content:space-between;gap:12px;margin-top:15px;padding-top:15px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.auto-save-status{margin:12px 0 0}
+.active-exercise-card .section-heading{align-items:start}
+.active-exercise-card .section-heading h3{font-size:20px}
+.active-exercise-card> .btn{margin-top:16px}
+.load-draft{display:grid;grid-template-columns:minmax(0,1fr) 55px;gap:8px 16px;align-items:center;margin-bottom:20px}
+.load-draft .field{margin:0}
+.load-draft>small{grid-column:1/-1;color:var(--text-3);font-size:10px}
+.load-draft select:disabled{opacity:.55}
+.pr-draft small{display:block;color:var(--text-3);font-size:10px}
+.pr-draft b{font-size:22px}
+.plan-pr{font-size:11px;color:var(--text-3);white-space:nowrap}
+.plan-pr small{font-size:8px;display:block;text-align:right}
+.psychologist-card .chat-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.psychologist-card .chat-head h3{font-size:16px}
+.psychologist-thread{max-height:245px;overflow:auto}
+.psychologist-card>.subtle{display:block;font-size:10px;margin-top:14px}
+@media(max-width:900px){.gym-workspace{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.start-training{width:100%}.planned-equipment .door-label{gap:7px}.planned-equipment small{font-size:8px}.sensor-plot .mission-chart{height:130px}}
+
+.planned-equipment-detail .detail-title{display:block}
+.planned-equipment-detail .detail-art{width:100%;height:110px;margin:12px 0;overflow:hidden}
+
+
+/* Shared hover/selection behavior: one adjacent frame, with color from the lock state. */
+.cabinet-door{--door-highlight:#78E0E8;outline:0}
+.cabinet-door.door-locked{--door-highlight:var(--alert)}
+.cabinet-door.door-open{--door-highlight:#70D6B3}
+.cabinet-door:hover{border-color:var(--door-highlight);box-shadow:inset 0 1px 0 #93AEC01F,0 0 8px color-mix(in srgb,var(--door-highlight) 12%,transparent)}
+.cabinet-door.selected{outline:0;border-color:var(--door-highlight);box-shadow:inset 0 0 0 1px var(--door-highlight)}
+.cabinet-door:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--door-highlight)}

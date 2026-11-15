@@ -298,3 +298,9 @@ Tommy corrected the selection to **Alloy (MC04) + Clean / Inter (T02)** across t
 Tommy requested a greener Open badge, chess-style compartment labels (row 1 → A, row 2 → B), no Allergies tab in Medical bay, and a single top Emergency toggle. Keep allergy data and enforcement. Emergency medicines stay locked until the toggle is enabled; then choose an item, choose who needs help and enter the required reason in the item panel while the cabinet stays visible. No per-item Emergency button or separate crew Emergency page. Keep the server's default emergency dose, explicit allergy override and per-item confirmation.
 
 This frontend uses the existing incident/release endpoints. Their existing one-open-incident-per-patient rule preserves the original reason if the incident already exists. Recording a fresh note with every release remains a separate backend/contract follow-up, not silently introduced here. Display-only row letters do not change canonical IDs, stored history, codes or API requests.
+
+### Current presentation follow-up — 2026-11-15
+
+See [medical-training-follow-up.md](medical-training-follow-up.md). Use one lock-state-colored frame and matching hover behavior, a dismissible emergency notification, global training start with automatic recovery/summary recording, rolling five-minute simulated heart-rate/breathing plots, free-text scripted psychologist chat and correct Mars-transit wording.
+
+Tommy chose drafts until the owners connect AED and load/PR support. The three-column AED shelf is planned equipment, not collectable stock. The user enters a load manually with 5 kg suggestions; it remains an explicitly unsaved draft and PR is not invented. Do not change owner modules or the protected contract as part of this presentation task. Tommy subsequently requested closure of the existing demo emergencies; this was done through normal medical-officer paperwork, not a store reset.
