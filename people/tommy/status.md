@@ -8,6 +8,8 @@
 
 ## Now
 
+- Latest presentation direction: five candidate stories first, with no presenter assignment yet. Greek spoken delivery confirmed. Read presentation/five-scenarios.md; earlier six-owner lineup is only a superseded proposal. Complete scenario initialization on presentation reset is still a design requirement, not an implemented feature.
+
 - Presentation planning on tommy/presentation-script. Tommy confirmed six Greek-speaking presenters, one minute each, and requested deterministic complete scenario initialization after every presentation reset before writing the final live scripts. Draft: presentation/live-demo-plan.md. This is a proposal; no reset/app code is changed. The newer dadis2 review remains on hold as Tommy requested.
 
 - Published Pulsars in [PR #75](https://github.com/Tilihub/space-apps-2026/pull/75), stacked on #74. GitHub confirms all five teammates are requested reviewers. All 117 checks pass; no approval or merge performed. The user-facing new feature preview is localhost:8020 (local-only copy), with the original 8018 process/store preserved.
