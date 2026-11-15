@@ -1,0 +1,44 @@
+# PULSE project report
+
+The consolidated English technical report explains the team's recorded rationale, design
+choices, research, datasets, processing, personal comparison rules, companion behavior,
+architecture, medicine workflows, exercise, Pulsars, privacy, tests and remaining work.
+
+- [Read the PDF](PULSE_Project_Report.pdf).
+- [Edit the main narrative](report.md).
+- [Inspect the pinned evidence manifest](evidence-manifest.json).
+- [Read the reproduced test log](validation.txt).
+
+The report describes application commit `b0f968c156927a52cf2607a2d548ce4cd078b862`, after
+PRs #74 and #75 merged on 15 November 2026. It resolves stale planning labels against
+the merged code and GitHub PR state. It does not claim that scripts are a trained model,
+synthetic crew observations are real astronaut records, or the prototype is clinically validated.
+
+The 42-page PDF was visually checked throughout, with embedded fonts, working reference
+links, a clickable table of contents and no clipped text or unsupported glyphs.
+
+The document organization follows the public
+[NASA Publications Guide for Authors](https://ntrs.nasa.gov/citations/20150013303).
+The existing team logo is reproduced unchanged; no agency logo or agency publication
+identifier is used. Text, diagrams and build code were prepared with Codex assistance.
+
+## Rebuild
+
+Use Python with `reportlab`, `Pillow` and `pypdf` available. The builder uses the repository's
+pinned Git blobs, so later changes on main do not silently change this report's evidence.
+It embeds Arial and Consolas from Windows Fonts.
+
+```powershell
+python people/angelos/report/build_report.py
+```
+
+The output is `people/angelos/report/PULSE_Project_Report.pdf`. Appendices are generated from
+the pinned source registry, environmental series, historical vital-sign CSV, medicine
+catalogue and documentation index. The evidence manifest includes SHA-256 hashes.
+
+The root application command `node --test "**/*.test.js"` reproduced **117 passed, zero failed
+and zero skipped** with Python available and localhost HTTP permitted. This is the exact
+test script behind `npm test`; no application code was changed for the report.
+
+The final PDF was rendered for visual review. Page images and intermediate checks stay
+in ignored `.qa/`; they are not published with the report.

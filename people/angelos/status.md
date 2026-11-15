@@ -8,12 +8,16 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:06 (Asia/Nicosia)
-- Working on: Connection audit at main 050422b: source #64 merged, 70 root checks pass, and Potest's 3 pending companion checks independently pass. Common core/pages remain unbuilt.
-- Branch: angelos/connection-audit
+- Last updated: 2026-11-15 (Asia/Nicosia)
+- Working on: Completed the consolidated PULSE technical report and publication handoff in PR #78. The 42-page PDF covers the team logo, rationale, data, AI explanation, architecture, validation and source traceability at app snapshot b0f968c. The full app and Pulsars are merged via #74/#75.
+- Branch: angelos/project-report
 
 ## Done
 
+- Published the report in https://github.com/Tilihub/space-apps-2026/pull/78. All 42 pages were rendered and visually checked; text bounds and embedded-font glyph coverage pass, 465 navigation/reference links are present, and Git preserves the verified PDF bytes. The PR touches only my folder and one appended source row, with no protected files or conflicts.
+- Prepared people/angelos/report/PULSE_Project_Report.pdf and its editable English narrative/build script. The report follows the public NASA Publications Guide structure with only the team's supplied logo. It distinguishes the local scripted companion from model training, synthetic crew fixtures from historical observations, and delivered features from remaining work.
+- Reproduced all 117 root JavaScript checks with zero failures/skips using the exact package test command, with Python and localhost HTTP available. Saved the complete validation log. Generated a pinned evidence manifest and appendices covering 33 environmental groups/93 channels/126,782 processed points, 47 historical vital records, 65 synthetic check-ins, the 21-item sample medicine catalogue and the repository documentation index.
+- Verified the current GitHub merge state for #73/#74/#75/#55 and reconciled stale planning notes in the report. Added only the report-format reference at the end of the NASA source table; no application or protected contract/final files changed.
 - Installed Git and GitHub CLI; signed in from PowerShell and cloned the repository.
 - Configured the repository commit identity with a private GitHub noreply email.
 - Synced main and created my status file and personal plan from the templates.
@@ -165,6 +169,8 @@
 
 ## Blocked / need from others
 
+Current report task: no implementation blocker. The older connection-audit items below describe the 14 November snapshot and are superseded by the merged app at b0f968c. The report records current remaining limits, including simulated identity/Earth transport/hardware, no live wearable and the separate psychologist/AED work.
+
 <!-- Latest audit details are in health/CONNECTION_CHECK.md. -->
 
 - Petros PR #64 is now merged into main 050422b. zt initializes a fresh demo store
@@ -182,6 +188,8 @@
   node --test "**/*.test.js". Node.js 24 is available; no packages are needed.
 
 ## Next steps
+
+- Current report handoff: PR #78, branch angelos/project-report. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices are pinned to b0f968c. Preserve the distinction between human requirements, old proposals and merged behavior. The documentation is ready to use; do not edit teammate folders, final/ or protected files for this task.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root
   main checks pass; Potest's 3 companion-route/client checks pass at f4bac9d in
