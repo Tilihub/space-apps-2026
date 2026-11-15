@@ -15,3 +15,13 @@ Health histories come directly from Petros's `demo-data/health.json`. Current en
 `pages/demo-thermal.js` is a separately labelled synthetic **skin** sensor fixture approved by Tommy. It is interpolated only for the body visualization on day 42. These regional readings are not present in teammates' datasets and are never sent to the health/meds/companion rules. The body-temperature instrument uses the health module's separate `temperatureC`; it is not calculated from the skin map. Outside day 42 no map is shown.
 
 The original supplied team logo is byte-for-byte unchanged in `pages/assets/team-logo.png`. All backend implementation, permissions, thresholds, code/QR handling and owner files remain unchanged.
+
+## Current crew presentation
+
+- Check-in selects a location in one readout below the model; back-facing or overlapping pins are hidden during rotation. Severity uses a filled 1–10 slider.
+- Exercise uses Petros's original program and controller, with individual set ticks (for example 4 × 12). Completing the exercise submits the original scheduled total; per-set ticks are temporary UI state and reset on reload. The stage demonstration uses a repetition counter and the original synthetic pulse trace. Without a paired sensor the weekly checklist works, but cannot save a numeric pulse summary.
+- Crew allergies are read-only, taken from existing profiles. Clinical roles retain their original editing tools. My treatment shows the next due time and remaining scheduled dose opportunities; these counts do not establish ingestion or authorize missed-dose catch-up. Original eligibility/quotas and collection rules remain authoritative.
+
+### Historical pulse loop
+
+`pages/mission-pulse.js` copies the five valid Apollo–Soyuz exercise heart-rate averages from Petros's `astronaut-inflight-vitals.csv`, attributed there to Table 3-I of [NASA SP-411](https://ntrs.nasa.gov/citations/19770023791). Missing/poor readings are excluded. The panel loops discrete averages from different subjects and mission days; playback timing and the connecting line are presentation choices, not original sampling times or continuous telemetry. It is explicitly an archive replay, separate from the current profile's resting pulse, and never enters health, companion or workout calculations.

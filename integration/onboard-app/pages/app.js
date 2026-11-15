@@ -446,7 +446,7 @@ async function guarded(fn,button) {
 }
 document.addEventListener('submit',e=>{e.preventDefault();remember(e.target);void guarded(()=>handleForm(e.target,e.submitter),e.submitter);});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(el){e.preventDefault();void guarded(()=>action(el),el);}});
-document.addEventListener('input',e=>{if(e.target.form)remember(e.target.form);if(e.target.name==='severity'&&$('#severity-value'))$('#severity-value').textContent=e.target.value;});
+document.addEventListener('input',e=>{if(e.target.form)remember(e.target.form);if(e.target.name==='severity'){if($('#severity-value'))$('#severity-value').textContent=e.target.value;e.target.style.setProperty('--range-fill',`${(Number(e.target.value)-1)/9*100}%`);}});
 document.addEventListener('change',e=>{
  if(e.target.form)remember(e.target.form);
  if(e.target.id==='patient-select'){if(busy){e.target.value=patient;return;}patient=e.target.value;drafts={};void guarded(show);}
@@ -471,6 +471,7 @@ async function poll() {
   const last=events.lastId;
   if(reset){resetLocal();clock=next;eventsAfter=last;await show();return;}
   eventsAfter=last;clock=next;
+  missionViews.tick();
   const label=$('#mission-label');if(label)label.textContent=`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`;
   if(page==='fitness'&&workout){const live=$('#workout-live');if(live)live.innerHTML=workoutLive(workout.snapshot(clock.now));}
   if(role()!=='earth'&&events.events.some(e=>e.type.startsWith('meds.emergency-'))){
@@ -479,8 +480,9 @@ async function poll() {
    $('#emergency-banner').textContent=data.emergencies.emergencies.map(e=>`OPEN EMERGENCY · ${member(e.patientId)} · ${time(e.raisedAt)}`).join(' | ');
   }
   const clinicalRefresh=++pollCount%5===0&&((role()==='earth'&&page==='earth')||(role()==='medical_officer'&&page==='crew'));
+  const medicationRefresh=pollCount%5===0&&page==='medbay';
   const relevant=events.events.some(e=>!e.type.startsWith('clock.')&&(!e.crewId||e.crewId===user.crewId||role()==='medical_officer'));
-  if((relevant||clinicalRefresh)&&!document.activeElement?.closest('form'))await show();
+  if((relevant||clinicalRefresh||medicationRefresh)&&!document.activeElement?.closest('form'))await show();
  } catch(e){if(version===revision)notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);}
 }
 async function init() {

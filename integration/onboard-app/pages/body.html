@@ -511,7 +511,7 @@
       dot.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')choose(event);});
       linesSvg.append(line, dot);
       ui.append(label);
-      tags[key] = { label, line, dot, on: false, w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false };
+      tags[key] = { label, line, dot, on: false, w: 0, h: 0, x: 0, y: 0, ly: 0, behind: false, key };
     }
 
     let body = null; // the body on screen: geometry, areas and label anchors
@@ -542,7 +542,8 @@
         const markerColor = r?.severity >= 7 ? '#FF9A78' : r?.severity >= 4 ? '#F5BD69' : '#E8D66E';
         for (const el of [t.label, t.line, t.dot]) {
           el.style.setProperty('--symptom-color', markerColor);
-          el.style.display = (el===t.dot?t.on:sel||(!report&&activeLabel===key)) ? '' : 'none';
+          el.style.display = (el===t.dot?t.on:!report&&activeLabel===key) ? '' : 'none';
+          if(el===t.line)el.style.display='none';
           el.classList.toggle('sel', sel);
         }
       }
@@ -750,9 +751,18 @@
         v.copy(a.pin).project(camera);
         t.x = ((v.x + 1) / 2) * size.w;
         t.y = ((1 - v.y) / 2) * size.h;
-        t.behind = a.normal.dot(toCam.copy(camera.position).sub(a.pin).normalize()) < 0.05;
+        t.facing=a.normal.dot(toCam.copy(camera.position).sub(a.pin).normalize());
+        const point=POINT_BY_ID[key],view=camera.position.z>=0?'front':'back';
+        t.behind=t.facing<.22||(point&&point.view!==view);
+        t.overlap=false;
         cols[t.label.classList.contains('L')?'L':'R'].push(t);
       }
+      const kept=[];
+      const candidates=Object.values(tags).filter(t=>t.on&&!t.behind).sort((a,b)=>{
+        const rank=t=>opts.selected===t.key?3:opts.reported?.[t.key]?2:0;
+        return rank(b)-rank(a)||b.facing-a.facing;
+      });
+      for(const t of candidates){t.overlap=kept.some(p=>(p.x-t.x)**2+(p.y-t.y)**2<20**2);if(!t.overlap)kept.push(t);}
       for (const col of Object.values(cols)) {
         col.sort((a, b) => a.y - b.y);
         let prev = -Infinity;
@@ -768,9 +778,9 @@
           t.line.setAttribute('y2', t.y.toFixed(1));
           t.dot.setAttribute('cx', t.x.toFixed(1));
           t.dot.setAttribute('cy', t.y.toFixed(1));
-          t.dot.style.visibility=t.behind?'hidden':'visible';
-          t.dot.setAttribute('tabindex',(opts.mode==='report'||opts.reported?.[key])&&!t.behind?'0':'-1');
-          t.dot.setAttribute('aria-hidden',String((opts.mode!=='report'&&!opts.reported?.[key])||t.behind));
+          t.dot.style.visibility=t.behind||t.overlap?'hidden':'visible';
+          t.dot.setAttribute('tabindex',(opts.mode==='report'||opts.reported?.[t.key])&&!t.behind&&!t.overlap?'0':'-1');
+          t.dot.setAttribute('aria-hidden',String((opts.mode!=='report'&&!opts.reported?.[t.key])||t.behind||t.overlap));
           for (const el of [t.label, t.line, t.dot]) el.classList.toggle('behind', t.behind);
         }
       }
