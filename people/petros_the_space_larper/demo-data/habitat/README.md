@@ -13,4 +13,4 @@ Hover or focus a sensor to see recordings from the last 24 mission hours. Click 
 
 The blue silhouette pulses around a softly shaded thermal map. Browsers set to reduced motion show a steady outline. The temperature badge and trend use the cabin replay as the main lounge reference. Six other zone readings use illustrative offsets from that reference. The map interpolates those temperatures inside the hull using the same inverse-distance approach as the Overview body view. The current reading, chart and map use the same scale, clamped at 16 and 30 °C. The simulated values stay in the preview and do not drive cabin alerts.
 
-The integrated view uses the current PULSE session and Alloy theme. The integration branch is local pending Petros's review.
+The integrated view uses the current PULSE session and Alloy theme.
