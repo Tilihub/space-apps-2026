@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { createHealthModule } from '../../people/angelos/health/index.js';
@@ -28,7 +28,7 @@ export async function createControlledRun({ dataDir = tmpdir(), ...options }) {
   }
 
   try {
-    const core = await createControlledCore({ ...options, dataDir: runDir });
+    const core = await createDemoCore({ ...options, dataDir: runDir, rehearsal: true });
     return {
       ...core,
       async stop() {
@@ -42,25 +42,43 @@ export async function createControlledRun({ dataDir = tmpdir(), ...options }) {
   }
 }
 
-export async function createControlledCore({ modules, dataDir, ...options }) {
+export async function createDemoCore({ modules, dataDir, rehearsal = false, ...options }) {
   const fixture = structuredClone(syntheticHealthFixture);
   const tomas = fixture.crew.c4;
   tomas.story = 'Four recent days of short sleep, high stress and high fatigue for the controlled rehearsal.';
   tomas.checkIns = tomas.checkIns.map(row => ({ ...row, ...tomasDays.get(row.missionDay) }));
 
-  // Feed Angelos's normal installer and the reply rules the same synthetic historical records.
-  await mkdir(dataDir, { recursive: true });
-  const fixtureUrl = join(dataDir, 'controlled-health-fixture.json');
-  await writeFile(fixtureUrl, JSON.stringify(fixture), 'utf8');
-  const demoHealth = createHealthModule({ fixtureUrl });
+  // Record which synthetic history was installed. An older store keeps its existing history
+  // until the operator explicitly resets the demo.
+  const installedFixture = join(dataDir, 'controlled-health-fixture.json');
+  let activeHistory = syntheticHealthFixture;
+  try {
+    activeHistory = JSON.parse(await readFile(installedFixture, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const pendingFixture = join(dataDir, 'controlled-health-fixture.pending.json');
+  const health = createHealthModule({ fixtureUrl: pendingFixture });
+  const demoHealth = {
+    ...health,
+    async reset(ctx) {
+      await writeFile(pendingFixture, JSON.stringify(fixture), 'utf8');
+      await health.reset(ctx);
+      await rename(pendingFixture, installedFixture);
+      activeHistory = fixture;
+    },
+  };
   const demoModules = modules.map(mod => {
     if (mod.name === 'health') return demoHealth;
-    if (mod.name === 'mind') return {
+    if (rehearsal && mod.name === 'mind') return {
       ...mod,
       routes: mod.routes.map(route => route.path === companionRoute.path ? companionRoute : route),
     };
     return mod;
   });
   const core = await createCore({ modules: demoModules, dataDir, ...options });
-  return connectQuestionnaireCompanion(core, { fixture, rehearsal: true });
+  return connectQuestionnaireCompanion(core, {
+    historyFor: crewId => activeHistory.crew[crewId]?.checkIns ?? [],
+    rehearsal,
+  });
 }

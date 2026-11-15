@@ -2,9 +2,7 @@ import assert from 'node:assert/strict';
 import { readdir } from 'node:fs/promises';
 import test from 'node:test';
 import { controlledReply } from '../../people/potest/crew-support/controlled-replies.js';
-import { connectQuestionnaireCompanion } from './adapters/companion-support.js';
-import { createControlledCore, createControlledRun } from './controlled-demo.js';
-import { createCore } from './core.js';
+import { createDemoCore, createControlledRun } from './controlled-demo.js';
 import modules from './modules.js';
 import { boot, dataOf } from './test-helpers.js';
 
@@ -24,27 +22,29 @@ async function send(app, token, message, today) {
   });
 }
 
-test('standard app uses the crew member’s saved questionnaire and preserves its original health data', async t => {
-  const makeCore = async options => connectQuestionnaireCompanion(await createCore(options));
-  const app = await boot(modules, { makeCore, realNow: () => 0 });
+test('standard launch compares the crew histories with the same check-in and scripted prompts', async t => {
+  const app = await boot(modules, { makeCore: createDemoCore, realNow: () => 0 });
   t.after(() => app.close());
   const mara = await app.login('c1');
   const tomas = await app.login('c4');
   const officer = await app.login('c2', 'medical');
   const earth = await app.login(null, 'earth');
-  const baseline = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
-  assert.deepEqual(baseline.checkIns.slice(-4).map(row => row.sleepHours), [6.7, 7.1, 5, 4.8]);
+  const prior = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+  assert.deepEqual(prior.checkIns.slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
 
   for (const token of [mara, tomas]) {
     dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));
   }
-  assert.match(dataOf(await send(app, tomas, 'I feel tired.')).reply, /4.6 hours of sleep/);
+  assert.match(dataOf(await send(app, tomas, 'I feel tired.')).reply, /pattern of short sleep/);
   dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
 
   const reply = dataOf(await send(app, tomas, opening)).reply;
   assert.match(reply, /short sleep.*difficulty concentrating.*loneliness/);
-  assert.doesNotMatch(reply, /pattern of short sleep/);
+  assert.match(reply, /pattern of short sleep.*crew medical officer today/);
   assert.doesNotMatch(dataOf(await send(app, mara, opening)).reply, /difficulty concentrating|loneliness/);
+  dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: mara, body: { missionDay: 42, answers } }));
+  assert.match(dataOf(await send(app, mara, opening)).reply, /rough day.*quiet break/);
+  assert.match(dataOf(await send(app, tomas, next)).reply, /which noncritical duty can move/);
   assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /far from home/);
   assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
 
@@ -55,8 +55,54 @@ test('standard app uses the crew member’s saved questionnaire and preserves it
   for (const token of [mara, officer, earth]) assert.equal((await send(app, token, opening, today)).status, 403);
 });
 
+test('an existing standard store keeps its records, and an explicit reset installs matching rehearsal history', async () => {
+  const realNow = () => 0;
+  const previous = await boot(modules, { realNow });
+  let tomas;
+  let officer;
+  try {
+    tomas = await previous.login('c4');
+    officer = await previous.login('c2', 'medical');
+    dataOf(await previous.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
+    dataOf(await previous.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
+    dataOf(await previous.call('POST', '/api/mind/journal', { token: tomas, body: { text: 'Keep this entry' } }));
+  } finally {
+    await previous.close({ keepData: true });
+  }
+
+  const options = { dataDir: previous.dataDir, makeCore: createDemoCore, realNow };
+  const getEarlierSleep = async app => dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }))
+    .checkIns.filter(row => row.missionDay < 42).slice(-4).map(row => row.sleepHours);
+  const upgraded = await boot(modules, options);
+  try {
+    assert.equal((await getToday(upgraded, tomas)).checkIn.sleepHours, 4.6);
+    assert.deepEqual(dataOf(await upgraded.call('GET', '/api/pulsars/me', { token: tomas })).wallet.todayAnswers, answers);
+    assert.equal(dataOf(await upgraded.call('GET', '/api/mind/journal', { token: tomas })).entries[0].text, 'Keep this entry');
+    assert.deepEqual(await getEarlierSleep(upgraded), [6.7, 7.1, 5, 4.8]);
+    assert.doesNotMatch(dataOf(await send(upgraded, tomas, opening)).reply, /pattern of short sleep/);
+
+    dataOf(await upgraded.call('POST', '/api/demo/reset', { token: tomas, body: {} }));
+    assert.equal((await getToday(upgraded, tomas)).checkIn, null);
+    assert.deepEqual(await getEarlierSleep(upgraded), [5.6, 5.2, 5, 4.8]);
+    dataOf(await upgraded.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
+    assert.match(dataOf(await send(upgraded, tomas, opening)).reply, /pattern of short sleep/);
+  } finally {
+    await upgraded.close({ keepData: true });
+  }
+
+  const restarted = await boot(modules, options);
+  try {
+    assert.deepEqual(await getEarlierSleep(restarted), [5.6, 5.2, 5, 4.8]);
+    assert.equal((await getToday(restarted, tomas)).checkIn.sleepHours, 4.6);
+    assert.match(dataOf(await send(restarted, tomas, opening)).reply, /pattern of short sleep/);
+  } finally {
+    await restarted.close();
+  }
+});
+
 test('controlled rehearsal joins the same current answers to different crew histories through HTTP', async t => {
-  const app = await boot(modules, { makeCore: createControlledCore, realNow: () => 0 });
+  const makeCore = options => createDemoCore({ ...options, rehearsal: true });
+  const app = await boot(modules, { makeCore, realNow: () => 0 });
   t.after(() => app.close());
   const mara = await app.login('c1');
   const tomas = await app.login('c4');
