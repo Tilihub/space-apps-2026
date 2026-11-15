@@ -4,13 +4,18 @@
  * Another port:  PORT=8001 node integration/onboard-app/start.js
  */
 import { networkInterfaces } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createCore } from './core.js';
 import { startServer } from './server.js';
 import modules from './modules.js';
 
 const port = Number(process.env.PORT ?? 8000);
-const core = await createCore({ modules, dataDir: process.env.PULSE_DATA_DIR ?? fileURLToPath(new URL('./data/', import.meta.url)) });
+const dataDir = process.env.PULSE_DATA_DIR ?? fileURLToPath(new URL('./data/', import.meta.url));
+const controlled = process.argv.includes('--controlled-companion');
+const core = controlled
+  ? await (await import('./controlled-demo.js')).createControlledCore({ modules, dataDir: join(dataDir, 'controlled-companion') })
+  : await createCore({ modules, dataDir });
 
 /** @type {{ port: number, close: () => Promise<void> }} */
 let server;

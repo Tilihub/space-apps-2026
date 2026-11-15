@@ -2,7 +2,7 @@ import {mascotSvg as drawMascot,coin,cartIcon} from '/pulsars-mascot.js';
 import {createPulsarsShop} from '/pulsars-shop.js';
 import {DEFAULT_LOOK} from '/pulsars/catalog.js';
 import {createDisplayClock} from '/display-clock.js';
-import {validWellbeingSubmission} from '/wellbeing-questions.js';
+import {validWellbeingSubmission,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {makeTrainingReplay} from '/training-demo.js';
 import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
@@ -377,11 +377,15 @@ async function handleForm(form,submitter) {
  if(id==='daily-wellbeing-finish'){
   delete drafts[id];
   if(!validWellbeingSubmission(v))throw new Error('Answer all ten questions before finishing.');
-  if(!data.today?.checkedInToday)await health.submitCheckIn(numberFields(v,['mood','stress','fatigue']));
-  const result=await api('/pulsars/wellbeing',{method:'POST',body:{missionDay:clock.missionDay,answers:Object.fromEntries(Object.entries(v).map(([k,value])=>[k,Number(value)]))}});
+  if(!data.today?.checkedInToday){
+   const saved=await health.submitCheckIn(numberFields(v,['mood','stress','fatigue','sleepHours']));
+   data.today=saved.today;
+   delete drafts['wellbeing-core-form'];
+  }
+  const result=await api('/pulsars/wellbeing',{method:'POST',body:{missionDay:clock.missionDay,answers:numberFields(v,WELLBEING_SCALE_IDS)}});
   data.pulsars={wallet:result.wallet};showAwards(result.awards);
   sessionStorage.setItem(wellbeingFinishKey(),clock.now);
-  delete drafts[id];delete drafts['checkin-form'];
+  delete drafts[id];
   notice('Daily wellbeing completed.');
  } else if(id==='checkin-form') {
   const values=numberFields(v,[...Object.keys(MEASUREMENTS),'mood','stress','fatigue']);
