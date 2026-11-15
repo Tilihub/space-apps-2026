@@ -79,6 +79,7 @@
   from `c4`); Chris and Mara log the same hard day (4.6 h sleep, mood 4, stress 7, fatigue 7) with nine
   wellbeing answers prefilled, so the Crew Assistant answers them differently only because of their
   history; Diamandis has no prepared headache, he reports it live. Chris's tests now point at `c3`
+- Star map distance: 125.2 million km on mission day 42 (was 25.2)
 
 ## Blocked / need from others
 
