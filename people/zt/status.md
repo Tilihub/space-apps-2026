@@ -8,10 +8,10 @@
 
 ## Now
 
-- Last updated: 2026-11-15 23:10
-- Working on: live heart rate from my OnePlus Watch 2R into the app ([watch-hr](watch-hr/README.md)).
-  Live on the Render site; the chart fix needs a Manual Deploy.
-- Branch: `zt/watch-hr-chart`
+- Last updated: 2026-11-15 23:20
+- Working on: the live demo. Live wrist heart rate from my OnePlus Watch 2R is done and deployed on
+  https://pulse-crew-health.onrender.com ([watch-hr](watch-hr/README.md)).
+- Branch: `zt/status-watch-hr` (this status update only)
 
 ## Done
 
@@ -19,9 +19,10 @@
   reading once a second to `POST /live/heart-rate` (server.js, outside the contract, memory only).
   The Exercise page shows it in a "Live · wrist sensor" card and in the training display while it's
   under 5 s old; otherwise the page is exactly as before. Tested end to end with the real watch;
-  `npm test` 130 of 131 (the crew-assistant failure is the same on main). Live on Render (PR #109);
-  the training heart-rate chart now draws the real readings too, and the watch app's default
-  address is the live site.
+  `npm test` 130 of 131 (the crew-assistant failure is the same on main). PR #109, then PR #110:
+  the training heart-rate chart draws the real readings too (breathing stays simulated and says
+  so), and the watch app's default address is the live site. Both deployed on Render and checked
+  with the real watch.
 - Cut the onboarding from six questions to one (PR #3)
 - Onboarding: this status file (PR #4)
 - Restructured the repo into `people/`, `shared/`, `integration/` and `final/` (PR #5)
@@ -105,6 +106,14 @@
 
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
+
+- Live heart rate in the demo: charge the watch; join it to a Wi-Fi with internet and no login page
+  (a phone hotspot is safest), keep the phone paired over Bluetooth with mobile data as the backup;
+  open Pulse HR a minute before the Exercise scene and keep it on screen; check the "Live · wrist
+  sensor" card says "updated 0–1 s ago" before calling it live. Don't deploy on Render during the
+  demo. Without the watch the page falls back to the simulated values, so nothing breaks.
+- Watch: anyone who knows the address can post a reading to `/live/heart-rate` (no login, 20–250 bpm
+  only). Fine for the demo; a real version would need the watch to sign in.
 
 - Sunday, before the 14:00 feature freeze: agree an owner for the project page and the slides
   (`shared/submission/project-page.md`, at most 7 slides), and what goes in `final/`. Run the app
