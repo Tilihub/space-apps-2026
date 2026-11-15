@@ -19,7 +19,7 @@ Tommy explicitly authorized implementation in the existing `integration/onboard-
 
 - Tommy removed the historical BPM graph from Overview; retain the original personal resting-pulse instrument.
 - Review the 16 static recipes and screenshot comparisons in [overview-designs/README.md](overview-designs/README.md). They vary palette, type, edge/shadow treatment and visual arrangement while retaining the same content. None is a selected design or a new application implementation.
-- Tommy selected Mission Control (03), specifically the carbon/amber palette and dashed circular instruments. Preserve that direction. Tommy then selected MC02 Soft Panels. Apply that presentation across the real app. Compare global font systems T01–T08 in overview-designs/typography/README.md, including Alloy as a side-by-side comparison at his request; T01 is the reference until the final font choice. All sections, inputs, small labels, numbers and body controls use the same selected recipe. Backend, permissions, sources, data and connected behavior stay unchanged.
+- Tommy selected Mission Control (03), specifically the carbon/amber palette and dashed circular instruments. Preserve that direction. Tommy then selected MC02 Soft Panels. Apply that presentation across the real app. Compare global font systems T01–T08 in overview-designs/typography/README.md, including Alloy as a side-by-side comparison at his request; Tommy selected Clean / Inter (T02) as the global default. All sections, inputs, small labels, numbers and body controls use the same selected recipe. Backend, permissions, sources, data and connected behavior stay unchanged.
 
 ### Follow-up crew workflow cleanup
 
@@ -276,3 +276,7 @@ PR #49 supplies a new common module architecture. Review found crew-readable det
 Published-work refresh: the former open health/environment/inventory prototypes are now on main. PR #50 adds external baseline import; #51 supplies PET-1/PET-2; #52 proposes stage stories that differ from those fixtures. See contract-review.md for the exact differences and verification. No replacement case version is silently adopted.
 
 Latest review outcome: after the privacy correction at 76b2e09, Tommy explicitly requested immediate approval of #49. An APPROVED review was submitted and verified; the remaining QR/dispenser clarifications stay as implementation follow-ups. Tommy deferred extra Home indicators for later. No merge of #49 was performed by this chat.
+
+### Selected visual scale — 2026-11-15
+
+Tommy explicitly chose a demo-only amber-to-copper value tint for Overview rather than introducing health-evaluation colors. Contract min/max acceptance spans are only drawing coordinates, not medical thresholds: higher pulse/temperature and lower sleep move toward copper. Gray covers missing readings and pending training. No clinical status, baseline comparison, private analysis or backend decision is derived; all actual medical rules and permissions remain unchanged.

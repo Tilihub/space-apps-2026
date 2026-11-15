@@ -24,4 +24,8 @@ The original supplied team logo is byte-for-byte unchanged in `pages/assets/team
 
 ### Overview appearance review
 
-Tommy removed the historical pulse loop from Overview after visual review. Resting pulse remains the profile's original health value. The 16 isolated appearance studies and comparison screenshots live in `people/tommy/overview-designs/`; Tommy selected MC02 Soft Panels, now applied to the frontend. Global font comparisons T01–T08 are documented in `people/tommy/overview-designs/typography/`; the original-reference T01 is the default pending a final font choice.
+Tommy removed the historical pulse loop from Overview after visual review. Resting pulse remains the profile's original health value. The 16 isolated appearance studies and comparison screenshots live in `people/tommy/overview-designs/`; Tommy selected MC02 Soft Panels, now applied to the frontend. Global font comparisons T01–T08 are documented in `people/tommy/overview-designs/typography/`; Tommy selected Clean / Inter (T02), now the shared default throughout the app.
+
+### Overview value colors
+
+Tommy chose a nonclinical demo value scale. `pages/overview-colors.js` interpolates amber/copper using each existing contract input span as a normalized drawing coordinate (higher pulse/temperature, lower sleep → copper). These spans validate input and are **not medical limits**. No health category, alert, baseline comparison or treatment recommendation is computed. Missing/nonfinite readings use the original gray track; zero sleep is still a value and zero recorded training stays pending/gray. Original workout progress and all backend rules are untouched. The numeric readings remain the authoritative displayed values; Help explains the color meaning. Dark/light strokes keep separate lightness values.

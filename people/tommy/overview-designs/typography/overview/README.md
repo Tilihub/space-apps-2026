@@ -1,6 +1,6 @@
 # Typography on the complete Overview
 
-Tommy asked to judge the font choices on Overview rather than only isolated components. This review shows the same T01–T08 recipes in full Soft Panels and Alloy Overview screenshots: sixteen individual captures and four comparison sheets. Soft Panels remains the selected base, while the final font choice is pending.
+Tommy asked to judge the font choices on Overview rather than only isolated components. This review shows the same T01–T08 recipes in full Soft Panels and Alloy Overview screenshots: sixteen individual captures and four comparison sheets. Soft Panels remains the selected base, and Tommy has since selected Clean / Inter (T02) as the global default.
 
 [Compare T01–T02](comparison-1.jpg) · [Compare T03–T04](comparison-2.jpg) · [Compare T05–T06](comparison-3.jpg) · [Compare T07–T08](comparison-4.jpg)
 

@@ -11,7 +11,7 @@
     T08:{ui:'IBM Plex Sans',heading:'Barlow Condensed',number:'Barlow Condensed',label:'IBM Plex Sans'}
   };
   const requested=new URLSearchParams(location.search).get('typeface');
-  const id=Object.hasOwn(presets,requested)?requested:'T01';
+  const id=Object.hasOwn(presets,requested)?requested:'T02';
   const recipe=presets[id],root=document.documentElement;
   root.dataset.typeface=id;
   for(const [token,key] of [['font-ui','ui'],['font-display','heading'],['font-number','number'],['font-label','label']])root.style.setProperty('--'+token,`"${recipe[key]}", system-ui, sans-serif`);

@@ -18,3 +18,7 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 [data-theme="light"] .mission-login .login-identity{background:#111315;border-radius:13px;padding:10px 14px}
 [data-theme="light"] .mission-login .login-identity .eyebrow{color:#e9bd64}
 .mission-header .btn.ghost{background:transparent}.mission-header .btn.ghost:hover{background:#292f32}
+
+/* Overview value tint is decorative, not a clinical status. Gray retains missing/pending states. */
+:root{--instrument-lightness:66%}[data-theme="light"]{--instrument-lightness:38%}
+#home .gauge-card .gauge-value{stroke:var(--instrument-color,var(--accent))}

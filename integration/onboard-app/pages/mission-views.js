@@ -1,3 +1,4 @@
+import {readingTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
@@ -13,10 +14,10 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const metricNames={co2:'Carbon dioxide',temperature:'Temperature',humidity:'Humidity',radiation:'Radiation'};
   const binsOf = locker => locker?.shelves.flatMap(s=>s.bins.map(b=>({...b,shelf:s.id}))) ?? [];
   const toneOf = reading => ({normal:'green',warning:'yellow',danger:'red','no-reading':'quiet'}[reading.state]??'quiet');
-  const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link=''}={}) => {
+  const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null}={}) => {
     const missing=value===null||value===undefined||value==='—';
     const arc=435.6,amount=missing?0:Math.max(0,Math.min(1,fraction));
-    return `<${link?'a':'div'} class="gauge-card ${color}" ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
+    return `<${link?'a':'div'} class="gauge-card ${color}" ${tint?`style="--instrument-color:${tint}" aria-description="Illustrative value tint, not a health rating"`:""} ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
   };
   function login() {
     const { CREW }=state();
@@ -29,7 +30,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const pending=[];
     if(!row)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily check-in</a>');
     if(!workouts.length&&getDailyWorkout(clock.missionDay).sessions.length)pending.push('<a class="task-cue" href="#fitness"><i></i>Training open</a>');
-    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false})}${gauge('Training',workouts.length,workouts.length===1?'session':'sessions',{color:workouts.length?'mint':'cyan',fraction:workouts.length?1:0,link:'#fitness',caption:false})}</div></div></div>`;
+    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false,tint:readingTint('restingHeartRateBpm',row?.restingHeartRateBpm)})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false,tint:readingTint('temperatureC',row?.temperatureC)})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false,tint:readingTint('sleepHours',row?.sleepHours)})}${gauge('Training',workouts.length,workouts.length===1?'session':'sessions',{color:workouts.length?'mint':'cyan',fraction:workouts.length?1:0,link:'#fitness',caption:false})}</div></div></div>`;
   }
 
   function rating(label,name,value,lo,hi,disabled) {
