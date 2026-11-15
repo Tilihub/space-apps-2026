@@ -7,10 +7,10 @@ export const EXTRA_QUESTIONS = Object.freeze([
  {id:'loneliness',prompt:'How lonely or isolated did you feel?',low:'Not at all',high:'Extremely'},
  {id:'connection',prompt:'How connected and supported did you feel by your crew?',low:'Not at all',high:'Very much'},
  {id:'workload',prompt:'How demanding did your workload feel?',low:'Very light',high:'Extremely demanding'},
+ {id:'mentalRest',prompt:'How mentally refreshed have you felt?',low:'Not at all',high:'Very refreshed'},
 ]);
 
 export const WELLBEING_SCALE_IDS=Object.freeze(['mood','stress','fatigue',...EXTRA_QUESTIONS.map(q=>q.id)]);
 export function validWellbeingSubmission(values){
- return WELLBEING_SCALE_IDS.every(key=>{const v=Number(values[key]);return Number.isInteger(v)&&v>=1&&v<=10;})
-  &&['yes','no'].includes(values.supportWanted);
+ return WELLBEING_SCALE_IDS.every(key=>{const v=Number(values[key]);return Number.isInteger(v)&&v>=1&&v<=10;});
 }

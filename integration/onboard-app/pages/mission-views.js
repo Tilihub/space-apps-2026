@@ -3,6 +3,7 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {readingTint,scaleTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
+import {MEDICAL_OFFICER_ID} from '/shared/contract/contract.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
 import { getDailyWorkout } from '/demo-data/workout-program.js';
 
@@ -16,10 +17,10 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const metricNames={co2:'Carbon dioxide',temperature:'Temperature',humidity:'Humidity',radiation:'Radiation'};
   const binsOf = locker => locker?.shelves.flatMap(s=>s.bins.map(b=>({...b,shelf:s.id}))) ?? [];
   const toneOf = reading => ({normal:'green',warning:'yellow',danger:'red','no-reading':'quiet'}[reading.state]??'quiet');
-  const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null}={}) => {
+  const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null,compact=false}={}) => {
     const missing=value===null||value===undefined||value==='—';
     const arc=435.6,amount=missing?0:Math.max(0,Math.min(1,fraction));
-    return `<${link?'a':'div'} class="gauge-card ${color}" style="--instrument-color:${tint??scaleTint(amount)}" ${tint?'aria-description="Illustrative value tint, not a health rating"':''} ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
+    return `<${link?'a':'div'} class="gauge-card ${color}${compact?' gauge-compact-value':''}" style="--instrument-color:${tint??scaleTint(amount)}" ${tint?'aria-description="Illustrative value tint, not a health rating"':''} ${link?`href="${link}"`:''}><span class="gauge-label">${label}</span><div class="gauge-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="gauge-track" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc} 55" transform="rotate(110 100 100)"/><circle class="gauge-value" style="opacity:${amount?1:0}" cx="100" cy="100" r="78" pathLength="${arc+55}" stroke-dasharray="${arc*amount} ${arc+55}" transform="rotate(110 100 100)"/></svg><span class="gauge-center"><b>${esc(missing?'—':value)}</b><small>${unit}</small></span></div>${caption===false?'':`<span class="gauge-caption">${caption||'Today’s check-in'}</span>`}</${link?'a':'div'}>`;
   };
   function login() {
     const { CREW }=state();
@@ -37,7 +38,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const tasksDone=Number(wellbeingDone)+Number(!!trainingDone);
     if(!wellbeingDone)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily wellbeing</a>');
     if(!trainingDone)pending.push('<a class="task-cue" href="#fitness"><i></i>Training open</a>');
-    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false,tint:readingTint('restingHeartRateBpm',row?.restingHeartRateBpm)})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false,tint:readingTint('temperatureC',row?.temperatureC)})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false,tint:readingTint('sleepHours',row?.sleepHours)})}${gauge('Daily tasks',`${tasksDone}/2`,'completed',{fraction:tasksDone/2,link:!wellbeingDone?'#checkin':!trainingDone?'#fitness':'#home',caption:false})}</div></div></div>`;
+    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false,tint:readingTint('restingHeartRateBpm',row?.restingHeartRateBpm)})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false,tint:readingTint('temperatureC',row?.temperatureC)})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false,tint:readingTint('sleepHours',row?.sleepHours)})}${gauge('Daily tasks',`${tasksDone}/2`,'completed',{fraction:tasksDone/2,link:!wellbeingDone?'#checkin':!trainingDone?'#fitness':'#home',caption:false})}${gauge('SpO₂',row?.spo2Pct,'%',{caption:false,tint:readingTint('spo2Pct',row?.spo2Pct)})}${gauge('Blood pressure',row?.systolicMmHg!=null&&row?.diastolicMmHg!=null?`${row.systolicMmHg}/${row.diastolicMmHg}`:'—','mmHg',{caption:false,tint:readingTint('systolicMmHg',row?.systolicMmHg),compact:true})}</div></div></div>`;
   }
 
   function rating(label,name,value,lo,hi,disabled) {
@@ -76,11 +77,11 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const row=data.today?.checkIn,saved=!!row,step=ui.wellbeingStep;
     const core=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
     const extras=extraDraft(),extra=k=>drafts['wellbeing-extra-form']?.[k]??extras[k]??'';
-    const tabs=['Today','Focus','Crew','Support'];
+    const tabs=['Today','Focus','Crew','Recovery'];
     let content='';
     if(step===0)content=`<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}</fieldset></form>`;
     if(step===1||step===2)content=`<form id="wellbeing-extra-form">${EXTRA_QUESTIONS.slice((step-1)*3,step*3).map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,false)).join('')}</form>`;
-    if(step===3)content=`<form id="wellbeing-extra-form"><div class="rating-group" data-rating="supportWanted"><div class="rating-title"><b>Would you like a private conversation with a support professional?</b></div><input type="hidden" name="supportWanted" value="${esc(extra('supportWanted'))}"><div class="support-choice">${['yes','no'].map(v=>btn(v==='yes'?'Yes':'No','ui-support-choice',`data-value="${v}" aria-pressed="${extra('supportWanted')===v}"`,'ghost')).join('')}</div></div></form><p class="draft-explainer">These seven additional answers are a demo draft, kept in this session. They are not saved to your health record or sent to anyone.</p><form id="daily-wellbeing-finish">${[...WELLBEING_SCALE_IDS,'supportWanted'].map(k=>`<input type="hidden" name="${k}" value="${esc(['mood','stress','fatigue'].includes(k)?core(k):extra(k))}">`).join('')}<button class="btn primary" type="submit" ${wellbeingCompletedToday?'disabled':''}>${wellbeingCompletedToday?'Completed today':'Finish daily wellbeing'}</button></form>`;
+    if(step===3)content=`<form id="wellbeing-extra-form">${[EXTRA_QUESTIONS[6]].map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,false)).join('')}</form><p class="draft-explainer">These seven additional answers are a demo draft, kept in this session. They are not saved to your health record or sent to anyone.</p><form id="daily-wellbeing-finish">${WELLBEING_SCALE_IDS.map(k=>`<input type="hidden" name="${k}" value="${esc(['mood','stress','fatigue'].includes(k)?core(k):extra(k))}">`).join('')}<button class="btn primary" type="submit" ${wellbeingCompletedToday?'disabled':''}>${wellbeingCompletedToday?'Completed today':'Finish daily wellbeing'}</button></form>`;
     return `<div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(wellbeingCompletedToday?'Completed today':step===0&&saved?'Core answers saved':step===0?'Daily check-in':'Session draft',wellbeingCompletedToday?'green':'quiet'))}<div class="wellbeing-steps" role="group" aria-label="Question sections">${tabs.map((label,i)=>btn(label,'ui-wellbeing-step',`data-id="${i}" aria-pressed="${i===step}"`,'ghost sm')).join('')}</div><span class="subtle question-progress">${step<3?`${step*3+1}–${step*3+3}`:'10'} of 10 questions</span>${content}<div class="wellbeing-navigation">${btn('Previous','ui-wellbeing-step',`data-id="${step-1}" ${step===0?'disabled':''}`,'ghost sm')}${step<3?btn('Next','ui-wellbeing-step',`data-id="${step+1}"`,'primary sm'):''}</div></div>`;
   }
   function checkin() {
@@ -123,7 +124,12 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const part=collection?.status==='open'?collection.compartments.find(p=>p.compartmentId===b.compartmentId&&!p.scanned):null;
     const prescribed=(data.grants?.grants??[]).find(g=>g.status==='active'&&g.items.some(i=>i.itemId===b.itemId));
     const dose=prescribed?.items.find(i=>i.itemId===b.itemId);
-    const tier={'self-care':'Self-care',prescription:'Medical officer approval',controlled:'Earth approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
+    const routedToDoctor=/the medical officer decides/i.test(b.why??'');
+    const earthApproval=b.tier==='controlled'||/Earth decides/.test(b.why??'')||(routedToDoctor&&state().user?.crewId===MEDICAL_OFFICER_ID);
+    const safetyBlocked=b.why?.startsWith('Allergy:')||(b.tier==='self-care'&&b.locked&&!routedToDoctor);
+    const tier=safetyBlocked?'Unavailable':earthApproval?'Earth prescription · code / QR':{'self-care':b.locked?'Onboard doctor approval':'Self-care',prescription:'Onboard doctor approval',emergency:'Emergency access',supply:'Crew supply'}[b.tier]??b.tier;
+    // Routing is already shown in Access. Keep actionable safety blocks, not policy boilerplate.
+    const safetyReason=/^(Prescription:|Controlled medicine:|Emergency medicine:|The medical officer is the patient:)/i.test(b.why??'')?null:b.why?.replace(/: the medical officer decides$/i,'');
     let actions='';
     if(role==='crew') {
       if(b.open&&part)actions=`<div class="ready-note"><span>${part.units} unit(s) ready${collection.source==='emergency'?` · For ${esc(member(collection.patientId))}`:''}</span></div>${btn('Confirm collection','scan-item',`data-id="${b.compartmentId}"`,'primary')}${btn('Cancel remaining batch','cancel-collection','','ghost sm')}`;
@@ -137,7 +143,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
       else if(prescribed)actions=`<div class="ready-note">${pill('Prescription on file','quiet')}<span>${dose.units} unit(s) · ${dose.perDay}/day</span>${dose.nextDue?`<small>Next ${time(dose.nextDue)}</small>`:''}</div>${dose.status==='due'?btn('Collect due items','collect-grant',`data-id="${prescribed.id}"`,'primary'):btn('View prescription','ui-med-tab','data-id="courses"','ghost')}`;
       else actions=`<form id="item-${b.itemId}" data-item="${b.itemId}">${b.locked?note('Request note (optional)'):field('Quantity','units',{type:'number',value:1,attrs:'min="1" max="9" step="1"',required:true})}<button class="btn primary" name="intent" value="${b.locked?'request':'collect'}" type="submit">${b.locked?'Request approval':'Collect item'}</button></form>`;
     }
-    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(compartmentLabel(b.compartmentId)),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'open':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(compartmentLabel(b.compartmentId))}</dd></div></dl>${b.why&&!b.open&&!(b.tier==='emergency'&&ui.emergencyEnabled)?`<p class="access-reason">${icon('lock')}${esc(b.why)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
+    return `<aside class="card item-detail">${heading('SELECTED COMPARTMENT',esc(compartmentLabel(b.compartmentId)),pill(b.open?'Open':b.locked?'Restricted':'Available',b.open?'open':b.locked?'red':'available'))}<div class="detail-title"><h2>${esc(b.label)}</h2><div class="detail-art">${itemArt(b)}</div></div><dl class="item-facts"><div><dt>In stock</dt><dd>${b.units} unit(s)</dd></div><div><dt>Access</dt><dd>${esc(tier)}</dd></div><div><dt>Location</dt><dd>${esc(compartmentLabel(b.compartmentId))}</dd></div></dl>${safetyReason&&!b.open?`<p class="access-reason">${icon('lock')}${esc(safetyReason)}</p>`:''}<div class="item-actions">${actions}</div></aside>`;
   }
   function medbay() {
     const {role,data}=state();
@@ -282,7 +288,6 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     if(name==='ui-begin'){ui.welcome=true;sessionStorage.setItem('pulse-welcome','done');redraw();return;}
     if(name==='ui-help'){$help().hidden=!$help().hidden;return;}
     if(name==='ui-wellbeing-step'){ui.wellbeingStep=Math.max(0,Math.min(3,Number(id)));refreshWellbeing(true);return;}
-    if(name==='ui-support-choice'){const input=el.closest('form').elements.supportWanted;input.value=el.dataset.value;remember(input.form);keepExtra(input.form);refreshWellbeing();return;}
     if(name==='ui-rating'){
       const group=el.closest('[data-rating]'),input=group.querySelector('input');input.value=el.dataset.value;
       group.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===el)));

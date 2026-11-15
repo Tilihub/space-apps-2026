@@ -50,3 +50,12 @@ Load entry uses stacked +/− controls, five kilograms per press, and no large s
 Preset core records no longer complete the wellbeing task. The user answers all ten questions and presses Finish daily wellbeing. This UI completion marker is separate from the three persisted core values and seven local drafts.
 
 One-second rendering interpolates the synchronized server clock without changing API/save timestamps. Exercise time resets independently of session time; final sets do not restart rest; interval labels follow the original controller. Four new regression checks and browser validation passed (106 root tests total). Overview-space proposals remain in overview-space-proposal.md.
+
+
+## Access wording follow-up — 2026-11-15
+
+Tommy wants two ordinary approval categories: onboard-doctor approval through the app, and Earth prescriptions collected with equivalent QR/code credentials. He rejects a special Earth-only policy solely because the onboard doctor is the patient.
+
+The current owner module **does enforce** that exception (`people/dadis2/meds/rules.js`, `approvalFor` / `officerFor`), and the protected contract describes it. This UI-only pass does not change those files or bypass access checks. dadis2 and zt need to reconcile the desired rule and contract through the existing teammate-review process before the exception can actually disappear.
+
+The selected-item panel now shows one short Access value: Onboard doctor approval, Earth prescription · code / QR, Self-care, Crew supply, or Emergency access. Earth-only cases retain the actual authority from the current API. Repetitive routing prose is hidden, including the doctor-as-patient sentence. Actionable allergy/stock/dose-limit safety reasons remain visible. Existing request/import/collection endpoints and permissions are unchanged.

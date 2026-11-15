@@ -121,3 +121,15 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 
 .exercise-time-readout{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;color:var(--text-2);font-size:12px}
 .exercise-time-readout b{font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
+
+/* Six equally sized instruments align with the body panel on desktop. */
+#home .overview-instruments{justify-content:stretch}
+#home .overview-instruments .gauge-grid{flex:1;grid-template-rows:repeat(3,minmax(210px,1fr));align-content:stretch;gap:14px}
+#home .overview-instruments .gauge-card{min-height:210px;justify-content:center;padding:12px 10px 8px;gap:2px}
+#home .overview-instruments .gauge-ring{width:min(205px,100%);height:auto;aspect-ratio:1;margin:-6px 0 -10px}
+#home .overview-instruments .gauge-center b{font-size:47px;font-weight:700}
+#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:36px;letter-spacing:-.045em}
+#home .overview-instruments .gauge-center small{font-size:12px;font-weight:600}
+#home .overview-instruments .gauge-label{font-size:13px;font-weight:650}
+@media(max-width:960px){#home .overview-instruments .gauge-ring{width:min(180px,100%)}#home .overview-instruments .gauge-center b{font-size:41px}#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:31px}}
+@media(max-width:640px){#home .overview-instruments .gauge-grid{grid-template-rows:repeat(3,minmax(180px,auto));gap:12px}#home .overview-instruments .gauge-card{min-height:180px;padding:12px 6px 8px}#home .overview-instruments .gauge-ring{width:min(180px,100%)}#home .overview-instruments .gauge-center b{font-size:36px}#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:27px}}

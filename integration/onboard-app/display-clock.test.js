@@ -50,15 +50,15 @@ test('display time follows explicit mission jumps, rolls dates and stops extrapo
  display.clear();assert.equal(display.get(),null);
 });
 
-test('wellbeing completion requires all nine scales and the final support answer',()=>{
+test('wellbeing completion requires ten numeric scales including mental recovery',()=>{
  const answers=Object.fromEntries(WELLBEING_SCALE_IDS.map(k=>[k,'5']));
- assert.equal(validWellbeingSubmission(answers),false);
- answers.supportWanted='no';
+ assert.equal(WELLBEING_SCALE_IDS.length,10);
+ assert.equal(WELLBEING_SCALE_IDS.includes('supportWanted'),false);
  assert.equal(validWellbeingSubmission(answers),true);
  for(const key of WELLBEING_SCALE_IDS){
   assert.equal(validWellbeingSubmission({...answers,[key]:''}),false,key);
   assert.equal(validWellbeingSubmission({...answers,[key]:'11'}),false,key);
   assert.equal(validWellbeingSubmission({...answers,[key]:'1.5'}),false,key);
  }
- assert.equal(validWellbeingSubmission({...answers,supportWanted:'yes'}),true);
+ assert.equal(validWellbeingSubmission({...answers,mentalRest:'',supportWanted:'yes'}),false);
 });

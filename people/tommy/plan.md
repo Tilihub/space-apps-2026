@@ -313,8 +313,12 @@ Kilograms use manual typing plus vertically stacked +/− controls in 5 kg steps
 
 ### Wellbeing completion and timers — 2026-11-15
 
-Daily wellbeing stays pending until the user finishes the ten-question form explicitly. Preset mood/stress/fatigue values are existing core records, not proof of questionnaire completion. Validate nine scales plus the support yes/no answer; preserve the one-check-in-per-day rule and seven extra local drafts. Use a per-person/day UI completion marker.
+Daily wellbeing stays pending until the user finishes the ten-question form explicitly. Preset mood/stress/fatigue values are existing core records, not proof of questionnaire completion. Validate all ten 1–10 scales, including mental refreshment instead of a support request; preserve the one-check-in-per-day rule and seven extra local drafts. Use a per-person/day UI completion marker.
 
 Render exercise/session/rest displays each second against synchronized mission time, keeping saved timestamps on the raw server clock. Show exercise elapsed separately, reset it at the next step, and use the owner's interval phase/round snapshot. No new between-set rest follows the final set.
 
 Overview-space proposals remain unimplemented: compact SpO2/BP row, optionally a next-dose reminder only when a course applies. See overview-space-proposal.md.
+
+### Overview vitals and access copy — 2026-11-15
+
+Tommy approved SpO2 and blood pressure from the existing Today fields as two additional circular instruments in a six-card grid. The full right column matches body-panel height on desktop. Human support remains on Wellbeing; the tenth question is mental refreshment, 1–10. Medical access uses short onboard-doctor / Earth QR-code labels instead of policy prose, preserving safety blocks and actual permissions. The requested removal of doctor-as-patient Earth routing needs dadis2/zt contract review; see medical-training-follow-up.md.
