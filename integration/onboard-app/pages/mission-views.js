@@ -9,14 +9,12 @@ import { getDailyWorkout } from '/demo-data/workout-program.js';
 
 export function createMissionViews({ state, helpers: h, legacy, redraw, remember }) {
   const { esc, icon, btn, field, select, note, submit, card, empty, bodyFrame, mascotSvg, time, member, chatTranscript, chatComposer } = h;
-  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, emergencyEnabled:false,medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0, metric: 'co2',
+  const ui = { chartId:0,setChecks:{},stageReps:{},wellbeingStep:0, emergencyEnabled:false,medTab: 'cabinet', lockerId: null, binId: null, cabinetPage: 0,
     welcome: sessionStorage.getItem('pulse-welcome') === 'done' };
   const pill = (label, tone='cyan') => `<span class="status-pill ${tone}"><i></i>${esc(label)}</span>`;
   const heading = (eyebrow,title,action='') => `<div class="section-heading"><div><span class="eyebrow">${eyebrow}</span><h3>${title}</h3></div>${action}</div>`;
   const disclosure = (label,content,cls='') => `<details class="disclosure ${cls}"><summary>${label}</summary><div class="disclosure-body">${content}</div></details>`;
-  const metricNames={co2:'Carbon dioxide',temperature:'Temperature',humidity:'Humidity',radiation:'Radiation'};
   const binsOf = locker => locker?.shelves.flatMap(s=>s.bins.map(b=>({...b,shelf:s.id}))) ?? [];
-  const toneOf = reading => ({normal:'green',warning:'yellow',danger:'red','no-reading':'quiet'}[reading.state]??'quiet');
   const gauge = (label,value,unit,{fraction=1,color='cyan',caption='',link='',tint=null,compact=false}={}) => {
     const missing=value===null||value===undefined||value==='—';
     const arc=435.6,amount=missing?0:Math.max(0,Math.min(1,fraction));
@@ -75,13 +73,13 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const {data,drafts,user,wellbeingCompletedToday}=state();
     if(ui.wellbeingCrew!==user?.crewId){ui.wellbeingCrew=user?.crewId;ui.wellbeingStep=0;}
     const row=data.today?.checkIn,saved=!!row,step=ui.wellbeingStep;
-    const core=k=>drafts['checkin-form']?.[k]??row?.[k]??'';
+    const core=k=>saved?(row[k]??''):(drafts['wellbeing-core-form']?.[k]??'');
     const extras=extraDraft(),extra=k=>drafts['wellbeing-extra-form']?.[k]??extras[k]??data.pulsars?.wallet?.todayAnswers?.[k]??'';
     const tabs=['Today','Focus','Crew','Recovery'];
     let content='';
-    if(step===0)content=`<form id="checkin-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}</fieldset></form>`;
+    if(step===0)content=`<form id="wellbeing-core-form"><fieldset ${saved?'disabled':''} class="plain-fieldset">${rating('How was your mood?','mood',core('mood'),'Very low','Very good',saved)}${rating('How stressed did you feel?','stress',core('stress'),'Not at all','Extremely',saved)}${rating('How fatigued did you feel?','fatigue',core('fatigue'),'Not at all','Extremely',saved)}${field('Sleep in the last 24 hours (hours, optional)','sleepHours',{type:'number',attrs:'min="0" max="24" step="0.1"',value:core('sleepHours')})}</fieldset></form>`;
     if(step===1||step===2)content=`<form id="wellbeing-extra-form">${EXTRA_QUESTIONS.slice((step-1)*3,step*3).map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,wellbeingCompletedToday)).join('')}</form>`;
-    if(step===3)content=`<form id="wellbeing-extra-form">${[EXTRA_QUESTIONS[6]].map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,wellbeingCompletedToday)).join('')}</form><p class="draft-explainer">Your answers are private. Pulsars reward completion, never what you answer.</p><form id="daily-wellbeing-finish">${WELLBEING_SCALE_IDS.map(k=>`<input type="hidden" name="${k}" value="${esc(['mood','stress','fatigue'].includes(k)?core(k):extra(k))}">`).join('')}<button class="btn primary" type="submit" ${wellbeingCompletedToday?'disabled':''}>${wellbeingCompletedToday?'Completed today':'Finish daily wellbeing'}</button></form>`;
+    if(step===3)content=`<form id="wellbeing-extra-form">${[EXTRA_QUESTIONS[6]].map(q=>rating(q.prompt,q.id,extra(q.id),q.low,q.high,wellbeingCompletedToday)).join('')}</form><p class="draft-explainer">Your answers are private. Pulsars reward completion, never what you answer.</p><form id="daily-wellbeing-finish">${WELLBEING_SCALE_IDS.map(k=>`<input type="hidden" name="${k}" value="${esc(['mood','stress','fatigue'].includes(k)?core(k):extra(k))}">`).join('')}<input type="hidden" name="sleepHours" value="${esc(core('sleepHours'))}"><button class="btn primary" type="submit" ${wellbeingCompletedToday?'disabled':''}>${wellbeingCompletedToday?'Completed today':'Finish daily wellbeing'}</button></form>`;
     return `<div class="card daily-form-card">${heading('DAILY WELLBEING','A moment for yourself',pill(wellbeingCompletedToday?'Completed today':step===0&&saved?'Core answers saved':step===0?'Daily check-in':'Session draft',wellbeingCompletedToday?'green':'quiet'))}<div class="wellbeing-steps" role="group" aria-label="Question sections">${tabs.map((label,i)=>btn(label,'ui-wellbeing-step',`data-id="${i}" aria-pressed="${i===step}"`,'ghost sm')).join('')}</div><span class="subtle question-progress">${step<3?`${step*3+1}–${step*3+3}`:'10'} of 10 questions</span>${content}<div class="wellbeing-navigation">${btn('Previous','ui-wellbeing-step',`data-id="${step-1}" ${step===0?'disabled':''}`,'ghost sm')}${step<3?btn('Next','ui-wellbeing-step',`data-id="${step+1}"`,'primary sm'):''}</div></div>`;
   }
   function checkin() {
@@ -182,12 +180,6 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     const colorId=`pulse-plot-${++ui.chartId}`;
     const endTint=scaleTint((valid.at(-1)[1]-min)/(max-min));
     return `<svg class="mission-chart" viewBox="0 0 680 202" role="img" aria-label="${esc(unit)} measurements"><defs><linearGradient id="${colorId}" gradientUnits="userSpaceOnUse" x1="0" y1="165" x2="0" y2="33"><stop offset="0" style="stop-color:var(--graph-base)"/><stop offset="1" style="stop-color:var(--graph-warm)"/></linearGradient></defs><g>${[0,1,2,3].map(i=>{const v=min+(max-min)*i/3;return `<line x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text x="38" y="${y(v)+4}" text-anchor="end">${v>=100?Math.round(v):v.toFixed(1)}</text>`;}).join('')}</g>${thresholds.map(([l,v])=>`<line class="chart-threshold" x1="48" y1="${y(v)}" x2="646" y2="${y(v)}"/><text class="threshold-caption" x="54" y="${y(v)-6}">${l} ${v}</text>`).join('')}<path d="${d}" style="stroke:url(#${colorId})"/><circle style="fill:${endTint}" class="chart-endpoint" cx="${x(valueTime(valid.at(-1)))}" cy="${y(valid.at(-1)[1])}" r="4"/>${[xs[0],xs.at(-1)].map((t,i)=>`<text x="${i?646:48}" y="194" text-anchor="${i?'end':'start'}">${label(t)}${!elapsed?' UTC':''}</text>`).join('')}</svg>`;
-  }
-  function habitat() {
-    const {data}=state();
-    const readings=data.env?.readings??[],selected=readings.find(r=>r.metric===ui.metric)??readings[0];
-    const history=data.histories?.[selected?.metric],alerts=data.alerts?.alerts??[];
-    return `<div class="habitat-metrics">${readings.map(r=>`<button class="habitat-reading ${r.metric===ui.metric?'selected':''}" data-action="ui-metric" data-id="${r.metric}" aria-pressed="${r.metric===ui.metric}"><span>${metricNames[r.metric]}</span><b>${r.value==null?'—':Number(r.value).toFixed(r.metric==='co2'?0:1)}<small>${esc(r.unit)}</small></b>${pill(r.state==='no-reading'?'No reading':r.state,toneOf(r))}</button>`).join('')}</div><div class="habitat-workspace"><div class="card habitat-plot">${heading('CABIN ENVIRONMENT',metricNames[selected?.metric]??'Readings',pill('Historical replay','quiet'))}<div class="plot-caption"><span>Last 24 mission hours</span><span>${esc(selected?.unit??'')}</span></div>${drawChart(history?.points??[],{unit:history?.unit,limits:history?.limits})}<div class="plot-footer"><span>${esc(history?.source?.label??'Source unavailable')}</span>${disclosure('Source details',`<p>Source time: ${esc(selected?.source?.sourceTime)}</p><p>Measured: ${time(selected?.measuredAt)}</p><p>Data gaps remain empty. Cabin thresholds are illustrative.</p>`)}</div></div><div class="card alert-card">${heading('RECENT EVENTS','Cabin alerts',pill(data.env?.openAlerts?.length?`${data.env.openAlerts.length} open`:'No open alerts',data.env?.openAlerts?.length?'yellow':'green'))}${alerts.map(a=>`<div class="alert-item"><div>${icon('wind')}<span><b>${metricNames[a.metric]}</b><small>${a.recoveredAt?'Recovered '+time(a.recoveredAt):'Opened '+time(a.openedAt)}</small></span>${pill(a.recoveredAt?'Recovered':a.level,a.recoveredAt?'green':'yellow')}</div>${disclosure('Event details',`<dl class="item-facts"><div><dt>Opened</dt><dd>${time(a.openedAt)}</dd></div><div><dt>Peak</dt><dd>${Number(a.peak).toFixed(0)} · ${esc(a.peakLevel??a.level)}</dd></div></dl>`)}</div>`).join('')||empty('Nothing to review in this period.')}</div></div>`;
   }
   function workoutReadout(s) {
     if(!s.sessionId)return `<div class="training-idle">${icon('activity')}<h3>Ready when you are.</h3><p>Start training to view your session.</p></div>`;
@@ -308,11 +300,10 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     if(name==='ui-locker'){ui.lockerId=id;ui.cabinetPage=0;ui.binId=null;}
     if(name==='ui-bin')ui.binId=id;
     if(name==='ui-cabinet-page'){ui.cabinetPage+=Number(el.dataset.step);ui.binId=null;}
-    if(name==='ui-metric')ui.metric=id;
     redraw();
   }
   const $help=()=>document.getElementById('help-panel');
-  return {screens:{login,home,checkin,medbay,habitat,fitness,mind},action,workoutReadout,selectArea,tick,
+  return {screens:{login,home,checkin,medbay,fitness,mind},action,workoutReadout,selectArea,tick,
     psychMessage,emergencyEnabled:()=>ui.emergencyEnabled,
     resetSession:()=>{ui.psychMessages=[];ui.emergencyEnabled=false;ui.medTab='cabinet';ui.lockerId=null;ui.binId=null;ui.cabinetPage=0;},
   };

@@ -23,6 +23,36 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 :root{--graph-base:#27EAFF;--graph-warm:#F0C56B}[data-theme="light"]{--graph-base:#087F98;--graph-warm:#A47116}
 .gauge-card .gauge-value{stroke:var(--instrument-color,var(--graph-base))}
 
+#habitat .falcon-habitat {
+  --panel: var(--surface);
+  --edge: var(--border);
+  --ink: var(--text);
+  --muted: var(--text-2);
+  --falcon-blue: var(--graph-base);
+  --co2: var(--mint);
+  --humidity: var(--graph-base);
+  --temperature: var(--text-3);
+  --radiation: #d0b7e3;
+  --warning: var(--gold);
+  --habitat-danger: var(--alert);
+  --habitat-panel: var(--card-bg);
+  --habitat-cap: var(--panel-cap);
+  --habitat-cap-width: 2px;
+  --habitat-radius: var(--r-lg);
+  --habitat-badge-radius: var(--r-lg);
+  --habitat-badge: var(--surface-2);
+  --habitat-stage: var(--surface-2);
+  --habitat-stage-mid: var(--bg);
+  --habitat-stage-center: var(--surface-3);
+  --habitat-grid-line: color-mix(in srgb, var(--border) 48%, transparent);
+}
+[data-theme="light"] #habitat .falcon-habitat {
+  --radiation: #774f91;
+  --habitat-label-mix: 48%;
+}
+[data-theme="light"] #habitat .trend-chart path,
+[data-theme="light"] #habitat .trend-chart circle { filter: brightness(.75); }
+
 .rail a[data-nav][aria-current="page"],.rail a[data-nav].active{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
 
 /* The planet follows the team's logo cyan, independently of the interface accent. */

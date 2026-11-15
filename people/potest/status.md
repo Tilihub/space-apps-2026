@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:00 (Europe/Athens)
-- Working on: Crew Assistant health context handoff in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
-- Branch: potest/crew-support-chat
+- Last updated: 2026-11-15 (Europe/Athens)
+- Working on: Making the Mara–Tomas comparison available from the standard app launch.
+- Branch: potest/default-crew-assistant-rehearsal
 
 ## Done
 
@@ -27,12 +27,14 @@
 - Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the offline [Crew Assistant demo](../../integration/crew-assistant/README.md). The comparison has two tabs. With context uses today's check-in and recognizes repeated short sleep from earlier records. Verified mouse and keyboard tab switching in Chrome and passed 47 Node tests.
 - Added research-informed suggestions for protecting sleep, reviewing workload, managing stress and following up on Tomas’s next check-in. Verified the context tab in Chrome and passed 52 Node tests.
 - Followed Angelos's handoff at `91dc6da` and added the onboard browser client and crew-only companion route. The client refreshes today's check-in each turn. Tested two identities, no check-in, missing values, stale entries, role refusals and session reset through the shared dispatcher.
+- Added a local rehearsal mode to the onboard app. Run `node integration/onboard-app/start.js --controlled-companion` from the repo root. The assistant uses the signed-in crew member’s ten saved answers and the synthetic health fixture. Mara Quinn has a steady preceding week. Tomas Reyes has four preceding days with short sleep, higher stress and fatigue. The added optional sleep-hours field allows both profiles to enter the same short night from the browser.
+- Each controlled launch starts a fresh day-42 store. Open tabs with an old login return to the welcome screen once they reconnect.
+- The standard launch uses the current crew member’s saved ten-question wellbeing check-in for supported prompts. An empty or explicitly reset store loads the four-day synthetic comparison. Existing records survive an ordinary restart. The separate rehearsal mode starts from a fresh store each time.
 
 ## Blocked / need from others
 
 - zt and the report assembler still need to agree on the shared mission-clock mapping and adopt the proposed snapshot and event IDs. The bridge preserves the source clock and leaves mission time unset unless the parent supplies an offset.
-- zt's onboard core needs to mount the companion route and connect the client to its crew session and reset controls. The human support workflow remains integration work.
-- The joined demo uses a single synthetic profile. The app contract leaves the companion’s use of detailed health analysis open.
+- The rehearsal uses seeded historical readings. Broader clinical history access and the human support workflow remain open.
 
 ## Next steps
 

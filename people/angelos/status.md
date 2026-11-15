@@ -9,10 +9,46 @@
 ## Now
 
 - Last updated: 2026-11-15 (Asia/Nicosia)
-- Working on: Completed report version 1.2 in PR #83: a short team-organization paragraph explains each member's main implementation and purpose; narrative aliases are replaced with team-confirmed first names, with GitHub handles retained for traceability. Application evidence remains pinned to b0f968c.
-- Branch: angelos/team-report-roles
+- Working on: User-authorized approvals of Tommy #75 and #74 confirmed. Independent suites passed 117/117 and 106/106 respectively. The isolated #75 preview remains on port 8020; see reviews/PR75.md and PR74.md.
+- Branch: angelos/review-pulsars-75
 
 ## Done
+
+- Checked the running isolated #75 demo's actual APIs: c4 sleep 4.6 h, computed
+  reference 6.8 h and three-day sleep deviation; own-context companion response
+  succeeds, while another crew's context and crew clinical analysis are refused
+  with 403. Test sessions were revoked; no health entry/store was reset. Computer
+  Use refused Chrome access, so visual UI verification remains unperformed.
+  Details are in reviews/PR75.md; the previous 117-test PR suite remains green.
+
+- User subsequently requested approval of #74. Independently passed 106/106
+  checks at 823874a, reviewed the synthetic-context clarification and private
+  health/journal boundary, and submitted/confirmed APPROVED as AngelosAth30.
+  Removed the isolated #74 test checkout and preserved the running #75 preview.
+  No PR was merged; #73 was not approved by this request. See reviews/PR74.md.
+
+- Synced main 1d2d7ca, inspected Tommy's stacked #73/#74/#75 PRs, and confirmed
+  the user selected #75. Independently passed 117/117 root tests at ba2c0ee in
+  an isolated checkout, reviewed private wellbeing/health and shop boundaries,
+  and submitted/confirmed APPROVED as AngelosAth30. No other PR was approved
+  or merged. Started a fresh synthetic localhost preview on port 8020 and seeded
+  the five published scenarios; verified HTTP 200. Browser appearance was not
+  independently audited. Restart instructions are in reviews/PR75.md.
+
+- Working on: Independently audited report version 1.2: technical coverage matches pinned code, 117 tests and 101 source hashes pass, 41 PDF pages checked. See report/REVIEW.md; no report rewrite needed.
+- Branch: angelos/report-review
+
+## Done
+
+- Independently reviewed report v1.2 on main fcc17e7 against its pinned b0f968c
+  application evidence. No blocking technical omission or rendering defect found.
+  Reproduced 117/117 tests and all 101 manifest hashes; independently recomputed
+  data counts, medians and catalogue tiers. Rendered all 41 PDF pages and checked
+  bounds/links plus selected full-size pages. No report/PDF rewrite was needed.
+  Published the review scope and submission follow-through in report/REVIEW.md.
+- Report audit publication: https://github.com/Tilihub/space-apps-2026/pull/84;
+  only my review notes, report README and status differ. The reviewed PDF and
+  narrative remain unchanged.
 
 - Published the team-organization and names update in https://github.com/Tilihub/space-apps-2026/pull/83. Changes are confined to my report folder and status; the final 41-page PDF is ready for the team.
 - Cross-checked the public GitHub profiles and Git author names. Used the team-confirmed first names Angelos, Zisis, Christos, Petros, Diamantis and Thomas; did not infer missing profile names or publish extra surnames. Section 17 now links each core responsibility to its purpose, and the journal section explicitly explains its private-reflection role. Version 1.2 remains 41 pages; rendered and reviewed every changed page, with clean text bounds, complete font coverage and 466 navigation/reference links. The application evidence and short section 8 AI disclosure are unchanged.
@@ -193,6 +229,10 @@ Current report task: no implementation blocker. The older connection-audit items
 
 ## Next steps
 
+- The user can open the running local #75 preview at port 8020. Keep its TEMP
+  checkout/store while they use it; do not reset their other databases. See
+  reviews/PR75.md for restart and the exact reviewed commit. #75 is stacked on
+  #74/#73; this approval does not approve or merge those underlying PRs.
 - Current report handoff: version 1.2 on angelos/team-report-roles, following PR #78 and the short-AI update #82. Read report/README.md, edit report/report.md for future narrative changes, and regenerate with report/build_report.py using the documented Python libraries. Source/data appendices remain pinned to b0f968c. Section 17 uses confirmed first names and explains each core role and purpose; section 8 retains the brief AI disclosure. The revised PDF is ready to use.
 
 - Read health/CONNECTION_CHECK.md for the latest independent audit. All 70 root

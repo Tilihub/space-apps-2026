@@ -13,13 +13,13 @@ import { startServer } from './server.js';
 
 /**
  * @param {readonly import('../../shared/contract/contract.js').Module[]} modules
- * @param {{ dataDir?: string, realNow?: () => number }} [options] reuse dataDir to test a restart
+ * @param {{ dataDir?: string, realNow?: () => number, makeCore?: typeof createCore }} [options] reuse dataDir to test a restart
  */
-export const boot = async (modules, { dataDir, realNow } = {}) => {
+export const boot = async (modules, { dataDir, realNow, makeCore = createCore } = {}) => {
   const dir = dataDir ?? (await mkdtemp(join(tmpdir(), 'onboard-core-')));
   /** @type {string[]} */
   const logs = [];
-  const core = await createCore({ modules, dataDir: dir, realNow, log: (...args) => logs.push(args.map(String).join(' ')) });
+  const core = await makeCore({ modules, dataDir: dir, realNow, log: (...args) => logs.push(args.map(String).join(' ')) });
   const server = await startServer({ core, port: 0, host: '127.0.0.1' });
   const base = `http://127.0.0.1:${server.port}`;
 
