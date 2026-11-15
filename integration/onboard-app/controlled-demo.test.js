@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { readdir } from 'node:fs/promises';
 import test from 'node:test';
 import { controlledReply } from '../../people/potest/crew-support/controlled-replies.js';
-import { createControlledCore } from './controlled-demo.js';
+import { createControlledCore, createControlledRun } from './controlled-demo.js';
 import modules from './modules.js';
 import { boot, dataOf } from './test-helpers.js';
 
@@ -82,6 +83,45 @@ test('each of the ten ratings can independently change the reply and respects it
     assert.ok(sample(flagged).includes(label), key);
     assert.ok(!sample(usual).includes(label), key);
     assert.ok(!sample(null).includes(label), key);
+  }
+});
+
+test('relaunching the controlled demo clears sessions, clock, check-ins, rewards and journal', async () => {
+  const realNow = () => 0;
+  const ordinary = await boot(modules, { realNow });
+  try {
+    const ordinaryToken = await ordinary.login('c4');
+    dataOf(await ordinary.call('POST', '/api/health/check-ins', { token: ordinaryToken, body: checkIn }));
+    const options = { makeCore: createControlledRun, dataDir: ordinary.dataDir, realNow };
+    const first = await boot(modules, options);
+    let oldToken;
+    try {
+      oldToken = await first.login('c4');
+      dataOf(await first.call('POST', '/api/health/check-ins', { token: oldToken, body: checkIn }));
+      const award = dataOf(await first.call('POST', '/api/pulsars/wellbeing', { token: oldToken, body: { missionDay: 42, answers } }));
+      assert.equal(award.wallet.balance, 100);
+      dataOf(await first.call('POST', '/api/mind/journal', { token: oldToken, body: { text: 'Previous rehearsal' } }));
+      dataOf(await first.call('POST', '/api/clock/advance', { token: oldToken, body: { minutes: 1440 } }));
+    } finally {
+      await first.close({ keepData: true });
+    }
+    assert.ok(!(await readdir(ordinary.dataDir)).some(file => file.startsWith('pulse-controlled-')));
+
+    const second = await boot(modules, options);
+    try {
+      assert.equal((await second.call('GET', '/api/session', { token: oldToken })).status, 401);
+      const token = await second.login('c4');
+      assert.equal(dataOf(await second.call('GET', '/api/clock', { token })).missionDay, 42);
+      assert.match(dataOf(await second.call('GET', '/api/clock', { token })).now, /T07:30:00\.000Z$/);
+      assert.equal((await getToday(second, token)).checkIn, null);
+      assert.equal(dataOf(await second.call('GET', '/api/pulsars/me', { token })).wallet.balance, 0);
+      assert.deepEqual(dataOf(await second.call('GET', '/api/mind/journal', { token })).entries, []);
+      assert.equal((await getToday(ordinary, ordinaryToken)).checkIn.sleepHours, 4.6);
+    } finally {
+      await second.close({ keepData: true });
+    }
+  } finally {
+    await ordinary.close();
   }
 });
 

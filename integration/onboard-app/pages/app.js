@@ -96,6 +96,11 @@ async function login(crewId,platform='astronaut') {
   await show();
 }
 async function logout() { try { await api('/session',{method:'DELETE'}); } catch { /* Clear this tab even if its old server token expired. */ } resetLocal(); token=null; user=null; sessionStorage.removeItem('pulse-token'); location.hash='login'; await show(); }
+function restartBrowserSession() {
+ for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-'))sessionStorage.removeItem(key);
+ history.replaceState(null,'',location.pathname+location.search);
+ location.reload();
+}
 const personQuery = () => `?crewId=${encodeURIComponent(patient)}`;
 const allBins = () => (data.lockers?.lockers ?? []).flatMap(l=>l.shelves.flatMap(s=>s.bins));
 const binName = id => allBins().find(b=>b.itemId===id)?.label ?? id;
@@ -564,6 +569,7 @@ function paintDisplay(){
 let pollCount=0;
 async function poll() {
  if(!token||busy)return;
+ if(!user){await init();return;}
  const version=revision;
  try {
   const [next,events]=await Promise.all([api('/clock'),api(`/events?after=${eventsAfter}`)]);
@@ -583,13 +589,20 @@ async function poll() {
   const medicationRefresh=pollCount%5===0&&page==='medbay';
   const relevant=events.events.some(e=>!e.type.startsWith('clock.')&&(!e.crewId||e.crewId===user.crewId||role()==='medical_officer'));
   if((relevant||clinicalRefresh||medicationRefresh)&&!document.activeElement?.closest('form'))await show();
- } catch(e){if(version===revision)notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);}
+ } catch(e){
+  if(version!==revision)return;
+  if(e.code==='not_logged_in'){restartBrowserSession();return;}
+  notice(`Connection issue: ${e.message}. Unsaved inputs are kept.`,true);
+ }
 }
 async function init() {
  try {
   const loaded=await Promise.all([fetch('/demo-data/workout-heart-rate.json').then(r=>r.json()),fetch('/demo-data/measurement-guides.json').then(r=>r.json())]);
   [replay,guides]=loaded;
-  if(token){try{user=(await api('/session')).user;}catch{token=null;sessionStorage.removeItem('pulse-token');}}
+  if(token){
+   try{user=(await api('/session')).user;}
+   catch(e){if(e.code==='not_logged_in'){restartBrowserSession();return;}throw e;}
+  }
   if(user){const events=await api('/events');eventsAfter=events.lastId;
    try {const cached=JSON.parse(sessionStorage.getItem('pulse-collection')??'null');if(cached?.token===token&&cached.collection?.crewId===user.crewId)collection=cached.collection;}catch{sessionStorage.removeItem('pulse-collection');}
   }
