@@ -49,7 +49,7 @@ test('standard launch compares the crew histories with the same check-in and scr
   for (const token of [mara, tomas]) {
     assert.match(dataOf(await send(app, token, 'I feel disconnected from the crew.')).reply, /crewmate you trust/);
   }
-  assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /far from home/);
+  assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /crewmate you trust/);
   assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
 
   const today = await getToday(app, tomas);

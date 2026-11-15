@@ -54,7 +54,7 @@ export async function createControlledRun({ dataDir = tmpdir(), ...options }) {
   }
 
   try {
-    const core = await createDemoCore({ ...options, dataDir: runDir, rehearsal: true });
+    const core = await createDemoCore({ ...options, dataDir: runDir });
     return {
       ...core,
       async stop() {
@@ -68,7 +68,7 @@ export async function createControlledRun({ dataDir = tmpdir(), ...options }) {
   }
 }
 
-export async function createDemoCore({ modules, dataDir, rehearsal = false, ...options }) {
+export async function createDemoCore({ modules, dataDir, ...options }) {
   const fixture = structuredClone(syntheticHealthFixture);
   const tomas = fixture.crew.c4;
   tomas.story = 'Four recent days of short sleep, high stress and high fatigue for the controlled rehearsal.';
@@ -129,7 +129,7 @@ export async function createDemoCore({ modules, dataDir, rehearsal = false, ...o
   };
   const demoModules = modules.map(mod => {
     if (mod.name === 'health') return demoHealth;
-    if (rehearsal && mod.name === 'mind') return {
+    if (mod.name === 'mind') return {
       ...mod,
       routes: mod.routes.map(route => route.path === companionRoute.path ? companionRoute : route),
     };
@@ -138,6 +138,5 @@ export async function createDemoCore({ modules, dataDir, rehearsal = false, ...o
   const core = await createCore({ modules: demoModules, dataDir, ...options });
   return connectQuestionnaireCompanion(core, {
     historyFor: crewId => activeHistory?.crew[crewId]?.checkIns ?? [],
-    rehearsal,
   });
 }
