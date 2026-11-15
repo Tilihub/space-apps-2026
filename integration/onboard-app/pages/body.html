@@ -470,6 +470,9 @@
       enablePan: false, enableDamping: true, dampingFactor: 0.08, rotateSpeed: 0.7, zoomSpeed: 0.7,
       zoomToCursor: true, autoRotateSpeed: 1.2, minPolarAngle: Math.PI * 0.36, maxPolarAngle: Math.PI * 0.6,
     });
+    // A two-finger scroll or mouse wheel over the body scrolls the page; only a pinch (sent as ctrl + wheel) zooms.
+    // Stopping the event here, before it reaches the canvas, keeps OrbitControls from taking it.
+    container.addEventListener('wheel', (e) => { if (!e.ctrlKey) e.stopPropagation(); }, { capture: true, passive: true });
 
     const uniforms = {
       uRim: { value: new THREE.Vector3() }, uAlert: { value: new THREE.Vector3() }, uRimAmt: { value: 0.6 }, uSpec: { value: 0.1 },
