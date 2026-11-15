@@ -14,6 +14,7 @@
 
 ## Done
 
+- Scaled the radiation trend to its first and last available observations so the recorded interval fills the chart width.
 - Moved the main lounge temperature badge beside the Falcon, with a guide line to the lounge.
 - Added a hull-clipped thermal map using simulated zone temperatures and the cabin replay as the main lounge reference. The main lounge reading and its trend are selected by default.
 - Refined the Habitat preview with a pulsing blue silhouette and a continuous Celsius color scale on the temperature marker, reading and chart.

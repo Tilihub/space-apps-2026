@@ -29,6 +29,7 @@ document.querySelector('#thermal-key').innerHTML = `<figure class="heat-scale">
 const sensorGroup = document.querySelector('#sensors');
 const trend = document.querySelector('#trend');
 const trendPanel = document.querySelector('#trend-panel');
+const trendWindow = document.querySelector('#trend-window');
 const connection = document.querySelector('#connection');
 const clock = document.querySelector('#mission-clock');
 const alertsContent = document.querySelector('#alerts');
@@ -61,15 +62,22 @@ function historyChart(sensor, history, endTime) {
     return `<p class="chart-empty">${message}</p>`;
   }
 
-  const end = Date.parse(endTime);
-  const start = end - 24 * 60 * 60 * 1000;
+  const availableWindow = sensor.id === 'radiation';
+  const last = present.at(-1);
+  const end = Date.parse(availableWindow ? last[0] : endTime);
+  const start = availableWindow ? Date.parse(present[0][0]) : end - 24 * 60 * 60 * 1000;
+  const duration = end - start;
   const values = present.map(([, value]) => value);
   const bottom = Math.min(...values);
   const top = Math.max(...values);
   const padding = Math.max((top - bottom) * .12, 10 ** -sensor.digits);
   const min = bottom - padding;
   const max = top + padding;
-  const x = time => (46 + 311 * Math.max(0, Math.min(1, (Date.parse(time) - start) / (end - start)))).toFixed(2);
+  const x = time => {
+    if (!duration) return '201.50';
+    const fraction = (Date.parse(time) - start) / duration;
+    return (46 + 311 * Math.max(0, Math.min(1, fraction))).toFixed(2);
+  };
   const y = value => (111 - 96 * (value - min) / (max - min)).toFixed(2);
   const thermal = sensor.id === 'temperature';
   const gradientValues = [min, ...temperatureScale.map(([degrees]) => degrees).filter(degrees => degrees > min && degrees < max), max];
@@ -89,16 +97,19 @@ function historyChart(sensor, history, endTime) {
   }
   if (segment.length) segments.push(segment);
 
-  const last = present.at(-1);
   const circle = ([time, value], radius) => `<circle cx="${x(time)}" cy="${y(value)}" r="${radius}"${thermal ? ` style="fill: ${temperatureColor(value)}"` : ''}/>`;
   const trace = segments.map(part => part.length === 1 ? circle(part[0], 2.75) :
     `<path d="${part.map(([time, value], i) => `${i ? 'L' : 'M'}${x(time)} ${y(value)}`).join(' ')}"/>`).join('');
   const grid = [min, (min + max) / 2, max].map(value =>
     `<line x1="46" x2="357" y1="${y(value)}" y2="${y(value)}"/><text x="39" y="${Number(y(value)) + 3}" text-anchor="end">${number(value, sensor.digits)}</text>`).join('');
   const startLabel = utc(new Date(start).toISOString());
-  return `<svg class="trend-chart" viewBox="0 0 365 136"${thermal ? ' style="--trace: url(#temperature-chart-gradient)"' : ''} role="img" aria-label="${sensor.name} during the last 24 mission hours in ${escape(history.unit)}, ${present.length} archived observations, from ${number(bottom, sensor.digits)} to ${number(top, sensor.digits)}">
-    ${chartGradient}${grid}${trace}${circle(last, 3.75)}
-    <text x="46" y="130">−24 h · ${startLabel}</text><text x="357" y="130" text-anchor="end">Now · ${utc(endTime)} UTC</text>
+  const endLabel = utc(new Date(end).toISOString());
+  const tickLabels = duration
+    ? `<text x="46" y="130">${availableWindow ? 'First' : '−24 h'} · ${startLabel}</text><text x="357" y="130" text-anchor="end">${availableWindow ? 'Last' : 'Now'} · ${endLabel} UTC</text>`
+    : `<text x="201.5" y="130" text-anchor="middle">${endLabel} UTC</text>`;
+  const range = availableWindow ? `from ${startLabel} to ${endLabel} UTC` : 'during the last 24 mission hours';
+  return `<svg class="trend-chart" viewBox="0 0 365 136"${thermal ? ' style="--trace: url(#temperature-chart-gradient)"' : ''} role="img" aria-label="${sensor.name} ${range} in ${escape(history.unit)}, ${present.length} archived observations, from ${number(bottom, sensor.digits)} to ${number(top, sensor.digits)}">
+    ${chartGradient}${grid}${trace}${circle(last, 3.75)}${tickLabels}
   </svg>`;
 }
 
@@ -118,6 +129,7 @@ function renderTrend() {
   }
 
   trend.dataset.metric = active;
+  trendWindow.textContent = active === 'radiation' ? 'Recorded interval' : '24 mission hours';
   trend.innerHTML = `<div class="trend-top">
     <div><p class="trend-name">${sensor.name}</p><p class="trend-zone">${sensor.zone}</p></div>
     <span class="reading-state" data-state="${escape(state)}">${states[state] ?? 'Connecting'}</span>
