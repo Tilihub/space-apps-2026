@@ -2,6 +2,32 @@
 
 My personal concept notes and requirements for May the Pulse Be With You. Only Tommy edits this file. The team's common plan is [shared/PLAN.md](../../shared/PLAN.md).
 
+## Latest UI review — 2026-11-15
+
+Tommy explicitly authorized implementation in the existing `integration/onboard-app` connection during this session; the older planning-only state below is historical. Continue on `tommy/frontend-polish`, UI review PR #74 based on integration PR #73. zt remains the design/integration collaborator; owner modules and the protected contract are unchanged in this visual pass.
+
+- Entry screen: original supplied team logo blended into the background and one centered bold Begin mission button. No taglines or extra footer text on entry.
+- App typography: stronger, readable DM Sans, including small labels; logo cyan/gold on a calm dark background. Consistent navigation rows.
+- Overview: larger anatomical body, four instruments (resting pulse, body temperature, sleep, actual saved training). Synthetic regional skin map remains explicitly labelled. No lower shortcut cards or repeated symptom legends. Orange quiet pending-task cues and an unnamed floating planet remain.
+- Body models: c1/c3 female, c2/c4/c5 male, as Tommy confirmed. A layered 3D pedestal replaces the flat floor disc.
+- Overview symptoms: pulse point only at rest; tap for a location/symptom label that hides after three seconds. Preserve broad locations for older reports rather than inventing left/right specificity.
+- Report symptoms: 24 front and 26 back points, anatomical left/right, local highlight, area-specific basic symptoms, 1–10 severity and optional short note. No Another symptom action. Exact location is retained in the existing free-text note; medical rules remain unchanged.
+- Wellbeing: ten-question **product draft**, nine 1–10 items plus one yes/no support preference, organized into Today/Focus/Crew/Support. See [the exact proposal and sources](wellbeing-questionnaire-proposal.md). No validated psychological score or diagnosis is produced.
+- Persistence boundary: existing mood/stress/fatigue are saved through the health API; the seven new questions are explicitly labelled session drafts and clear on sign-out/profile switch. Tommy asked to build/review this here first. Full backend storage needs a separate agreed schema/privacy review; do not claim these additional answers are backend-saved.
+
+### Overview appearance selection
+
+- Tommy removed the historical BPM graph from Overview; retain the original personal resting-pulse instrument.
+- Review the 16 static recipes and screenshot comparisons in [overview-designs/README.md](overview-designs/README.md). They vary palette, type, edge/shadow treatment and visual arrangement while retaining the same content. None is a selected design or a new application implementation.
+- Tommy selected Mission Control (03), specifically the carbon/amber palette and dashed circular instruments. Preserve that direction. Tommy then selected MC02 Soft Panels. Apply that presentation across the real app. Compare global font systems T01–T08 in overview-designs/typography/README.md, including Alloy as a side-by-side comparison at his request; Tommy selected Clean / Inter (T02) as the global default. All sections, inputs, small labels, numbers and body controls use the same selected recipe. Backend, permissions, sources, data and connected behavior stay unchanged.
+
+### Follow-up crew workflow cleanup
+
+- Check-in: one selected-location readout below the body, no arrow callouts; suppress overlapping/back-facing hotspots on rotation. Severity fill follows the 1–10 thumb. Remove the visible 24-hour recall sentence.
+- Overview: remove recorded/check-in captions. The historical pulse replay was later removed by Tommy during the appearance review.
+- Exercise: no body model; prescribed sets use individual completion ticks and rest feedback. Retain Petros's original program/controller and explicit no-sensor state. Stage repetitions use increment controls.
+- Medical bay: crew allergies are already on file and read-only; replace crew Activity with next dose and remaining scheduled doses. Keep clinical editing/history and all existing authorization rules.
+
 ## My part and working agreement
 
 - Tommy supplies the concepts, intended user journeys, and feature requirements.
@@ -250,3 +276,58 @@ PR #49 supplies a new common module architecture. Review found crew-readable det
 Published-work refresh: the former open health/environment/inventory prototypes are now on main. PR #50 adds external baseline import; #51 supplies PET-1/PET-2; #52 proposes stage stories that differ from those fixtures. See contract-review.md for the exact differences and verification. No replacement case version is silently adopted.
 
 Latest review outcome: after the privacy correction at 76b2e09, Tommy explicitly requested immediate approval of #49. An APPROVED review was submitted and verified; the remaining QR/dispenser clarifications stay as implementation follow-ups. Tommy deferred extra Home indicators for later. No merge of #49 was performed by this chat.
+
+### Selected visual scale — 2026-11-15
+
+Tommy explicitly chose a demo-only amber-to-copper value tint for Overview rather than introducing health-evaluation colors. Contract min/max acceptance spans are only drawing coordinates, not medical thresholds: higher pulse/temperature and lower sleep move toward copper. Gray covers missing readings and pending training. No clinical status, baseline comparison, private analysis or backend decision is derived; all actual medical rules and permissions remain unchanged.
+
+### Corrected final appearance — 2026-11-15
+
+Tommy corrected the selection to **Alloy (MC04) + Clean / Inter (T02)** across the application, superseding Soft Panels. Preserve the nonclinical value scale, with the latest graph-only cyan-to-amber endpoints. The mascot has a cyan blue body matching the pulse in the unchanged team logo, with an amber ring, independently of the app accent. All appearances of the shared mascot use this scheme; no behavior or backend change is requested.
+
+### Alloy polish follow-up — 2026-11-15
+
+- Amber cap rules stay single, muted and 2px after Tommy's thickness adjustment. No second rule inside the 3D Overview/Symptoms frame.
+- Cabinet has one confirmation location: the selected item's right-hand panel. Keep per-item/parallel collection rules and handlers unchanged.
+- Graphs alone use logo cyan → yellow/amber. Keep interface controls/caps amber, the mascot body cyan/ring amber, and all existing alert and thermal meanings. The color scale remains illustrative rather than a clinical rating.
+
+- Medical bay follows the shared status-pill shape: cyan Available, green Open and red Restricted. Shelf LEDs retain their original blue available / red restricted / green open mapping; Tommy canceled changing all closed LEDs to red. Stock is labelled In stock.
+
+### Medical bay simplification — 2026-11-15
+
+Tommy requested a greener Open badge, chess-style compartment labels (row 1 → A, row 2 → B), no Allergies tab in Medical bay, and a single top Emergency toggle. Keep allergy data and enforcement. Emergency medicines stay locked until the toggle is enabled; then choose an item, choose who needs help and enter the required reason in the item panel while the cabinet stays visible. No per-item Emergency button or separate crew Emergency page. Keep the server's default emergency dose, explicit allergy override and per-item confirmation.
+
+This frontend uses the existing incident/release endpoints. Their existing one-open-incident-per-patient rule preserves the original reason if the incident already exists. Recording a fresh note with every release remains a separate backend/contract follow-up, not silently introduced here. Display-only row letters do not change canonical IDs, stored history, codes or API requests.
+
+### Current presentation follow-up — 2026-11-15
+
+See [medical-training-follow-up.md](medical-training-follow-up.md). Use one lock-state-colored frame and matching hover behavior, a dismissible emergency notification, global training start with automatic recovery/summary recording, rolling five-minute simulated heart-rate/breathing plots, free-text scripted psychologist chat and correct Mars-transit wording.
+
+Tommy chose drafts until the owners connect AED and load/PR support. The three-column AED shelf is planned equipment, not collectable stock. The user enters a load manually with 5 kg suggestions; it remains an explicitly unsaved draft and PR is not invented. Do not change owner modules or the protected contract as part of this presentation task. Tommy subsequently requested closure of the existing demo emergencies; this was done through normal medical-officer paperwork, not a store reset.
+
+### Overview tasks and quick corrections — 2026-11-15
+
+Replace the training-session instrument with Daily tasks, currently two tasks: daily wellbeing and training. Use the supported saved mood/stress/fatigue answers for wellbeing completion; the extra questionnaire items are still drafts. Training is complete after today's controller session ends or a workout is saved; recovery recording may finish afterward. Keep the visual per-person/day completion through reload and clear it for a demo reset/new day. Rest days have no pending exercise requirement.
+
+Kilograms use manual typing plus vertically stacked +/− controls in 5 kg steps, with no suggestion popup. Loads/PR are still not part of the backend schema. Restore the agreed day-42 fixtures in the active demo when moving from QA; preserve existing check-ins/workouts. Tommy canceled reducing L1: keep ten medicines on two pages.
+
+### Wellbeing completion and timers — 2026-11-15
+
+Daily wellbeing stays pending until the user finishes the ten-question form explicitly. Preset mood/stress/fatigue values are existing core records, not proof of questionnaire completion. Validate all ten 1–10 scales, including mental refreshment instead of a support request; preserve the one-check-in-per-day rule and seven extra local drafts. Use a per-person/day UI completion marker.
+
+Render exercise/session/rest displays each second against synchronized mission time, keeping saved timestamps on the raw server clock. Show exercise elapsed separately, reset it at the next step, and use the owner's interval phase/round snapshot. No new between-set rest follows the final set.
+
+Overview-space proposals remain unimplemented: compact SpO2/BP row, optionally a next-dose reminder only when a course applies. See overview-space-proposal.md.
+
+### Overview vitals and access copy — 2026-11-15
+
+Tommy approved SpO2 and blood pressure from the existing Today fields as two additional circular instruments in a six-card grid. The full right column matches body-panel height on desktop. Human support remains on Wellbeing; the tenth question is mental refreshment, 1–10. Medical access uses short onboard-doctor / Earth QR-code labels instead of policy prose, preserving safety blocks and actual permissions. The requested removal of doctor-as-patient Earth routing needs dadis2/zt contract review; see medical-training-follow-up.md.
+
+
+### Pulsars — personal progress, 2026-11-15
+
+Tommy explicitly restarted gamification as personal growth, with no competition. Earn 100 for each assigned main exercise and daily wellbeing; the fourth/fifth consecutive completed days pay 200 and the sixth onward 300. Separate streaks; scheduled rest preserves training streak without increasing it or paying coins. Warm-up/cool-down earn nothing. A load PR with all prescribed sets/repetitions pays +100 after the first baseline. No PR from extra repetitions or questionnaire answer values.
+
+Use gold Pulsars coins embossed with the unchanged team logo. A gold cart beside appearance/help/sign-out opens the shop: body colors 800, rings 500, expressions 900, basic accessories 1000, plus premium pearl/aurora/fluff/crown items. Free previews; explicit server-priced unlock/equip; saved per-person ownership and appearance throughout the app. Reward popups show +amount, one short reason and an X.
+
+Tommy authorized a complete new backend/contract in a separate PR over the current app. The module lives in people/tommy/pulsars; no teammate source is edited. The proposed shared contract also documents private persistence of all ten wellbeing answers in this new module, leaving the original health API unchanged. zt, Angelos and Petros review before adoption. This does not authorize a merge or resolve the unrelated doctor-as-patient medicine policy.

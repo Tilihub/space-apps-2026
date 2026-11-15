@@ -428,6 +428,8 @@ export const createCore = async ({ modules, dataDir, realNow = Date.now, log = c
   const stop = async () => {
     if (timer) clearInterval(timer);
     timer = null;
+    // Finish queued module writes before a controlled run removes its store.
+    await Promise.all(modules.map(mod => inQueue(mod, async () => {})));
     await saveCore();
   };
 

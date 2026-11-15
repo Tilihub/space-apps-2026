@@ -7,6 +7,12 @@ On the website only one person should edit at a time: another person's edits can
 
 Our Local Event asks for a 7-minute presentation or a 7-minute live demo. We're planning the live demo. No video is needed.
 
+**Before deciding anything about the presentation, read the organisers' guide:**
+[local-presentation-guide.md](local-presentation-guide.md) (summary, with the
+[PDF](local-presentation-guide.pdf)). It has the judging criteria, the format and recommended
+contents. A short Q&A with the judges follows the 7 minutes, and the guide asks for screenshots or
+videos as a backup for the live demo.
+
 ## Checklist (from the official 2026 Project Submission Guide)
 
 - [ ] All six of us are confirmed participants at the same Local Event

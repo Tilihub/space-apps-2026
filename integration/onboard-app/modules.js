@@ -1,13 +1,16 @@
 // @ts-check
 /**
- * The modules the app runs. Each is imported straight from its owner's folder, never copied
- * (contract section 3), and gets /api/<its name>/...
- *
- * Step 1 runs only the contract's example module, to prove the core on its own.
- * Next: health (angelos) replaces example, then meds (dadis2); env (potest) and mind when built.
- * alignment.test.js already checks that health and meds run inside this core.
+ * The functional demo registry. Health and meds are imported from their owners, as are
+ * Potest's companion route/client and Petros's browser workout controller. Connection-owned
+ * adapters fill the missing journal, mission-clock environment API and report transport.
+ * See README.md for source revisions, permissions, pending handoffs and limitations.
  */
-import example from '../../shared/contract/example/index.js';
+import pulsars from '../../people/tommy/pulsars/index.js';
+import health from '../../people/angelos/health/index.js';
+import meds from '../../people/dadis2/meds/index.js';
+import mind from './adapters/mind.js';
+import env from './adapters/environment.js';
+import reports from './adapters/reports.js';
 
 /** @type {readonly import('../../shared/contract/contract.js').Module[]} */
-export default Object.freeze([example]);
+export default Object.freeze([health, meds, mind, env, reports, pulsars]);

@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Tommy's selected Alloy appearance (historical stylesheet filename retained). Presentation only; no API/controller changes. */
+:root:not([data-theme="light"]),[data-theme="dark"]{--bg:#1a1f23;--surface:#293035;--card-bg:linear-gradient(160deg,#343d43,#293035);--surface-2:#20272c;--surface-3:#343f45;--border:#4b555b;--border-strong:#667178;--text:#f4f2e8;--text-2:#bec5c5;--text-3:#aeb9b8;--accent:#f0c56b;--accent-2:#f0c56b;--gold:#f0c56b;--fine-soft:#443d2d;--track:#3b454b;--panel-cap:color-mix(in srgb,#D0AE68 65%,#4B555B);--shadow:inset 0 1px #ffffff0a,0 5px 16px #00000010;--r-lg:6px}
+[data-theme="light"]{--bg:#eeefeb;--surface:#fffef9;--card-bg:#fffef9;--surface-2:#f4f2e9;--surface-3:#eae7dc;--border:#d2d3c9;--border-strong:#a9afa5;--text:#26312d;--text-2:#4c5b53;--text-3:#637268;--accent:#855b19;--accent-2:#855b19;--gold:#855b19;--fine-soft:#eee2c6;--track:#d5d9ce;--panel-cap:color-mix(in srgb,#A68A45 60%,#D2D3C9);--r-lg:6px}
+.card,.gauge-card,.cp,.help-panel{border-radius:6px}.card,.gauge-card{background:var(--card-bg);border-top:2px solid var(--panel-cap)}#home .gauge-value,#home .gauge-track{stroke-dasharray:4 4;stroke-width:5;stroke-linecap:butt}.rail a[data-nav]{border-radius:4px}.rail a[data-nav][aria-current="page"],.rail a[data-nav].active{box-shadow:inset 2px 0 var(--accent)}
+body,button,input,select,textarea{font-family:var(--font-ui)}
+h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-weight:700}
+.gauge-center b,.pulse-value,.training-status-bar b,.step-time,.rep-counter b,.exercise-prescription b,.habitat-reading b,.num-xl,.num-md,.num-sm{font-family:var(--font-number);font-variant-numeric:tabular-nums}
+.eyebrow,.gauge-label,.mission-clock,.mission-chart text,.chart-live text{font-family:var(--font-label);font-weight:600}
+.btn,.rail a[data-nav] span,.crew-btn b,.rating-title b{font-family:var(--font-ui);font-weight:650}
+.subtle,.muted,small,.field>span,.status-pill,.rating-anchors{font-weight:600}
+.header-team-logo,.login-team-logo,.team-logo{mix-blend-mode:lighten}.mission-header{background:#1a1f23;color:#f4f2e8}.mission-header .header-profile small,.mission-header .mission-clock{color:#bec5c5}.mission-header .btn{color:#f4f2e8;border-color:#667178}.mission-header .avatar{background:#343f45;color:#f0c56b;border-color:#667178}
+.mission-welcome{background:radial-gradient(ellipse at 50% 35%,#50432644,transparent 60%),#1a1f23}.welcome-button{box-shadow:0 0 26px #f0c56b15}.mission-login{background:radial-gradient(ellipse at 50% 10%,#50432622,transparent 65%),var(--bg)}
+/* Body geometry, thermal scale, symptoms and picking retain their existing colors/behavior. */
+.b3d-views button,.b3d-label,.b3d-legend,.b3d-msg{font-family:var(--font-ui)}
+:root[data-body-frame]{--accent:#78e0e8;--accent-2:#78e0e8}
+.mission-welcome .welcome-button{background:#f0c56b;border-color:#f0c56b;color:#202018;font-weight:750}
+[data-theme="light"] .mission-login .login-identity{background:#1a1f23;border-radius:13px;padding:10px 14px}
+[data-theme="light"] .mission-login .login-identity .eyebrow{color:#f0c56b}
+.mission-header .btn.ghost{background:transparent}.mission-header .btn.ghost:hover{background:#343f45}
+
+/* Graph value tint is decorative, not a clinical status. Gray retains missing/pending states. */
+:root{--graph-base:#27EAFF;--graph-warm:#F0C56B}[data-theme="light"]{--graph-base:#087F98;--graph-warm:#A47116}
+.gauge-card .gauge-value{stroke:var(--instrument-color,var(--graph-base))}
+
+#habitat .falcon-habitat {
+  --panel: var(--surface);
+  --edge: var(--border);
+  --ink: var(--text);
+  --muted: var(--text-2);
+  --falcon-blue: var(--graph-base);
+  --co2: var(--mint);
+  --humidity: var(--graph-base);
+  --temperature: var(--text-3);
+  --radiation: #d0b7e3;
+  --warning: var(--gold);
+  --habitat-danger: var(--alert);
+  --habitat-panel: var(--card-bg);
+  --habitat-cap: var(--panel-cap);
+  --habitat-cap-width: 2px;
+  --habitat-radius: var(--r-lg);
+  --habitat-badge-radius: var(--r-lg);
+  --habitat-badge: var(--surface-2);
+  --habitat-stage: var(--surface-2);
+  --habitat-stage-mid: var(--bg);
+  --habitat-stage-center: var(--surface-3);
+  --habitat-grid-line: color-mix(in srgb, var(--border) 48%, transparent);
+}
+[data-theme="light"] #habitat .falcon-habitat {
+  --radiation: #774f91;
+  --habitat-label-mix: 48%;
+}
+[data-theme="light"] #habitat .trend-chart path,
+[data-theme="light"] #habitat .trend-chart circle { filter: brightness(.75); }
+
+.rail a[data-nav][aria-current="page"],.rail a[data-nav].active{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+
+/* The planet follows the team's logo cyan, independently of the interface accent. */
+:root{--mascot-light:#E3FFFF;--mascot-body:#27EAFF;--mascot-shade:#0B779E;--mascot-ring:#F0C56B}
+.m-ring{stroke:var(--mascot-ring)}
+
+/* One quiet outer accent only: the embedded 3D scene is a frameless child. */
+:root[data-body-frame] .body-card{border:0;background:transparent;box-shadow:none}
+.card .card{border-top-color:var(--border)}
+
+/* Plot-only cyan/amber palette; interface accents, alerts and the thermal map keep their meanings. */
+.mission-chart path,.chart-live path{stroke:var(--graph-base)}
+.mission-chart .chart-endpoint{fill:var(--graph-base)}
+
+/* Shared status-pill shape, with availability separate from the interface accent. */
+.status-pill.available{color:#78E0E8}[data-theme="light"] .status-pill.available{color:#117D8D}
+
+/* An open compartment uses the same distinct green as its lit medicine window. */
+.item-detail .status-pill.open{color:#65E69C}
+[data-theme="light"] .item-detail .status-pill.open{color:#167847}
+.med-toolbar .emergency-button[aria-pressed="true"]{color:var(--alert);border-color:var(--alert);background:color-mix(in srgb,var(--alert) 16%,var(--surface))}
+.item-actions [data-cabinet-emergency] > .btn{width:100%}
+.item-actions [data-cabinet-emergency] .disclosure{margin:0 0 16px}
+@media(max-width:640px){.crew-med-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Lock styling follows the real per-profile API state, never the locker number alone. */
+.cabinet-door.door-locked{background:linear-gradient(125deg,#5c283322,#8d394028),var(--surface-2);border-color:color-mix(in srgb,var(--alert) 38%,var(--border))}
+.cabinet-door.door-locked .door-window{background:linear-gradient(135deg,#e66a7814,#e66a7806),#101b24}
+
+.cabinet-legend i.cyan{background:#78E0E8}
+#emergency-banner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#emergency-banner[hidden]{display:none}
+#emergency-banner>span{min-width:0}
+#emergency-banner .btn{flex:none;color:inherit;border-color:color-mix(in srgb,currentColor 32%,transparent);font-size:23px;line-height:1}
+.planned-equipment{grid-column:1/-1;min-height:144px}
+.planned-equipment .door-window{height:80px}
+.planned-equipment .door-label{display:flex;align-items:center;justify-content:center;gap:12px}
+.planned-equipment small{color:var(--text-3);font-size:10px}
+.aed-device{position:relative;display:inline-block;width:108px;height:65px;border-radius:11px;background:linear-gradient(135deg,#f1eee5,#a5afb2);box-shadow:inset 0 0 0 5px #56656c,0 6px 10px #0005;transform:perspective(200px) rotateX(8deg);color:#723e4a}
+.aed-handle{position:absolute;top:-9px;left:31px;width:43px;height:14px;border:4px solid #7d8d94;border-bottom:0;border-radius:9px 9px 0 0}
+.aed-screen{position:absolute;left:13px;top:14px;width:42px;height:35px;border-radius:4px;background:#263943;color:#f3abb0;font-size:29px;line-height:35px}
+.aed-mark{position:absolute;right:12px;top:14px;font:700 12px var(--font-ui)}
+.aed-device>i{position:absolute;right:21px;bottom:12px;height:12px;width:12px;background:#6a8b69;border-radius:50%;border:2px solid #eff1df}
+.detail-art .aed-device{transform:scale(.85)}
+.gym-workspace{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);align-items:start}
+.start-training{min-width:165px}
+.training-idle{min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-2);gap:12px}
+.training-idle .icon{height:37px;width:37px;color:var(--graph-base)}
+.training-idle p{font-size:13px;margin-bottom:0}
+.training-sensors>.section-heading{margin-bottom:20px}
+.sensor-plot+.sensor-plot{border-top:1px solid var(--border);margin-top:18px;padding-top:18px}
+.sensor-plot>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sensor-plot h4{font-size:13px;color:var(--text-2)}
+.sensor-plot b{font-size:24px;font-variant-numeric:tabular-nums}
+.sensor-plot b small{font-size:10px;color:var(--text-3)}
+.sensor-plot .mission-chart{height:142px;min-height:0;margin-top:10px}
+.sensor-plot .chart-empty{height:125px;margin-top:12px;font-size:11px}
+.training-session-status{display:flex;justify-content:space-between;gap:12px;margin-top:15px;padding-top:15px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.auto-save-status{margin:12px 0 0}
+.active-exercise-card .section-heading{align-items:start}
+.active-exercise-card .section-heading h3{font-size:20px}
+.active-exercise-card> .btn{margin-top:16px}
+.load-draft{display:grid;grid-template-columns:minmax(0,1fr) 55px;gap:8px 16px;align-items:center;margin-bottom:20px}
+.load-draft .field{margin:0}
+.load-draft>small{grid-column:1/-1;color:var(--text-3);font-size:10px}
+.load-draft select:disabled{opacity:.55}
+.pr-draft small{display:block;color:var(--text-3);font-size:10px}
+.pr-draft b{font-size:22px}
+.plan-pr{font-size:11px;color:var(--text-3);white-space:nowrap}
+.plan-pr small{font-size:8px;display:block;text-align:right}
+.psychologist-card .chat-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.psychologist-card .chat-head h3{font-size:16px}
+.psychologist-thread{max-height:245px;overflow:auto}
+.psychologist-card>.subtle{display:block;font-size:10px;margin-top:14px}
+@media(max-width:900px){.gym-workspace{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.start-training{width:100%}.planned-equipment .door-label{gap:7px}.planned-equipment small{font-size:8px}.sensor-plot .mission-chart{height:130px}}
+
+.planned-equipment-detail .detail-title{display:block}
+.planned-equipment-detail .detail-art{width:100%;height:110px;margin:12px 0;overflow:hidden}
+
+
+/* Shared hover/selection behavior: one adjacent frame, with color from the lock state. */
+.cabinet-door{--door-highlight:#78E0E8;outline:0}
+.cabinet-door.door-locked{--door-highlight:var(--alert)}
+.cabinet-door.door-open{--door-highlight:#70D6B3}
+.cabinet-door:hover{border-color:var(--door-highlight);box-shadow:inset 0 1px 0 #93AEC01F,0 0 8px color-mix(in srgb,var(--door-highlight) 12%,transparent)}
+.cabinet-door.selected{outline:0;border-color:var(--door-highlight);box-shadow:inset 0 0 0 1px var(--door-highlight)}
+.cabinet-door:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--door-highlight)}
+
+/* Manual load entry with compact stacked 5 kg controls; no suggestion popup. */
+.load-draft{grid-template-columns:minmax(0,1fr) 36px 45px;gap:8px 12px}
+.load-stepper{display:grid;gap:4px;align-self:end}
+.load-stepper .btn{min-height:25px;height:25px;padding:0;font-size:17px;border-radius:5px}
+.load-draft input[type="number"]{appearance:textfield;-moz-appearance:textfield}
+.load-draft input::-webkit-inner-spin-button,.load-draft input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+.exercise-time-readout{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;color:var(--text-2);font-size:12px}
+.exercise-time-readout b{font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
+
+/* Six equally sized instruments align with the body panel on desktop. */
+#home .overview-instruments{justify-content:stretch}
+#home .overview-instruments .gauge-grid{flex:1;grid-template-rows:repeat(3,minmax(210px,1fr));align-content:stretch;gap:14px}
+#home .overview-instruments .gauge-card{min-height:210px;justify-content:center;padding:12px 10px 8px;gap:2px}
+#home .overview-instruments .gauge-ring{width:min(205px,100%);height:auto;aspect-ratio:1;margin:-6px 0 -10px}
+#home .overview-instruments .gauge-center b{font-size:40px;font-weight:650;letter-spacing:-.025em}
+#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:31px;letter-spacing:-.025em}
+#home .overview-instruments .gauge-center small{font-size:12px;font-weight:600}
+#home .overview-instruments .gauge-label{font-size:13px;font-weight:650}
+@media(max-width:960px){#home .overview-instruments .gauge-ring{width:min(180px,100%)}#home .overview-instruments .gauge-center b{font-size:36px}#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:28px}}
+@media(max-width:640px){#home .overview-instruments .gauge-grid{grid-template-rows:repeat(3,minmax(180px,auto));gap:12px}#home .overview-instruments .gauge-card{min-height:180px;padding:12px 6px 8px}#home .overview-instruments .gauge-ring{width:min(180px,100%)}#home .overview-instruments .gauge-center b{font-size:32px}#home .overview-instruments .gauge-compact-value .gauge-center b{font-size:25px}}
+
+/* Use the full Overview card for the body, keeping its existing controls and legend. */
+#home .anatomy-stage{flex:1 1 auto;height:auto;min-height:440px}
+@media(max-width:640px){#home .anatomy-stage{flex:none;height:470px;min-height:470px}}

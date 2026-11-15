@@ -8,10 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 19:12
-- Working on: the core server in [integration/onboard-app/](../../integration/onboard-app/README.md).
-  Step 1 of 5 works: login, mission clock, events, saving and files, with the example module.
-- Branch: zt/onboard-core
+- Last updated: 2026-11-15 12:35
+- Working on: the submission. Added the Local Event's presentation guide to `shared/submission/`.
+- Branch: zt/presentation-guide
 
 ## Done
 
@@ -49,19 +48,29 @@
   jumps forward, pauses while off), events, saved data per module, reset demo, and a plain demo
   controls page at `/demo/`. Runs the example module; 12 tests pass, and they show angelos's health
   and dadis2's meds already run inside it with petros's day-42 data
+- Sunday 12:22 status check: pulled main (the joined app, Pulsars and Angelos's report are merged)
+  and refreshed [team-jobs.md](team-jobs.md). 116 of 117 tests pass on Linux; the one failure is
+  the crew-assistant demo starting Python as `python`
+- Added the Local Event's presentation guide (Greek NewSpace Society) as
+  `shared/submission/local-presentation-guide.pdf`, with a text summary next to it and a pointer
+  from `project-page.md`: 7 minutes plus Q&A, the five judging criteria, recommended contents, and
+  how Tommy's draft demo plan (PR #79) compares
 
 ## Blocked / need from others
 
-- Nothing blocks zt. Teammates are waiting on zt for: health and meds in the app and the pages
-  (the core runs; health, meds wave 1 and petros's workout controller are ready), and contract questions for the table (dadis2's
-  Emergency scope, one course per medicine and his "For zt" list in `meds/README.md`; who builds
-  mind). See
-  [team-jobs.md](team-jobs.md), "Connections that need agreeing"
+- Nothing blocks zt. The core is no longer waited on: Tommy joined every module into
+  `integration/onboard-app/`. Open for the table: who owns the submission, what goes in `final/`,
+  and dadis2's console branch (see [team-jobs.md](team-jobs.md), "Connections that need agreeing")
 
 ## Next steps
 
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
+
+- Sunday, before the 14:00 feature freeze: agree an owner for the project page and the slides
+  (`shared/submission/project-page.md`, at most 7 slides), and what goes in `final/`. Run the app
+  with `node integration/onboard-app/start.js` and follow `people/tommy/current-app-handoff.md`.
+- The Saturday notes below are mostly done or replaced by Tommy's join; keep them for history.
 
 - Ask Tommy: may one plain line ("sleep lower than usual") show on the astronaut's Home, and may
   the workout give points? Ask potest to take reports and the Earth link. Record the answers in

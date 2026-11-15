@@ -1,0 +1,634 @@
+{
+  "applicationCommit": "b0f968c156927a52cf2607a2d548ce4cd078b862",
+  "reportDate": "2026-11-15",
+  "timezone": "Asia/Nicosia",
+  "reportId": "PULSE TR 2026 01",
+  "reportVersion": "1.2",
+  "validation": {
+    "command": "node --test \"**/*.test.js\"",
+    "tests": 117,
+    "passed": 117,
+    "failed": 0,
+    "skipped": 0
+  },
+  "githubMerges": {
+    "74": "2026-11-15T09:37:47Z",
+    "75": "2026-11-15T09:38:35Z"
+  },
+  "counts": {
+    "environmentDatasetGroups": 33,
+    "environmentChannels": 93,
+    "processedChannelPoints": 126782,
+    "historicalVitalRecords": 47,
+    "syntheticCrew": 5,
+    "syntheticHistoricalCheckIns": 65
+  },
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "f1215cf4fbc30c388e0e82d87e9a9df2e580ed9504a5f452c7499297ceee1fdb",
+      "bytes": 10560,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/AGENTS.md"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "bytes": 11,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/CLAUDE.md"
+    },
+    {
+      "path": "README.md",
+      "sha256": "59f6f24a12361512e59f2b3947af792e8f6c89bd55032f7de9077b0eb3728ca9",
+      "bytes": 1618,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/README.md"
+    },
+    {
+      "path": "SETUP.md",
+      "sha256": "13ff958c688f292399862fd8bf8ceddf7e413bee581abc09f28ec3d72b80a37b",
+      "bytes": 3335,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/SETUP.md"
+    },
+    {
+      "path": "final/README.md",
+      "sha256": "eb2b0eb4378d2e953adb03ffe770c79c1fb8cea6a2f52a55956a6c0f25897065",
+      "bytes": 312,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/final/README.md"
+    },
+    {
+      "path": "integration/README.md",
+      "sha256": "dd629a0d1ee62d04804f057a9e2b3b3e964beb090a20c25301ea56c82846a0a9",
+      "bytes": 448,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/README.md"
+    },
+    {
+      "path": "integration/crew-assistant/README.md",
+      "sha256": "413bd75dbe8ec6d6fb4554db1a39793e2513c16e313e86085659b387612714fd",
+      "bytes": 4416,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/crew-assistant/README.md"
+    },
+    {
+      "path": "integration/crew-assistant/replies.mjs",
+      "sha256": "b5208b66a7c7273bff79e4c492b1c39a3a7dac583b46538fb0a7d9c3c5d36add",
+      "bytes": 1608,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/crew-assistant/replies.mjs"
+    },
+    {
+      "path": "integration/onboard-app/README.md",
+      "sha256": "d5dfd183432b8099e610111674c34e3f853a44ae76e133997e45748e2842af7c",
+      "bytes": 13093,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/README.md"
+    },
+    {
+      "path": "integration/onboard-app/adapters/companion-support.js",
+      "sha256": "64b4154e5c86f4216ef9e359d3e1feb6bdb04f596de396d15f304f22f15f0ea4",
+      "bytes": 7678,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/adapters/companion-support.js"
+    },
+    {
+      "path": "integration/onboard-app/adapters/environment.js",
+      "sha256": "c530bbc1eaa6078111615438a8ea23cce8d3c6d60ec7ecc84b4cb8bb4f719c06",
+      "bytes": 7143,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/adapters/environment.js"
+    },
+    {
+      "path": "integration/onboard-app/adapters/mind.js",
+      "sha256": "87c270d7be5152b7957068a7a177dbfaa5696aa1e857799dfbd66aaec2a2b304",
+      "bytes": 1818,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/adapters/mind.js"
+    },
+    {
+      "path": "integration/onboard-app/adapters/reports.js",
+      "sha256": "5e5c2e18dc3a785a5b06c38f6078a823bc16dc4a0edfcba721a5056b937e6ef5",
+      "bytes": 7663,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/adapters/reports.js"
+    },
+    {
+      "path": "integration/onboard-app/demo/README.md",
+      "sha256": "65545013519adf44e655e1a34264bccc5867169ff2342e42d10386fe340e6174",
+      "bytes": 8201,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/demo/README.md"
+    },
+    {
+      "path": "integration/onboard-app/modules.js",
+      "sha256": "8bcdccc73b9d856a4ede8dc59b82368293c3883dde07f4a5abfd3d7a943b288c",
+      "bytes": 832,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/modules.js"
+    },
+    {
+      "path": "integration/onboard-app/pages/assets/team-logo.png",
+      "sha256": "60d455a443376db2380a25e8655d506f0acca67bfc41c687e3c8f7e796e90562",
+      "bytes": 1484842,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/pages/assets/team-logo.png"
+    },
+    {
+      "path": "integration/onboard-app/server.js",
+      "sha256": "2d9fb96c057d2be0abc6e0f57209c2e1e4260de8f6f18b6a15bdb1f9f34a0b66",
+      "bytes": 7288,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/integration/onboard-app/server.js"
+    },
+    {
+      "path": "people/README.md",
+      "sha256": "b95bdbb475b8f70f063618390b36f3bd487abf774c2d36eb2f6fa723aaefe279",
+      "bytes": 661,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/README.md"
+    },
+    {
+      "path": "people/_template/plan.md",
+      "sha256": "47f1247a2590fb9d469595cee2fad1e8ee98bfff74d54a177e92791c9686cc79",
+      "bytes": 359,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/_template/plan.md"
+    },
+    {
+      "path": "people/_template/status.md",
+      "sha256": "5873007d8662c1055e47698b5946f91fdc8f8cd757d1e7aea00c3c293a9dd185",
+      "bytes": 405,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/_template/status.md"
+    },
+    {
+      "path": "people/angelos/health/CONNECTION_CHECK.md",
+      "sha256": "3088eafdab2b55b6822790e003f20243e931aea209b04cb410ceb1dfebc9d55a",
+      "bytes": 3056,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/CONNECTION_CHECK.md"
+    },
+    {
+      "path": "people/angelos/health/DATA_REVIEW.md",
+      "sha256": "b4cd8544078ddab3b7a0d998551b9f397170f30d4820d5c267d19f0515b0bd30",
+      "bytes": 8229,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/DATA_REVIEW.md"
+    },
+    {
+      "path": "people/angelos/health/HANDOFF.md",
+      "sha256": "ae461fde6c7329f0526eca3f89e6ec62b9dcb5d63149f62f975178a4874507a0",
+      "bytes": 8692,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/HANDOFF.md"
+    },
+    {
+      "path": "people/angelos/health/README.md",
+      "sha256": "fbdebb36c7ac1090a8cdd2f05b5ea8c161ba311047857b95504c5ebbd689938e",
+      "bytes": 9962,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/README.md"
+    },
+    {
+      "path": "people/angelos/health/TEAM_NEXT_STEPS.md",
+      "sha256": "6c308d6012f0ac1def46fc6fbf3471ca1a5166c30919a2799bf2cd21fee4cdcb",
+      "bytes": 9831,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/TEAM_NEXT_STEPS.md"
+    },
+    {
+      "path": "people/angelos/health/analysis.js",
+      "sha256": "430d1e0de90ff8729c72dc460d113e9d1c3188be0c138df1474ab0259665cd65",
+      "bytes": 5205,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/analysis.js"
+    },
+    {
+      "path": "people/angelos/health/fixtures/README.md",
+      "sha256": "4c2d2772df3ac092cb120806fd409a73286f6080c06c0f54d3aae74612ee3f41",
+      "bytes": 1642,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/fixtures/README.md"
+    },
+    {
+      "path": "people/angelos/health/index.js",
+      "sha256": "abf6f0224600da002fd4b0c6ce38c5d7bf2076195f15dd2f00a49e87e9995042",
+      "bytes": 11154,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health/index.js"
+    },
+    {
+      "path": "people/angelos/health_monitor/API_CONTRACT.md",
+      "sha256": "9958fbde5236964f7acaf23d3e5a8d61fecfc6f7a6cb015fea1908f987133425",
+      "bytes": 9339,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health_monitor/API_CONTRACT.md"
+    },
+    {
+      "path": "people/angelos/health_monitor/BASELINE_IMPORT.md",
+      "sha256": "5d68bfac54a2bdf5e646d752319f357e6b1f219565aac7476297225242493c02",
+      "bytes": 6853,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health_monitor/BASELINE_IMPORT.md"
+    },
+    {
+      "path": "people/angelos/health_monitor/README.md",
+      "sha256": "a6f85e0e218b34be42e20db82af8e4d5e41edd651923b45f86884bfba164180f",
+      "bytes": 14616,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/health_monitor/README.md"
+    },
+    {
+      "path": "people/angelos/plan.md",
+      "sha256": "1d45a9c208e258616169652032aaa30bbb09761f2a47426849610674d55fd321",
+      "bytes": 3109,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/plan.md"
+    },
+    {
+      "path": "people/angelos/status.md",
+      "sha256": "90d1c095f31548be384b92930fd41e108a56343c683b5f08c30be94fe00f3651",
+      "bytes": 17342,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/angelos/status.md"
+    },
+    {
+      "path": "people/dadis2/inventory/CONTRACT.md",
+      "sha256": "fec92debb4936693c0d450517750b181332b71eb19c5a8853168b8eafbb92cff",
+      "bytes": 12791,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/inventory/CONTRACT.md"
+    },
+    {
+      "path": "people/dadis2/inventory/README.md",
+      "sha256": "169ba88d05b1cb658b4167e7fc52e147c714c7a577925f9651d6f49163fefbd2",
+      "bytes": 7851,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/inventory/README.md"
+    },
+    {
+      "path": "people/dadis2/inventory/spec.md",
+      "sha256": "434dc5fe681b0d93e37deb6392643f3af582be4256ee4b9a4cc6228a63430817",
+      "bytes": 22093,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/inventory/spec.md"
+    },
+    {
+      "path": "people/dadis2/meds/README.md",
+      "sha256": "f4ddc47b1f60c847c93daefd3fc0e80758603599ab9c66c9bfa3b8df40274b34",
+      "bytes": 5963,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/meds/README.md"
+    },
+    {
+      "path": "people/dadis2/meds/catalogue.json",
+      "sha256": "24c9243c0f68c692a8ac15c1d3bbae7eddc0988f881916a330ba5595401bc42e",
+      "bytes": 10895,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/meds/catalogue.json"
+    },
+    {
+      "path": "people/dadis2/meds/rules.js",
+      "sha256": "787460ee7144a0b36dd97f173fcd5707dcbb1b5d3adccf249aafeb298c2433bc",
+      "bytes": 20318,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/meds/rules.js"
+    },
+    {
+      "path": "people/dadis2/plan.md",
+      "sha256": "72bf336039282b5c2bbe2915f5b0cbd6c33a1188bc0305b6dc9687ccb8df1f41",
+      "bytes": 359,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/plan.md"
+    },
+    {
+      "path": "people/dadis2/status.md",
+      "sha256": "aa197fe93dff1c0fbf29d8ceb65500e0446994c3e6322d2dc1ac5562d8b5c7c9",
+      "bytes": 9167,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/dadis2/status.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/astronaut-deep-space-countermeasures.md",
+      "sha256": "74008ae7d5f71817333e6c03729292f16a79db627d8b4391b7d776d2c596123d",
+      "bytes": 14248,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/astronaut-deep-space-countermeasures.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/astronaut-health-research.md",
+      "sha256": "f8d1da0d8f465272ebc20fc2c2aaee0443e7b4be06eca4c570686ccbf543314a",
+      "bytes": 15686,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/astronaut-health-research.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/astronaut-inflight-data.md",
+      "sha256": "046386be614d13cbfeadcad0af10ef3f981b5ccacdc649521f33fdf0c508f042",
+      "bytes": 28470,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/astronaut-inflight-data.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/astronaut-inflight-vitals.csv",
+      "sha256": "64afce7a60ae4d46993cc9a9ad5f902e6c2439370a3baa262cb391588659b24d",
+      "bytes": 11244,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/astronaut-inflight-vitals.csv"
+    },
+    {
+      "path": "people/petros_the_space_larper/astronaut-physical-and-mental-health.md",
+      "sha256": "0f26afb997106c7ddfcc066d54b1863ca4b4cd1dedbe530b0801d7efcc6fd299",
+      "bytes": 22793,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/astronaut-physical-and-mental-health.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/README.md",
+      "sha256": "50811ace49e3d9884d713f9306e358e6e47dbbccbfe81be055137b417214fa64",
+      "bytes": 5627,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/README.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/WORKOUT.md",
+      "sha256": "51f0c88fc54864fc3c05e8c9130bf59a62f9e7e614af1993e6e4e8c92f240398",
+      "bytes": 10842,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/WORKOUT.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/health.json",
+      "sha256": "ae91c6d1e0f14c90969589c8a9c4de299d4e663c35f13f541df5e163d9770ced",
+      "bytes": 13630,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/health.json"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/measurement-guides.json",
+      "sha256": "c2a8ae5f624a844410a3e365ef36cb3bb0f85e1ad8acc3f9133c743306e20381",
+      "bytes": 2051,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/measurement-guides.json"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/scenarios.json",
+      "sha256": "6f0807da578166a0ca9b87118507f46d2e0582f44fc157094473bd9b18c83970",
+      "bytes": 1109,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/scenarios.json"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/stories.md",
+      "sha256": "48ae3df05f6d40176e4b1b5b6b5b3e2520f9b5dce50ae4cdba1713be0a79380f",
+      "bytes": 1932,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/stories.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/demo-data/wellbeing-form.md",
+      "sha256": "a65fdb2acd5577f6524558a77f9950df0276c07deff8d7fbdb5a68f1b61173e2",
+      "bytes": 2690,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/demo-data/wellbeing-form.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/mars-transit-prototype.md",
+      "sha256": "9426fa7486d48c8d0a63e4716f84dc8c7377adfb1e04997eaed599995ae8627c",
+      "bytes": 7586,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/mars-transit-prototype.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/plan.md",
+      "sha256": "e6f99963e8dc4c6219f10969aebbd05fc634c2b61f747931502c2039eae23773",
+      "bytes": 376,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/plan.md"
+    },
+    {
+      "path": "people/petros_the_space_larper/status.md",
+      "sha256": "40559bcc614147f13775ffa39c364f8ac45b3670cc82e1d1f1f703da20e667f3",
+      "bytes": 7982,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/petros_the_space_larper/status.md"
+    },
+    {
+      "path": "people/potest/crew-support/README.md",
+      "sha256": "3800b74c1c339b89bd71fc63c2892b05004798a80863cef130762143aebefdca",
+      "bytes": 2580,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/crew-support/README.md"
+    },
+    {
+      "path": "people/potest/crew-support/companion-client.js",
+      "sha256": "e177bae4cc3d62d74004e1cf3d089366dd92b064cf02b6407f2bc354746a69b1",
+      "bytes": 1424,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/crew-support/companion-client.js"
+    },
+    {
+      "path": "people/potest/crew-support/companion.js",
+      "sha256": "7e560fb68f5dd99d073e2510643e6eae4e833798418f9caaa314054df5592caa",
+      "bytes": 3474,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/crew-support/companion.js"
+    },
+    {
+      "path": "people/potest/environmental-graphs/README.md",
+      "sha256": "6104e4141215d92a27450a3f5408e3b98156b0e46c6af10c6de8f5f3eaadf835",
+      "bytes": 12549,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/environmental-graphs/README.md"
+    },
+    {
+      "path": "people/potest/environmental-graphs/alerts.js",
+      "sha256": "58476c207238642387d88d97d7811a203a2349e90d5f804b99e22608a0cbd9f7",
+      "bytes": 4197,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/environmental-graphs/alerts.js"
+    },
+    {
+      "path": "people/potest/environmental-graphs/build_data.py",
+      "sha256": "010685fbef790b45fc08e76fb24b901c3581cee5f4faaf038966d98e41ec6c7f",
+      "bytes": 12651,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/environmental-graphs/build_data.py"
+    },
+    {
+      "path": "people/potest/environmental-graphs/data/series.js",
+      "sha256": "087d76c04b25aaae59fc6edf93057893f3b2c483a021fa744a5949bdb0d3accf",
+      "bytes": 2858311,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/environmental-graphs/data/series.js"
+    },
+    {
+      "path": "people/potest/plan.md",
+      "sha256": "6f30588e625e60f9ac76d484ffa4348bca2877dd680c6463b08cea35783d1e3d",
+      "bytes": 359,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/plan.md"
+    },
+    {
+      "path": "people/potest/status.md",
+      "sha256": "a879e2a7ff314bd7cd5e73224310f01df0bebb182672e61162b799eb1d4963b0",
+      "bytes": 3945,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/potest/status.md"
+    },
+    {
+      "path": "people/tommy/contract-review.md",
+      "sha256": "777a6bd1d3c33a4a24f1e78f8490ea9ee69a69b0dd316b36cb6d7faafb195447",
+      "bytes": 17415,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/contract-review.md"
+    },
+    {
+      "path": "people/tommy/current-app-handoff.md",
+      "sha256": "6a84fccd950c8c097fa1edb32e7e257af0f7395646d024b51eee2306ca4bcce6",
+      "bytes": 7140,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/current-app-handoff.md"
+    },
+    {
+      "path": "people/tommy/dadis-grant-review.md",
+      "sha256": "e463107a9f39386c71a23a4c69db1caa42d60171ebb884ec3aecd8805882c1e5",
+      "bytes": 6167,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/dadis-grant-review.md"
+    },
+    {
+      "path": "people/tommy/ecosystem-review.md",
+      "sha256": "8eaf8f6e57870c6aac667edb0937c691c34c5cddeb7208c2840778d9fbe0f450",
+      "bytes": 18080,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/ecosystem-review.md"
+    },
+    {
+      "path": "people/tommy/implementation-tasks.md",
+      "sha256": "a4cfa04ad1b60eec8a40356638d44819daf782b2c39fada9f55792798cefdabd",
+      "bytes": 23993,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/implementation-tasks.md"
+    },
+    {
+      "path": "people/tommy/inventory-scope-proposal.md",
+      "sha256": "001c04abc17e43b17eb0ba63d4ef6d8747908602d1ee3a8ba1c0c3de30101ed4",
+      "bytes": 12579,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/inventory-scope-proposal.md"
+    },
+    {
+      "path": "people/tommy/medical-training-follow-up.md",
+      "sha256": "0115edcc157f5ff383506d846590b485dfcb43b273622085a1d144dcaa6fe252",
+      "bytes": 8107,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/medical-training-follow-up.md"
+    },
+    {
+      "path": "people/tommy/overview-designs/README.md",
+      "sha256": "001bf14ba2d66070c9f2318423c02886e6eacf2d4c0e9e77b1d0b4f455f06ff5",
+      "bytes": 6130,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/overview-designs/README.md"
+    },
+    {
+      "path": "people/tommy/overview-designs/mission-control/README.md",
+      "sha256": "6e01ab96e51c4c2b4c3c7540008202747d0227e5943f24d4a3d73466edab022a",
+      "bytes": 2947,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/overview-designs/mission-control/README.md"
+    },
+    {
+      "path": "people/tommy/overview-designs/typography/README.md",
+      "sha256": "c81597c412e5b8be9787778ad6c1cfa2bc11401089b8b092291947d2268f97d9",
+      "bytes": 4247,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/overview-designs/typography/README.md"
+    },
+    {
+      "path": "people/tommy/overview-designs/typography/overview/README.md",
+      "sha256": "13a6c230310a0af44a3dd99f59a0ed13e3cb36295910d19f1c3e766128f097df",
+      "bytes": 2635,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/overview-designs/typography/overview/README.md"
+    },
+    {
+      "path": "people/tommy/overview-space-proposal.md",
+      "sha256": "89ba7fdc0e95c0ab63b2a26ab088fa1508bc7e77ee7e846f51483b9161e4a4be",
+      "bytes": 825,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/overview-space-proposal.md"
+    },
+    {
+      "path": "people/tommy/plan.md",
+      "sha256": "8ffd19a08d12acdb3bf35215b40fa97a79df78186a8abc2fa729a8ff1c5f0fc5",
+      "bytes": 40550,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/plan.md"
+    },
+    {
+      "path": "people/tommy/pulsars/README.md",
+      "sha256": "221fb2b12d61ddb3525446c0627d6dde000369d86df77f42e7e7feae8887aa29",
+      "bytes": 3550,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/pulsars/README.md"
+    },
+    {
+      "path": "people/tommy/pulsars/catalog.js",
+      "sha256": "dd21b4ee2308684a6a820e972226c36f8fa9112f7ee464cb05fe12d6940f33be",
+      "bytes": 2717,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/pulsars/catalog.js"
+    },
+    {
+      "path": "people/tommy/pulsars/index.js",
+      "sha256": "e95d53379ab0b9f5acdadf060bc476f3c40c08e2a2c4c5b4ef06bf15268465fc",
+      "bytes": 5579,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/pulsars/index.js"
+    },
+    {
+      "path": "people/tommy/status.md",
+      "sha256": "c860b49ce01c5a779907c727651d83d594f2972f7a567dd8a3bfe1437784e131",
+      "bytes": 54946,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/status.md"
+    },
+    {
+      "path": "people/tommy/ui-backend-review.md",
+      "sha256": "ef0ce623bcb1f0b919d9a7c0a305f554e8bb35626db17524d1c3eb26eeb16413",
+      "bytes": 7579,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/ui-backend-review.md"
+    },
+    {
+      "path": "people/tommy/wellbeing-questionnaire-proposal.md",
+      "sha256": "eeae9206145c67850d7c1982275dcd2b48ac3dc656cbbfdc03e1a894a1d41a30",
+      "bytes": 4501,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/tommy/wellbeing-questionnaire-proposal.md"
+    },
+    {
+      "path": "people/zt/demo-cases.md",
+      "sha256": "e28addae26eb5f0115b9290884a98acc56f63a5e29096b07f4ece7c3564a20a4",
+      "bytes": 17901,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/zt/demo-cases.md"
+    },
+    {
+      "path": "people/zt/plan.md",
+      "sha256": "a3fb0e1a7e2bc874f0b00c74bde52563cb7a9479fe5567f8403b091625745e33",
+      "bytes": 3931,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/zt/plan.md"
+    },
+    {
+      "path": "people/zt/status.md",
+      "sha256": "cddf169339c20fd7586b677b3f27356310fef93c3283a127a4a50ed9b1fab9e3",
+      "bytes": 5844,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/zt/status.md"
+    },
+    {
+      "path": "people/zt/team-jobs.md",
+      "sha256": "0f6a0330992152c69f8c1c136149c0c451cf17018720baaf4e943b8661cdb43c",
+      "bytes": 5614,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/people/zt/team-jobs.md"
+    },
+    {
+      "path": "shared/PLAN.md",
+      "sha256": "76aea730d2c9fe38c38c07bc72afb8a0c717c985ed5cb23c6b44f16b04e44613",
+      "bytes": 2421,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/PLAN.md"
+    },
+    {
+      "path": "shared/README.md",
+      "sha256": "70fc13fc61bb7843e052cc6ab5237b182a8256a8b57963895b750a17bf670102",
+      "bytes": 714,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/README.md"
+    },
+    {
+      "path": "shared/contract/README.md",
+      "sha256": "7c8387ab778b3c36554008e801fd21d67af049d430628e71ae0cb36bc86c520a",
+      "bytes": 34774,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/contract/README.md"
+    },
+    {
+      "path": "shared/contract/pulsars.md",
+      "sha256": "6035140ec9a9790525a7082a5e06a87dc2ecdb6475755f62a395dcd17f5dca0e",
+      "bytes": 7358,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/contract/pulsars.md"
+    },
+    {
+      "path": "shared/decisions/2026-11-14-2235-offline-companion-review.md",
+      "sha256": "1056703f8b8ddb44afad125dd1de02ef7fadb57f44a17aa99cf9bcf71198a405",
+      "bytes": 1906,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/decisions/2026-11-14-2235-offline-companion-review.md"
+    },
+    {
+      "path": "shared/decisions/2026-11-15-1108-pulsars-personal-growth.md",
+      "sha256": "c3ceafce75817e4daad890a1e81e2ad041d3282fadfd9297a483e751879cc804",
+      "bytes": 2052,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/decisions/2026-11-15-1108-pulsars-personal-growth.md"
+    },
+    {
+      "path": "shared/decisions/TEMPLATE.md",
+      "sha256": "5e64c537f298bfe8f6053c655367e9bf08b6783a917003c2fccd573b9052e783",
+      "bytes": 201,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/decisions/TEMPLATE.md"
+    },
+    {
+      "path": "shared/reports.md",
+      "sha256": "c06787c67e014a24fd90602c8548fafa33202719a901147df70095b3e874574a",
+      "bytes": 1687,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/reports.md"
+    },
+    {
+      "path": "shared/research/README.md",
+      "sha256": "2ae713ac3d59dc479c6fd7af0477cedb2051c87979664ca8c89747fc2aad17bd",
+      "bytes": 108,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/research/README.md"
+    },
+    {
+      "path": "shared/research/gemini-health-monitoring-and-medical-care.md",
+      "sha256": "ac3a2e1c01429a8d6a27fa310043f81ba4671c8e52e9d088edb1009ae1dca3fd",
+      "bytes": 50362,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/research/gemini-health-monitoring-and-medical-care.md"
+    },
+    {
+      "path": "shared/research/gemini-sensor-datasets-and-telemetry.md",
+      "sha256": "a68b615d85ee7a7ef8d7ef3fd20fa864577e592065c4663c27875b4f63168779",
+      "bytes": 29119,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/research/gemini-sensor-datasets-and-telemetry.md"
+    },
+    {
+      "path": "shared/sources.md",
+      "sha256": "bde31d4ca37b4d5d3e1864cf54f4e0d4a46afb21ded4d2d3508033431f1adc6e",
+      "bytes": 15305,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/sources.md"
+    },
+    {
+      "path": "shared/submission/project-page.md",
+      "sha256": "cabb53b2aeb36caddad399cc2a95047c317a3d572f375ebf4ce85b88144b5d28",
+      "bytes": 2368,
+      "url": "https://github.com/Tilihub/space-apps-2026/blob/b0f968c156927a52cf2607a2d548ce4cd078b862/shared/submission/project-page.md"
+    }
+  ]
+}

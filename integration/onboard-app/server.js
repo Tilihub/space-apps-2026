@@ -18,8 +18,12 @@ const PAGES = normalize(fileURLToPath(new URL('./pages/', import.meta.url)));
 /** Single files from other folders, at the same path as in the repo, so relative imports work. */
 /** @type {Readonly<Record<string, string>>} */
 const FILES = Object.freeze({
+  '/pulsars/catalog.js': 'people/tommy/pulsars/catalog.js',
   '/shared/contract/contract.js': 'shared/contract/contract.js',
   '/people/angelos/health/client.js': 'people/angelos/health/client.js',
+  '/people/dadis2/inventory/vendor/qrcode.js': 'people/dadis2/inventory/vendor/qrcode.js',
+  '/people/dadis2/inventory/qr.js': 'people/dadis2/inventory/qr.js',
+  '/people/potest/crew-support/companion-client.js': 'people/potest/crew-support/companion-client.js',
 });
 
 /** Whole folders, read-only. */

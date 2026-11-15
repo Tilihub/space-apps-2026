@@ -1,0 +1,66 @@
+[
+  {
+    "id": "T01",
+    "name": "Technical",
+    "fonts": "IBM Plex Sans + IBM Plex Mono",
+    "ui": "IBM Plex Sans",
+    "heading": "IBM Plex Sans",
+    "number": "IBM Plex Mono"
+  },
+  {
+    "id": "T02",
+    "name": "Clean",
+    "fonts": "Inter",
+    "ui": "Inter",
+    "heading": "Inter",
+    "number": "Inter"
+  },
+  {
+    "id": "T03",
+    "name": "Soft",
+    "fonts": "Manrope",
+    "ui": "Manrope",
+    "heading": "Manrope",
+    "number": "Manrope"
+  },
+  {
+    "id": "T04",
+    "name": "Balanced",
+    "fonts": "DM Sans",
+    "ui": "DM Sans",
+    "heading": "DM Sans",
+    "number": "DM Sans"
+  },
+  {
+    "id": "T05",
+    "name": "Orbital",
+    "fonts": "DM Sans + Space Grotesk",
+    "ui": "DM Sans",
+    "heading": "Space Grotesk",
+    "number": "Space Grotesk"
+  },
+  {
+    "id": "T06",
+    "name": "Friendly",
+    "fonts": "Outfit",
+    "ui": "Outfit",
+    "heading": "Outfit",
+    "number": "Outfit"
+  },
+  {
+    "id": "T07",
+    "name": "Industrial",
+    "fonts": "Archivo + IBM Plex Mono",
+    "ui": "Archivo",
+    "heading": "Archivo",
+    "number": "IBM Plex Mono"
+  },
+  {
+    "id": "T08",
+    "name": "Condensed",
+    "fonts": "IBM Plex Sans + Barlow Condensed",
+    "ui": "IBM Plex Sans",
+    "heading": "Barlow Condensed",
+    "number": "Barlow Condensed"
+  }
+]
