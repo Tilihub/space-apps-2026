@@ -5,6 +5,7 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
+import { starMapScreen, startStarMap } from '/star-map.js';
 import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
 import { createCompanionClient } from '/people/potest/crew-support/companion-client.js';
@@ -128,7 +129,7 @@ function renderChrome() {
  $('.rail-companion').hidden=true;
  const person=CREW.find(c=>c.id===user?.crewId),name=user?.name??member(user?.crewId);
  $('#app-header').innerHTML=`<a href="#${role()==='earth'?'earth':role()==='medical_officer'?'crew':'home'}" class="mission-brand"><img class="header-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"></a><span class="mission-clock" id="mission-label">${clock?`Day ${clock.missionDay} · ${clock.now.slice(11,19)} UTC`:''}</span><div class="header-profile"><span class="avatar">${esc(name?.split(' ').map(n=>n[0]).join('')??'E')}</span><span><b>${esc(name)}</b><small>${esc(person?.title??'Earth specialist')}</small></span>${btn(icon('sun'),'theme','aria-label="Switch appearance" title="Switch appearance"','ghost icon-button')}${btn('?','ui-help','aria-label="Help" title="Help"','ghost icon-button')}${btn('Sign out','logout','','ghost sm')}</div>`;
- const titles={home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],crew:['CREW MEDICAL OFFICER','Medical officer console'],earth:['GROUND SUPPORT','Earth console']};
+ const titles={home:['YOUR DAY · MARS TRANSIT','Overview'],checkin:['A MOMENT FOR YOURSELF','Daily check-in'],fitness:['KEEP MOVING FORWARD','Exercise'],habitat:['YOUR SHARED ENVIRONMENT','Habitat'],medbay:['SUPPLIES & TREATMENT','Medical bay'],mind:['A LITTLE SPACE TO BREATHE','Wellbeing'],starmap:['MARS TRANSIT','Star map'],crew:['CREW MEDICAL OFFICER','Medical officer console'],earth:['GROUND SUPPORT','Earth console']};
  const [eyebrow,title]=titles[page]??['PULSE','Mission support'];
  $('#topbar').innerHTML=`<div><span class="eyebrow">${eyebrow}</span><h1 class="page-title">${title}</h1></div><div class="page-tools"><span class="demo-label">DEMO</span>${btn(`${icon('refresh')}<span>Refresh</span>`,'refresh','aria-label="Refresh"','ghost sm')}</div>`;
  renderEmergencyBanner();
@@ -322,6 +323,8 @@ const missionViews=createMissionViews({
  redraw:()=>render(),remember,
 });
 Object.assign(screens,missionViews.screens);
+// Star map (dadis2): a pixel-art view of the Mars transit, below Wellbeing in the menu
+screens.starmap=()=>starMapScreen({missionDay:clock?.missionDay});
 function render() {
  const detailKeys = elements => {
   const counts=new Map();
@@ -332,11 +335,12 @@ function render() {
  $(`#${page}`).innerHTML=screens[page]();
  for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
+ if(page==='starmap')startStarMap(clock?.missionDay);
 }
 async function show() {
  const task=++loading, version=revision;
  page=!user?'login':(location.hash.slice(1)|| (role()==='medical_officer'?'crew':role()==='earth'?'earth':'home'));
- if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
+ if(!screens[page] || (role()!=='crew'&&['home','checkin','fitness','mind','starmap'].includes(page)) || (role()==='crew'&&['crew','earth'].includes(page)) || (role()==='earth'&&page==='crew') || (role()==='medical_officer'&&['earth','medbay','habitat'].includes(page))) page=role()==='crew'?'home':role()==='earth'?'earth':user?'crew':'login';
  if(!user) {render();return;}
  const get=path=>api(path);
  const jobs={ clock:get('/clock') };

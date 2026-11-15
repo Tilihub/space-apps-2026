@@ -8,3 +8,6 @@
 
 /* Medical officer and Earth consoles (dadis2): compact course fields on one row. */
 #crew .request-form .form-grid,#earth .request-form .form-grid{grid-template-columns:repeat(3,minmax(0,150px))}#crew .request-form .btn-row,#earth .request-form .btn-row{margin-top:4px}#crew #mo-take-form .form-grid{grid-template-columns:minmax(0,200px) minmax(0,1fr) minmax(0,120px)}@media(max-width:550px){#crew .request-form .form-grid,#earth .request-form .form-grid,#crew #mo-take-form .form-grid{grid-template-columns:1fr}}
+
+/* Star map (dadis2): pixel art scaled up crisp, sized to fit the window */
+.starmap-card{padding:14px}.starmap-card canvas{display:block;margin:0 auto;width:min(100%,calc((100svh - 260px)*16/9));height:auto;aspect-ratio:16/9;image-rendering:crisp-edges;image-rendering:pixelated;border-radius:10px;background:#05060F}.starmap-caption{margin:12px 2px 0;text-align:center;letter-spacing:.14em;text-transform:uppercase;font-family:ui-monospace,Consolas,monospace}
