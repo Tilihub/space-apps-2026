@@ -28,33 +28,33 @@ test('standard launch compares the crew histories with the same check-in and scr
   const app = await boot(modules, { makeCore: createDemoCore, realNow: () => 0 });
   t.after(() => app.close());
   const mara = await app.login('c1');
-  const tomas = await app.login('c4');
+  const chris = await app.login('c3');
   const officer = await app.login('c2', 'medical');
   const earth = await app.login(null, 'earth');
-  const prior = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+  const prior = dataOf(await app.call('GET', '/api/health/history?crewId=c3', { token: officer }));
   assert.deepEqual(prior.checkIns.slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
 
-  for (const token of [mara, tomas]) {
+  for (const token of [mara, chris]) {
     dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));
   }
-  assert.match(dataOf(await send(app, tomas, 'I feel tired.')).reply, /pattern of short sleep/);
-  dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
+  assert.match(dataOf(await send(app, chris, 'I feel tired.')).reply, /pattern of short sleep/);
+  dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: chris, body: { missionDay: 42, answers } }));
 
-  const reply = dataOf(await send(app, tomas, opening)).reply;
+  const reply = dataOf(await send(app, chris, opening)).reply;
   assert.match(reply, /short sleep.*difficulty concentrating.*loneliness/);
   assert.match(reply, /pattern of short sleep.*crew medical officer today/);
   assert.doesNotMatch(dataOf(await send(app, mara, opening)).reply, /difficulty concentrating|loneliness/);
   dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token: mara, body: { missionDay: 42, answers } }));
   assert.match(dataOf(await send(app, mara, opening)).reply, /rough day.*quiet break/);
-  assert.match(dataOf(await send(app, tomas, next)).reply, /which noncritical duty can move/);
-  for (const token of [mara, tomas]) {
+  assert.match(dataOf(await send(app, chris, next)).reply, /which noncritical duty can move/);
+  for (const token of [mara, chris]) {
     assert.match(dataOf(await send(app, token, 'I feel disconnected from the crew.')).reply, /crewmate you trust/);
   }
-  assert.match(dataOf(await send(app, tomas, 'I miss talking with my family after dinner.')).reply, /crewmate you trust/);
-  assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
+  assert.match(dataOf(await send(app, chris, 'I miss talking with my family after dinner.')).reply, /crewmate you trust/);
+  assert.match(dataOf(await send(app, chris, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
 
-  const today = await getToday(app, tomas);
-  assert.equal(dataOf(await send(app, tomas, opening, {
+  const today = await getToday(app, chris);
+  assert.equal(dataOf(await send(app, chris, opening, {
     ...today, checkIn: { ...today.checkIn, sleepHours: 9 },
   })).reply, reply);
   for (const token of [mara, officer, earth]) assert.equal((await send(app, token, opening, today)).status, 403);
@@ -63,34 +63,34 @@ test('standard launch compares the crew histories with the same check-in and scr
 test('normal startup upgrades the original synthetic history while keeping saved check-ins, answers and journal', async () => {
   const realNow = () => 0;
   const previous = await boot(modules, { realNow });
-  let tomas;
+  let chris;
   let officer;
   let originalHistory;
   try {
-    tomas = await previous.login('c4');
+    chris = await previous.login('c3');
     officer = await previous.login('c2', 'medical');
-    dataOf(await previous.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
-    dataOf(await previous.call('POST', '/api/pulsars/wellbeing', { token: tomas, body: { missionDay: 42, answers } }));
-    dataOf(await previous.call('POST', '/api/mind/journal', { token: tomas, body: { text: 'Keep this entry' } }));
-    originalHistory = dataOf(await previous.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+    dataOf(await previous.call('POST', '/api/health/check-ins', { token: chris, body: checkIn }));
+    dataOf(await previous.call('POST', '/api/pulsars/wellbeing', { token: chris, body: { missionDay: 42, answers } }));
+    dataOf(await previous.call('POST', '/api/mind/journal', { token: chris, body: { text: 'Keep this entry' } }));
+    originalHistory = dataOf(await previous.call('GET', '/api/health/history?crewId=c3', { token: officer }));
   } finally {
     await previous.close({ keepData: true });
   }
 
   const options = { dataDir: previous.dataDir, makeCore: createDemoCore, realNow };
-  const getHistory = async app => dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+  const getHistory = async app => dataOf(await app.call('GET', '/api/health/history?crewId=c3', { token: officer }));
   const upgraded = await boot(modules, options);
   try {
-    assert.equal((await getToday(upgraded, tomas)).checkIn.sleepHours, 4.6);
-    assert.deepEqual(dataOf(await upgraded.call('GET', '/api/pulsars/me', { token: tomas })).wallet.todayAnswers, answers);
-    assert.equal(dataOf(await upgraded.call('GET', '/api/mind/journal', { token: tomas })).entries[0].text, 'Keep this entry');
+    assert.equal((await getToday(upgraded, chris)).checkIn.sleepHours, 4.6);
+    assert.deepEqual(dataOf(await upgraded.call('GET', '/api/pulsars/me', { token: chris })).wallet.todayAnswers, answers);
+    assert.equal(dataOf(await upgraded.call('GET', '/api/mind/journal', { token: chris })).entries[0].text, 'Keep this entry');
     const history = await getHistory(upgraded);
     assert.deepEqual(history.baseline, originalHistory.baseline);
     assert.deepEqual(history.checkIns.filter(row => row.missionDay < 38 || row.missionDay > 41),
       originalHistory.checkIns.filter(row => row.missionDay < 38 || row.missionDay > 41));
     assert.deepEqual(history.checkIns.filter(row => row.missionDay >= 38 && row.missionDay <= 41).map(row => row.sleepHours),
       [5.6, 5.2, 5, 4.8]);
-    assert.match(dataOf(await send(upgraded, tomas, opening)).reply, /pattern of short sleep/);
+    assert.match(dataOf(await send(upgraded, chris, opening)).reply, /pattern of short sleep/);
   } finally {
     await upgraded.close({ keepData: true });
   }
@@ -99,9 +99,9 @@ test('normal startup upgrades the original synthetic history while keeping saved
   try {
     assert.deepEqual((await getHistory(restarted)).checkIns.filter(row => row.missionDay >= 38 && row.missionDay <= 41)
       .map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
-    assert.equal((await getToday(restarted, tomas)).checkIn.sleepHours, 4.6);
-    assert.deepEqual(dataOf(await restarted.call('GET', '/api/pulsars/me', { token: tomas })).wallet.todayAnswers, answers);
-    assert.match(dataOf(await send(restarted, tomas, opening)).reply, /pattern of short sleep/);
+    assert.equal((await getToday(restarted, chris)).checkIn.sleepHours, 4.6);
+    assert.deepEqual(dataOf(await restarted.call('GET', '/api/pulsars/me', { token: chris })).wallet.todayAnswers, answers);
+    assert.match(dataOf(await send(restarted, chris, opening)).reply, /pattern of short sleep/);
   } finally {
     await restarted.close();
   }
@@ -111,21 +111,21 @@ test('startup leaves a customized synthetic record alone even when the original 
   const realNow = () => 0;
   const previous = await boot(modules, { realNow });
   const officer = await previous.login('c2', 'medical');
-  const tomas = await previous.login('c4');
-  dataOf(await previous.call('POST', '/api/health/check-ins', { token: tomas, body: checkIn }));
+  const chris = await previous.login('c3');
+  dataOf(await previous.call('POST', '/api/health/check-ins', { token: chris, body: checkIn }));
   await previous.close({ keepData: true });
 
   const healthFile = join(previous.dataDir, 'health.json');
   const customized = JSON.parse(await readFile(healthFile, 'utf8'));
-  customized.crew.c4.checkIns.find(row => row.missionDay === 38).sleepHours = 8;
+  customized.crew.c3.checkIns.find(row => row.missionDay === 38).sleepHours = 8;
   await writeFile(healthFile, JSON.stringify(customized), 'utf8');
 
   const app = await boot(modules, { makeCore: createDemoCore, dataDir: previous.dataDir, realNow });
   try {
-    const history = dataOf(await app.call('GET', '/api/health/history?crewId=c4', { token: officer }));
+    const history = dataOf(await app.call('GET', '/api/health/history?crewId=c3', { token: officer }));
     assert.equal(history.checkIns.find(row => row.missionDay === 38).sleepHours, 8);
-    assert.equal(history.checkIns.find(row => row.missionDay === 39).sleepHours, 7.1);
-    assert.doesNotMatch(dataOf(await send(app, tomas, opening)).reply, /pattern of short sleep/);
+    assert.equal(history.checkIns.find(row => row.missionDay === 39).sleepHours, 6.9);
+    assert.doesNotMatch(dataOf(await send(app, chris, opening)).reply, /pattern of short sleep/);
   } finally {
     await app.close();
   }
@@ -135,17 +135,17 @@ test('the onboard companion joins identical current answers to different crew hi
   const app = await boot(modules, { makeCore: createDemoCore, realNow: () => 0 });
   t.after(() => app.close());
   const mara = await app.login('c1');
-  const tomas = await app.login('c4');
+  const chris = await app.login('c3');
   const officer = await app.login('c2', 'medical');
   const earth = await app.login(null, 'earth');
   const history = async crewId => dataOf(await app.call('GET', '/api/health/history?crewId=' + crewId, { token: officer })).checkIns;
   assert.ok((await history('c1')).slice(-4).every(row => row.sleepHours >= 6 && row.stress < 7 && row.fatigue < 7));
-  assert.deepEqual((await history('c4')).slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
+  assert.deepEqual((await history('c3')).slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
   assert.equal((await app.call('GET', '/controlled-demo.js')).status, 404);
   assert.equal((await app.call('GET', '/people/potest/crew-support/controlled-replies.js')).status, 404);
   assert.equal((await app.call('GET', '/controlled-health-fixture.json')).status, 404);
 
-  for (const token of [mara, tomas]) {
+  for (const token of [mara, chris]) {
     assert.equal((await getToday(app, token)).checkedInToday, false);
     assert.match(dataOf(await send(app, token, opening)).reply, /complete today’s check-in/);
     dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));
@@ -154,28 +154,28 @@ test('the onboard companion joins identical current answers to different crew hi
   }
 
   const firstMara = dataOf(await send(app, mara, opening)).reply;
-  const firstTomas = dataOf(await send(app, tomas, opening)).reply;
+  const firstChris = dataOf(await send(app, chris, opening)).reply;
   assert.match(firstMara, /short sleep.*high stress.*fatigue.*difficulty concentrating.*loneliness/);
   assert.match(firstMara, /rough day.*quiet break/);
-  assert.match(firstTomas, /pattern of short sleep, high stress, and fatigue.*crew medical officer today/);
+  assert.match(firstChris, /pattern of short sleep, high stress, and fatigue.*crew medical officer today/);
   assert.doesNotMatch(firstMara, /pattern|medical officer/);
-  assert.doesNotMatch(firstTomas, /4\.8|5\.6|reference|days in a row|baseline/);
+  assert.doesNotMatch(firstChris, /4\.8|5\.6|reference|days in a row|baseline/);
   assert.match(dataOf(await send(app, mara, next)).reply, /log it in your next check-in/);
-  assert.match(dataOf(await send(app, tomas, next)).reply, /which noncritical duty can move/);
-  assert.match(dataOf(await send(app, tomas, 'I feel disconnected from the crew.')).reply, /crewmate you trust/);
-  assert.equal(dataOf(await send(app, tomas, opening)).reply, firstTomas);
+  assert.match(dataOf(await send(app, chris, next)).reply, /which noncritical duty can move/);
+  assert.match(dataOf(await send(app, chris, 'I feel disconnected from the crew.')).reply, /crewmate you trust/);
+  assert.equal(dataOf(await send(app, chris, opening)).reply, firstChris);
 
-  const today = await getToday(app, tomas);
+  const today = await getToday(app, chris);
   for (const token of [mara, officer, earth]) assert.equal((await send(app, token, opening, today)).status, 403);
   const fabricated = { ...today, checkIn: { ...today.checkIn, sleepHours: 9 } };
-  assert.equal(dataOf(await send(app, tomas, opening, fabricated)).reply, firstTomas);
-  assert.equal((await send(app, tomas, opening, { ...today, missionDay: 41 })).status, 400);
-  assert.match(dataOf(await send(app, tomas, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
+  assert.equal(dataOf(await send(app, chris, opening, fabricated)).reply, firstChris);
+  assert.equal((await send(app, chris, opening, { ...today, missionDay: 41 })).status, 400);
+  assert.match(dataOf(await send(app, chris, 'I am short of breath and stressed.')).reply, /medical officer.*now/);
 
-  dataOf(await app.call('POST', '/api/demo/reset', { token: tomas, body: {} }));
-  assert.equal((await getToday(app, tomas)).checkedInToday, false);
-  assert.match(dataOf(await send(app, tomas, opening)).reply, /complete today’s check-in/);
-  assert.deepEqual((await history('c4')).slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
+  dataOf(await app.call('POST', '/api/demo/reset', { token: chris, body: {} }));
+  assert.equal((await getToday(app, chris)).checkedInToday, false);
+  assert.match(dataOf(await send(app, chris, opening)).reply, /complete today’s check-in/);
+  assert.deepEqual((await history('c3')).slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
 });
 
 test('standard and presentation registries give identical companion replies with identical saved context', async t => {
@@ -183,7 +183,7 @@ test('standard and presentation registries give identical companion replies with
     const app = await boot(registry, { makeCore: createDemoCore, realNow: () => 0 });
     t.after(() => app.close());
     const results = [];
-    for (const crewId of ['c1', 'c4']) {
+    for (const crewId of ['c1', 'c3']) {
       const token = await app.login(crewId);
       results.push(dataOf(await send(app, token, opening)));
       dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));

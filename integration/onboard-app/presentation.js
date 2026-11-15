@@ -7,9 +7,12 @@
  * back to this state, so the public link always opens on a ready day 42:
  * - today's check-in for all five crew: Petros's last synthetic day plus the stage cases in
  *   demo-data/scenarios.json, as Tommy's demo/seed-presentation.mjs does on a laptop;
- * - Tomas (c4): the headache report, and a waiting sleeping-pill request that only Earth can
- *   answer (the Earth console's demo QR code answers it);
- * - Ines (c3): her synthetic journal entry, and nine of ten wellbeing answers (adapters/pulsars-demo.js);
+ * - Diamandis (c4): a waiting sleeping-pill request that only Earth can answer (the Earth console's
+ *   demo QR code answers it). No headache report: he reports it live on stage;
+ * - Chris (c3) and Mara (c1): the same hard day (SAME_HARD_DAY) and nine of ten wellbeing answers
+ *   (adapters/pulsars-demo.js), so the Crew Assistant's answers differ only by their history:
+ *   Chris has four bad days before today (controlled-demo.js), Mara a steady history;
+ * - Chris (c3): his synthetic journal entry;
  * - Mara (c1): 700 Pulsars from days 38–40 (adapters/pulsars-demo.js).
  * Everything goes through the same API the pages use, so every module's own rules still apply.
  * Without the flag nothing here runs, and the laptop demo behaves as before.
@@ -44,6 +47,10 @@ const call = async (core, method, path, token, body = null) => {
   return answer.data;
 };
 
+/** Today's check-in for Chris (c3) and Mara (c1): the same hard day with short sleep (synthetic). */
+export const SAME_HARD_DAY = Object.freeze({ sleepHours: 4.6, mood: 4, stress: 7, fatigue: 7 });
+const SAME_HARD_DAY_CREW = new Set(['c1', 'c3']);
+
 /**
  * Loads today's prepared entries into a freshly reset demo (mission day 42).
  * @param {any} core
@@ -59,9 +66,8 @@ export const prepareDay42 = async (core) => {
       const { token } = await call(core, 'POST', '/session', null, { crewId, platform: 'astronaut' });
       tokens.push(token);
       const { missionDay, time, ...previous } = health.crew[crewId].checkIns.at(-1);
-      await call(core, 'POST', '/health/check-ins', token, { ...previous, ...scenarios.cases[crewId]?.checkInBody });
-      const symptom = scenarios.cases[crewId]?.symptomReportBody;
-      if (symptom) await call(core, 'POST', '/meds/symptom-reports', token, { ...symptom, note: `${symptom.note} Body area: head.` });
+      const hardDay = SAME_HARD_DAY_CREW.has(crewId) ? SAME_HARD_DAY : {};
+      await call(core, 'POST', '/health/check-ins', token, { ...previous, ...scenarios.cases[crewId]?.checkInBody, ...hardDay });
       if (crewId === 'c3') {
         await call(core, 'POST', '/mind/journal', token, { text: 'Synthetic stage journal: I miss home and would like a quiet conversation today.' });
       }

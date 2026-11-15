@@ -6,8 +6,9 @@ import { companionRoute } from '../../people/potest/crew-support/companion.js';
 import { createCore } from './core.js';
 import { connectQuestionnaireCompanion, syntheticHealthFixture, syntheticHealthSource } from './adapters/companion-support.js';
 
-// Profile c1 keeps Petros's steady history. Profile c4's contrasting stretch ends before launch.
-const recurringCrewId = 'c4';
+// Profile c1 (Mara) keeps Petros's steady history. Profile c3 (Chris) gets the contrasting stretch
+// that ends the day before the demo day, so the Crew Assistant sees a recurring pattern for Chris only.
+const recurringCrewId = 'c3';
 const recurringDays = new Map([
   [38, { sleepHours: 5.6, mood: 4, stress: 7, fatigue: 7 }],
   [39, { sleepHours: 5.2, mood: 4, stress: 8, fatigue: 8 }],

@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-15 17:45
+- Last updated: 2026-11-15 18:17
 - Working on: the live demo script. The crew rename (PR #99) is merged and deployed on Render.
 - Branch: none open
 
@@ -75,6 +75,10 @@
 - Crew rename merged ([PR #99](https://github.com/Tilihub/space-apps-2026/pull/99), approved by Tommy):
   Mara has no surname now. Deployed on Render from main at `0a71561`
 - Start screen lists the crew in the demo's running order: Diamandis, Petros, Chris, Mara, Aggelos
+- Prepared start for the new script: Chris (`c3`) now has the four bad days before demo day (moved
+  from `c4`); Chris and Mara log the same hard day (4.6 h sleep, mood 4, stress 7, fatigue 7) with nine
+  wellbeing answers prefilled, so the Crew Assistant answers them differently only because of their
+  history; Diamandis has no prepared headache, he reports it live. Chris's tests now point at `c3`
 
 ## Blocked / need from others
 
