@@ -6,7 +6,7 @@
 
 // Demo facts. The distance is an assumed average gain per day (sample value, not a trajectory).
 const MISSION_NAME = 'FIRST DAWN';
-const KM_PER_DAY = 600_000;
+const KM_PER_DAY = 2_980_952; // 125.2 million km on mission day 42 (zt, 15 Nov)
 
 // The mascot's colours (index.html: --mascot-light/body/shade/ring, .m-eye, .m-cheek)
 const MASCOT = { light: '#E3FFFF', body: '#27EAFF', shade: '#0B779E', ring: '#F0C56B', ringBack: '#8F7438', eye: '#0A1430', cheek: '#FF9BB0' };
