@@ -8,13 +8,14 @@
 
 ## Now
 
-- Last updated: 2026-11-15 13:01
-- Working on: a minimal medical officer console and a lean Earth console in Tommy's complete demo
-  (PR #74, approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes
-  `dadis2/earth-qr`. `npm test` 111 of 111.
+- Last updated: 2026-11-15 13:15
+- Working on: **PR #85** to main (`dadis2/mo-console`): medical officer console, Earth console, star
+  map opening, request reasons. Main is merged in (it has #74/#75 now), conflicts in `pages/app.js`
+  resolved keeping both sides (Tommy's Pulsars shop and my console). `npm test` 122 of 122.
+  **Waiting for approval from zt and Tommy, not merged.** It includes `dadis2/earth-qr`.
 - Branch: dadis2/mo-console
 
-### Medical officer and Earth consoles (`dadis2/mo-console`, based on Tommy's `tommy/frontend-polish`)
+### Medical officer and Earth consoles (`dadis2/mo-console`, PR #85)
 
 - **Medical officer console** (login → "Medical officer"): only two features, by my decision of
   15 Nov; the rest (patients, reports to Earth, emergency paperwork, Habitat and Medical bay in the
