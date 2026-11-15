@@ -8,12 +8,13 @@
 
 ## Now
 
-- Last updated: 2026-11-14 18:56 (Europe/Athens)
-- Working on: Publishing the verified stage-aligned PET-1 source for the onboard demo reset.
-- Branch: petros_the_space_larper/align-stage-data
+- Last updated: 2026-11-15 (Europe/Athens)
+- Working on: Reviewing the Millennium Falcon [Habitat preview](demo-data/habitat/README.md).
+- Branch: petros_the_space_larper/habitat-falcon
 
 ## Done
 
+- Built a standalone Habitat preview with four color-coded sensor locations, replay charts for hover and keyboard focus, selection for touch, and the existing cabin alerts.
 - Installed GitHub CLI, signed in, and cloned the team repo.
 - Documented astronaut measurement methods, dataset access, and radiation exposure in [astronaut-health-research.md](astronaut-health-research.md).
 - Verified Inspiration4 CBC and CMP downloads, a PhysioNet vital signs sample, and RadLab queries for ISS and Artemis I.
@@ -42,6 +43,7 @@
 
 ## Blocked / need from others
 
+- Petros's approval before moving the Habitat preview into the team's app.
 - Public direct downloads for continuous astronaut wearable recordings remain unverified. The notes link to published values, test data, and research access routes.
 - zt must start a fresh demo store or explicitly reset at `DEMO_START` after this source reaches main; an existing store intentionally keeps its previous reference. Page integration and role-boundary acceptance remain with zt and the relevant owners.
 - The final workout screen must import the controller. Live workout pulse needs a device adapter for the wearable chosen by the team.
@@ -51,6 +53,7 @@
 <!-- Written so someone else could continue: which branch, what's half-done,
      what to do next, what to watch out for. -->
 
+- Review the sensor placement and trend behavior from the personal fork's `petros_the_space_larper/habitat-falcon` branch. Start the onboard server and open `/demo-data/habitat/`. Coordinate any integration with the Habitat and onboard-app owners after approval.
 - Import the prototype CSV as mission snapshots. Preserve blank values and the distinction between individual summaries, cohort means and cohort medians. PhysioNet and RadLab can provide time-series replay inputs with documented provenance.
 - For live input, map the selected recorder's channels to the sensor guide. Capture cuff and temperature readings with their device, measurement site and timestamp.
 - Use the NASA collection table for equipment and cadence. Keep periodic clinical measurements, study sessions, and area radiation telemetry tied to their respective sources.

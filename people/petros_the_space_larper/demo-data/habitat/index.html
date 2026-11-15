@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e14">
+  <title>PULSE · Habitat preview</title>
+  <link rel="stylesheet" href="./habitat.css">
+  <script type="module" src="./habitat.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/#habitat" aria-label="Back to PULSE">
+      <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="10"/><path d="M2 14h7l2-5 4 10 3-5h8"/></svg>
+      PULSE
+    </a>
+    <div class="connection" id="connection" role="status"><i></i><span>Connecting to replay</span></div>
+    <time class="mission-clock" id="mission-clock">— UTC</time>
+  </header>
+
+  <main>
+    <header class="intro">
+      <div>
+        <h1>Habitat</h1>
+        <p>Follow cabin conditions across the Millennium Falcon.</p>
+      </div>
+      <a class="back-link" href="/#habitat">Open PULSE <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <div class="workspace">
+      <section class="panel map-panel" aria-labelledby="map-heading">
+        <div class="panel-heading">
+          <h2 id="map-heading">Millennium Falcon</h2>
+          <span class="technical">Dorsal view</span>
+        </div>
+        <div class="map-stage" id="map-stage">
+          <img class="falcon" src="./millennium-falcon.png" width="1536" height="1024" alt="Technical sketch of the Millennium Falcon viewed from above, showing its forward mandibles, starboard cockpit and rear engine arc.">
+          <svg class="sensor-wires" id="sensor-wires" viewBox="0 0 1000 680" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div role="group" aria-label="Environmental readings" id="sensors"></div>
+        </div>
+        <p class="map-note">Hover, focus or tap a sensor to inspect its trend.</p>
+      </section>
+
+      <div class="details">
+        <section class="panel trend-panel" id="trend-panel" aria-labelledby="trend-heading">
+          <div class="panel-heading">
+            <h2 id="trend-heading">Sensor trend</h2>
+            <span class="technical">24 mission hours</span>
+          </div>
+          <div class="trend-content" id="trend"></div>
+        </section>
+
+        <section class="panel alerts-panel" aria-labelledby="alerts-heading">
+          <div class="panel-heading">
+            <h2 id="alerts-heading">Cabin alerts</h2>
+            <span class="alert-count" id="alert-count">—</span>
+          </div>
+          <div id="alerts" class="alerts">Waiting for replay data.</div>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
