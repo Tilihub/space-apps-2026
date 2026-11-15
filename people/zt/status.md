@@ -16,8 +16,7 @@
 
 - Live demo done (15 Nov), with live heart rate from my OnePlus Watch 2R on the Exercise page.
   For the demo the watch ran a newer version that keeps sending with the screen off (a foreground
-  service with a Stop button, stopping itself after 3 hours). That version is on my laptop only, not
-  yet in the repo; the repo has the screen-on version.
+  service with a Stop button, stopping itself after 3 hours), now in `people/zt/watch-hr/` too.
 
 - Live wrist heart rate: a one-screen Wear OS app ([watch-hr](watch-hr/README.md)) sends the watch's
   reading once a second to `POST /live/heart-rate` (server.js, outside the contract, memory only).
@@ -112,8 +111,7 @@
      what to do next, what to watch out for. -->
 
 - Watch, after the event: stop Pulse HR, turn off Wireless debugging and ADB debugging (or all of
-  Developer options), and uninstall Pulse HR if it's no longer needed. Decide whether to commit the
-  screen-off version of the app to `people/zt/watch-hr/`.
+  Developer options), and uninstall Pulse HR if it's no longer needed.
 - Live site: anyone who knows the address can post a reading to `/live/heart-rate` (no login,
   20–250 bpm only). Fine for the demo; remove the route, or make the watch sign in, if the site
   stays up.
