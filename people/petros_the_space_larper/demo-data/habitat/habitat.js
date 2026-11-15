@@ -6,6 +6,16 @@ const sensors = [
 ];
 
 const states = { normal: 'Normal', warning: 'Warning', danger: 'Danger', 'no-reading': 'No reading' };
+const temperatureScale = [
+  [16, '#8ba4ff'],
+  [19, '#6fceff'],
+  [22, '#f4e27d'],
+  [24, '#ffad63'],
+  [27, '#ff8665'],
+  [30, '#ff6d8b'],
+];
+const coldLimit = temperatureScale[0][0];
+const hotLimit = temperatureScale.at(-1)[0];
 const sessionKey = 'pulse-habitat-preview-token';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -14,6 +24,28 @@ const utc = iso => iso ? iso.slice(11, 16) : '—';
 const hasValue = value => Number.isFinite(value);
 const number = (value, digits) => hasValue(value) ? value.toFixed(digits) : '—';
 const readingValue = (reading, sensor) => `${number(reading?.value, sensor.digits)}<small>${escape(reading?.unit ?? sensor.unit)}</small>`;
+
+function temperatureColor(value) {
+  if (value <= coldLimit) return temperatureScale[0][1];
+  if (value >= hotLimit) return temperatureScale.at(-1)[1];
+  const upper = temperatureScale.findIndex(([degrees]) => value <= degrees);
+  const [low, cold] = temperatureScale[upper - 1];
+  const [high, hot] = temperatureScale[upper];
+  const fraction = (value - low) / (high - low);
+  const channels = [1, 3, 5].map(offset => {
+    const start = Number.parseInt(cold.slice(offset, offset + 2), 16);
+    const end = Number.parseInt(hot.slice(offset, offset + 2), 16);
+    return Math.round(start + (end - start) * fraction);
+  });
+  return `rgb(${channels.join(' ')})`;
+}
+
+const heatStops = temperatureScale.map(([degrees, color]) => `${color} ${(degrees - coldLimit) / (hotLimit - coldLimit) * 100}%`);
+const heatLegend = `<figure class="heat-scale">
+  <figcaption>Temperature color scale</figcaption>
+  <div class="heat-scale-bar" style="background: linear-gradient(90deg, ${heatStops.join(', ')})" aria-hidden="true"></div>
+  <div class="heat-scale-labels"><span>≤ ${coldLimit} °C</span><span>${(coldLimit + hotLimit) / 2} °C</span><span>≥ ${hotLimit} °C</span></div>
+</figure>`;
 
 const sensorGroup = document.querySelector('#sensors');
 const trend = document.querySelector('#trend');
@@ -58,6 +90,11 @@ function historyChart(sensor, history, endTime) {
   const max = top + padding;
   const x = time => (46 + 311 * Math.max(0, Math.min(1, (Date.parse(time) - start) / (end - start)))).toFixed(2);
   const y = value => (111 - 96 * (value - min) / (max - min)).toFixed(2);
+  const thermal = sensor.id === 'temperature';
+  const gradientValues = [min, ...temperatureScale.map(([degrees]) => degrees).filter(degrees => degrees > min && degrees < max), max];
+  const chartGradient = thermal ? `<defs><linearGradient id="temperature-chart-gradient" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="111" y2="15" color-interpolation="sRGB">
+    ${gradientValues.map(degrees => `<stop offset="${(degrees - min) / (max - min)}" stop-color="${temperatureColor(degrees)}"/>`).join('')}
+  </linearGradient></defs>` : '';
 
   // Each null in the replay ends a segment. Isolated samples remain visible as dots.
   const segments = [];
@@ -72,14 +109,14 @@ function historyChart(sensor, history, endTime) {
   if (segment.length) segments.push(segment);
 
   const last = present.at(-1);
-  const circle = ([time, value], radius) => `<circle cx="${x(time)}" cy="${y(value)}" r="${radius}"/>`;
+  const circle = ([time, value], radius) => `<circle cx="${x(time)}" cy="${y(value)}" r="${radius}"${thermal ? ` style="fill: ${temperatureColor(value)}"` : ''}/>`;
   const trace = segments.map(part => part.length === 1 ? circle(part[0], 2.75) :
     `<path d="${part.map(([time, value], i) => `${i ? 'L' : 'M'}${x(time)} ${y(value)}`).join(' ')}"/>`).join('');
   const grid = [min, (min + max) / 2, max].map(value =>
     `<line x1="46" x2="357" y1="${y(value)}" y2="${y(value)}"/><text x="39" y="${Number(y(value)) + 3}" text-anchor="end">${number(value, sensor.digits)}</text>`).join('');
   const startLabel = utc(new Date(start).toISOString());
-  return `<svg class="trend-chart" viewBox="0 0 365 136" role="img" aria-label="${sensor.name} during the last 24 mission hours in ${escape(history.unit)}, ${present.length} archived observations, from ${number(bottom, sensor.digits)} to ${number(top, sensor.digits)}">
-    ${grid}${trace}${circle(last, 3.75)}
+  return `<svg class="trend-chart" viewBox="0 0 365 136"${thermal ? ' style="--trace: url(#temperature-chart-gradient)"' : ''} role="img" aria-label="${sensor.name} during the last 24 mission hours in ${escape(history.unit)}, ${present.length} archived observations, from ${number(bottom, sensor.digits)} to ${number(top, sensor.digits)}">
+    ${chartGradient}${grid}${trace}${circle(last, 3.75)}
     <text x="46" y="130">−24 h · ${startLabel}</text><text x="357" y="130" text-anchor="end">Now · ${utc(endTime)} UTC</text>
   </svg>`;
 }
@@ -105,6 +142,7 @@ function renderTrend() {
   </div>
   <p class="trend-value">${readingValue(reading, sensor)}</p>
   ${historyChart(sensor, history, replay?.now.at)}
+  ${active === 'temperature' ? heatLegend : ''}
   ${source ? `<div class="trend-source"><p>${escape(source)}</p><p>${hasValue(reading?.value) ? `Measured at ${utc(reading.measuredAt)} UTC` : 'No current sample'}${reading?.recoveryUnverified ? ' · Recovery unverified' : ''}</p></div>` : ''}`;
 }
 
@@ -169,6 +207,9 @@ async function loadReplay() {
 
 function renderReadings() {
   const { now, alerts } = replay;
+  const temperature = now.readings.find(({ metric }) => metric === 'temperature')?.value;
+  if (hasValue(temperature)) document.documentElement.style.setProperty('--temperature', temperatureColor(temperature));
+  else document.documentElement.style.removeProperty('--temperature');
   clock.dateTime = now.at;
   clock.textContent = `${now.at.slice(11, 19)} UTC`;
   for (const button of sensorGroup.querySelectorAll('button')) {

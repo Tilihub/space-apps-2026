@@ -14,6 +14,7 @@
 
 ## Done
 
+- Refined the Habitat preview with a pulsing blue silhouette and a continuous Celsius color scale on the temperature marker, reading and chart.
 - Built a standalone Habitat preview with four color-coded sensor locations, replay charts for hover and keyboard focus, selection for touch, and the existing cabin alerts.
 - Installed GitHub CLI, signed in, and cloned the team repo.
 - Documented astronaut measurement methods, dataset access, and radiation exposure in [astronaut-health-research.md](astronaut-health-research.md).

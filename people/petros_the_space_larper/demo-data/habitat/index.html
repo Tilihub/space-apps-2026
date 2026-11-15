@@ -34,7 +34,24 @@
           <span class="technical">Dorsal view</span>
         </div>
         <div class="map-stage" id="map-stage">
-          <img class="falcon" src="./millennium-falcon.png" width="1536" height="1024" alt="Technical sketch of the Millennium Falcon viewed from above, showing its forward mandibles, starboard cockpit and rear engine arc.">
+          <svg class="falcon" viewBox="0 0 1536 1024" role="img" aria-label="Millennium Falcon silhouette seen from above, with a shaded interior and a blue outline">
+            <defs>
+              <filter id="falcon-edge" x="-5%" y="-8%" width="110%" height="116%">
+                <feComponentTransfer in="SourceAlpha" result="silhouette">
+                  <feFuncA type="discrete" tableValues="0 0 1 1"/>
+                </feComponentTransfer>
+                <feMorphology in="silhouette" operator="dilate" radius="3" result="expanded"/>
+                <feMorphology in="silhouette" operator="erode" radius="1" result="inset"/>
+                <feComposite in="expanded" in2="inset" operator="out" result="edge"/>
+                <feFlood class="falcon-blue"/>
+                <feComposite in2="edge" operator="in" result="blue-edge"/>
+                <feGaussianBlur in="blue-edge" stdDeviation="6" result="glow"/>
+                <feMerge><feMergeNode in="glow"/><feMergeNode in="blue-edge"/></feMerge>
+              </filter>
+            </defs>
+            <image class="falcon-interior" href="./millennium-falcon.png" width="1536" height="1024"/>
+            <image class="falcon-outline" href="./millennium-falcon.png" width="1536" height="1024" filter="url(#falcon-edge)"/>
+          </svg>
           <svg class="sensor-wires" id="sensor-wires" viewBox="0 0 1000 680" preserveAspectRatio="none" aria-hidden="true"></svg>
           <div role="group" aria-label="Environmental readings" id="sensors"></div>
         </div>
