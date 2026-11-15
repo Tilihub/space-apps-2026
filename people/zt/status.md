@@ -8,13 +8,18 @@
 
 ## Now
 
-- Last updated: 2026-11-15 19:45
-- Working on: the live demo. The start screen has a Reset demo button; needs a Manual Deploy on
-  Render to reach the live site.
-- Branch: `zt/demo-refresh-reset`
+- Last updated: 2026-11-15 22:50
+- Working on: live heart rate from my OnePlus Watch 2R into the app ([watch-hr](watch-hr/README.md)).
+  Needs a Manual Deploy on Render to reach the live site, then the watch pointed at it.
+- Branch: `zt/live-watch-hr`
 
 ## Done
 
+- Live wrist heart rate: a one-screen Wear OS app ([watch-hr](watch-hr/README.md)) sends the watch's
+  reading once a second to `POST /live/heart-rate` (server.js, outside the contract, memory only).
+  The Exercise page shows it in a "Live · wrist sensor" card and in the training display while it's
+  under 5 s old; otherwise the page is exactly as before. Tested end to end with the real watch;
+  `npm test` 130 of 131 (the crew-assistant failure is the same on main).
 - Cut the onboarding from six questions to one (PR #3)
 - Onboarding: this status file (PR #4)
 - Restructured the repo into `people/`, `shared/`, `integration/` and `final/` (PR #5)
