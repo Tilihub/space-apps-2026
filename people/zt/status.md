@@ -81,6 +81,7 @@
   history; Diamandis has no prepared headache, he reports it live. Chris's tests now point at `c3`
 - Star map distance: 125.2 million km on mission day 42 (was 25.2); the simulated Earth link delay
   matches it: 7 minutes one way (was 12)
+- Linked the narrator script in `shared/submission/narrator-script.md`
 
 ## Blocked / need from others
 
