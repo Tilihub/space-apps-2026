@@ -6,7 +6,7 @@ import {POINT_BY_ID} from '/body-points.js';
 import { thermalDemo } from '/demo-thermal.js';
 import { createMissionViews } from '/mission-views.js';
 import { starMapScreen, startStarMap } from '/star-map.js';
-import { CREW, SYMPTOMS, MEASUREMENTS, SCALES } from '/shared/contract/contract.js';
+import { CREW, SYMPTOMS, MEASUREMENTS, SCALES, DEMO_START, missionDayOf } from '/shared/contract/contract.js';
 import { createHealthClient } from '/people/angelos/health/client.js';
 import { createCompanionClient } from '/people/potest/crew-support/companion-client.js';
 import { createWorkoutController } from '/demo-data/workout-session.js';
@@ -336,7 +336,8 @@ function render() {
  $(`#${page}`).innerHTML=screens[page]();
  for(const [key,d] of detailKeys(Array.from(document.querySelectorAll(`#${page} details`))))if(expanded.has(key))d.open=expanded.get(key);
  renderChrome(); restoreDrafts();
- if(page==='starmap')startStarMap({missionDay:clock?.missionDay,crewCount:CREW.length});
+ // The star map: its own page, and the opening screen before login (no clock yet: demo start day)
+ if(document.getElementById('star-map'))startStarMap({missionDay:clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length});
 }
 async function show() {
  const task=++loading, version=revision;

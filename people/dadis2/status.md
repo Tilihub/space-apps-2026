@@ -8,7 +8,7 @@
 
 ## Now
 
-- Last updated: 2026-11-15 12:31
+- Last updated: 2026-11-15 12:48
 - Working on: a minimal medical officer console and a lean Earth console in Tommy's complete demo
   (PR #74, approved by me), on `dadis2/mo-console` (pushed, not in main, no PR). It includes
   `dadis2/earth-qr`. `npm test` 111 of 111.
@@ -37,6 +37,9 @@
     at the top of `star-map.js`
   - the picture is sized to the screen and scaled up crisp; no libraries, works offline; stays still
     if the computer asks for reduced motion
+  - **Opening screen (local commit only, not pushed, waiting for the team's opinion):** the star map
+    fills the screen with a "Welcome aboard" button (was the logo and "Begin mission"). Before
+    login there's no clock, so it shows the demo start day (42).
 - **Earth console:** pills waiting for Earth with Approve and Deny, and Earth's reply QR for Tomas
   (`RX2-EARTH-C4-261114-ZOL1X1X7-9Z`, the same as `inventory/earth-reply-qr.svg`). The code generator
   and demo controls are folded away.

@@ -3,7 +3,8 @@ import {compartmentLabel} from '/cabinet-labels.js';
 import {readingTint,scaleTint} from '/overview-colors.js';
 import {EXTRA_QUESTIONS,WELLBEING_SCALE_IDS} from '/wellbeing-questions.js';
 import {POINT_BY_ID} from '/body-points.js';
-import {MEDICAL_OFFICER_ID} from '/shared/contract/contract.js';
+import {MEDICAL_OFFICER_ID,DEMO_START,missionDayOf} from '/shared/contract/contract.js';
+import {starMapScreen} from '/star-map.js';
 // Presentation only. API calls, permissions, data rules and controllers stay in app.js/owner modules.
 import { getDailyWorkout } from '/demo-data/workout-program.js';
 
@@ -24,7 +25,8 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   };
   function login() {
     const { CREW }=state();
-    if(!ui.welcome) return `<div class="login mission-welcome"><div class="welcome-stars"></div><div class="welcome-content"><img class="team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You" width="420" height="420">${btn('Begin mission','ui-begin','','primary welcome-button')}</div></div>`;
+    // Opening screen (dadis2): the full star map with "Welcome aboard" (before login there's no clock: demo start day)
+    if(!ui.welcome) return `<div class="welcome-map">${starMapScreen({missionDay:state().clock?.missionDay??missionDayOf(DEMO_START),crewCount:CREW.length})}<div class="welcome-cta">${btn('Welcome aboard','ui-begin','','primary welcome-button')}</div></div>`;
     return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {

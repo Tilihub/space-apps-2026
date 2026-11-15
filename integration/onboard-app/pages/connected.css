@@ -11,3 +11,6 @@
 
 /* Star map (dadis2): fills the page except the sidebar; pixel art scaled up crisp */
 body.page-starmap #app-header,body.page-starmap #app-footer,body.page-starmap #topbar,body.page-starmap #floating-companion{display:none!important}body.page-starmap .app{height:100svh}body.page-starmap .content{padding:0;overflow:hidden;display:flex;flex-direction:column}body.page-starmap #starmap{flex:1;min-height:0;padding:0}.starmap-full{position:relative;width:100%;height:100%;background:#05060F}.starmap-full canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:crisp-edges;image-rendering:pixelated}
+/* Opening screen (dadis2): the star map fills the screen, with "Welcome aboard" on it */
+.welcome-map{position:relative;height:100svh;overflow:hidden;background:#05060F}.welcome-map .starmap-full{position:absolute;inset:0}.welcome-cta{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);z-index:1}
+#login:has(>.welcome-map){padding:0}
