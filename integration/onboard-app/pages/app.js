@@ -49,6 +49,12 @@ async function api(path, { method='GET', body, publicRequest=false }={}) {
   if(!res.ok || !result.ok) throw Object.assign(new Error(result.error?.message ?? 'The request failed.'),{code:result.error?.code});
   return result.data;
 }
+const trainingEndKey=()=>`pulse-training-ended:${user?.crewId}:${clock?.missionDay}`;
+function rememberTrainingEnd(){
+ const snapshot=workout?.snapshot(clock.now);
+ if(['completed','stopped'].includes(snapshot?.status))sessionStorage.setItem(trainingEndKey(),clock.now);
+}
+function clearTrainingEnds(){for(const key of Object.keys(sessionStorage))if(key.startsWith('pulse-training-ended:'))sessionStorage.removeItem(key);}
 let noticeTimer;
 function notice(message,error=false) {
  const copy={'Today’s check-in was saved to the health module.':'Mood, stress and fatigue saved.','Symptom report saved. Medicine guidance is shown below.':'Symptom report saved.','Decision saved by the medicine module.':'Decision saved.','Workout summary saved in the health module.':'Workout saved.','Collection complete. Doses and stock were updated.':'Collection complete.','Collection opened. Confirm each dispensed item once.':'Ready to collect. Confirm each item.'};
@@ -277,7 +283,7 @@ function earthScreen() {
 }
 const screens={login:loginScreen,home:homeScreen,checkin:checkinScreen,medbay:medbayScreen,mind:mindScreen,habitat:habitatScreen,fitness:fitnessScreen,crew:medicalScreen,earth:earthScreen};
 const missionViews=createMissionViews({
- state:()=>({user,role:role(),clock,data,page,drafts,collection,suggestion,workout,workoutMode,replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
+ state:()=>({user,role:role(),clock,data,page,drafts,collection,suggestion,workout,workoutMode,trainingEndedToday:!!sessionStorage.getItem(trainingEndKey()),replay,exerciseReplay,guides,selectedArea,stagedSymptoms,CREW,SYMPTOMS,MEASUREMENTS}),
  helpers:{esc,icon,btn,field,select,note,submit,card,empty,bodyFrame,mascotSvg,time,member,chatTranscript,chatComposer},
  legacy:{suggestionsPanel,profilePanel,grantsPanel,requestsPanel,dosesPanel,emergencyPanel,stockPanel,patientPicker,demoClockPanel},
  redraw:()=>render(),remember,
@@ -393,7 +399,7 @@ async function handleForm(form,submitter) {
    await api('/meds/requests',{method:'POST',body:{itemId:form.dataset.item,note:v.note}});notice('Approval request submitted.');
   } else {await collect({itemId:form.dataset.item,units:Number(v.units)});return;}
  } else if(id==='workout-step') {
-  clock=await api('/clock');workout.completeStep(form.dataset.step,clock.now,numberFields(v,['reps']));delete drafts[id];
+  clock=await api('/clock');workout.completeStep(form.dataset.step,clock.now,numberFields(v,['reps']));rememberTrainingEnd();delete drafts[id];
  } else if(id==='report-form') {
   // Refresh every section for this patient; no mind endpoint is requested.
   const reportPatient=patient, q=`?crewId=${encodeURIComponent(reportPatient)}`;
@@ -462,12 +468,12 @@ async function action(el) {
  if(a==='toggle-link'){await api('/reports/link',{method:'POST',body:{linkUp:!data.link.linkUp}});notice('Simulated Earth link updated.');}
  if(a==='reset-demo') {
   if(window.prompt('This clears all demo records for all crew. Type RESET to continue.')!=='RESET')return;
-  clock=await api('/demo/reset',{method:'POST',body:{}});resetLocal();notice('All demo modules reset to day 42 at 07:30 UTC.');
+  clock=await api('/demo/reset',{method:'POST',body:{}});clearTrainingEnds();resetLocal();notice('All demo modules reset to day 42 at 07:30 UTC.');
  }
  if(a.startsWith('workout-')){
   clock=await api('/clock');
   if(a==='workout-start')workout.start(clock.now,id);
-  if(a==='workout-stop')workout.stop(clock.now);
+  if(a==='workout-stop'){workout.stop(clock.now);rememberTrainingEnd();}
   if(a==='workout-save'||a==='workout-recovery'){
    const s=await workout.save(clock.now,{withRecovery:a==='workout-recovery'});
    notice(s.saveStatus==='unavailable'?'No exercise pulse available: checklist retained, no numeric summary was invented.':'Workout summary saved in the health module.');
@@ -506,7 +512,7 @@ async function poll() {
   if(version!==revision)return;
   const reset=events.events.some(e=>e.type==='demo.reset');
   const last=events.lastId;
-  if(reset){resetLocal();clock=next;eventsAfter=last;await show();return;}
+  if(reset){clearTrainingEnds();resetLocal();clock=next;eventsAfter=last;await show();return;}
   eventsAfter=last;clock=next;
   if(await autoSaveWorkout()){if(version!==revision)return;await show();}
   missionViews.tick();

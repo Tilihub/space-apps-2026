@@ -27,12 +27,17 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
     return `<div class="login mission-login"><div class="login-card"><div class="login-identity"><img class="login-team-logo" src="/assets/team-logo.png" alt="May the Pulse Be With You"><span class="eyebrow">PULSE / CREW HEALTH</span></div><h1 class="display">Welcome aboard.</h1><p class="muted">Choose a demo profile to continue.</p><div class="crew-pick">${CREW.map(c=>`<button class="crew-btn" data-action="login" data-id="${c.id}"><span class="avatar">${c.name.split(' ').map(x=>x[0]).join('')}</span><span><b>${c.name}</b><small>${c.title}</small></span>${icon('chev')}</button>`).join('')}</div><div class="login-roles">${btn('Medical officer','login-medical','','ghost sm')}${btn('Earth console','login-earth','','ghost sm')}</div><span class="subtle">Synthetic crew profiles · Demo access</span></div></div>`;
   }
   function home() {
-    const {data,clock}=state(), row=data.today?.checkIn;
+    const {data,clock,workout,trainingEndedToday}=state(), row=data.today?.checkIn;
     const workouts=(data.workouts?.workouts??[]).filter(w=>w.missionDay===clock.missionDay);
     const pending=[];
-    if(!row)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily check-in</a>');
-    if(!workouts.length&&getDailyWorkout(clock.missionDay).sessions.length)pending.push('<a class="task-cue" href="#fitness"><i></i>Training open</a>');
-    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false,tint:readingTint('restingHeartRateBpm',row?.restingHeartRateBpm)})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false,tint:readingTint('temperatureC',row?.temperatureC)})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false,tint:readingTint('sleepHours',row?.sleepHours)})}${gauge('Training',workouts.length,workouts.length===1?'session':'sessions',{color:workouts.length?'mint':'cyan',fraction:workouts.length?1:0,link:'#fitness',caption:false})}</div></div></div>`;
+    const training=workout?.snapshot(clock.now);
+    const justFinished=training?.day.missionDay===clock.missionDay&&['completed','stopped'].includes(training.status);
+    const wellbeingDone=['mood','stress','fatigue'].every(k=>Number.isFinite(row?.[k]));
+    const trainingDone=!getDailyWorkout(clock.missionDay).sessions.length||workouts.length>0||justFinished||trainingEndedToday;
+    const tasksDone=Number(wellbeingDone)+Number(!!trainingDone);
+    if(!wellbeingDone)pending.push('<a class="task-cue" href="#checkin"><i></i>Daily wellbeing</a>');
+    if(!trainingDone)pending.push('<a class="task-cue" href="#fitness"><i></i>Training open</a>');
+    return `<div class="overview-intro"><div class="task-cues">${pending.join('')}</div></div><div class="overview-grid"><div class="card anatomy-card"><div class="anatomy-stage">${bodyFrame('view')}</div>${clock.missionDay===42?`<div class="thermal-key"><span>Skin temperature <small>Simulated sensors</small></span><i></i><div><small>31 °C</small><small>33 °C</small><small>35 °C</small></div></div>`:''}</div><div class="overview-instruments"><div class="gauge-grid">${gauge('Resting pulse',row?.restingHeartRateBpm,'bpm',{link:'#checkin',caption:false,tint:readingTint('restingHeartRateBpm',row?.restingHeartRateBpm)})}${gauge('Body temperature',row?.temperatureC,'°C',{color:'gold',link:'#checkin',caption:false,tint:readingTint('temperatureC',row?.temperatureC)})}${gauge('Sleep',row?.sleepHours,'hours',{color:'cyan',link:'#checkin',caption:false,tint:readingTint('sleepHours',row?.sleepHours)})}${gauge('Daily tasks',`${tasksDone}/2`,'completed',{fraction:tasksDone/2,link:!wellbeingDone?'#checkin':!trainingDone?'#fitness':'#home',caption:false})}</div></div></div>`;
   }
 
   function rating(label,name,value,lo,hi,disabled) {
@@ -187,7 +192,7 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   function loadDraft(step){
     if(step.kind!=='resistance')return '';
     const value=state().drafts['workout-step']?.weightKg??'';
-    return `<div class="load-draft">${field('Load · kg','weightKg',{type:'number',value,attrs:'min="0" step="5" list="load-kg-options" placeholder="kg"'})}<datalist id="load-kg-options">${Array.from({length:41},(_,i)=>`<option value="${i*5}">${i*5} kg</option>`).join('')}</datalist><div class="pr-draft"><small>PR</small><b>—</b></div><small>Load draft · not saved to health records</small></div>`;
+    return `<div class="load-draft">${field('Load · kg','weightKg',{type:'number',value,attrs:'min="0" step="5" placeholder="kg" inputmode="numeric"'})}<div class="load-stepper">${btn('+','ui-load-step','data-delta="5" aria-label="Increase load by 5 kg"','ghost')}${btn('−','ui-load-step',`data-delta="-5" aria-label="Decrease load by 5 kg" ${Number(value||0)<=0?'disabled':''}`,'ghost')}</div><div class="pr-draft"><small>PR</small><b>—</b></div><small>Load draft · not saved to health records</small></div>`;
   }
   const setKey=s=>`${s.sessionId}:${s.currentStep?.id}`;
   function stepControls(s){
@@ -246,6 +251,12 @@ export function createMissionViews({ state, helpers: h, legacy, redraw, remember
   const refreshWellbeing=(scroll=false)=>{const card=document.querySelector('.daily-form-card');if(card)card.outerHTML=wellbeing();if(scroll)document.querySelector('.daily-form-card')?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});};
   function action(el) {
     const name=el.dataset.action,id=el.dataset.id;
+    if(name==='ui-load-step'){
+      const input=document.querySelector('#workout-step [name="weightKg"]');if(!input)return;
+      const current=Number(input.value)||0,delta=Number(el.dataset.delta);
+      input.value=String(Math.max(0,current+delta));remember(input.form);
+      redraw();return;
+    }
     if(name==='ui-workout-set'||name==='ui-workout-reps'){
       const {workout,clock,drafts}=state(),snapshot=workout.snapshot(clock.now),step=snapshot.currentStep;
       if(!step||step.id!==el.dataset.step)return;

@@ -304,3 +304,9 @@ This frontend uses the existing incident/release endpoints. Their existing one-o
 See [medical-training-follow-up.md](medical-training-follow-up.md). Use one lock-state-colored frame and matching hover behavior, a dismissible emergency notification, global training start with automatic recovery/summary recording, rolling five-minute simulated heart-rate/breathing plots, free-text scripted psychologist chat and correct Mars-transit wording.
 
 Tommy chose drafts until the owners connect AED and load/PR support. The three-column AED shelf is planned equipment, not collectable stock. The user enters a load manually with 5 kg suggestions; it remains an explicitly unsaved draft and PR is not invented. Do not change owner modules or the protected contract as part of this presentation task. Tommy subsequently requested closure of the existing demo emergencies; this was done through normal medical-officer paperwork, not a store reset.
+
+### Overview tasks and quick corrections — 2026-11-15
+
+Replace the training-session instrument with Daily tasks, currently two tasks: daily wellbeing and training. Use the supported saved mood/stress/fatigue answers for wellbeing completion; the extra questionnaire items are still drafts. Training is complete after today's controller session ends or a workout is saved; recovery recording may finish afterward. Keep the visual per-person/day completion through reload and clear it for a demo reset/new day. Rest days have no pending exercise requirement.
+
+Kilograms use manual typing plus vertically stacked +/− controls in 5 kg steps, with no suggestion popup. Loads/PR are still not part of the backend schema. Restore the agreed day-42 fixtures in the active demo when moving from QA; preserve existing check-ins/workouts. Tommy canceled reducing L1: keep ten medicines on two pages.

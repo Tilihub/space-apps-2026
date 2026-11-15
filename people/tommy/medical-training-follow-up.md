@@ -22,7 +22,7 @@ The L3 display has a three-column equipment compartment, marked Planned equipmen
 
 ### Exercise load and PR — Petros, Angelos and zt
 
-The current exercise has an editable manual kilogram field with suggestions every 5 kg. It is explicitly a load draft, not saved to health records; there is no Not connected placeholder preventing entry. Ordinary form draft restoration preserves the entry during set toggles. The current workout schema records total reps and pulse summary, not exercise-level loads or PRs. PR remains blank rather than inventing history.
+The current exercise has an editable manual kilogram field with stacked +/− controls in 5 kg steps. It is explicitly a load draft, not saved to health records; there is no Not connected placeholder preventing entry. Ordinary form draft restoration preserves the entry during set toggles. The current workout schema records total reps and pulse summary, not exercise-level loads or PRs. PR remains blank rather than inventing history.
 
 Agree exercise identity, performed sets/reps/load, units, personal-record comparison and ownership before adding durable storage. Petros's prescribed equipment is a compact flywheel: a kilogram label is a product draft, not an established conversion from flywheel inertia to external load. Do not add arbitrary load fields to the existing strict workout endpoint or reinterpret total reps as weight.
 
@@ -38,3 +38,9 @@ The free-text UI is a scripted preview, not a connected clinician. Real delivery
 - Browser completed four set ticks and one exercise, stopped, moved to Wellbeing and automatically saved exactly one summary through the existing health API after recovery. Temporary record: 48 reps, synthetic source, a non-null recovery value.
 - Additional controller/display checks covered five-minute nonfuture plot windows, nonnegative saved replay samples, recovery timing and duplicate-save prevention.
 - Browser sent free-form text in the psychologist preview and displayed a scripted reply. No external transport was invoked.
+
+## Latest Overview/task correction
+
+The fourth Overview instrument is now Daily tasks, not a count of sessions: wellbeing (the three currently persisted answers) and training. Training's task cue closes immediately on session end, and a per-person/day visual marker survives reload before recovery storage finishes. It is not a fabricated workout record. A new day or demo reset clears that marker; rest days have no pending exercise requirement.
+
+Load entry uses stacked +/− controls, five kilograms per press, and no large suggestion popup. L1 remains ten items/two pages following Tommy's cancellation of the proposed reduction. Port 8018's missing current entries were populated using the existing agreed presentation seeder, with no store reset or workout overwrite.

@@ -111,3 +111,10 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 .cabinet-door:hover{border-color:var(--door-highlight);box-shadow:inset 0 1px 0 #93AEC01F,0 0 8px color-mix(in srgb,var(--door-highlight) 12%,transparent)}
 .cabinet-door.selected{outline:0;border-color:var(--door-highlight);box-shadow:inset 0 0 0 1px var(--door-highlight)}
 .cabinet-door:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--door-highlight)}
+
+/* Manual load entry with compact stacked 5 kg controls; no suggestion popup. */
+.load-draft{grid-template-columns:minmax(0,1fr) 36px 45px;gap:8px 12px}
+.load-stepper{display:grid;gap:4px;align-self:end}
+.load-stepper .btn{min-height:25px;height:25px;padding:0;font-size:17px;border-radius:5px}
+.load-draft input[type="number"]{appearance:textfield;-moz-appearance:textfield}
+.load-draft input::-webkit-inner-spin-button,.load-draft input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
