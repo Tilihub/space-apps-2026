@@ -8,10 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-15 12:22
-- Working on: Sunday status check. Tommy built the rest of the app on top of the core, and it's all
-  on main; the submission isn't started.
-- Branch: zt/status-check-1222
+- Last updated: 2026-11-15 12:35
+- Working on: the submission. Added the Local Event's presentation guide to `shared/submission/`.
+- Branch: zt/presentation-guide
 
 ## Done
 
@@ -52,6 +51,10 @@
 - Sunday 12:22 status check: pulled main (the joined app, Pulsars and Angelos's report are merged)
   and refreshed [team-jobs.md](team-jobs.md). 116 of 117 tests pass on Linux; the one failure is
   the crew-assistant demo starting Python as `python`
+- Added the Local Event's presentation guide (Greek NewSpace Society) as
+  `shared/submission/local-presentation-guide.pdf`, with a text summary next to it and a pointer
+  from `project-page.md`: 7 minutes plus Q&A, the five judging criteria, recommended contents, and
+  how Tommy's draft demo plan (PR #79) compares
 
 ## Blocked / need from others
 
