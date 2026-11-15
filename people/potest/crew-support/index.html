@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crew Support</title>
+  <link rel="stylesheet" href="/support.css">
+  <script type="module" src="/support.mjs"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <a id="back-to-mind" href="/#mind">← Back to Mind</a>
+      <h1>Crew Support</h1>
+      <p class="intro">A scripted example of a conversation about missing home. For professional care, use your mission’s behavioral health channel.</p>
+    </header>
+
+    <div class="chat">
+      <div class="chat-header">
+        <p id="mode">Offline scripted demo</p>
+        <button type="button" id="clear">Clear chat</button>
+      </div>
+      <div id="transcript" role="log" aria-label="Conversation" tabindex="0"></div>
+      <form id="composer" autocomplete="off">
+        <label for="message">Your message</label>
+        <textarea id="message" rows="3" maxlength="2000" autocomplete="off" required disabled></textarea>
+        <button type="submit" id="send" disabled>Send</button>
+      </form>
+      <p id="feedback" role="status"></p>
+    </div>
+
+    <details id="human-support">
+      <summary>Get human support</summary>
+      <p>For immediate safety concerns, contact the onboard crew medical officer or a nearby crewmate and follow the mission emergency procedure.</p>
+      <p>For a private check-in, use the mission’s designated channel to reach your psychologist. This demo provides guidance for contacting them.</p>
+    </details>
+  </main>
+</body>
+</html>

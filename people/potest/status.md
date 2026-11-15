@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-14 15:30 (Europe/Athens)
-- Working on: POT-1 handoff for integration review in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40)
-- Branch: potest/environment-bridge
+- Last updated: 2026-11-14 19:00 (Europe/Athens)
+- Working on: Crew Assistant health context handoff in [PR #55](https://github.com/Tilihub/space-apps-2026/pull/55). POT-1 remains in [PR #40](https://github.com/Tilihub/space-apps-2026/pull/40).
+- Branch: potest/crew-support-chat
 
 ## Done
 
@@ -23,10 +23,16 @@
 - POT-1: Verified a same-origin parent iframe can read the snapshot, distinguish archival and synthetic data, and receive one event per forward transition. Tested stale status, recovery, event deduplication, and loop reset in Chrome and checked packet mapping in Node.
 - Clarified the source-time chart window and playback speed labels. Verified in Chrome that a one-second playback step advances five recorded minutes for RR-9, and that hourly and sol-based series display their actual next source-time interval.
 - Kept chart history visible across automatic replay loops. Verified rollover on the ISS and Mars-sol plots, plus original snapshot and CSV timestamps, in Chrome.
+- Added [Crew Support](crew-support/README.md), a local scripted conversation linked from the Mind screen.
+- Joined Petros’s synthetic Tomas case, Angelos’s validated check-in store and Crew Support in the offline [Crew Assistant demo](../../integration/crew-assistant/README.md). The comparison has two tabs. With context uses today's check-in and recognizes repeated short sleep from earlier records. Verified mouse and keyboard tab switching in Chrome and passed 47 Node tests.
+- Added research-informed suggestions for protecting sleep, reviewing workload, managing stress and following up on Tomas’s next check-in. Verified the context tab in Chrome and passed 52 Node tests.
+- Followed Angelos's handoff at `91dc6da` and added the onboard browser client and crew-only companion route. The client refreshes today's check-in each turn. Tested two identities, no check-in, missing values, stale entries, role refusals and session reset through the shared dispatcher.
 
 ## Blocked / need from others
 
 - zt and the report assembler still need to agree on the shared mission-clock mapping and adopt the proposed snapshot and event IDs. The bridge preserves the source clock and leaves mission time unset unless the parent supplies an offset.
+- zt's onboard core needs to mount the companion route and connect the client to its crew session and reset controls. The human support workflow remains integration work.
+- The joined demo uses a single synthetic profile. The app contract leaves the companion’s use of detailed health analysis open.
 
 ## Next steps
 
@@ -35,3 +41,4 @@
 
 - Have zt wire the incident view to `environmentMonitor.getSnapshot()` and subscribe to replay alerts using the handoff example.
 - POT-2 report transport remains conditional on ownership agreement and confirmation that the queue is uncovered.
+- Share the offline demo with zt and Angelos for the Mind/companion integration.

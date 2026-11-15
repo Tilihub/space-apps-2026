@@ -1,0 +1,46 @@
+/* Mission Control refinements. Static studies only, with unchanged content. */
+[data-variant=soft] .metric,[data-variant=soft] .body-card{background:linear-gradient(140deg,#282c2e,#1c2023);border-top:1px solid #d8ae5750;box-shadow:inset 0 1px #ffffff06,0 12px 28px #0000001c}
+[data-variant=soft] .nav-item.active{border-radius:11px;background:#e9bd6415;box-shadow:inset 2px 0 var(--accent)}
+[data-variant=soft] .instrument circle{stroke-width:5.5;stroke-dasharray:5 5;stroke-linecap:butt}
+[data-variant=soft] h1{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:34px;letter-spacing:-.035em}
+[data-variant=soft] .refresh,[data-variant=soft] .utility,[data-variant=soft] .sign-out{border-radius:8px}
+[data-variant=blackout] .metric{background:#101314;border:1px solid #39403a;box-shadow:none}
+[data-variant=blackout] .body-card{background:#101314;border-color:#39403a;box-shadow:none}
+[data-variant=blackout] .instrument circle{stroke-width:6;stroke-dasharray:5 5}
+[data-variant=blackout] .arc{filter:drop-shadow(0 0 3px #eab84e22)}
+[data-variant=blackout] .nav-item.active{background:#ffd0780c;border-color:#ffd07850;box-shadow:inset 2px 0 var(--accent)}
+[data-variant=blackout] header,[data-variant=blackout] aside{border-color:#262e2d}
+[data-variant=alloy] .metric{background:linear-gradient(160deg,#343d43,#293035);border-top:2px solid #d0ae68;box-shadow:inset 0 1px #ffffff0a,0 5px 16px #0001}
+[data-variant=alloy] .body-card{background:#293035;border-top:2px solid #d0ae68}
+[data-variant=alloy] .instrument circle{stroke-width:5;stroke-dasharray:4 4}
+[data-variant=alloy] .metric-label{color:#d2d7d6;font-size:11px}
+[data-variant=alloy] .nav-item.active{background:#f0c56b17;border-color:#f0c56b70}
+[data-variant=alloy] .reading b{font-size:41px}
+[data-variant=bold] h1{font:700 43px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.025em}
+[data-variant=bold] .reading b{font-size:57px;font-weight:700;letter-spacing:.005em}
+[data-variant=bold] .instrument circle{stroke-width:8;stroke-dasharray:6 4}
+[data-variant=bold] .metric-label{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em}
+[data-variant=bold] .metric{border-top-width:4px}
+[data-variant=bold] .nav-item{font-size:14px;font-weight:700}
+[data-variant=precision] .instrument circle{stroke-width:5;stroke-dasharray:2.5 3.5}
+[data-variant=precision] .metric{border-top:1px solid #8c7442;box-shadow:inset 0 0 0 5px #111516;position:relative}
+[data-variant=precision] .metric:before,[data-variant=precision] .metric:after{content:'';position:absolute;width:10px;height:10px;border-color:#c6a561;border-style:solid;pointer-events:none}
+[data-variant=precision] .metric:before{left:-1px;top:-1px;border-width:1px 0 0 1px}
+[data-variant=precision] .metric:after{right:-1px;bottom:-1px;border-width:0 1px 1px 0}
+[data-variant=precision] .metric-label{font-size:11px;letter-spacing:.1em}
+[data-variant=precision] .reading b{font-size:40px;font-weight:600}
+[data-variant=precision] .eyebrow{letter-spacing:.16em}
+[data-variant=quiet] .metric{background:#222522;border-top:1px solid #535b4d;box-shadow:none}
+[data-variant=quiet] .body-card{background:#222522;box-shadow:none}
+[data-variant=quiet] .metric-label{font-family:'Manrope',sans-serif;text-transform:none;font-size:13px;letter-spacing:0;color:#c1c7ba;font-weight:700}
+[data-variant=quiet] .instrument circle{stroke-width:4;stroke-dasharray:7 5;stroke-linecap:butt}
+[data-variant=quiet] h1{font-family:'Manrope',sans-serif;font-weight:800;font-size:33px;letter-spacing:-.045em}
+[data-variant=quiet] .nav-item.active{border-radius:10px;box-shadow:none;background:#dfc38b12;border-color:#dfc38b44}
+[data-variant=quiet] .reading b{font-size:39px;font-weight:500}
+[data-variant=center] .metric{border-top:0;background:transparent}
+[data-variant=center] .instrument circle{stroke-width:5;stroke-dasharray:5 4;stroke-linecap:butt}
+[data-variant=center] .reading b{font-size:36px;font-family:'IBM Plex Mono',monospace}
+[data-variant=center] .metric-label{font-size:10px;letter-spacing:.04em}
+[data-variant=center] .body-card{border:1px solid #3c4143;background:#191c1e}
+[data-variant=center] .model{border-radius:0}
+[data-variant=center] main{background:var(--bg)}

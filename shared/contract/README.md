@@ -306,9 +306,14 @@ with its own role.
 | `GET /journal?days=14` | crew | | `{ entries: [...] }`, own only |
 | `POST /companion` | crew | `{ "message": "…", "context": { "today": {} } }` | `{ reply, links: [{ "screen": "checkin" }] }` |
 
-Modules don't call each other, so the page sends the crew member's own `today` result as `context`.
-Whether the companion may also use the detailed analyses, without showing them to the astronaut,
-is still open; until it is agreed, it doesn't mention them.
+Modules don't call each other, so the page sends only the current author’s `today` result as `context`. For the offline support demo,
+Tommy has chosen Potest’s health-context tool: the Mind connection may read the current author’s
+labelled canonical Petros fixture and use Angelos’s pure comparison functions to choose support
+suggestions. It must not return historical values, baseline numbers, comparison results or streak
+counts to the astronaut. This is synthetic demo context, not a read of the medical platform’s
+stored clinical history. Journal content is not read by this route. Broader access to actual
+clinical history, journal context, external models and the final module owner remain to be agreed.
+The connection implementation and this clarification need teammate review before merging.
 
 For the demo, fixed replies from a script are enough (scene D: an offer to write about it, or to
 talk to someone). Support requests to the psychologist on Earth come later, with the psychologist role.

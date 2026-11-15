@@ -10,7 +10,7 @@ import { startServer } from './server.js';
 import modules from './modules.js';
 
 const port = Number(process.env.PORT ?? 8000);
-const core = await createCore({ modules, dataDir: fileURLToPath(new URL('./data/', import.meta.url)) });
+const core = await createCore({ modules, dataDir: process.env.PULSE_DATA_DIR ?? fileURLToPath(new URL('./data/', import.meta.url)) });
 
 /** @type {{ port: number, close: () => Promise<void> }} */
 let server;
