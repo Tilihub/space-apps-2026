@@ -1,19 +1,13 @@
+import { createFalconHeatmap, simulatedZones, temperatureColor, temperatureScale } from './thermal-map.js';
+
 const sensors = [
   { id: 'radiation', name: 'Radiation', zone: 'Forward hull', unit: 'µGy/h', digits: 1, side: 'left', y: 24, point: [422, 151], wire: 'M 155 163 H 354 L 380 151 H 422' },
   { id: 'co2', name: 'CO₂', zone: 'Crew cockpit', unit: 'ppm', digits: 0, side: 'right', y: 35, point: [697, 250], wire: 'M 845 238 H 762 L 750 250 H 697' },
   { id: 'humidity', name: 'Humidity', zone: 'Water recycler', unit: '%', digits: 1, side: 'left', y: 68, point: [370, 435], wire: 'M 155 462 H 304 L 331 435 H 370' },
-  { id: 'temperature', name: 'Temperature', zone: 'Aft engineering', unit: '°C', digits: 1, side: 'right', y: 78, point: [555, 520], wire: 'M 845 530 H 666 L 656 520 H 555' },
+  { id: 'temperature', name: 'Temperature', zone: 'Main lounge', unit: '°C', digits: 1, side: 'center', y: 56 },
 ];
 
 const states = { normal: 'Normal', warning: 'Warning', danger: 'Danger', 'no-reading': 'No reading' };
-const temperatureScale = [
-  [16, '#8ba4ff'],
-  [19, '#6fceff'],
-  [22, '#f4e27d'],
-  [24, '#ffad63'],
-  [27, '#ff8665'],
-  [30, '#ff6d8b'],
-];
 const coldLimit = temperatureScale[0][0];
 const hotLimit = temperatureScale.at(-1)[0];
 const sessionKey = 'pulse-habitat-preview-token';
@@ -25,24 +19,9 @@ const hasValue = value => Number.isFinite(value);
 const number = (value, digits) => hasValue(value) ? value.toFixed(digits) : '—';
 const readingValue = (reading, sensor) => `${number(reading?.value, sensor.digits)}<small>${escape(reading?.unit ?? sensor.unit)}</small>`;
 
-function temperatureColor(value) {
-  if (value <= coldLimit) return temperatureScale[0][1];
-  if (value >= hotLimit) return temperatureScale.at(-1)[1];
-  const upper = temperatureScale.findIndex(([degrees]) => value <= degrees);
-  const [low, cold] = temperatureScale[upper - 1];
-  const [high, hot] = temperatureScale[upper];
-  const fraction = (value - low) / (high - low);
-  const channels = [1, 3, 5].map(offset => {
-    const start = Number.parseInt(cold.slice(offset, offset + 2), 16);
-    const end = Number.parseInt(hot.slice(offset, offset + 2), 16);
-    return Math.round(start + (end - start) * fraction);
-  });
-  return `rgb(${channels.join(' ')})`;
-}
-
 const heatStops = temperatureScale.map(([degrees, color]) => `${color} ${(degrees - coldLimit) / (hotLimit - coldLimit) * 100}%`);
-const heatLegend = `<figure class="heat-scale">
-  <figcaption>Temperature color scale</figcaption>
+document.querySelector('#thermal-key').innerHTML = `<figure class="heat-scale">
+  <figcaption>Simulated zone temperatures</figcaption>
   <div class="heat-scale-bar" style="background: linear-gradient(90deg, ${heatStops.join(', ')})" aria-hidden="true"></div>
   <div class="heat-scale-labels"><span>≤ ${coldLimit} °C</span><span>${(coldLimit + hotLimit) / 2} °C</span><span>≥ ${hotLimit} °C</span></div>
 </figure>`;
@@ -54,22 +33,24 @@ const connection = document.querySelector('#connection');
 const clock = document.querySelector('#mission-clock');
 const alertsContent = document.querySelector('#alerts');
 const alertCount = document.querySelector('#alert-count');
+const zoneReadings = document.querySelector('#thermal-zones');
+const paintHull = createFalconHeatmap(document.querySelector('#falcon-heatmap'));
 
-let selected = 'co2';
+let selected = 'temperature';
 let hovered = null;
 let focused = null;
 let replay = null;
 let token = sessionStorage.getItem(sessionKey);
 
-document.querySelector('#sensor-wires').innerHTML = sensors.map(sensor => {
+document.querySelector('#sensor-wires').innerHTML = sensors.filter(sensor => sensor.wire).map(sensor => {
   const [x, y] = sensor.point;
   return `<g class="sensor-wire" data-metric="${sensor.id}"><path d="${sensor.wire}"/><circle cx="${x}" cy="${y}" r="10"/><circle cx="${x}" cy="${y}" r="3"/></g>`;
 }).join('');
 
 sensorGroup.innerHTML = sensors.map(sensor => `<button type="button" class="sensor" data-metric="${sensor.id}" data-side="${sensor.side}" style="--y: ${sensor.y}%" aria-controls="trend-panel" aria-pressed="false">
-  <span class="sensor-name">${sensor.name}</span>
+  <span class="sensor-name">${sensor.side === 'center' ? sensor.zone : sensor.name}</span>
   <b class="sensor-number">${readingValue(null, sensor)}</b>
-  <span class="sensor-location">${sensor.zone}</span>
+  <span class="sensor-location">${sensor.side === 'center' ? sensor.name : sensor.zone}</span>
 </button>`).join('');
 
 function historyChart(sensor, history, endTime) {
@@ -128,6 +109,7 @@ function renderTrend() {
   const history = replay?.histories[active];
   const state = reading?.state ?? '';
   const source = history?.source?.label ?? reading?.source?.label;
+  const sampleTime = hasValue(reading?.value) ? `${active === 'temperature' ? 'Replay sample' : 'Measured'} at ${utc(reading.measuredAt)} UTC` : 'No current sample';
 
   for (const element of document.querySelectorAll('.sensor, .sensor-wire')) {
     const metric = element.dataset.metric;
@@ -142,8 +124,7 @@ function renderTrend() {
   </div>
   <p class="trend-value">${readingValue(reading, sensor)}</p>
   ${historyChart(sensor, history, replay?.now.at)}
-  ${active === 'temperature' ? heatLegend : ''}
-  ${source ? `<div class="trend-source"><p>${escape(source)}</p><p>${hasValue(reading?.value) ? `Measured at ${utc(reading.measuredAt)} UTC` : 'No current sample'}${reading?.recoveryUnverified ? ' · Recovery unverified' : ''}</p></div>` : ''}`;
+  ${source ? `<div class="trend-source">${active === 'temperature' ? '<p>Cabin replay used as the main lounge reference.</p>' : ''}<p>${escape(source)}</p><p>${sampleTime}${reading?.recoveryUnverified ? ' · Recovery unverified' : ''}</p></div>` : ''}`;
 }
 
 for (const button of sensorGroup.querySelectorAll('button')) {
@@ -210,6 +191,9 @@ function renderReadings() {
   const temperature = now.readings.find(({ metric }) => metric === 'temperature')?.value;
   if (hasValue(temperature)) document.documentElement.style.setProperty('--temperature', temperatureColor(temperature));
   else document.documentElement.style.removeProperty('--temperature');
+  paintHull(temperature);
+  zoneReadings.innerHTML = simulatedZones(temperature).filter(zone => zone.offset !== 0).map(zone =>
+    `<div${hasValue(zone.temperature) ? ` style="--zone-color: ${temperatureColor(zone.temperature)}"` : ''}><dt>${zone.name}</dt><dd>${number(zone.temperature, 1)} °C</dd></div>`).join('');
   clock.dateTime = now.at;
   clock.textContent = `${now.at.slice(11, 19)} UTC`;
   for (const button of sensorGroup.querySelectorAll('button')) {

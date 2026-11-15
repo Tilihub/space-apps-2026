@@ -66,7 +66,8 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
   background-position: center;
 }
 .falcon { position: absolute; width: 83%; height: auto; top: 50%; left: 50%; translate: -50% -50%; overflow: visible; pointer-events: none; }
-.falcon-interior { filter: blur(2px); opacity: .54; }
+.falcon-heatmap { opacity: .83; }
+.falcon-interior { filter: blur(2px); opacity: .35; mix-blend-mode: multiply; }
 .falcon-blue { flood-color: var(--falcon-blue); }
 .falcon-outline { opacity: .8; animation: falcon-pulse 2.8s ease-in-out infinite; }
 @keyframes falcon-pulse { 0%, 100% { opacity: .34; } 50% { opacity: 1; } }
@@ -94,6 +95,9 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
 }
 .sensor[data-side="left"] { left: 3%; }
 .sensor[data-side="right"] { right: 3%; }
+.sensor[data-side="center"] { left: 50%; translate: -50% -50%; width: max(19%, 100px); text-align: center; background: #101722f2; }
+.sensor[data-side="center"] .sensor-name { justify-content: center; color: var(--ink); }
+.sensor[data-side="center"] .sensor-name::before { content: none; }
 .sensor:hover, .sensor.active { z-index: 1; border-color: var(--metric); background: color-mix(in srgb, var(--metric) 9%, #0d1621); }
 .sensor-name { display: flex; align-items: center; gap: 5px; color: var(--metric); font-size: 11px; font-weight: 650; }
 .sensor-name::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
@@ -101,6 +105,10 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
 .sensor-number small { color: var(--muted); margin-left: 4px; font-size: 10px; letter-spacing: 0; font-weight: 500; }
 .sensor-location { display: block; color: var(--muted); font-size: 10px; }
 .map-note { padding: 12px 19px; border-top: 1px solid var(--edge); color: var(--muted); font-size: 11px; }
+.map-note .heat-scale { margin: 0; }
+.thermal-zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px 13px; margin: 12px 0; }
+.thermal-zones > div { display: flex; justify-content: space-between; gap: 4px 7px; flex-wrap: wrap; padding: 5px 0; border-bottom: 1px solid var(--edge); }
+.thermal-zones dd { margin: 0; color: var(--zone-color, var(--muted)); font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .details { display: grid; gap: 14px; }
 .trend-content { padding: 16px 19px 15px; }
@@ -145,6 +153,7 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
   .panel-heading, .trend-content, .alerts { padding-right: 12px; padding-left: 12px; }
   .sensor { width: max(25%, 90px); padding: 6px; }
   .sensor-location { font-size: 9px; }
+  .thermal-zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 670px) {
@@ -166,10 +175,12 @@ h1 { font-size: clamp(2.125rem, 4vw, 3.325rem); line-height: 1.07; font-weight: 
   .map-stage { aspect-ratio: 1 / .88; }
   .falcon { width: 96%; }
   .sensor { min-height: 50px; width: max(24%, 84px); padding: 5px 6px; }
+  .sensor[data-side="center"] { width: max(24%, 78px); }
   .sensor-number { font-size: 16px; }
   .sensor-number small { margin-left: 2px; font-size: 9px; }
   .sensor-location { display: none; }
   .sensor-name { font-size: 10px; }
   .map-note { padding: 9px 12px; }
+  .thermal-zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .details { grid-template-columns: minmax(0, 1fr); }
 }

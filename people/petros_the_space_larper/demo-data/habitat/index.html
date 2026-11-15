@@ -34,8 +34,11 @@
           <span class="technical">Dorsal view</span>
         </div>
         <div class="map-stage" id="map-stage">
-          <svg class="falcon" viewBox="0 0 1536 1024" role="img" aria-label="Millennium Falcon silhouette seen from above, with a shaded interior and a blue outline">
+          <svg class="falcon" viewBox="0 0 1536 1024" role="img" aria-label="Millennium Falcon thermal map, from cooler forward compartments to warmer aft engineering">
             <defs>
+              <mask id="falcon-hull" maskUnits="userSpaceOnUse" x="0" y="0" width="1536" height="1024" style="mask-type: alpha">
+                <image href="./millennium-falcon.png" width="1536" height="1024"/>
+              </mask>
               <filter id="falcon-edge" x="-5%" y="-8%" width="110%" height="116%">
                 <feComponentTransfer in="SourceAlpha" result="silhouette">
                   <feFuncA type="discrete" tableValues="0 0 1 1"/>
@@ -49,13 +52,18 @@
                 <feMerge><feMergeNode in="glow"/><feMergeNode in="blue-edge"/></feMerge>
               </filter>
             </defs>
+            <image id="falcon-heatmap" class="falcon-heatmap" width="1536" height="1024" mask="url(#falcon-hull)"/>
             <image class="falcon-interior" href="./millennium-falcon.png" width="1536" height="1024"/>
             <image class="falcon-outline" href="./millennium-falcon.png" width="1536" height="1024" filter="url(#falcon-edge)"/>
           </svg>
           <svg class="sensor-wires" id="sensor-wires" viewBox="0 0 1000 680" preserveAspectRatio="none" aria-hidden="true"></svg>
           <div role="group" aria-label="Environmental readings" id="sensors"></div>
         </div>
-        <p class="map-note">Hover, focus or tap a sensor to inspect its trend.</p>
+        <div class="map-note">
+          <div id="thermal-key"></div>
+          <dl class="thermal-zones" id="thermal-zones" aria-label="Simulated temperatures by zone"></dl>
+          <p>Hover, focus or tap a sensor to inspect its trend.</p>
+        </div>
       </section>
 
       <div class="details">
