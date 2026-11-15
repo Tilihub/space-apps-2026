@@ -47,3 +47,8 @@ For the current local presentation, port 8018 was populated with the same agreed
 Daily wellbeing remains pending until Finish daily wellbeing validates all ten answers; preset core values alone do not close it. Existing health entries are preserved and the seven extras remain local drafts. Exercise/session/rest/interval displays refresh each second through display-clock.js; actual submissions and recovery saves retain server time.
 
 Overview includes existing Today SpO2 and blood-pressure readings as two additional circular instruments in a six-card grid, aligned with the full body-panel height on desktop. The tenth daily prompt is now mental refreshment (1–10), replacing the support-request item; private support remains on Wellbeing. Cabinet access uses short authority labels and preserves actionable safety messages. The backend doctor-as-patient routing exception remains pending dadis2/zt review; see Tommy's medical-training-follow-up.md.
+
+
+### AED emergency checkout (current branch)
+
+With dadis2's explicit agreement reported by Tommy, the catalogue includes one AED emergency-equipment unit at L3-4-01. The full-width lower shelf uses the actual API bin: enable Emergency, select the AED/patient, enter the reason, collect and confirm. Stock decreases only at confirmation; another checkout is refused once the unit is gone. Demo reset restores one. Existing saved stores require an intentional reset to initialize the new catalogue unit; do not reset an active shared store silently. It records equipment retrieval, not shock delivery, ingestion or verified resuscitation. The presentation's successful cardiac-arrest recovery is explicitly a fictional narrated outcome; see people/tommy/presentation/seven-minute-run.md.

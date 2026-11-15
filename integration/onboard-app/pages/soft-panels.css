@@ -137,3 +137,7 @@ h1,h2,h3,h4,.page-title,.display,.card h3{font-family:var(--font-display);font-w
 /* Use the full Overview card for the body, keeping its existing controls and legend. */
 #home .anatomy-stage{flex:1 1 auto;height:auto;min-height:440px}
 @media(max-width:640px){#home .anatomy-stage{flex:none;height:470px;min-height:470px}}
+
+/* Full-size equipment artwork in the ordinary collection detail panel. */
+.equipment-detail .detail-title{display:block}
+.equipment-detail .detail-art{width:100%;height:105px;margin:12px 0}

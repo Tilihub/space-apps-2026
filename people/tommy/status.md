@@ -8,6 +8,8 @@
 
 ## Now
 
+- AED and seven-minute update on tommy/presentation-script / PR #79: Tommy confirmed dadis2 agrees to the addition in people/dadis2/meds/catalogue.json. Added one emergency-tier equipment device in L3-4-01, rendered as the existing three-column lower shelf with the ordinary Emergency/collection flow. Fresh local preview: localhost:8024; previous servers/stores preserved. Kai's presentation story is now fictional sudden cardiac arrest, AED retrieval and narrated successful resuscitation. Seven-minute schedule: presentation/seven-minute-run.md.
+
 - Latest presentation direction: five candidate stories first, with no presenter assignment yet. Greek spoken delivery confirmed. Read presentation/five-scenarios.md; earlier six-owner lineup is only a superseded proposal. Complete scenario initialization on presentation reset is still a design requirement, not an implemented feature.
 
 - Presentation planning on tommy/presentation-script. Tommy confirmed six Greek-speaking presenters, one minute each, and requested deterministic complete scenario initialization after every presentation reset before writing the final live scripts. Draft: presentation/live-demo-plan.md. This is a proposal; no reset/app code is changed. The newer dadis2 review remains on hold as Tommy requested.
@@ -33,6 +35,10 @@
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Added only the explicitly authorized five-line catalogue change in dadis2's folder; no owner logic/policy file edited. Emergency-only AED uses one equipment unit and its existing stock/patient/audit mechanisms; checkout is not an ingestion or patient-recovery assertion. Large shelf reads the actual API bin and turns green/open with normal confirmation. An older server lacking the entry keeps a truthful unavailable fallback.
+- Added a real-HTTP AED regression: no ordinary collection, quantity/author checks, one successful patient-linked emergency checkout, no duplicate/second release, persisted depletion, logged operator and reset restoring one device/no incidents. Root suite passes 118/118. Browser confirmed the full Kai/AED flow and persisted zero stock, then reset/reseeded only the disposable 8024 preview, leaving one AED available and no old emergency banner. Screenshot: presentation/review/aed-open.jpg.
+- Updated scene 3 to sudden cardiac arrest and a scripted successful resuscitation, separating equipment access from clinical outcome. Read the Local Event's 7-minute guide and created an exact 420-second run (intro, five stories, close, transitions/reserve). The full automatic presentation initializer remains a separate unimplemented planning item.
 
 - Read zt's original seven-minute narrative, submission checklist, current app/Pulsars boundaries and Angelos's newly merged technical report. Proposed six distinct owner-aligned minutes with prepared state/live payoff, an earned 700 → 1000 Pulsars exercise/PR/accessory fixture, global deterministic reset criteria and rehearsal fallbacks. Asked Tommy to choose the primary one-minute medical story: Earth credential or Kai emergency. Actual sixty-second Greek speech is the next step after scene/reset agreement.
 
@@ -239,6 +245,9 @@
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
+
+- Review updated #79 with dadis2/zt, including the explicitly authorized catalogue addition and 118 checks. Test Emergency -> AED -> Kai -> required reason -> Collect item -> Confirm collection at localhost:8024. Existing stores need an intentional demo reset to initialize new catalogue stock; do not reset original stores silently. No actual AED/shock/medical outcome is simulated by collection alone.
+- Use presentation/seven-minute-run.md for the seven-minute timing; finish selecting speakers and exact Greek lines, then implement deterministic full presentation initialization after agreement. Other new dadis2 branch policy changes remain unadopted.
 
 - Agree the speaker order and medical focus with Tommy using presentation/live-demo-plan.md. Then write six individual Greek timed cue cards and the English repository master. Implement presentation-mode reset/scenario seeding only after agreement, preserving role boundaries, current main and original data. Do not silently adopt the new dadis2 branch while planning the presentation.
 

@@ -18,13 +18,17 @@ Tommy's latest direction: propose five self-contained stories first; decide pres
 
 **Payoff:** consistent exercise, a valid load record and cosmetic self-expression are linked, without competing with another astronaut. It is not a real workout completed in one stage minute. Other scheduled exercises remain pending. **One-minute core:** finish one prepared exercise and show the rewards; the shop purchase is the optional last click. Stage push-ups currently do not earn coins and are not a substitute for this fixture.
 
-## 3. An emergency that cannot wait for Earth
+## 3. Sudden cardiac arrest: emergency access to the AED
 
-**Character:** Kai, c5, with another crew member helping. **Prepared by reset:** no open emergency/banner; Kai's usual profile and emergency stock; actor's short reason ready as a clearly fictional stage example. A reaction is introduced in the spoken story, not claimed to have been automatically detected by current sensors.
+**Character:** Kai, c5; another crew member retrieves equipment while trained crew respond. **Prepared by reset:** Kai's ordinary synthetic profile, no open incident/banner, one AED in L3-D-01 (displayed as a full-width three-compartment shelf). Do not seed a prior collection or automatically infer arrest from the sample pulse stream.
 
-**Live:** press Emergency in Medical bay, choose Kai, enter the required short reason and select an emergency-tier item. Confirm the simulated collection. Show the shared notification on the doctor's prepared tab if time permits.
+**Live:** the speaker introduces a fictional sudden cardiac arrest; press Emergency, select the AED, choose Kai, enter the short reason, open the compartment and confirm collection. The system logs emergency equipment checkout and alerts the crew. It does not deliver or assess treatment.
 
-**Payoff:** immediate onboard action with a patient-linked record; the physician's paperwork follows. No live automatic alarm detection, real dispenser action or already-sent Earth report is invented. **One-minute core:** Emergency -> patient/reason -> collection. The full-width defibrillator shelf may be pointed out as planned equipment; it cannot be collected or used in this demo.
+**Narrative ending:** in this explicitly simulated story, trained crew provide resuscitation and use the AED as indicated; the story ends with successful resuscitation and ongoing medical care. This is a scripted outcome, not an app-detected recovery, a guaranteed effect of an AED, or a treatment instruction. No automatic "patient saved" status is added to the app.
+
+**One-minute core:** sudden event -> Emergency -> AED retrieval/confirmation -> fictional successful resuscitation. Keep a screenshot of the opened AED shelf as fallback. The device is equipment, not a medicine dose; the existing collection audit records its checkout. The catalogue stock becomes zero after confirmation and returns to one on demo reset.
+
+**Clinical wording source:** [Resuscitation Council UK AED guidance](https://www.resus.org.uk/additional-guidance/guidance-defibrillators). An AED analyses rhythm and shocks only when indicated; resuscitation is not guaranteed by equipment access.
 
 ## 4. A private moment during a long mission
 

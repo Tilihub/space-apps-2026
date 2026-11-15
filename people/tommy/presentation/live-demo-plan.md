@@ -1,5 +1,7 @@
 # Six speakers, one minute each — live presentation proposal
 
+Current timing is superseded by seven-minute-run.md (420 seconds), and the emergency scene now uses Kai/AED; see five-scenarios.md.
+
 Status: earlier planning draft for Tommy, 15 November 2026. Tommy subsequently requested five candidate stories before assigning speakers; see five-scenarios.md. The owner lineup below is not adopted. Spoken presentation: **Greek**, confirmed by Tommy. Repository notes remain English. No app, reset behavior, teammate file or medical policy has changed in this step.
 
 This replaces the old single-narrator format only if the team adopts it. It preserves the five-person Mars-transit setting from zt's demo-cases.md while assigning one clear aspect to each of the six real presenters. Use the currently merged app/Pulsars as the baseline. dadis2's unmerged console revision remains under separate review.
