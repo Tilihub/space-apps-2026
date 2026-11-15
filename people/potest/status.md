@@ -9,8 +9,8 @@
 ## Now
 
 - Last updated: 2026-11-15 (Europe/Athens)
-- Working on: Restoring the Mara–Tomas comparison in existing standard app stores.
-- Branch: potest/restore-companion-history
+- Working on: Unifying the companion launch and verifying the comparison with the presenter roster.
+- Branch: potest/unify-companion-launch
 
 ## Done
 
@@ -31,6 +31,8 @@
 - Each controlled launch starts a fresh day-42 store. Open tabs with an old login return to the welcome screen once they reconnect.
 - The standard launch uses the current crew member’s saved ten-question wellbeing check-in for supported prompts. An empty or explicitly reset store loads the four-day synthetic comparison. Existing records survive an ordinary restart. The separate rehearsal mode starts from a fresh store each time.
 - Older stores with Petros's original synthetic records now receive the same four-day Tomas history on first use. The update preserves day-42 check-ins, questionnaire answers and journal entries.
+- The regular app and fresh rehearsal use the same controlled companion for every prompt. The launch flag selects an isolated store.
+- The main app now labels the controlled chat Crew Assistant. The old flag opens the same app and store. The comparison follows profile IDs c1 and c4, so the renamed Diamandis profile keeps the recurring history.
 
 ## Blocked / need from others
 

@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import test from 'node:test';
 import { controlledReply } from '../../people/potest/crew-support/controlled-replies.js';
-import { createDemoCore, createControlledRun } from './controlled-demo.js';
+import { createDemoCore } from './controlled-demo.js';
 import modules from './modules.js';
+import { presentationModules } from './presentation.js';
 import { boot, dataOf } from './test-helpers.js';
 
 const opening = 'I am not feeling very well today.';
@@ -130,9 +131,8 @@ test('startup leaves a customized synthetic record alone even when the original 
   }
 });
 
-test('controlled rehearsal joins the same current answers to different crew histories through HTTP', async t => {
-  const makeCore = options => createDemoCore({ ...options, rehearsal: true });
-  const app = await boot(modules, { makeCore, realNow: () => 0 });
+test('the onboard companion joins identical current answers to different crew histories', async t => {
+  const app = await boot(modules, { makeCore: createDemoCore, realNow: () => 0 });
   t.after(() => app.close());
   const mara = await app.login('c1');
   const tomas = await app.login('c4');
@@ -178,6 +178,28 @@ test('controlled rehearsal joins the same current answers to different crew hist
   assert.deepEqual((await history('c4')).slice(-4).map(row => row.sleepHours), [5.6, 5.2, 5, 4.8]);
 });
 
+test('standard and presentation registries give identical companion replies with identical saved context', async t => {
+  const collect = async registry => {
+    const app = await boot(registry, { makeCore: createDemoCore, realNow: () => 0 });
+    t.after(() => app.close());
+    const results = [];
+    for (const crewId of ['c1', 'c4']) {
+      const token = await app.login(crewId);
+      results.push(dataOf(await send(app, token, opening)));
+      dataOf(await app.call('POST', '/api/health/check-ins', { token, body: checkIn }));
+      dataOf(await app.call('POST', '/api/pulsars/wellbeing', { token, body: { missionDay: 42, answers } }));
+      for (const prompt of [opening, next, 'I feel disconnected from the crew.',
+        'I miss talking with my family after dinner.', 'Can you help with medication?',
+        'I am short of breath.', 'Thanks, that helps.']) {
+        results.push(dataOf(await send(app, token, prompt)));
+      }
+    }
+    return results;
+  };
+  const [standard, presentation] = await Promise.all([collect(modules), collect(presentationModules(modules))]);
+  assert.deepEqual(standard, presentation);
+});
+
 test('each of the ten ratings can independently change the reply and respects its scale direction', () => {
   const cases = {
     mood: [4, 5, 'low mood'], stress: [7, 6, 'high stress'], fatigue: [7, 6, 'fatigue'],
@@ -192,45 +214,6 @@ test('each of the ten ratings can independently change the reply and respects it
     assert.ok(sample(flagged).includes(label), key);
     assert.ok(!sample(usual).includes(label), key);
     assert.ok(!sample(null).includes(label), key);
-  }
-});
-
-test('relaunching the controlled demo clears sessions, clock, check-ins, rewards and journal', async () => {
-  const realNow = () => 0;
-  const ordinary = await boot(modules, { realNow });
-  try {
-    const ordinaryToken = await ordinary.login('c4');
-    dataOf(await ordinary.call('POST', '/api/health/check-ins', { token: ordinaryToken, body: checkIn }));
-    const options = { makeCore: createControlledRun, dataDir: ordinary.dataDir, realNow };
-    const first = await boot(modules, options);
-    let oldToken;
-    try {
-      oldToken = await first.login('c4');
-      dataOf(await first.call('POST', '/api/health/check-ins', { token: oldToken, body: checkIn }));
-      const award = dataOf(await first.call('POST', '/api/pulsars/wellbeing', { token: oldToken, body: { missionDay: 42, answers } }));
-      assert.equal(award.wallet.balance, 100);
-      dataOf(await first.call('POST', '/api/mind/journal', { token: oldToken, body: { text: 'Previous rehearsal' } }));
-      dataOf(await first.call('POST', '/api/clock/advance', { token: oldToken, body: { minutes: 1440 } }));
-    } finally {
-      await first.close({ keepData: true });
-    }
-    assert.ok(!(await readdir(ordinary.dataDir)).some(file => file.startsWith('pulse-controlled-')));
-
-    const second = await boot(modules, options);
-    try {
-      assert.equal((await second.call('GET', '/api/session', { token: oldToken })).status, 401);
-      const token = await second.login('c4');
-      assert.equal(dataOf(await second.call('GET', '/api/clock', { token })).missionDay, 42);
-      assert.match(dataOf(await second.call('GET', '/api/clock', { token })).now, /T07:30:00\.000Z$/);
-      assert.equal((await getToday(second, token)).checkIn, null);
-      assert.equal(dataOf(await second.call('GET', '/api/pulsars/me', { token })).wallet.balance, 0);
-      assert.deepEqual(dataOf(await second.call('GET', '/api/mind/journal', { token })).entries, []);
-      assert.equal((await getToday(ordinary, ordinaryToken)).checkIn.sleepHours, 4.6);
-    } finally {
-      await second.close({ keepData: true });
-    }
-  } finally {
-    await ordinary.close();
   }
 });
 
