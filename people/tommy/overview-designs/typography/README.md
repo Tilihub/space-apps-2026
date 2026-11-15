@@ -1,5 +1,7 @@
 # Application-wide typography: Soft Panels and Alloy
 
+**Latest review:** [the same font choices on the complete Overview](overview/README.md), as Tommy requested.
+
 Tommy selected **MC02 Soft Panels**, then clarified that fonts must be considered throughout the application, not just Overview. He also requested the same font comparison in Alloy. Both original designs used IBM Plex Sans with IBM Plex Mono; their surface styling made them feel different.
 
 The real application now loads the selected Soft Panels presentation and a shared font-recipe layer. T01 is the original IBM reference while a final font choice is pending. Use `?typeface=T01` through `?typeface=T08` before the hash to preview a recipe across the full application. A hash navigation retains the choice; the body-frame URL carries the same whitelisted ID. Unknown values fall back to T01. No font preference, data, authorization or controller state is written by this layer.

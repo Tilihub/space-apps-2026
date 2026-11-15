@@ -8,12 +8,15 @@
 
 ## Now
 
-- Last updated: 2026-11-15 — Soft Panels and application-wide typography
-- Working on: Tommy chose MC02 Soft Panels and clarified that fonts cover the whole app. The shared frontend font layer supports T01–T08 across shell, forms, crew/clinical/Earth pages and body controls. T01 remains the reference pending his final font choice. Eight component boards in Soft Panels plus eight in Alloy and two paired sheets are ready. Alloy is comparison only; backend/owner modules/contracts are unchanged.
+- Last updated: 2026-11-15 — typography on complete Overviews
+- Working on: Tommy chose MC02 Soft Panels and clarified that fonts cover the whole app. The shared frontend font layer supports T01–T08 across shell, forms, crew/clinical/Earth pages and body controls. T01 remains the reference pending his final font choice. At his request, the eight recipes now also have complete Overview screenshots in both surfaces, with four side-by-side comparison sheets in overview-designs/typography/overview/. The component boards remain available. Alloy is comparison only; backend/owner modules/contracts are unchanged.
 - Branch: `tommy/frontend-polish`, based on `tommy/functional-demo` / PR #73. Published as UI-only [PR #74](https://github.com/Tilihub/space-apps-2026/pull/74) against that branch; its underlying integration still needs the existing team review.
 - Preview: filled presentation demo on port 8012, separate temporary synthetic store; original port-8010 store preserved. Reproduce with `integration/onboard-app/demo/README.md` and `demo/seed-presentation.mjs`. The seeded day-42 check-ins are already saved; use a fresh demo store for a live check-in walkthrough.
 
 ## Done
+
+- Added complete Overview font comparisons at Tommy's request: T01–T08 in Soft Panels and Alloy, sixteen full-size captures and four two-font contact sheets. Fixed profile, values, body image, logo and composition; only font families vary within each surface. Headings, navigation, numeric instruments, small labels and static Front/Back labels use the chosen recipe. No final font selection is assumed.
+- Only personal review sources/exports and status notes changed in this follow-up. Inspected all sixteen font/image combinations and visually reviewed the four comparison sheets. Backend, functional app, owner modules and stores are untouched. Root test suite passed 102/102 (none skipped), syntax/diff checks passed, and the temporary screenshot server was stopped after capture.
 
 - Applied Tommy's selected MC02 Soft Panels presentation across the frontend, with carbon/amber, soft card edges and dashed Overview rings. Added a common eight-recipe font layer and propagated its whitelisted ID into the body frame. All control handlers, API calls, permissions, data and workout logic are unchanged; workout progress arcs and body/symptom colors remain scoped/preserved.
 - Clarified that original Alloy and Soft Panels use the same IBM font pairing. Captured each of eight font recipes in both surfaces using whole-app component boards, plus two paired comparison sheets. T01 is the temporary original-reference font; no final alternative is assumed. Captured actual T03 crew, clinical and Earth screens from an isolated seeded store.
@@ -148,7 +151,7 @@
 
 ## Next steps
 
-- Continue from `tommy/frontend-polish`. Tommy selected MC02 Soft Panels: now choose a global typography recipe T01–T08 from people/tommy/overview-designs/typography/. Alloy remains a comparison. Apply his final font choice as the shared default, not per-page overrides. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
+- Continue from `tommy/frontend-polish`. Tommy selected MC02 Soft Panels: now choose a global typography recipe T01–T08 from the complete Overview comparisons in people/tommy/overview-designs/typography/overview/. Alloy remains a comparison. Apply his final font choice as the shared default, not per-page overrides. Implement only the selected direction in the real presentation layer; preserve every connected action. Then review the filled port-8012 demo with Tommy and zt. The supplied team logo is `integration/onboard-app/pages/assets/team-logo.png`; the new presentation layer is `pages/mission-views.js` and `pages/mission.css`.
 - Next questionnaire decision: review the exact prompts in `people/tommy/wellbeing-questionnaire-proposal.md`. Extra session drafts clear on profile switch/sign-out; full server storage requires a separately reviewed schema/privacy decision with the module owner.
 - Review this branch against `tommy/functional-demo` to see only the frontend changes. Backend behavior is frozen at `0cd3911`; do not include backend fixes or change API/data/authorization rules as part of this UI task.
 - PR #73 still needs the existing zt/Potest review of the protected context clarification and unchanged #55 dependency before merge. This task does not approve or merge either PR.

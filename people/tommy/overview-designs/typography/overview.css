@@ -1,0 +1,8 @@
+/* Static Overview font review only. No functional application styles change. */
+:root[data-overview-typeface] h1{font-family:var(--display);font-size:34px;font-weight:700;letter-spacing:-.035em}
+:root[data-overview-typeface] .reading b{font-family:var(--number);font-size:39px;font-weight:650}
+:root[data-overview-typeface] .metric-label,:root[data-overview-typeface] .eyebrow,:root[data-overview-typeface] .clock{font-family:var(--label)}
+:root[data-overview-typeface] .model img{clip-path:inset(40px 0 0 0)}
+.type-body-controls{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;gap:6px;font:600 11px/1.3 var(--font);color:#bcc5c8}
+.type-body-controls span{padding:7px 13px;background:#161c24;border:1px solid #4a565c;border-radius:8px}
+.type-body-controls .selected{border-color:#e9bd64;box-shadow:inset 0 0 0 1px #e9bd64;color:#f4f2e8}
