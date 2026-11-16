@@ -8,10 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-16 16:35
-- Working on: post-event clean-up before the judges review the submitted live link.
-- Branch: `zt/readme-remove-ai-section` (removes the "Use of AI" section from the root README;
-  the pull request needs a teammate's approval)
+- Last updated: 2026-11-16 16:48
+- Working on: nothing. The event is over and the live site stays exactly as submitted.
+- Branch: none in progress.
 
 ## Done
 
