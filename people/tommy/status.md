@@ -8,6 +8,8 @@
 
 ## Now
 
+- Reviewed zt's latest work on main f43c1f3 and approved the README-only final/ pointer PR #95 at 8482cff, explicitly authorized by Tommy. Independently passed all 131 root tests. No PR merged and no running server/store changed. Updated our presentation README/run to match implemented reset, public hosting, fixed stage push-up rewards and the new Earth/QR flow. Earlier notes below are historical. Branch: tommy/zt-review.
+
 - Published the current initial seven-minute script idea for team iteration in presentation/README.md (v1), on tommy/presentation-script / PR #79. Five fictional crew stories, Greek spoken delivery, no speaker assignment yet. Clearly separates the working branch AED from the still-unimplemented complete reset presets. No app changes or merge in this publication step.
 
 - AED and seven-minute update on tommy/presentation-script / PR #79: Tommy confirmed dadis2 agrees to the addition in people/dadis2/meds/catalogue.json. Added one emergency-tier equipment device in L3-4-01, rendered as the existing three-column lower shelf with the ordinary Emergency/collection flow. Fresh local preview: localhost:8024; previous servers/stores preserved. Kai's presentation story is now fictional sudden cardiac arrest, AED retrieval and narrated successful resuscitation. Seven-minute schedule: presentation/seven-minute-run.md.
@@ -251,6 +253,8 @@
 - zt/Potest should review ownership and the concrete report/environment adapters before adopting their interface in the protected shared contract. Broader companion context, psychologist access, readiness and gamification remain open; no acceptance is assumed.
 
 ## Next steps
+
+- Rehearse all five scenes on the deployed presentation revision; confirm zt has manually redeployed #94 with PULSE_PRESENTATION=1. Finalize six speaker assignments and Greek cue cards, capture backup screenshots. Stage push-up +300 is a scripted repeatable reward, not evidence of normal validated kilogram PR rewards. #95 has our approval; its author can handle merge. Keep a separate local demo for the stage because public visitors share/reset the same store.
 
 - Review updated #79 with dadis2/zt, including the explicitly authorized catalogue addition and 118 checks. Test Emergency -> AED -> Kai -> required reason -> Collect item -> Confirm collection at localhost:8024. Existing stores need an intentional demo reset to initialize new catalogue stock; do not reset original stores silently. No actual AED/shock/medical outcome is simulated by collection alone.
 - Use presentation/seven-minute-run.md for the seven-minute timing; finish selecting speakers and exact Greek lines, then implement deterministic full presentation initialization after agreement. Other new dadis2 branch policy changes remain unadopted.

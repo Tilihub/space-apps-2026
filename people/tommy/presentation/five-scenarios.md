@@ -1,5 +1,7 @@
 # Five live-demo scenario candidates
 
+**Historical scenario detail:** the current runnable stage sequence is now in [README.md](README.md) and [seven-minute-run.md](seven-minute-run.md), updated after zt’s merged #94 and dadis2’s #85. In particular, scenario 2 below’s squat fixture is replaced by fixed-reward stage push-ups; scenario 5’s clinical-analysis screen has been removed. Prepared presentation reset is implemented. Keep the earlier alternatives below for discussion, not as current click instructions.
+
 Tommy's latest direction: propose five self-contained stories first; decide presenters and final selection afterward. These are planning candidates, not five already implemented reset presets. Spoken delivery will be Greek. The earlier owner-assigned six-minute outline is not adopted.
 
 ## 1. Headache: personal health in its cabin context

@@ -1,15 +1,15 @@
 # Seven-minute live-demo running order
 
-Tommy confirmed **seven minutes total**, Greek speech, five stories, presenter assignment later. Based on the Local Event guide in shared/submission/local-presentation-guide.md. This is a proposed timing plan; the separate complete presentation-reset initializer is still not implemented.
+Tommy confirmed **seven minutes total**, Greek speech, five stories, presenter assignment later. Based on the Local Event guide in shared/submission/local-presentation-guide.md. This is a proposed timing plan; the prepared day-42 presentation reset is now implemented on main; see README.md and shared/submission/demo-plan-updates.md.
 
 | Clock | Segment | Budget |
 |---|---|---|
 | 0:00–0:45 | Mission/problem, solution, sources and architecture in one sentence | 45 s |
 | 0:45–1:50 | Scenario 1 — Tomas: headache, Overview and cabin context | 65 s, including handover |
-| 1:50–2:55 | Scenario 2 — Mara: exercise, valid PR, Pulsars/shop payoff | 65 s, including handover |
+| 1:50–2:55 | Scenario 2 — Mara: stage push-ups, scripted rewards, Pulsars/shop payoff | 65 s, including handover |
 | 2:55–4:00 | Scenario 3 — Kai: sudden cardiac arrest, Emergency, AED checkout, scripted successful resuscitation | 65 s, including handover |
 | 4:00–5:05 | Scenario 4 — Ines: wellbeing and private offline companion | 65 s, including handover |
-| 5:05–6:10 | Scenario 5 — clinician assessment and the Earth/dose workflow | 65 s, including handover |
+| 5:05–6:10 | Scenario 5 — Earth request, QR/code and due-dose workflow | 65 s, including handover |
 | 6:10–6:40 | Impact, working prototype, next development step, closing | 30 s |
 | 6:40–7:00 | Reserve for a delayed click or transition | 20 s |
 
@@ -17,7 +17,7 @@ Total: **420 seconds**. Each story targets 55–60 seconds for speech/actions an
 
 ## Content outside the five stories
 
-Introduction: long Mars transit, delayed ground support and fragmented onboard health context; PULSE joins personal check-ins, cabin context, routines and controlled inventory on one onboard server. Cite historical NASA RR-9/Curiosity sources while explicitly identifying synthetic crew histories and sensor simulations. Do not claim deployed public hosting or a real clinical device integration.
+Introduction: long Mars transit, delayed ground support and fragmented onboard health context; PULSE joins personal check-ins, cabin context, routines and controlled inventory on one onboard server. Cite historical NASA RR-9/Curiosity sources while explicitly identifying synthetic crew histories and sensor simulations. Show the public demo link (https://pulse-crew-health.onrender.com/). Device operation remains simulated; do not claim a real clinical device integration.
 
 Closing: connect the five stories into a useful crew workflow, state the human clinician's role and one concrete next development step. The Local Event scores impact, creativity, validity, relevance and presentation; do not omit why the integrated workflow matters.
 
