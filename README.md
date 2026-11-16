@@ -25,8 +25,3 @@ Changes to the common plan, `final/` and the rules files need one teammate's app
 pull request; GitHub enforces this. The rules every person and every AI tool follows are in
 [AGENTS.md](AGENTS.md).
 Keep each file under 50 MB; GitHub refuses anything over 100 MB.
-
-## Use of AI
-
-This project is built with help from AI coding tools (Claude Code and OpenAI Codex).
-A summary goes here before submission.

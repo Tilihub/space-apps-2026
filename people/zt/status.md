@@ -8,9 +8,9 @@
 
 ## Now
 
-- Last updated: 2026-11-16 00:20
-- Working on: nothing; the live demo is done and went well.
-- Branch: `zt/status-after-demo` (this status update only)
+- Last updated: 2026-11-16 16:48
+- Working on: nothing. The event is over and the live site stays exactly as submitted.
+- Branch: none in progress.
 
 ## Done
 
